@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+// Package vietgara.identity.v1 defines the Identity & Access Management
+// module (HLD module #1): the Account entity and its lifecycle states.
+// See: FRD FR-IAM-*, Database Design Section 2.1, ADR-007.
+package vietgara.identity.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/gen/go/vietgara/identity/v1;identityv1";
+
+// AccountStatus is the lifecycle state of an account.
+enum AccountStatus {
+  ACCOUNT_STATUS_UNSPECIFIED = 0;
+  ACCOUNT_STATUS_ACTIVE = 1;
+  ACCOUNT_STATUS_INACTIVE = 2;
+  ACCOUNT_STATUS_SUSPENDED = 3;
+}
+
+// AuthProvider identifies the authentication method an account was
+// registered with (FR-IAM-01, FR-IAM-02).
+enum AuthProvider {
+  AUTH_PROVIDER_UNSPECIFIED = 0;
+  AUTH_PROVIDER_EMAIL = 1;
+  AUTH_PROVIDER_PHONE = 2;
+  AUTH_PROVIDER_GOOGLE = 3;
+  AUTH_PROVIDER_FACEBOOK = 4;
+}
+
+// Account is the owner-level identity of a user. It sits above the tenant
+// level: one Account may own many Garages (1 account - many garages model,
+// FR-TEN-02). It maps to the "accounts" table (Database Design Section 2.1).
+message Account {
+  // UUID primary key.
+  string id = 1;
+
+  // Unique email; absent when the account only uses phone or social login.
+  optional string email = 2;
+
+  // Unique phone number; absent when the account only uses email or social
+  // login.
+  optional string phone = 3;
+
+  // The authentication method the account was registered with.
+  AuthProvider auth_provider = 4;
+
+  // Display name of the account owner.
+  string full_name = 5;
+
+  // Lifecycle state of the account.
+  AccountStatus status = 6;
+
+  // Creation timestamp.
+  google.protobuf.Timestamp created_at = 7;
+
+  // Last update timestamp.
+  google.protobuf.Timestamp updated_at = 8;
+}

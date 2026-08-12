@@ -1,0 +1,196 @@
+syntax = "proto3";
+
+// Package vietgara.identity.v1 defines the Identity & Access Management
+// module (HLD module #1): authentication, token lifecycle and social
+// account linking.
+// See: FRD FR-IAM-01/02/04/06, API Specification Section 2, ADR-007.
+package vietgara.identity.v1;
+
+import "vietgara/identity/v1/account.proto";
+import "vietgara/tenant/v1/staff.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/gen/go/vietgara/identity/v1;identityv1";
+
+// AuthService handles account registration and authentication for the
+// internal JWT issued to other VietGara services (ADR-007).
+service AuthService {
+  // Register creates a new account (FR-IAM-01).
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+
+  // Login authenticates an existing account (FR-IAM-02).
+  rpc Login(LoginRequest) returns (LoginResponse);
+
+  // RefreshToken exchanges a refresh token for a new access token pair,
+  // keeping long-lived mobile sessions valid (FR-IAM-02).
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+
+  // Logout revokes the presented refresh token (FR-IAM-02).
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+
+  // ForgotPassword sends a password-reset OTP or link by email or SMS
+  // (FR-IAM-04).
+  rpc ForgotPassword(ForgotPasswordRequest) returns (ForgotPasswordResponse);
+
+  // ResetPassword sets a new password using the OTP/token received via
+  // ForgotPassword (FR-IAM-04).
+  rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse);
+
+  // LinkSocialAccount links an additional Google/Facebook account to the
+  // current account (FR-IAM-06).
+  rpc LinkSocialAccount(LinkSocialAccountRequest) returns (LinkSocialAccountResponse);
+}
+
+// EmailPasswordCredential authenticates with email + password.
+message EmailPasswordCredential {
+  string email = 1;
+  string password = 2;
+}
+
+// PhoneOtpCredential authenticates with a phone number + OTP code.
+message PhoneOtpCredential {
+  string phone = 1;
+
+  // One-time password verified by the Identity Provider.
+  string otp_code = 2;
+}
+
+// SocialCredential authenticates with a provider-issued token
+// (Google/Facebook ID token or access token).
+message SocialCredential {
+  AuthProvider provider = 1;
+
+  // Token issued by the social provider, exchanged by the Identity
+  // Provider (ADR-007).
+  string id_token = 2;
+}
+
+// RegisterRequest creates a new account (FR-IAM-01).
+message RegisterRequest {
+  oneof method {
+    EmailPasswordCredential email_password = 1;
+    PhoneOtpCredential phone_otp = 2;
+    SocialCredential social = 3;
+  }
+
+  // Display name of the account owner.
+  string full_name = 10;
+}
+
+// LoginRequest authenticates an existing account (FR-IAM-02).
+message LoginRequest {
+  oneof method {
+    EmailPasswordCredential email_password = 1;
+    PhoneOtpCredential phone_otp = 2;
+    SocialCredential social = 3;
+  }
+}
+
+// GaragePermission is the access of an account to one garage, carried in
+// the JWT claims (ADR-007).
+message GaragePermission {
+  // garage_id, used as the tenant id throughout the system (ADR-005).
+  string garage_id = 1;
+
+  // Role of the account within that garage (FR-IAM-03).
+  vietgara.tenant.v1.Role role = 2;
+}
+
+// RegisterResponse is the response of Register.
+message RegisterResponse {
+  AuthResponse auth = 1;
+}
+
+// LoginResponse is the response of Login.
+message LoginResponse {
+  AuthResponse auth = 1;
+}
+
+// RefreshTokenResponse is the response of RefreshToken.
+message RefreshTokenResponse {
+  AuthResponse auth = 1;
+}
+
+// AuthResponse carries the token pair and account context after a
+// successful Register, Login or RefreshToken call.
+message AuthResponse {
+  // JWT access token.
+  string access_token = 1;
+
+  // Refresh token used to obtain new access tokens.
+  string refresh_token = 2;
+
+  // Token type, always "Bearer".
+  string token_type = 3;
+
+  // Access token lifetime in seconds.
+  int64 expires_in = 4;
+
+  // The authenticated account.
+  Account account = 5;
+
+  // Garages the account has access to (empty for a brand-new account).
+  repeated GaragePermission garages = 6;
+}
+
+// RefreshTokenRequest exchanges a refresh token for a new token pair.
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+// LogoutRequest revokes the presented refresh token.
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+// LogoutResponse acknowledges a successful logout.
+message LogoutResponse {
+  // True when the refresh token was found and revoked.
+  bool revoked = 1;
+}
+
+// ForgotPasswordRequest requests a password-reset OTP/link via email or
+// SMS (FR-IAM-04).
+message ForgotPasswordRequest {
+  oneof channel {
+    string email = 1;
+    string phone = 2;
+  }
+}
+
+// ForgotPasswordResponse acknowledges that a reset OTP/link was sent.
+message ForgotPasswordResponse {
+  // True when a reset OTP/link was dispatched on the requested channel.
+  bool sent = 1;
+}
+
+// ResetPasswordRequest sets a new password using the OTP/token received
+// via ForgotPassword (FR-IAM-04).
+message ResetPasswordRequest {
+  oneof channel {
+    string email = 1;
+    string phone = 2;
+  }
+
+  // OTP code or reset token received via ForgotPassword.
+  string otp_code = 3;
+
+  // New password to set.
+  string new_password = 4;
+}
+
+// ResetPasswordResponse acknowledges a successful password reset.
+message ResetPasswordResponse {
+  // True when the password was updated.
+  bool reset = 1;
+}
+
+// LinkSocialAccountRequest links an additional Google/Facebook account to
+// the current account (FR-IAM-06).
+message LinkSocialAccountRequest {
+  SocialCredential social = 1;
+}
+
+// LinkSocialAccountResponse is the response of LinkSocialAccount.
+message LinkSocialAccountResponse {
+  Account account = 1;
+}
