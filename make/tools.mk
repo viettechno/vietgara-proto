@@ -3,14 +3,16 @@
 BUF_VERSION                := 1.72.0
 PROTOC_GEN_GO_VERSION      := v1.36.11
 PROTOC_GEN_GO_GRPC_VERSION := v1.6.2
+GRPCUI_VERSION             := v1.5.3
 
 .PHONY: \
 	install-tools \
 	install-buf \
 	install-protoc-gen-go \
-	install-protoc-gen-go-grpc
+	install-protoc-gen-go-grpc \
+	install-grpcui
 
-install-tools: install-buf install-protoc-gen-go install-protoc-gen-go-grpc ## Install pinned proto codegen tools
+install-tools: install-buf install-protoc-gen-go install-protoc-gen-go-grpc install-grpcui ## Install pinned proto codegen tools
 	@echo "$(BOLD)$(GREEN)Proto codegen tools are ready.$(RESET)"
 	@echo "$(YELLOW)Note: ensure GOBIN (or GOPATH/bin) is on your PATH so buf can find the plugins.$(RESET)"
 
@@ -42,4 +44,16 @@ install-protoc-gen-go-grpc: ## Install protoc-gen-go-grpc $(PROTOC_GEN_GO_GRPC_V
 		echo "$(BOLD)$(BLUE)Installing protoc-gen-go-grpc $(PROTOC_GEN_GO_GRPC_VERSION)...$(RESET)"; \
 		go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@$(PROTOC_GEN_GO_GRPC_VERSION); \
 		echo "$(BOLD)$(GREEN)protoc-gen-go-grpc $(PROTOC_GEN_GO_GRPC_VERSION) installed.$(RESET)"; \
+	fi
+
+# grpcui built via `go install` reports "dev build" from -version, so the
+# pinned version is read from the binary's build info instead.
+install-grpcui: ## Install grpcui $(GRPCUI_VERSION)
+	@installed_version="$$(command -v grpcui >/dev/null 2>&1 && go version -m "$$(command -v grpcui)" 2>/dev/null | grep -E '^[[:space:]]*mod[[:space:]]' | awk '{print $$3}' || true)"; \
+	if [ "$$installed_version" = "$(GRPCUI_VERSION)" ]; then \
+		echo "$(BOLD)$(GREEN)grpcui $(GRPCUI_VERSION) is already installed.$(RESET)"; \
+	else \
+		echo "$(BOLD)$(BLUE)Installing grpcui $(GRPCUI_VERSION)...$(RESET)"; \
+		go install github.com/fullstorydev/grpcui/cmd/grpcui@$(GRPCUI_VERSION); \
+		echo "$(BOLD)$(GREEN)grpcui $(GRPCUI_VERSION) installed.$(RESET)"; \
 	fi
