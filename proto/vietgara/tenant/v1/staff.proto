@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+// Package vietgara.tenant.v1 defines the Tenant/Garage Management module
+// (HLD module #2): staff memberships that assign an account a role within
+// one garage (RBAC, FR-IAM-03).
+// See: FRD FR-TEN-04, API Specification Section 3, Database Design
+// Section 2.3.
+package vietgara.tenant.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/gen/go/vietgara/tenant/v1;tenantv1";
+
+// Role is the access role of a staff member within one specific garage
+// (FR-IAM-03). Maps to the "staff_role" enum in the garage_staff table.
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_OWNER = 1;
+  ROLE_ACCOUNTANT = 2;
+  ROLE_TECHNICIAN = 3;
+  ROLE_SERVICE_ADVISOR = 4;
+  ROLE_INVENTORY_STAFF = 5;
+}
+
+// StaffStatus is the lifecycle state of a staff membership within a
+// garage.
+enum StaffStatus {
+  STAFF_STATUS_UNSPECIFIED = 0;
+  STAFF_STATUS_ACTIVE = 1;
+  STAFF_STATUS_INACTIVE = 2;
+  STAFF_STATUS_SUSPENDED = 3;
+}
+
+// GarageStaff assigns an Account a Role within exactly one Garage
+// (FR-TEN-04). Maps to the "garage_staff" table (Database Design
+// Section 2.3).
+message GarageStaff {
+  // UUID primary key.
+  string id = 1;
+
+  // Garage the staff member belongs to (tenant context).
+  string garage_id = 2;
+
+  // Account that holds this staff membership.
+  string account_id = 3;
+
+  // Role of the account within the garage.
+  Role role = 4;
+
+  // Lifecycle state of the membership.
+  StaffStatus status = 5;
+
+  // Creation timestamp.
+  google.protobuf.Timestamp created_at = 6;
+
+  // Last update timestamp.
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+// AddStaffRequest assigns an account a role within a garage (FR-TEN-04).
+message AddStaffRequest {
+  string garage_id = 1;
+
+  // Account to add as staff.
+  string account_id = 2;
+
+  // Role to assign (must be a valid Role value).
+  Role role = 3;
+}
+
+// UpdateStaffRequest changes the role/status of an existing staff
+// membership; absent fields keep their current value (FR-TEN-04).
+message UpdateStaffRequest {
+  string garage_id = 1;
+
+  // ID of the staff membership to update.
+  string staff_id = 2;
+
+  optional Role role = 3;
+  optional StaffStatus status = 4;
+}
+
+// AddStaffResponse is the response of AddStaff.
+message AddStaffResponse {
+  GarageStaff staff = 1;
+}
+
+// UpdateStaffResponse is the response of UpdateStaff.
+message UpdateStaffResponse {
+  GarageStaff staff = 1;
+}
+
+// RemoveStaffRequest deactivates a staff membership of a garage
+// (FR-TEN-04).
+message RemoveStaffRequest {
+  string garage_id = 1;
+
+  // ID of the staff membership to remove.
+  string staff_id = 2;
+}
+
+// RemoveStaffResponse acknowledges a successful staff removal.
+message RemoveStaffResponse {
+  string garage_id = 1;
+  string staff_id = 2;
+}
+
+// ListStaffRequest lists the staff members of one garage (API
+// Specification GET /api/v1/garages/{garageId}/staff).
+message ListStaffRequest {
+  string garage_id = 1;
+}
+
+// ListStaffResponse is the list of a garage's staff memberships.
+message ListStaffResponse {
+  repeated GarageStaff staff = 1;
+}
+
+// StaffService manages staff memberships of a garage (FR-TEN-04,
+// FR-IAM-03).
+service StaffService {
+  // AddStaff assigns an account a role within a garage (FR-TEN-04).
+  rpc AddStaff(AddStaffRequest) returns (AddStaffResponse);
+
+  // UpdateStaff changes the role/status of a staff membership.
+  rpc UpdateStaff(UpdateStaffRequest) returns (UpdateStaffResponse);
+
+  // RemoveStaff deactivates a staff membership.
+  rpc RemoveStaff(RemoveStaffRequest) returns (RemoveStaffResponse);
+
+  // ListStaff lists the staff members of a garage.
+  rpc ListStaff(ListStaffRequest) returns (ListStaffResponse);
+}
