@@ -92,9 +92,31 @@ import (
 ## Testing with grpcui
 
 [grpcui](https://github.com/fullstorydev/grpcui) is an interactive web UI
-for calling gRPC services. It discovers the exposed services through server
-reflection, so the target server must have gRPC reflection enabled
-(`google.golang.org/grpc/reflection`).
+for calling gRPC services. It discovers the exposed services through the
+server reflection API, so **the target server must have gRPC reflection
+registered** (`google.golang.org/grpc/reflection`). If it is not, grpcui
+exits with:
+
+```sh
+Failed to compute set of methods to expose: server does not support the reflection API
+```
+
+That error means the server is reachable but reflection is missing — enable
+it in the server that owns the gRPC listener. For `vietgara-backend`
+(`vietgara-backend/cmd/server/main.go`), register it right after
+`grpc.NewServer(...)`:
+
+```go
+import "google.golang.org/grpc/reflection"
+
+reflection.Register(grpcServer)
+```
+
+You can verify reflection works before opening grpcui with `grpcurl`:
+
+```sh
+grpcurl -plaintext localhost:50051 list
+```
 
 Install (pinned):
 

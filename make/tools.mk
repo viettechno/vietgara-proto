@@ -4,15 +4,17 @@ BUF_VERSION                := 1.72.0
 PROTOC_GEN_GO_VERSION      := v1.36.11
 PROTOC_GEN_GO_GRPC_VERSION := v1.6.2
 GRPCUI_VERSION             := v1.5.3
+GRPCURL_VERSION            := v1.8.7
 
 .PHONY: \
 	install-tools \
 	install-buf \
 	install-protoc-gen-go \
 	install-protoc-gen-go-grpc \
-	install-grpcui
+	install-grpcui \
+	install-grpcurl
 
-install-tools: install-buf install-protoc-gen-go install-protoc-gen-go-grpc install-grpcui ## Install pinned proto codegen tools
+install-tools: install-buf install-protoc-gen-go install-protoc-gen-go-grpc install-grpcui install-grpcurl ## Install pinned proto codegen tools
 	@echo "$(BOLD)$(GREEN)Proto codegen tools are ready.$(RESET)"
 	@echo "$(YELLOW)Note: ensure GOBIN (or GOPATH/bin) is on your PATH so buf can find the plugins.$(RESET)"
 
@@ -56,4 +58,14 @@ install-grpcui: ## Install grpcui $(GRPCUI_VERSION)
 		echo "$(BOLD)$(BLUE)Installing grpcui $(GRPCUI_VERSION)...$(RESET)"; \
 		go install github.com/fullstorydev/grpcui/cmd/grpcui@$(GRPCUI_VERSION); \
 		echo "$(BOLD)$(GREEN)grpcui $(GRPCUI_VERSION) installed.$(RESET)"; \
+	fi
+
+install-grpcurl: ## Install grpcurl $(GRPCURL_VERSION)
+	@installed_version="$$(grpcurl --version 2>/dev/null | grep -o 'grpcurl [^ ]*' | awk '{print $$2}' || true)"; \
+	if [ "$$installed_version" = "$(GRPCURL_VERSION)" ]; then \
+		echo "$(BOLD)$(GREEN)grpcurl $(GRPCURL_VERSION) is already installed.$(RESET)"; \
+	else \
+		echo "$(BOLD)$(BLUE)Installing grpcurl $(GRPCURL_VERSION)...$(RESET)"; \
+		go install github.com/fullstorydev/grpcurl/cmd/grpcurl@$(GRPCURL_VERSION); \
+		echo "$(BOLD)$(GREEN)grpcurl $(GRPCURL_VERSION) installed.$(RESET)"; \
 	fi
