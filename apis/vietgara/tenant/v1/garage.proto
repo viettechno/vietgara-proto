@@ -10,7 +10,7 @@ package vietgara.tenant.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/viettechno/vietgara-proto/gen/go/vietgara/tenant/v1;tenantv1";
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1;tenantv1";
 
 // GarageStatus is the lifecycle state of a garage.
 enum GarageStatus {

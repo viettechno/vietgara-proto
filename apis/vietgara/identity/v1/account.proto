@@ -7,7 +7,7 @@ package vietgara.identity.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/viettechno/vietgara-proto/gen/go/vietgara/identity/v1;identityv1";
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/identity/v1;identityv1";
 
 // AccountStatus is the lifecycle state of an account.
 enum AccountStatus {

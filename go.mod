@@ -1,6 +1,6 @@
 module github.com/viettechno/vietgara-proto
 
-go 1.26
+go 1.26.5
 
 require (
 	google.golang.org/grpc v1.74.2

@@ -31,10 +31,10 @@ Database Design (Database-per-service, ADR-008).
 
 ```
 vietgara-proto/
-├── proto/vietgara/          # .proto sources (the contract)
+├── apis/vietgara/          # .proto sources (the contract)
 │   ├── identity/v1/         # account.proto, auth.proto
 │   └── tenant/v1/           # garage.proto, staff.proto
-├── gen/go/                  # generated Go code (committed)
+├── apis-go/                  # generated Go code (committed)
 ├── buf.yaml                 # workspace + lint/breaking config
 ├── buf.gen.yaml             # Go codegen config
 ├── go.mod                   # module github.com/viettechno/vietgara-proto
@@ -67,7 +67,7 @@ protoc-gen-go `v1.36.11`, protoc-gen-go-grpc `v1.6.2`, grpcui `v1.5.3`).
 
 ## Contributing a Change
 
-1. Edit the `.proto` sources under `proto/vietgara/...`.
+1. Edit the `.proto` sources under `apis/vietgara/...`.
 2. `make format` then `make lint`.
 3. `make generate` and commit the regenerated `gen/go` files together with
    the `.proto` change (they must never drift).
@@ -79,13 +79,13 @@ protoc-gen-go `v1.36.11`, protoc-gen-go-grpc `v1.6.2`, grpcui `v1.5.3`).
 Add the module as a dependency, e.g. in `vietgara-backend`:
 
 ```sh
-go get github.com/viettechno/vietgara-proto@main
+go get github.com/viettechno/vietgara-proto@master
 ```
 
 ```go
 import (
-    identityv1 "github.com/viettechno/vietgara-proto/gen/go/vietgara/identity/v1"
-    tenantv1 "github.com/viettechno/vietgara-proto/gen/go/vietgara/tenant/v1"
+    identityv1 "github.com/viettechno/vietgara-proto/apis-go/vietgara/identity/v1"
+    tenantv1 "github.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1"
 )
 ```
 

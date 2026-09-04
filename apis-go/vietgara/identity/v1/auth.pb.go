@@ -12,7 +12,7 @@
 package identityv1
 
 import (
-	v1 "github.com/viettechno/vietgara-proto/gen/go/vietgara/tenant/v1"
+	v1 "github.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -1260,7 +1260,7 @@ const file_vietgara_identity_v1_auth_proto_rawDesc = "" +
 	"\x06Logout\x12#.vietgara.identity.v1.LogoutRequest\x1a$.vietgara.identity.v1.LogoutResponse\x12k\n" +
 	"\x0eForgotPassword\x12+.vietgara.identity.v1.ForgotPasswordRequest\x1a,.vietgara.identity.v1.ForgotPasswordResponse\x12h\n" +
 	"\rResetPassword\x12*.vietgara.identity.v1.ResetPasswordRequest\x1a+.vietgara.identity.v1.ResetPasswordResponse\x12t\n" +
-	"\x11LinkSocialAccount\x12..vietgara.identity.v1.LinkSocialAccountRequest\x1a/.vietgara.identity.v1.LinkSocialAccountResponseBMZKgithub.com/viettechno/vietgara-proto/gen/go/vietgara/identity/v1;identityv1b\x06proto3"
+	"\x11LinkSocialAccount\x12..vietgara.identity.v1.LinkSocialAccountRequest\x1a/.vietgara.identity.v1.LinkSocialAccountResponseBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/identity/v1;identityv1b\x06proto3"
 
 var (
 	file_vietgara_identity_v1_auth_proto_rawDescOnce sync.Once

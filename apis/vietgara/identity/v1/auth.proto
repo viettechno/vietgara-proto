@@ -9,7 +9,7 @@ package vietgara.identity.v1;
 import "vietgara/identity/v1/account.proto";
 import "vietgara/tenant/v1/staff.proto";
 
-option go_package = "github.com/viettechno/vietgara-proto/gen/go/vietgara/identity/v1;identityv1";
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/identity/v1;identityv1";
 
 // AuthService handles account registration and authentication for the
 // internal JWT issued to other VietGara services (ADR-007).

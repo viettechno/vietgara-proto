@@ -734,7 +734,7 @@ const file_vietgara_tenant_v1_garage_proto_rawDesc = "" +
 	"\fCreateGarage\x12'.vietgara.tenant.v1.CreateGarageRequest\x1a(.vietgara.tenant.v1.CreateGarageResponse\x12X\n" +
 	"\tGetGarage\x12$.vietgara.tenant.v1.GetGarageRequest\x1a%.vietgara.tenant.v1.GetGarageResponse\x12a\n" +
 	"\fUpdateGarage\x12'.vietgara.tenant.v1.UpdateGarageRequest\x1a(.vietgara.tenant.v1.UpdateGarageResponse\x12^\n" +
-	"\vListGarages\x12&.vietgara.tenant.v1.ListGaragesRequest\x1a'.vietgara.tenant.v1.ListGaragesResponseBIZGgithub.com/viettechno/vietgara-proto/gen/go/vietgara/tenant/v1;tenantv1b\x06proto3"
+	"\vListGarages\x12&.vietgara.tenant.v1.ListGaragesRequest\x1a'.vietgara.tenant.v1.ListGaragesResponseBJZHgithub.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1;tenantv1b\x06proto3"
 
 var (
 	file_vietgara_tenant_v1_garage_proto_rawDescOnce sync.Once

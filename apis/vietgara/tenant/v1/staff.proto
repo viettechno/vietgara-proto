@@ -9,7 +9,7 @@ package vietgara.tenant.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/viettechno/vietgara-proto/gen/go/vietgara/tenant/v1;tenantv1";
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1;tenantv1";
 
 // Role is the access role of a staff member within one specific garage
 // (FR-IAM-03). Maps to the "staff_role" enum in the garage_staff table.

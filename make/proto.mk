@@ -1,6 +1,6 @@
 # Generated Go code output directory (committed so consumers do not need
 # the toolchain -- regenerate after every .proto change).
-GEN_DIR := gen/go
+GEN_DIR := apis-go
 
 # Input used by `make breaking`. Needs at least one commit on main before
 # the first run (e.g. `git add -A && git commit -m "init proto modules"`).

@@ -276,7 +276,7 @@ const file_vietgara_identity_v1_account_proto_rawDesc = "" +
 	"\x13AUTH_PROVIDER_EMAIL\x10\x01\x12\x17\n" +
 	"\x13AUTH_PROVIDER_PHONE\x10\x02\x12\x18\n" +
 	"\x14AUTH_PROVIDER_GOOGLE\x10\x03\x12\x1a\n" +
-	"\x16AUTH_PROVIDER_FACEBOOK\x10\x04BMZKgithub.com/viettechno/vietgara-proto/gen/go/vietgara/identity/v1;identityv1b\x06proto3"
+	"\x16AUTH_PROVIDER_FACEBOOK\x10\x04BNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/identity/v1;identityv1b\x06proto3"
 
 var (
 	file_vietgara_identity_v1_account_proto_rawDescOnce sync.Once

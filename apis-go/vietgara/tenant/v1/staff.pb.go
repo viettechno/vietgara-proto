@@ -726,7 +726,7 @@ const file_vietgara_tenant_v1_staff_proto_rawDesc = "" +
 	"\bAddStaff\x12#.vietgara.tenant.v1.AddStaffRequest\x1a$.vietgara.tenant.v1.AddStaffResponse\x12^\n" +
 	"\vUpdateStaff\x12&.vietgara.tenant.v1.UpdateStaffRequest\x1a'.vietgara.tenant.v1.UpdateStaffResponse\x12^\n" +
 	"\vRemoveStaff\x12&.vietgara.tenant.v1.RemoveStaffRequest\x1a'.vietgara.tenant.v1.RemoveStaffResponse\x12X\n" +
-	"\tListStaff\x12$.vietgara.tenant.v1.ListStaffRequest\x1a%.vietgara.tenant.v1.ListStaffResponseBIZGgithub.com/viettechno/vietgara-proto/gen/go/vietgara/tenant/v1;tenantv1b\x06proto3"
+	"\tListStaff\x12$.vietgara.tenant.v1.ListStaffRequest\x1a%.vietgara.tenant.v1.ListStaffResponseBJZHgithub.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1;tenantv1b\x06proto3"
 
 var (
 	file_vietgara_tenant_v1_staff_proto_rawDescOnce sync.Once

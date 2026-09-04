@@ -1,14 +1,14 @@
 version: v2
 
 inputs:
-  - directory: proto
+  - directory: apis
 
 plugins:
   - local: protoc-gen-go
-    out: gen/go
+    out: apis-go
     opt:
       - paths=source_relative
   - local: protoc-gen-go-grpc
-    out: gen/go
+    out: apis-go
     opt:
       - paths=source_relative
