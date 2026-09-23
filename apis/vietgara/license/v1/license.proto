@@ -1,0 +1,165 @@
+syntax = "proto3";
+
+// Package vietgara.license.v1 defines the License Management module (HLD
+// module #3): subscription plans, the per-garage subscription and its
+// entitlements.
+// See: FRD FR-LIC-01/02/04, API Specification Section 4, Database Design
+// Section 6.3, LLD Section 3.
+package vietgara.license.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/license/v1;licensev1";
+
+// BillingCycle is how often a plan is billed.
+enum BillingCycle {
+  BILLING_CYCLE_UNSPECIFIED = 0;
+  BILLING_CYCLE_MONTHLY = 1;
+  BILLING_CYCLE_YEARLY = 2;
+}
+
+// SubscriptionStatus is the lifecycle state of a subscription (LLD 3.1).
+enum SubscriptionStatus {
+  SUBSCRIPTION_STATUS_UNSPECIFIED = 0;
+  // Free trial period after the garage was created (FR-LIC-01).
+  SUBSCRIPTION_STATUS_TRIAL = 1;
+  // Paid and within the current period.
+  SUBSCRIPTION_STATUS_ACTIVE = 2;
+  // Expired but within the grace period: read-only mode (FR-LIC-04).
+  SUBSCRIPTION_STATUS_PAST_DUE = 3;
+  // Expired past the grace period: fully locked.
+  SUBSCRIPTION_STATUS_SUSPENDED = 4;
+  SUBSCRIPTION_STATUS_CANCELLED = 5;
+}
+
+// PlanLimits caps the resources a garage may use under a plan.
+message PlanLimits {
+  // Maximum active staff members per garage.
+  int32 max_users = 1;
+
+  // Garages (branches) included in the plan.
+  int32 max_garages = 2;
+}
+
+// Plan is a subscription plan offered by the platform. Maps to the "plans"
+// table (Database Design Section 6.3).
+message Plan {
+  string id = 1;
+
+  // Stable machine name, e.g. "starter".
+  string code = 2;
+
+  string name = 3;
+  string description = 4;
+
+  // Price per billing cycle, in the smallest unit of currency (VND has
+  // no minor unit).
+  int64 price = 5;
+
+  string currency = 6;
+  BillingCycle billing_cycle = 7;
+  PlanLimits limits = 8;
+
+  // Feature keys the plan enables, e.g. "inventory".
+  repeated string features = 9;
+}
+
+// Subscription is the license of one garage (1 subscription per garage).
+// Maps to the "subscriptions" table.
+message Subscription {
+  string id = 1;
+  string garage_id = 2;
+  SubscriptionStatus status = 3;
+  Plan plan = 4;
+
+  // End of the free trial; unset once the garage has paid.
+  google.protobuf.Timestamp trial_end_at = 5;
+
+  google.protobuf.Timestamp current_period_start = 6;
+
+  // When the current trial or paid period ends.
+  google.protobuf.Timestamp current_period_end = 7;
+
+  // End of the read-only grace period; set once the period has expired.
+  google.protobuf.Timestamp grace_period_end = 8;
+
+  bool auto_renew = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+// Entitlements is what a garage may currently use, derived from its
+// subscription and served from the entitlement cache.
+message Entitlements {
+  string garage_id = 1;
+  SubscriptionStatus status = 2;
+  string plan_code = 3;
+
+  // Enabled feature keys.
+  repeated string features = 4;
+
+  PlanLimits limits = 5;
+
+  // True when writes are blocked (past due or suspended).
+  bool read_only = 6;
+
+  google.protobuf.Timestamp current_period_end = 7;
+}
+
+// ListPlansRequest lists the plans a garage can subscribe to.
+message ListPlansRequest {}
+
+// ListPlansResponse is the list of public plans, cheapest first.
+message ListPlansResponse {
+  repeated Plan plans = 1;
+}
+
+// GetSubscriptionRequest returns the subscription of a garage.
+message GetSubscriptionRequest {
+  string garage_id = 1;
+}
+
+// GetSubscriptionResponse is the response of GetSubscription.
+message GetSubscriptionResponse {
+  Subscription subscription = 1;
+}
+
+// ChangePlanRequest upgrades, downgrades or renews the subscription of a
+// garage (FR-LIC-02).
+message ChangePlanRequest {
+  string garage_id = 1;
+
+  // Target plan; the current plan renews it.
+  string plan_id = 2;
+}
+
+// ChangePlanResponse is the response of ChangePlan.
+message ChangePlanResponse {
+  Subscription subscription = 1;
+}
+
+// GetEntitlementsRequest returns what a garage may currently use.
+message GetEntitlementsRequest {
+  string garage_id = 1;
+}
+
+// GetEntitlementsResponse is the response of GetEntitlements.
+message GetEntitlementsResponse {
+  Entitlements entitlements = 1;
+}
+
+// LicenseService exposes plans, subscriptions and entitlements
+// (API Specification Section 4).
+service LicenseService {
+  // ListPlans lists the plans a garage can subscribe to.
+  rpc ListPlans(ListPlansRequest) returns (ListPlansResponse);
+
+  // GetSubscription returns the subscription of a garage.
+  rpc GetSubscription(GetSubscriptionRequest) returns (GetSubscriptionResponse);
+
+  // ChangePlan upgrades, downgrades or renews a garage's subscription.
+  rpc ChangePlan(ChangePlanRequest) returns (ChangePlanResponse);
+
+  // GetEntitlements returns the features and limits a garage may use.
+  rpc GetEntitlements(GetEntitlementsRequest) returns (GetEntitlementsResponse);
+}
