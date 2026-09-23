@@ -1,0 +1,160 @@
+syntax = "proto3";
+
+// Package vietgara.customer.v1 defines the Customer & Vehicle module (HLD
+// module #4): vehicles registered to a garage's customers.
+// See: FRD FR-CUS-02, API Specification Section 5, Database Design
+// Section 3.2.
+package vietgara.customer.v1;
+
+import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/pagination.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1";
+
+// Vehicle is a vehicle owned by one customer of a garage (FR-CUS-02).
+// Maps to the "vehicles" table (Database Design Section 3.2).
+message Vehicle {
+  // UUID primary key.
+  string id = 1;
+
+  // Garage the vehicle belongs to (tenant context).
+  string garage_id = 2;
+
+  // Owning customer.
+  string customer_id = 3;
+
+  // Display name of the owning customer (read-only).
+  string customer_name = 4;
+
+  // License plate, upper-cased; unique per garage ignoring spaces, dots
+  // and dashes.
+  string license_plate = 5;
+
+  optional string make = 6;
+  optional string model = 7;
+
+  // Model year.
+  optional int32 year = 8;
+
+  // Chassis number (VIN).
+  optional string vin = 9;
+
+  optional string engine_number = 10;
+
+  // Creation timestamp.
+  google.protobuf.Timestamp created_at = 11;
+
+  // Last update timestamp.
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+// CreateVehicleRequest registers a vehicle to a customer (FR-CUS-02).
+message CreateVehicleRequest {
+  string garage_id = 1;
+
+  // Owning customer (required).
+  string customer_id = 2;
+
+  // License plate (required).
+  string license_plate = 3;
+
+  optional string make = 4;
+  optional string model = 5;
+  optional int32 year = 6;
+  optional string vin = 7;
+  optional string engine_number = 8;
+}
+
+// CreateVehicleResponse is the response of CreateVehicle.
+message CreateVehicleResponse {
+  Vehicle vehicle = 1;
+}
+
+// GetVehicleRequest returns one vehicle of a garage.
+message GetVehicleRequest {
+  string garage_id = 1;
+  string vehicle_id = 2;
+}
+
+// GetVehicleResponse is the response of GetVehicle.
+message GetVehicleResponse {
+  Vehicle vehicle = 1;
+}
+
+// UpdateVehicleRequest applies partial updates to a vehicle; absent fields
+// keep their current value and an empty optional string clears it.
+message UpdateVehicleRequest {
+  string garage_id = 1;
+  string vehicle_id = 2;
+
+  // Transfers the vehicle to another customer of the same garage.
+  optional string customer_id = 3;
+
+  optional string license_plate = 4;
+  optional string make = 5;
+  optional string model = 6;
+
+  // Model year; 0 clears it.
+  optional int32 year = 7;
+
+  optional string vin = 8;
+  optional string engine_number = 9;
+}
+
+// UpdateVehicleResponse is the response of UpdateVehicle.
+message UpdateVehicleResponse {
+  Vehicle vehicle = 1;
+}
+
+// ListVehiclesRequest searches the vehicles of a garage, optionally only
+// those of one customer.
+message ListVehiclesRequest {
+  string garage_id = 1;
+
+  // Restricts the list to one customer's vehicles when set.
+  string customer_id = 2;
+
+  // Matches license plate (ignoring spaces, dots and dashes), make, model
+  // or VIN; empty lists every vehicle.
+  string query = 3;
+
+  // 1-based page number; defaults to 1.
+  int32 page = 4;
+
+  // Page size; defaults to 20, capped at 100.
+  int32 page_size = 5;
+}
+
+// ListVehiclesResponse is one page of vehicles, newest first.
+message ListVehiclesResponse {
+  repeated Vehicle vehicles = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+// DeleteVehicleRequest soft-deletes a vehicle; historical documents keep
+// referencing it.
+message DeleteVehicleRequest {
+  string garage_id = 1;
+  string vehicle_id = 2;
+}
+
+// DeleteVehicleResponse acknowledges a successful deletion.
+message DeleteVehicleResponse {}
+
+// VehicleService manages the vehicles of a garage's customers (FR-CUS-02).
+service VehicleService {
+  // CreateVehicle registers a vehicle to a customer.
+  rpc CreateVehicle(CreateVehicleRequest) returns (CreateVehicleResponse);
+
+  // GetVehicle returns one vehicle.
+  rpc GetVehicle(GetVehicleRequest) returns (GetVehicleResponse);
+
+  // UpdateVehicle applies partial updates to a vehicle.
+  rpc UpdateVehicle(UpdateVehicleRequest) returns (UpdateVehicleResponse);
+
+  // ListVehicles searches the vehicles of a garage.
+  rpc ListVehicles(ListVehiclesRequest) returns (ListVehiclesResponse);
+
+  // DeleteVehicle soft-deletes a vehicle.
+  rpc DeleteVehicle(DeleteVehicleRequest) returns (DeleteVehicleResponse);
+}
