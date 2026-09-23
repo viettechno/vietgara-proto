@@ -23,6 +23,11 @@ API Specification) — this repo only covers internal communication.
 | `vietgara.identity.v1` | Identity & Access Management (HLD #1) | `AuthService` — Register, Login, RefreshToken, Logout, ForgotPassword, ResetPassword, LinkSocialAccount |
 | `vietgara.tenant.v1` | Tenant/Garage Management (HLD #2) | `GarageService` — CreateGarage, GetGarage, UpdateGarage, ListGarages |
 | | | `StaffService` — AddStaff, UpdateStaff, RemoveStaff, ListStaff |
+| `vietgara.common.v1` | Shared messages | `Pagination` — the page returned by every List call (no services) |
+| `vietgara.license.v1` | License Management (HLD #3) | `LicenseService` — ListPlans, GetSubscription, ChangePlan, GetEntitlements |
+| `vietgara.customer.v1` | Customer & Vehicle (HLD #4) | `CustomerService` — CreateCustomer, GetCustomer, UpdateCustomer, ListCustomers, DeleteCustomer |
+| | | `VehicleService` — CreateVehicle, GetVehicle, UpdateVehicle, ListVehicles, DeleteVehicle |
+| | | `PartnerService` — CreatePartner, GetPartner, UpdatePartner, ListPartners, DeletePartner |
 
 Each module maps to a functional group in the FRD and owns its data per
 Database Design (Database-per-service, ADR-008).
@@ -33,7 +38,10 @@ Database Design (Database-per-service, ADR-008).
 vietgara-proto/
 ├── apis/vietgara/          # .proto sources (the contract)
 │   ├── identity/v1/         # account.proto, auth.proto
-│   └── tenant/v1/           # garage.proto, staff.proto
+│   ├── tenant/v1/           # garage.proto, staff.proto
+│   ├── common/v1/           # pagination.proto (shared by every module)
+│   ├── license/v1/          # license.proto
+│   └── customer/v1/         # customer.proto, vehicle.proto, partner.proto
 ├── apis-go/                  # generated Go code (committed)
 ├── buf.yaml                 # workspace + lint/breaking config
 ├── buf.gen.yaml             # Go codegen config
@@ -86,6 +94,7 @@ go get github.com/viettechno/vietgara-proto@master
 import (
     identityv1 "github.com/viettechno/vietgara-proto/apis-go/vietgara/identity/v1"
     tenantv1 "github.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1"
+    customerv1 "github.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1"
 )
 ```
 

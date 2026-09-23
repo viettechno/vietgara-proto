@@ -1,0 +1,159 @@
+syntax = "proto3";
+
+// Package vietgara.customer.v1 defines the Customer & Vehicle module (HLD
+// module #4): the garage's directory of parts suppliers and insurers.
+// See: FRD FR-CUS-04, Database Design Section 3.3.
+package vietgara.customer.v1;
+
+import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/pagination.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1";
+
+// PartnerType classifies a partner (Database Design Section 3.3).
+enum PartnerType {
+  PARTNER_TYPE_UNSPECIFIED = 0;
+  PARTNER_TYPE_SUPPLIER = 1;
+  PARTNER_TYPE_INSURER = 2;
+}
+
+// PartnerContact is how the garage reaches a partner. Stored as the
+// "contact_info" JSON document of the partners table.
+message PartnerContact {
+  optional string contact_person = 1;
+  optional string phone = 2;
+  optional string email = 3;
+  optional string address = 4;
+}
+
+// Partner is a parts supplier or insurance company the garage works with
+// (FR-CUS-04). Maps to the "partners" table.
+message Partner {
+  // UUID primary key.
+  string id = 1;
+
+  // Garage the partner belongs to (tenant context).
+  string garage_id = 2;
+
+  PartnerType type = 3;
+
+  // Company name, unique per garage and type.
+  string name = 4;
+
+  // Tax identification number.
+  optional string tax_code = 5;
+
+  PartnerContact contact = 6;
+
+  // Free-form note.
+  optional string note = 7;
+
+  // Creation timestamp.
+  google.protobuf.Timestamp created_at = 8;
+
+  // Last update timestamp.
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+// CreatePartnerRequest adds a partner to the garage's directory.
+message CreatePartnerRequest {
+  string garage_id = 1;
+
+  // Partner type (required).
+  PartnerType type = 2;
+
+  // Company name (required).
+  string name = 3;
+
+  optional string tax_code = 4;
+  PartnerContact contact = 5;
+  optional string note = 6;
+}
+
+// CreatePartnerResponse is the response of CreatePartner.
+message CreatePartnerResponse {
+  Partner partner = 1;
+}
+
+// GetPartnerRequest returns one partner of a garage.
+message GetPartnerRequest {
+  string garage_id = 1;
+  string partner_id = 2;
+}
+
+// GetPartnerResponse is the response of GetPartner.
+message GetPartnerResponse {
+  Partner partner = 1;
+}
+
+// UpdatePartnerRequest applies partial updates to a partner; absent fields
+// keep their current value and an empty optional string clears it.
+message UpdatePartnerRequest {
+  string garage_id = 1;
+  string partner_id = 2;
+
+  optional PartnerType type = 3;
+  optional string name = 4;
+  optional string tax_code = 5;
+
+  // Replaces the whole contact document when set.
+  PartnerContact contact = 6;
+
+  optional string note = 7;
+}
+
+// UpdatePartnerResponse is the response of UpdatePartner.
+message UpdatePartnerResponse {
+  Partner partner = 1;
+}
+
+// ListPartnersRequest searches the partner directory of a garage.
+message ListPartnersRequest {
+  string garage_id = 1;
+
+  // Restricts the list to one type; UNSPECIFIED lists every partner.
+  PartnerType type = 2;
+
+  // Matches name, tax code, contact person, phone or email.
+  string query = 3;
+
+  // 1-based page number; defaults to 1.
+  int32 page = 4;
+
+  // Page size; defaults to 20, capped at 100.
+  int32 page_size = 5;
+}
+
+// ListPartnersResponse is one page of partners, ordered by name.
+message ListPartnersResponse {
+  repeated Partner partners = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+// DeletePartnerRequest soft-deletes a partner.
+message DeletePartnerRequest {
+  string garage_id = 1;
+  string partner_id = 2;
+}
+
+// DeletePartnerResponse acknowledges a successful deletion.
+message DeletePartnerResponse {}
+
+// PartnerService manages the garage's supplier/insurer directory
+// (FR-CUS-04).
+service PartnerService {
+  // CreatePartner adds a partner to the directory.
+  rpc CreatePartner(CreatePartnerRequest) returns (CreatePartnerResponse);
+
+  // GetPartner returns one partner.
+  rpc GetPartner(GetPartnerRequest) returns (GetPartnerResponse);
+
+  // UpdatePartner applies partial updates to a partner.
+  rpc UpdatePartner(UpdatePartnerRequest) returns (UpdatePartnerResponse);
+
+  // ListPartners searches the partner directory.
+  rpc ListPartners(ListPartnersRequest) returns (ListPartnersResponse);
+
+  // DeletePartner soft-deletes a partner.
+  rpc DeletePartner(DeletePartnerRequest) returns (DeletePartnerResponse);
+}
