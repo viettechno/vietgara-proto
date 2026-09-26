@@ -4,16 +4,14 @@
 // 	protoc        (unknown)
 // source: vietgara/customer/v1/partner.proto
 
-// Package vietgara.customer.v1 defines the Customer & Vehicle module (HLD
-// module #4): the garage's directory of parts suppliers and insurers.
-// See: FRD FR-CUS-04, Database Design Section 3.3.
-
 package customerv1
 
 import (
 	v1 "github.com/viettechno/vietgara-proto/apis-go/vietgara/common/v1"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -27,7 +25,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// PartnerType classifies a partner (Database Design Section 3.3).
 type PartnerType int32
 
 const (
@@ -77,8 +74,6 @@ func (PartnerType) EnumDescriptor() ([]byte, []int) {
 	return file_vietgara_customer_v1_partner_proto_rawDescGZIP(), []int{0}
 }
 
-// PartnerContact is how the garage reaches a partner. Stored as the
-// "contact_info" JSON document of the partners table.
 type PartnerContact struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ContactPerson *string                `protobuf:"bytes,1,opt,name=contact_person,json=contactPerson,proto3,oneof" json:"contact_person,omitempty"`
@@ -147,25 +142,19 @@ func (x *PartnerContact) GetAddress() string {
 	return ""
 }
 
-// Partner is a parts supplier or insurance company the garage works with
-// (FR-CUS-04). Maps to the "partners" table.
+// Partner is a parts supplier or insurer in the garage's directory
+// (FR-CUS-04).
 type Partner struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// UUID primary key.
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// Garage the partner belongs to (tenant context).
-	GarageId string      `protobuf:"bytes,2,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	Type     PartnerType `protobuf:"varint,3,opt,name=type,proto3,enum=vietgara.customer.v1.PartnerType" json:"type,omitempty"`
-	// Company name, unique per garage and type.
-	Name string `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	// Tax identification number.
-	TaxCode *string         `protobuf:"bytes,5,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
-	Contact *PartnerContact `protobuf:"bytes,6,opt,name=contact,proto3" json:"contact,omitempty"`
-	// Free-form note.
-	Note *string `protobuf:"bytes,7,opt,name=note,proto3,oneof" json:"note,omitempty"`
-	// Creation timestamp.
-	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	// Last update timestamp.
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Id       string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	GarageId string                 `protobuf:"bytes,2,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	Type     PartnerType            `protobuf:"varint,3,opt,name=type,proto3,enum=vietgara.customer.v1.PartnerType" json:"type,omitempty"`
+	// Unique per garage and type (case-insensitive).
+	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
+	TaxCode       *string                `protobuf:"bytes,5,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
+	Contact       *PartnerContact        `protobuf:"bytes,6,opt,name=contact,proto3" json:"contact,omitempty"`
+	Note          *string                `protobuf:"bytes,7,opt,name=note,proto3,oneof" json:"note,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -264,17 +253,10 @@ func (x *Partner) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-// CreatePartnerRequest adds a partner to the garage's directory.
 type CreatePartnerRequest struct {
-	state    protoimpl.MessageState `protogen:"open.v1"`
-	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// Partner type (required).
-	Type PartnerType `protobuf:"varint,2,opt,name=type,proto3,enum=vietgara.customer.v1.PartnerType" json:"type,omitempty"`
-	// Company name (required).
-	Name          string          `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	TaxCode       *string         `protobuf:"bytes,4,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
-	Contact       *PartnerContact `protobuf:"bytes,5,opt,name=contact,proto3" json:"contact,omitempty"`
-	Note          *string         `protobuf:"bytes,6,opt,name=note,proto3,oneof" json:"note,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	Partner       *Partner               `protobuf:"bytes,2,opt,name=partner,proto3" json:"partner,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -316,42 +298,13 @@ func (x *CreatePartnerRequest) GetGarageId() string {
 	return ""
 }
 
-func (x *CreatePartnerRequest) GetType() PartnerType {
+func (x *CreatePartnerRequest) GetPartner() *Partner {
 	if x != nil {
-		return x.Type
-	}
-	return PartnerType_PARTNER_TYPE_UNSPECIFIED
-}
-
-func (x *CreatePartnerRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *CreatePartnerRequest) GetTaxCode() string {
-	if x != nil && x.TaxCode != nil {
-		return *x.TaxCode
-	}
-	return ""
-}
-
-func (x *CreatePartnerRequest) GetContact() *PartnerContact {
-	if x != nil {
-		return x.Contact
+		return x.Partner
 	}
 	return nil
 }
 
-func (x *CreatePartnerRequest) GetNote() string {
-	if x != nil && x.Note != nil {
-		return *x.Note
-	}
-	return ""
-}
-
-// CreatePartnerResponse is the response of CreatePartner.
 type CreatePartnerResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Partner       *Partner               `protobuf:"bytes,1,opt,name=partner,proto3" json:"partner,omitempty"`
@@ -396,7 +349,6 @@ func (x *CreatePartnerResponse) GetPartner() *Partner {
 	return nil
 }
 
-// GetPartnerRequest returns one partner of a garage.
 type GetPartnerRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
@@ -449,7 +401,6 @@ func (x *GetPartnerRequest) GetPartnerId() string {
 	return ""
 }
 
-// GetPartnerResponse is the response of GetPartner.
 type GetPartnerResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Partner       *Partner               `protobuf:"bytes,1,opt,name=partner,proto3" json:"partner,omitempty"`
@@ -494,18 +445,14 @@ func (x *GetPartnerResponse) GetPartner() *Partner {
 	return nil
 }
 
-// UpdatePartnerRequest applies partial updates to a partner; absent fields
-// keep their current value and an empty optional string clears it.
 type UpdatePartnerRequest struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	GarageId  string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	PartnerId string                 `protobuf:"bytes,2,opt,name=partner_id,json=partnerId,proto3" json:"partner_id,omitempty"`
-	Type      *PartnerType           `protobuf:"varint,3,opt,name=type,proto3,enum=vietgara.customer.v1.PartnerType,oneof" json:"type,omitempty"`
-	Name      *string                `protobuf:"bytes,4,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	TaxCode   *string                `protobuf:"bytes,5,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
-	// Replaces the whole contact document when set.
-	Contact       *PartnerContact `protobuf:"bytes,6,opt,name=contact,proto3" json:"contact,omitempty"`
-	Note          *string         `protobuf:"bytes,7,opt,name=note,proto3,oneof" json:"note,omitempty"`
+	Partner   *Partner               `protobuf:"bytes,3,opt,name=partner,proto3" json:"partner,omitempty"`
+	// Filled from the JSON body keys when omitted; "contact" replaces the
+	// whole contact block.
+	UpdateMask    *fieldmaskpb.FieldMask `protobuf:"bytes,4,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -554,42 +501,20 @@ func (x *UpdatePartnerRequest) GetPartnerId() string {
 	return ""
 }
 
-func (x *UpdatePartnerRequest) GetType() PartnerType {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return PartnerType_PARTNER_TYPE_UNSPECIFIED
-}
-
-func (x *UpdatePartnerRequest) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *UpdatePartnerRequest) GetTaxCode() string {
-	if x != nil && x.TaxCode != nil {
-		return *x.TaxCode
-	}
-	return ""
-}
-
-func (x *UpdatePartnerRequest) GetContact() *PartnerContact {
+func (x *UpdatePartnerRequest) GetPartner() *Partner {
 	if x != nil {
-		return x.Contact
+		return x.Partner
 	}
 	return nil
 }
 
-func (x *UpdatePartnerRequest) GetNote() string {
-	if x != nil && x.Note != nil {
-		return *x.Note
+func (x *UpdatePartnerRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
+	if x != nil {
+		return x.UpdateMask
 	}
-	return ""
+	return nil
 }
 
-// UpdatePartnerResponse is the response of UpdatePartner.
 type UpdatePartnerResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Partner       *Partner               `protobuf:"bytes,1,opt,name=partner,proto3" json:"partner,omitempty"`
@@ -634,18 +559,14 @@ func (x *UpdatePartnerResponse) GetPartner() *Partner {
 	return nil
 }
 
-// ListPartnersRequest searches the partner directory of a garage.
 type ListPartnersRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// Restricts the list to one type; UNSPECIFIED lists every partner.
-	Type PartnerType `protobuf:"varint,2,opt,name=type,proto3,enum=vietgara.customer.v1.PartnerType" json:"type,omitempty"`
-	// Matches name, tax code, contact person, phone or email.
-	Query string `protobuf:"bytes,3,opt,name=query,proto3" json:"query,omitempty"`
-	// 1-based page number; defaults to 1.
-	Page int32 `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"`
-	// Page size; defaults to 20, capped at 100.
-	PageSize      int32 `protobuf:"varint,5,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Type     PartnerType            `protobuf:"varint,2,opt,name=type,proto3,enum=vietgara.customer.v1.PartnerType" json:"type,omitempty"`
+	// Matches name, tax code or contact.
+	Query         string `protobuf:"bytes,3,opt,name=query,proto3" json:"query,omitempty"`
+	Page          int32  `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32  `protobuf:"varint,5,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -715,10 +636,9 @@ func (x *ListPartnersRequest) GetPageSize() int32 {
 	return 0
 }
 
-// ListPartnersResponse is one page of partners, ordered by name.
 type ListPartnersResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Partners      []*Partner             `protobuf:"bytes,1,rep,name=partners,proto3" json:"partners,omitempty"`
+	Data          []*Partner             `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
 	Pagination    *v1.Pagination         `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -754,9 +674,9 @@ func (*ListPartnersResponse) Descriptor() ([]byte, []int) {
 	return file_vietgara_customer_v1_partner_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *ListPartnersResponse) GetPartners() []*Partner {
+func (x *ListPartnersResponse) GetData() []*Partner {
 	if x != nil {
-		return x.Partners
+		return x.Data
 	}
 	return nil
 }
@@ -768,7 +688,6 @@ func (x *ListPartnersResponse) GetPagination() *v1.Pagination {
 	return nil
 }
 
-// DeletePartnerRequest soft-deletes a partner.
 type DeletePartnerRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
@@ -821,7 +740,6 @@ func (x *DeletePartnerRequest) GetPartnerId() string {
 	return ""
 }
 
-// DeletePartnerResponse acknowledges a successful deletion.
 type DeletePartnerResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -862,7 +780,7 @@ var File_vietgara_customer_v1_partner_proto protoreflect.FileDescriptor
 
 const file_vietgara_customer_v1_partner_proto_rawDesc = "" +
 	"\n" +
-	"\"vietgara/customer/v1/partner.proto\x12\x14vietgara.customer.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xc4\x01\n" +
+	"\"vietgara/customer/v1/partner.proto\x12\x14vietgara.customer.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xc4\x01\n" +
 	"\x0ePartnerContact\x12*\n" +
 	"\x0econtact_person\x18\x01 \x01(\tH\x00R\rcontactPerson\x88\x01\x01\x12\x19\n" +
 	"\x05phone\x18\x02 \x01(\tH\x01R\x05phone\x88\x01\x01\x12\x19\n" +
@@ -872,80 +790,68 @@ const file_vietgara_customer_v1_partner_proto_rawDesc = "" +
 	"\x06_phoneB\b\n" +
 	"\x06_emailB\n" +
 	"\n" +
-	"\b_address\"\x86\x03\n" +
-	"\aPartner\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
-	"\tgarage_id\x18\x02 \x01(\tR\bgarageId\x125\n" +
-	"\x04type\x18\x03 \x01(\x0e2!.vietgara.customer.v1.PartnerTypeR\x04type\x12\x12\n" +
-	"\x04name\x18\x04 \x01(\tR\x04name\x12\x1e\n" +
+	"\b_address\"\xa4\x03\n" +
+	"\aPartner\x12\x13\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
+	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12:\n" +
+	"\x04type\x18\x03 \x01(\x0e2!.vietgara.customer.v1.PartnerTypeB\x03\xe0A\x02R\x04type\x12\x17\n" +
+	"\x04name\x18\x04 \x01(\tB\x03\xe0A\x02R\x04name\x12\x1e\n" +
 	"\btax_code\x18\x05 \x01(\tH\x00R\ataxCode\x88\x01\x01\x12>\n" +
 	"\acontact\x18\x06 \x01(\v2$.vietgara.customer.v1.PartnerContactR\acontact\x12\x17\n" +
-	"\x04note\x18\a \x01(\tH\x01R\x04note\x88\x01\x01\x129\n" +
+	"\x04note\x18\a \x01(\tH\x01R\x04note\x88\x01\x01\x12>\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtB\v\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\v\n" +
 	"\t_tax_codeB\a\n" +
-	"\x05_note\"\x8d\x02\n" +
-	"\x14CreatePartnerRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x125\n" +
-	"\x04type\x18\x02 \x01(\x0e2!.vietgara.customer.v1.PartnerTypeR\x04type\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12\x1e\n" +
-	"\btax_code\x18\x04 \x01(\tH\x00R\ataxCode\x88\x01\x01\x12>\n" +
-	"\acontact\x18\x05 \x01(\v2$.vietgara.customer.v1.PartnerContactR\acontact\x12\x17\n" +
-	"\x04note\x18\x06 \x01(\tH\x01R\x04note\x88\x01\x01B\v\n" +
-	"\t_tax_codeB\a\n" +
-	"\x05_note\"P\n" +
+	"\x05_note\"v\n" +
+	"\x14CreatePartnerRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12<\n" +
+	"\apartner\x18\x02 \x01(\v2\x1d.vietgara.customer.v1.PartnerB\x03\xe0A\x02R\apartner\"P\n" +
 	"\x15CreatePartnerResponse\x127\n" +
-	"\apartner\x18\x01 \x01(\v2\x1d.vietgara.customer.v1.PartnerR\apartner\"O\n" +
-	"\x11GetPartnerRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12\x1d\n" +
+	"\apartner\x18\x01 \x01(\v2\x1d.vietgara.customer.v1.PartnerR\apartner\"Y\n" +
+	"\x11GetPartnerRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\"\n" +
 	"\n" +
-	"partner_id\x18\x02 \x01(\tR\tpartnerId\"M\n" +
+	"partner_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tpartnerId\"M\n" +
 	"\x12GetPartnerResponse\x127\n" +
-	"\apartner\x18\x01 \x01(\v2\x1d.vietgara.customer.v1.PartnerR\apartner\"\xc8\x02\n" +
-	"\x14UpdatePartnerRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12\x1d\n" +
+	"\apartner\x18\x01 \x01(\v2\x1d.vietgara.customer.v1.PartnerR\apartner\"\xd7\x01\n" +
+	"\x14UpdatePartnerRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\"\n" +
 	"\n" +
-	"partner_id\x18\x02 \x01(\tR\tpartnerId\x12:\n" +
-	"\x04type\x18\x03 \x01(\x0e2!.vietgara.customer.v1.PartnerTypeH\x00R\x04type\x88\x01\x01\x12\x17\n" +
-	"\x04name\x18\x04 \x01(\tH\x01R\x04name\x88\x01\x01\x12\x1e\n" +
-	"\btax_code\x18\x05 \x01(\tH\x02R\ataxCode\x88\x01\x01\x12>\n" +
-	"\acontact\x18\x06 \x01(\v2$.vietgara.customer.v1.PartnerContactR\acontact\x12\x17\n" +
-	"\x04note\x18\a \x01(\tH\x03R\x04note\x88\x01\x01B\a\n" +
-	"\x05_typeB\a\n" +
-	"\x05_nameB\v\n" +
-	"\t_tax_codeB\a\n" +
-	"\x05_note\"P\n" +
+	"partner_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tpartnerId\x12<\n" +
+	"\apartner\x18\x03 \x01(\v2\x1d.vietgara.customer.v1.PartnerB\x03\xe0A\x02R\apartner\x12;\n" +
+	"\vupdate_mask\x18\x04 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
+	"updateMask\"P\n" +
 	"\x15UpdatePartnerResponse\x127\n" +
-	"\apartner\x18\x01 \x01(\v2\x1d.vietgara.customer.v1.PartnerR\apartner\"\xb0\x01\n" +
-	"\x13ListPartnersRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x125\n" +
+	"\apartner\x18\x01 \x01(\v2\x1d.vietgara.customer.v1.PartnerR\apartner\"\xb5\x01\n" +
+	"\x13ListPartnersRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x125\n" +
 	"\x04type\x18\x02 \x01(\x0e2!.vietgara.customer.v1.PartnerTypeR\x04type\x12\x14\n" +
 	"\x05query\x18\x03 \x01(\tR\x05query\x12\x12\n" +
 	"\x04page\x18\x04 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x05 \x01(\x05R\bpageSize\"\x91\x01\n" +
-	"\x14ListPartnersResponse\x129\n" +
-	"\bpartners\x18\x01 \x03(\v2\x1d.vietgara.customer.v1.PartnerR\bpartners\x12>\n" +
+	"\tpage_size\x18\x05 \x01(\x05R\bpageSize\"\x89\x01\n" +
+	"\x14ListPartnersResponse\x121\n" +
+	"\x04data\x18\x01 \x03(\v2\x1d.vietgara.customer.v1.PartnerR\x04data\x12>\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1e.vietgara.common.v1.PaginationR\n" +
-	"pagination\"R\n" +
-	"\x14DeletePartnerRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12\x1d\n" +
+	"pagination\"\\\n" +
+	"\x14DeletePartnerRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\"\n" +
 	"\n" +
-	"partner_id\x18\x02 \x01(\tR\tpartnerId\"\x17\n" +
+	"partner_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tpartnerId\"\x17\n" +
 	"\x15DeletePartnerResponse*`\n" +
 	"\vPartnerType\x12\x1c\n" +
 	"\x18PARTNER_TYPE_UNSPECIFIED\x10\x00\x12\x19\n" +
 	"\x15PARTNER_TYPE_SUPPLIER\x10\x01\x12\x18\n" +
-	"\x14PARTNER_TYPE_INSURER\x10\x022\x96\x04\n" +
-	"\x0ePartnerService\x12h\n" +
-	"\rCreatePartner\x12*.vietgara.customer.v1.CreatePartnerRequest\x1a+.vietgara.customer.v1.CreatePartnerResponse\x12_\n" +
+	"\x14PARTNER_TYPE_INSURER\x10\x022\xd5\x06\n" +
+	"\x0ePartnerService\x12\x93\x01\n" +
+	"\fListPartners\x12).vietgara.customer.v1.ListPartnersRequest\x1a*.vietgara.customer.v1.ListPartnersResponse\",\x82\xd3\xe4\x93\x02&\x12$/api/v1/garages/{garage_id}/partners\x12\xa8\x01\n" +
+	"\rCreatePartner\x12*.vietgara.customer.v1.CreatePartnerRequest\x1a+.vietgara.customer.v1.CreatePartnerResponse\">\x82\xd3\xe4\x93\x028:\apartnerb\apartner\"$/api/v1/garages/{garage_id}/partners\x12\xa3\x01\n" +
 	"\n" +
-	"GetPartner\x12'.vietgara.customer.v1.GetPartnerRequest\x1a(.vietgara.customer.v1.GetPartnerResponse\x12h\n" +
-	"\rUpdatePartner\x12*.vietgara.customer.v1.UpdatePartnerRequest\x1a+.vietgara.customer.v1.UpdatePartnerResponse\x12e\n" +
-	"\fListPartners\x12).vietgara.customer.v1.ListPartnersRequest\x1a*.vietgara.customer.v1.ListPartnersResponse\x12h\n" +
-	"\rDeletePartner\x12*.vietgara.customer.v1.DeletePartnerRequest\x1a+.vietgara.customer.v1.DeletePartnerResponseBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1b\x06proto3"
+	"GetPartner\x12'.vietgara.customer.v1.GetPartnerRequest\x1a(.vietgara.customer.v1.GetPartnerResponse\"B\x82\xd3\xe4\x93\x02<b\apartner\x121/api/v1/garages/{garage_id}/partners/{partner_id}\x12\xb5\x01\n" +
+	"\rUpdatePartner\x12*.vietgara.customer.v1.UpdatePartnerRequest\x1a+.vietgara.customer.v1.UpdatePartnerResponse\"K\x82\xd3\xe4\x93\x02E:\apartnerb\apartner21/api/v1/garages/{garage_id}/partners/{partner_id}\x12\xa3\x01\n" +
+	"\rDeletePartner\x12*.vietgara.customer.v1.DeletePartnerRequest\x1a+.vietgara.customer.v1.DeletePartnerResponse\"9\x82\xd3\xe4\x93\x023*1/api/v1/garages/{garage_id}/partners/{partner_id}BNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1b\x06proto3"
 
 var (
 	file_vietgara_customer_v1_partner_proto_rawDescOnce sync.Once
@@ -976,38 +882,38 @@ var file_vietgara_customer_v1_partner_proto_goTypes = []any{
 	(*DeletePartnerRequest)(nil),  // 11: vietgara.customer.v1.DeletePartnerRequest
 	(*DeletePartnerResponse)(nil), // 12: vietgara.customer.v1.DeletePartnerResponse
 	(*timestamppb.Timestamp)(nil), // 13: google.protobuf.Timestamp
-	(*v1.Pagination)(nil),         // 14: vietgara.common.v1.Pagination
+	(*fieldmaskpb.FieldMask)(nil), // 14: google.protobuf.FieldMask
+	(*v1.Pagination)(nil),         // 15: vietgara.common.v1.Pagination
 }
 var file_vietgara_customer_v1_partner_proto_depIdxs = []int32{
 	0,  // 0: vietgara.customer.v1.Partner.type:type_name -> vietgara.customer.v1.PartnerType
 	1,  // 1: vietgara.customer.v1.Partner.contact:type_name -> vietgara.customer.v1.PartnerContact
 	13, // 2: vietgara.customer.v1.Partner.created_at:type_name -> google.protobuf.Timestamp
 	13, // 3: vietgara.customer.v1.Partner.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 4: vietgara.customer.v1.CreatePartnerRequest.type:type_name -> vietgara.customer.v1.PartnerType
-	1,  // 5: vietgara.customer.v1.CreatePartnerRequest.contact:type_name -> vietgara.customer.v1.PartnerContact
-	2,  // 6: vietgara.customer.v1.CreatePartnerResponse.partner:type_name -> vietgara.customer.v1.Partner
-	2,  // 7: vietgara.customer.v1.GetPartnerResponse.partner:type_name -> vietgara.customer.v1.Partner
-	0,  // 8: vietgara.customer.v1.UpdatePartnerRequest.type:type_name -> vietgara.customer.v1.PartnerType
-	1,  // 9: vietgara.customer.v1.UpdatePartnerRequest.contact:type_name -> vietgara.customer.v1.PartnerContact
-	2,  // 10: vietgara.customer.v1.UpdatePartnerResponse.partner:type_name -> vietgara.customer.v1.Partner
-	0,  // 11: vietgara.customer.v1.ListPartnersRequest.type:type_name -> vietgara.customer.v1.PartnerType
-	2,  // 12: vietgara.customer.v1.ListPartnersResponse.partners:type_name -> vietgara.customer.v1.Partner
-	14, // 13: vietgara.customer.v1.ListPartnersResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	2,  // 4: vietgara.customer.v1.CreatePartnerRequest.partner:type_name -> vietgara.customer.v1.Partner
+	2,  // 5: vietgara.customer.v1.CreatePartnerResponse.partner:type_name -> vietgara.customer.v1.Partner
+	2,  // 6: vietgara.customer.v1.GetPartnerResponse.partner:type_name -> vietgara.customer.v1.Partner
+	2,  // 7: vietgara.customer.v1.UpdatePartnerRequest.partner:type_name -> vietgara.customer.v1.Partner
+	14, // 8: vietgara.customer.v1.UpdatePartnerRequest.update_mask:type_name -> google.protobuf.FieldMask
+	2,  // 9: vietgara.customer.v1.UpdatePartnerResponse.partner:type_name -> vietgara.customer.v1.Partner
+	0,  // 10: vietgara.customer.v1.ListPartnersRequest.type:type_name -> vietgara.customer.v1.PartnerType
+	2,  // 11: vietgara.customer.v1.ListPartnersResponse.data:type_name -> vietgara.customer.v1.Partner
+	15, // 12: vietgara.customer.v1.ListPartnersResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	9,  // 13: vietgara.customer.v1.PartnerService.ListPartners:input_type -> vietgara.customer.v1.ListPartnersRequest
 	3,  // 14: vietgara.customer.v1.PartnerService.CreatePartner:input_type -> vietgara.customer.v1.CreatePartnerRequest
 	5,  // 15: vietgara.customer.v1.PartnerService.GetPartner:input_type -> vietgara.customer.v1.GetPartnerRequest
 	7,  // 16: vietgara.customer.v1.PartnerService.UpdatePartner:input_type -> vietgara.customer.v1.UpdatePartnerRequest
-	9,  // 17: vietgara.customer.v1.PartnerService.ListPartners:input_type -> vietgara.customer.v1.ListPartnersRequest
-	11, // 18: vietgara.customer.v1.PartnerService.DeletePartner:input_type -> vietgara.customer.v1.DeletePartnerRequest
+	11, // 17: vietgara.customer.v1.PartnerService.DeletePartner:input_type -> vietgara.customer.v1.DeletePartnerRequest
+	10, // 18: vietgara.customer.v1.PartnerService.ListPartners:output_type -> vietgara.customer.v1.ListPartnersResponse
 	4,  // 19: vietgara.customer.v1.PartnerService.CreatePartner:output_type -> vietgara.customer.v1.CreatePartnerResponse
 	6,  // 20: vietgara.customer.v1.PartnerService.GetPartner:output_type -> vietgara.customer.v1.GetPartnerResponse
 	8,  // 21: vietgara.customer.v1.PartnerService.UpdatePartner:output_type -> vietgara.customer.v1.UpdatePartnerResponse
-	10, // 22: vietgara.customer.v1.PartnerService.ListPartners:output_type -> vietgara.customer.v1.ListPartnersResponse
-	12, // 23: vietgara.customer.v1.PartnerService.DeletePartner:output_type -> vietgara.customer.v1.DeletePartnerResponse
-	19, // [19:24] is the sub-list for method output_type
-	14, // [14:19] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	12, // 22: vietgara.customer.v1.PartnerService.DeletePartner:output_type -> vietgara.customer.v1.DeletePartnerResponse
+	18, // [18:23] is the sub-list for method output_type
+	13, // [13:18] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_customer_v1_partner_proto_init() }
@@ -1017,8 +923,6 @@ func file_vietgara_customer_v1_partner_proto_init() {
 	}
 	file_vietgara_customer_v1_partner_proto_msgTypes[0].OneofWrappers = []any{}
 	file_vietgara_customer_v1_partner_proto_msgTypes[1].OneofWrappers = []any{}
-	file_vietgara_customer_v1_partner_proto_msgTypes[2].OneofWrappers = []any{}
-	file_vietgara_customer_v1_partner_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

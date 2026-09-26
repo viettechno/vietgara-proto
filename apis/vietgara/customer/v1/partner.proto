@@ -1,24 +1,21 @@
 syntax = "proto3";
 
-// Package vietgara.customer.v1 defines the Customer & Vehicle module (HLD
-// module #4): the garage's directory of parts suppliers and insurers.
-// See: FRD FR-CUS-04, Database Design Section 3.3.
 package vietgara.customer.v1;
 
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "vietgara/common/v1/pagination.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1";
 
-// PartnerType classifies a partner (Database Design Section 3.3).
 enum PartnerType {
   PARTNER_TYPE_UNSPECIFIED = 0;
   PARTNER_TYPE_SUPPLIER = 1;
   PARTNER_TYPE_INSURER = 2;
 }
 
-// PartnerContact is how the garage reaches a partner. Stored as the
-// "contact_info" JSON document of the partners table.
 message PartnerContact {
   optional string contact_person = 1;
   optional string phone = 2;
@@ -26,134 +23,104 @@ message PartnerContact {
   optional string address = 4;
 }
 
-// Partner is a parts supplier or insurance company the garage works with
-// (FR-CUS-04). Maps to the "partners" table.
+// Partner is a parts supplier or insurer in the garage's directory
+// (FR-CUS-04).
 message Partner {
-  // UUID primary key.
-  string id = 1;
-
-  // Garage the partner belongs to (tenant context).
-  string garage_id = 2;
-
-  PartnerType type = 3;
-
-  // Company name, unique per garage and type.
-  string name = 4;
-
-  // Tax identification number.
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  PartnerType type = 3 [(google.api.field_behavior) = REQUIRED];
+  // Unique per garage and type (case-insensitive).
+  string name = 4 [(google.api.field_behavior) = REQUIRED];
   optional string tax_code = 5;
-
   PartnerContact contact = 6;
-
-  // Free-form note.
   optional string note = 7;
-
-  // Creation timestamp.
-  google.protobuf.Timestamp created_at = 8;
-
-  // Last update timestamp.
-  google.protobuf.Timestamp updated_at = 9;
+  google.protobuf.Timestamp created_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
-// CreatePartnerRequest adds a partner to the garage's directory.
 message CreatePartnerRequest {
-  string garage_id = 1;
-
-  // Partner type (required).
-  PartnerType type = 2;
-
-  // Company name (required).
-  string name = 3;
-
-  optional string tax_code = 4;
-  PartnerContact contact = 5;
-  optional string note = 6;
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  Partner partner = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-// CreatePartnerResponse is the response of CreatePartner.
 message CreatePartnerResponse {
   Partner partner = 1;
 }
 
-// GetPartnerRequest returns one partner of a garage.
 message GetPartnerRequest {
-  string garage_id = 1;
-  string partner_id = 2;
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string partner_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-// GetPartnerResponse is the response of GetPartner.
 message GetPartnerResponse {
   Partner partner = 1;
 }
 
-// UpdatePartnerRequest applies partial updates to a partner; absent fields
-// keep their current value and an empty optional string clears it.
 message UpdatePartnerRequest {
-  string garage_id = 1;
-  string partner_id = 2;
-
-  optional PartnerType type = 3;
-  optional string name = 4;
-  optional string tax_code = 5;
-
-  // Replaces the whole contact document when set.
-  PartnerContact contact = 6;
-
-  optional string note = 7;
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string partner_id = 2 [(google.api.field_behavior) = REQUIRED];
+  Partner partner = 3 [(google.api.field_behavior) = REQUIRED];
+  // Filled from the JSON body keys when omitted; "contact" replaces the
+  // whole contact block.
+  google.protobuf.FieldMask update_mask = 4;
 }
 
-// UpdatePartnerResponse is the response of UpdatePartner.
 message UpdatePartnerResponse {
   Partner partner = 1;
 }
 
-// ListPartnersRequest searches the partner directory of a garage.
 message ListPartnersRequest {
-  string garage_id = 1;
-
-  // Restricts the list to one type; UNSPECIFIED lists every partner.
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   PartnerType type = 2;
-
-  // Matches name, tax code, contact person, phone or email.
+  // Matches name, tax code or contact.
   string query = 3;
-
-  // 1-based page number; defaults to 1.
   int32 page = 4;
-
-  // Page size; defaults to 20, capped at 100.
   int32 page_size = 5;
 }
 
-// ListPartnersResponse is one page of partners, ordered by name.
 message ListPartnersResponse {
-  repeated Partner partners = 1;
+  repeated Partner data = 1;
   vietgara.common.v1.Pagination pagination = 2;
 }
 
-// DeletePartnerRequest soft-deletes a partner.
 message DeletePartnerRequest {
-  string garage_id = 1;
-  string partner_id = 2;
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string partner_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-// DeletePartnerResponse acknowledges a successful deletion.
 message DeletePartnerResponse {}
 
-// PartnerService manages the garage's supplier/insurer directory
-// (FR-CUS-04).
+// PartnerService manages suppliers and insurers (FR-CUS-04). Reads need
+// PERMISSION_PARTNER_READ, changes PERMISSION_PARTNER_WRITE.
 service PartnerService {
-  // CreatePartner adds a partner to the directory.
-  rpc CreatePartner(CreatePartnerRequest) returns (CreatePartnerResponse);
+  rpc ListPartners(ListPartnersRequest) returns (ListPartnersResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/partners"};
+  }
 
-  // GetPartner returns one partner.
-  rpc GetPartner(GetPartnerRequest) returns (GetPartnerResponse);
+  rpc CreatePartner(CreatePartnerRequest) returns (CreatePartnerResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/partners"
+      body: "partner"
+      response_body: "partner"
+    };
+  }
 
-  // UpdatePartner applies partial updates to a partner.
-  rpc UpdatePartner(UpdatePartnerRequest) returns (UpdatePartnerResponse);
+  rpc GetPartner(GetPartnerRequest) returns (GetPartnerResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/garages/{garage_id}/partners/{partner_id}"
+      response_body: "partner"
+    };
+  }
 
-  // ListPartners searches the partner directory.
-  rpc ListPartners(ListPartnersRequest) returns (ListPartnersResponse);
+  rpc UpdatePartner(UpdatePartnerRequest) returns (UpdatePartnerResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/partners/{partner_id}"
+      body: "partner"
+      response_body: "partner"
+    };
+  }
 
-  // DeletePartner soft-deletes a partner.
-  rpc DeletePartner(DeletePartnerRequest) returns (DeletePartnerResponse);
+  rpc DeletePartner(DeletePartnerRequest) returns (DeletePartnerResponse) {
+    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/partners/{partner_id}"};
+  }
 }

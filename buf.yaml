@@ -3,6 +3,12 @@ version: v2
 modules:
   - path: apis
 
+# google.api.http / field_behavior annotations drive the REST mapping served
+# by grpc-gateway in vietgara-backend and the generated OpenAPI document.
+deps:
+  - buf.build/googleapis/googleapis
+  - buf.build/grpc-ecosystem/grpc-gateway
+
 lint:
   use:
     - STANDARD

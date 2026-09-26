@@ -4,17 +4,13 @@
 // 	protoc        (unknown)
 // source: vietgara/tenant/v1/staff.proto
 
-// Package vietgara.tenant.v1 defines the Tenant/Garage Management module
-// (HLD module #2): staff memberships that assign an account a role within
-// one garage (RBAC, FR-IAM-03).
-// See: FRD FR-TEN-04, API Specification Section 3, Database Design
-// Section 2.3.
-
 package tenantv1
 
 import (
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -28,75 +24,13 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Role is the access role of a staff member within one specific garage
-// (FR-IAM-03). Maps to the "staff_role" enum in the garage_staff table.
-type Role int32
-
-const (
-	Role_ROLE_UNSPECIFIED     Role = 0
-	Role_ROLE_OWNER           Role = 1
-	Role_ROLE_ACCOUNTANT      Role = 2
-	Role_ROLE_TECHNICIAN      Role = 3
-	Role_ROLE_SERVICE_ADVISOR Role = 4
-	Role_ROLE_INVENTORY_STAFF Role = 5
-)
-
-// Enum value maps for Role.
-var (
-	Role_name = map[int32]string{
-		0: "ROLE_UNSPECIFIED",
-		1: "ROLE_OWNER",
-		2: "ROLE_ACCOUNTANT",
-		3: "ROLE_TECHNICIAN",
-		4: "ROLE_SERVICE_ADVISOR",
-		5: "ROLE_INVENTORY_STAFF",
-	}
-	Role_value = map[string]int32{
-		"ROLE_UNSPECIFIED":     0,
-		"ROLE_OWNER":           1,
-		"ROLE_ACCOUNTANT":      2,
-		"ROLE_TECHNICIAN":      3,
-		"ROLE_SERVICE_ADVISOR": 4,
-		"ROLE_INVENTORY_STAFF": 5,
-	}
-)
-
-func (x Role) Enum() *Role {
-	p := new(Role)
-	*p = x
-	return p
-}
-
-func (x Role) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (Role) Descriptor() protoreflect.EnumDescriptor {
-	return file_vietgara_tenant_v1_staff_proto_enumTypes[0].Descriptor()
-}
-
-func (Role) Type() protoreflect.EnumType {
-	return &file_vietgara_tenant_v1_staff_proto_enumTypes[0]
-}
-
-func (x Role) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use Role.Descriptor instead.
-func (Role) EnumDescriptor() ([]byte, []int) {
-	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{0}
-}
-
-// StaffStatus is the lifecycle state of a staff membership within a
-// garage.
+// StaffStatus: inactive staff keep their record but lose access.
 type StaffStatus int32
 
 const (
 	StaffStatus_STAFF_STATUS_UNSPECIFIED StaffStatus = 0
 	StaffStatus_STAFF_STATUS_ACTIVE      StaffStatus = 1
 	StaffStatus_STAFF_STATUS_INACTIVE    StaffStatus = 2
-	StaffStatus_STAFF_STATUS_SUSPENDED   StaffStatus = 3
 )
 
 // Enum value maps for StaffStatus.
@@ -105,13 +39,11 @@ var (
 		0: "STAFF_STATUS_UNSPECIFIED",
 		1: "STAFF_STATUS_ACTIVE",
 		2: "STAFF_STATUS_INACTIVE",
-		3: "STAFF_STATUS_SUSPENDED",
 	}
 	StaffStatus_value = map[string]int32{
 		"STAFF_STATUS_UNSPECIFIED": 0,
 		"STAFF_STATUS_ACTIVE":      1,
 		"STAFF_STATUS_INACTIVE":    2,
-		"STAFF_STATUS_SUSPENDED":   3,
 	}
 )
 
@@ -126,11 +58,11 @@ func (x StaffStatus) String() string {
 }
 
 func (StaffStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_vietgara_tenant_v1_staff_proto_enumTypes[1].Descriptor()
+	return file_vietgara_tenant_v1_staff_proto_enumTypes[0].Descriptor()
 }
 
 func (StaffStatus) Type() protoreflect.EnumType {
-	return &file_vietgara_tenant_v1_staff_proto_enumTypes[1]
+	return &file_vietgara_tenant_v1_staff_proto_enumTypes[0]
 }
 
 func (x StaffStatus) Number() protoreflect.EnumNumber {
@@ -139,46 +71,98 @@ func (x StaffStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use StaffStatus.Descriptor instead.
 func (StaffStatus) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{0}
+}
+
+// CandidateMembership is where a looked-up account stands with the garage.
+type CandidateMembership int32
+
+const (
+	CandidateMembership_CANDIDATE_MEMBERSHIP_UNSPECIFIED CandidateMembership = 0
+	CandidateMembership_CANDIDATE_MEMBERSHIP_NONE        CandidateMembership = 1
+	CandidateMembership_CANDIDATE_MEMBERSHIP_MEMBER      CandidateMembership = 2
+	CandidateMembership_CANDIDATE_MEMBERSHIP_INVITED     CandidateMembership = 3
+)
+
+// Enum value maps for CandidateMembership.
+var (
+	CandidateMembership_name = map[int32]string{
+		0: "CANDIDATE_MEMBERSHIP_UNSPECIFIED",
+		1: "CANDIDATE_MEMBERSHIP_NONE",
+		2: "CANDIDATE_MEMBERSHIP_MEMBER",
+		3: "CANDIDATE_MEMBERSHIP_INVITED",
+	}
+	CandidateMembership_value = map[string]int32{
+		"CANDIDATE_MEMBERSHIP_UNSPECIFIED": 0,
+		"CANDIDATE_MEMBERSHIP_NONE":        1,
+		"CANDIDATE_MEMBERSHIP_MEMBER":      2,
+		"CANDIDATE_MEMBERSHIP_INVITED":     3,
+	}
+)
+
+func (x CandidateMembership) Enum() *CandidateMembership {
+	p := new(CandidateMembership)
+	*p = x
+	return p
+}
+
+func (x CandidateMembership) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (CandidateMembership) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_tenant_v1_staff_proto_enumTypes[1].Descriptor()
+}
+
+func (CandidateMembership) Type() protoreflect.EnumType {
+	return &file_vietgara_tenant_v1_staff_proto_enumTypes[1]
+}
+
+func (x CandidateMembership) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use CandidateMembership.Descriptor instead.
+func (CandidateMembership) EnumDescriptor() ([]byte, []int) {
 	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{1}
 }
 
-// GarageStaff assigns an Account a Role within exactly one Garage
-// (FR-TEN-04). Maps to the "garage_staff" table (Database Design
-// Section 2.3).
-type GarageStaff struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// UUID primary key.
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// Garage the staff member belongs to (tenant context).
-	GarageId string `protobuf:"bytes,2,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// Account that holds this staff membership.
-	AccountId string `protobuf:"bytes,3,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	// Role of the account within the garage.
-	Role Role `protobuf:"varint,4,opt,name=role,proto3,enum=vietgara.tenant.v1.Role" json:"role,omitempty"`
-	// Lifecycle state of the membership.
-	Status StaffStatus `protobuf:"varint,5,opt,name=status,proto3,enum=vietgara.tenant.v1.StaffStatus" json:"status,omitempty"`
-	// Creation timestamp.
-	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	// Last update timestamp.
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+// Staff is an account's membership of a garage (FR-TEN-04).
+type Staff struct {
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	Id        string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	GarageId  string                 `protobuf:"bytes,2,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	AccountId string                 `protobuf:"bytes,3,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	FullName  string                 `protobuf:"bytes,4,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
+	Email     string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
+	Phone     *string                `protobuf:"bytes,6,opt,name=phone,proto3,oneof" json:"phone,omitempty"`
+	// The garage owner; cannot be deactivated, removed or grouped.
+	Owner  bool        `protobuf:"varint,7,opt,name=owner,proto3" json:"owner,omitempty"`
+	Status StaffStatus `protobuf:"varint,8,opt,name=status,proto3,enum=vietgara.tenant.v1.StaffStatus" json:"status,omitempty"`
+	// Staff groups of this garage the member belongs to.
+	GroupIds []string `protobuf:"bytes,9,rep,name=group_ids,json=groupIds,proto3" json:"group_ids,omitempty"`
+	// Union of the permissions of the member's groups.
+	Permissions   []Permission           `protobuf:"varint,10,rep,packed,name=permissions,proto3,enum=vietgara.tenant.v1.Permission" json:"permissions,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GarageStaff) Reset() {
-	*x = GarageStaff{}
+func (x *Staff) Reset() {
+	*x = Staff{}
 	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GarageStaff) String() string {
+func (x *Staff) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GarageStaff) ProtoMessage() {}
+func (*Staff) ProtoMessage() {}
 
-func (x *GarageStaff) ProtoReflect() protoreflect.Message {
+func (x *Staff) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -190,86 +174,121 @@ func (x *GarageStaff) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GarageStaff.ProtoReflect.Descriptor instead.
-func (*GarageStaff) Descriptor() ([]byte, []int) {
+// Deprecated: Use Staff.ProtoReflect.Descriptor instead.
+func (*Staff) Descriptor() ([]byte, []int) {
 	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *GarageStaff) GetId() string {
+func (x *Staff) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *GarageStaff) GetGarageId() string {
+func (x *Staff) GetGarageId() string {
 	if x != nil {
 		return x.GarageId
 	}
 	return ""
 }
 
-func (x *GarageStaff) GetAccountId() string {
+func (x *Staff) GetAccountId() string {
 	if x != nil {
 		return x.AccountId
 	}
 	return ""
 }
 
-func (x *GarageStaff) GetRole() Role {
+func (x *Staff) GetFullName() string {
 	if x != nil {
-		return x.Role
+		return x.FullName
 	}
-	return Role_ROLE_UNSPECIFIED
+	return ""
 }
 
-func (x *GarageStaff) GetStatus() StaffStatus {
+func (x *Staff) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *Staff) GetPhone() string {
+	if x != nil && x.Phone != nil {
+		return *x.Phone
+	}
+	return ""
+}
+
+func (x *Staff) GetOwner() bool {
+	if x != nil {
+		return x.Owner
+	}
+	return false
+}
+
+func (x *Staff) GetStatus() StaffStatus {
 	if x != nil {
 		return x.Status
 	}
 	return StaffStatus_STAFF_STATUS_UNSPECIFIED
 }
 
-func (x *GarageStaff) GetCreatedAt() *timestamppb.Timestamp {
+func (x *Staff) GetGroupIds() []string {
+	if x != nil {
+		return x.GroupIds
+	}
+	return nil
+}
+
+func (x *Staff) GetPermissions() []Permission {
+	if x != nil {
+		return x.Permissions
+	}
+	return nil
+}
+
+func (x *Staff) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
 	return nil
 }
 
-func (x *GarageStaff) GetUpdatedAt() *timestamppb.Timestamp {
+func (x *Staff) GetUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.UpdatedAt
 	}
 	return nil
 }
 
-// AddStaffRequest assigns an account a role within a garage (FR-TEN-04).
-type AddStaffRequest struct {
-	state    protoimpl.MessageState `protogen:"open.v1"`
-	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// Account to add as staff.
-	AccountId string `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	// Role to assign (must be a valid Role value).
-	Role          Role `protobuf:"varint,3,opt,name=role,proto3,enum=vietgara.tenant.v1.Role" json:"role,omitempty"`
+// StaffCandidate is an existing account found by e-mail or phone.
+type StaffCandidate struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	FullName      string                 `protobuf:"bytes,2,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
+	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Phone         *string                `protobuf:"bytes,4,opt,name=phone,proto3,oneof" json:"phone,omitempty"`
+	Membership    CandidateMembership    `protobuf:"varint,5,opt,name=membership,proto3,enum=vietgara.tenant.v1.CandidateMembership" json:"membership,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *AddStaffRequest) Reset() {
-	*x = AddStaffRequest{}
+func (x *StaffCandidate) Reset() {
+	*x = StaffCandidate{}
 	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *AddStaffRequest) String() string {
+func (x *StaffCandidate) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*AddStaffRequest) ProtoMessage() {}
+func (*StaffCandidate) ProtoMessage() {}
 
-func (x *AddStaffRequest) ProtoReflect() protoreflect.Message {
+func (x *StaffCandidate) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -281,48 +300,149 @@ func (x *AddStaffRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use AddStaffRequest.ProtoReflect.Descriptor instead.
-func (*AddStaffRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use StaffCandidate.ProtoReflect.Descriptor instead.
+func (*StaffCandidate) Descriptor() ([]byte, []int) {
 	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *AddStaffRequest) GetGarageId() string {
-	if x != nil {
-		return x.GarageId
-	}
-	return ""
-}
-
-func (x *AddStaffRequest) GetAccountId() string {
+func (x *StaffCandidate) GetAccountId() string {
 	if x != nil {
 		return x.AccountId
 	}
 	return ""
 }
 
-func (x *AddStaffRequest) GetRole() Role {
+func (x *StaffCandidate) GetFullName() string {
 	if x != nil {
-		return x.Role
+		return x.FullName
 	}
-	return Role_ROLE_UNSPECIFIED
+	return ""
 }
 
-// UpdateStaffRequest changes the role/status of an existing staff
-// membership; absent fields keep their current value (FR-TEN-04).
+func (x *StaffCandidate) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *StaffCandidate) GetPhone() string {
+	if x != nil && x.Phone != nil {
+		return *x.Phone
+	}
+	return ""
+}
+
+func (x *StaffCandidate) GetMembership() CandidateMembership {
+	if x != nil {
+		return x.Membership
+	}
+	return CandidateMembership_CANDIDATE_MEMBERSHIP_UNSPECIFIED
+}
+
+type ListStaffRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListStaffRequest) Reset() {
+	*x = ListStaffRequest{}
+	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListStaffRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListStaffRequest) ProtoMessage() {}
+
+func (x *ListStaffRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListStaffRequest.ProtoReflect.Descriptor instead.
+func (*ListStaffRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ListStaffRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+type ListStaffResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []*Staff               `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListStaffResponse) Reset() {
+	*x = ListStaffResponse{}
+	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListStaffResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListStaffResponse) ProtoMessage() {}
+
+func (x *ListStaffResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListStaffResponse.ProtoReflect.Descriptor instead.
+func (*ListStaffResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ListStaffResponse) GetData() []*Staff {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
 type UpdateStaffRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// ID of the staff membership to update.
-	StaffId       string       `protobuf:"bytes,2,opt,name=staff_id,json=staffId,proto3" json:"staff_id,omitempty"`
-	Role          *Role        `protobuf:"varint,3,opt,name=role,proto3,enum=vietgara.tenant.v1.Role,oneof" json:"role,omitempty"`
-	Status        *StaffStatus `protobuf:"varint,4,opt,name=status,proto3,enum=vietgara.tenant.v1.StaffStatus,oneof" json:"status,omitempty"`
+	StaffId  string                 `protobuf:"bytes,2,opt,name=staff_id,json=staffId,proto3" json:"staff_id,omitempty"`
+	// status and group_ids.
+	Staff *Staff `protobuf:"bytes,3,opt,name=staff,proto3" json:"staff,omitempty"`
+	// Filled from the JSON body keys when omitted.
+	UpdateMask    *fieldmaskpb.FieldMask `protobuf:"bytes,4,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UpdateStaffRequest) Reset() {
 	*x = UpdateStaffRequest{}
-	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[2]
+	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -334,7 +454,7 @@ func (x *UpdateStaffRequest) String() string {
 func (*UpdateStaffRequest) ProtoMessage() {}
 
 func (x *UpdateStaffRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[2]
+	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -347,7 +467,7 @@ func (x *UpdateStaffRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateStaffRequest.ProtoReflect.Descriptor instead.
 func (*UpdateStaffRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{2}
+	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *UpdateStaffRequest) GetGarageId() string {
@@ -364,76 +484,30 @@ func (x *UpdateStaffRequest) GetStaffId() string {
 	return ""
 }
 
-func (x *UpdateStaffRequest) GetRole() Role {
-	if x != nil && x.Role != nil {
-		return *x.Role
-	}
-	return Role_ROLE_UNSPECIFIED
-}
-
-func (x *UpdateStaffRequest) GetStatus() StaffStatus {
-	if x != nil && x.Status != nil {
-		return *x.Status
-	}
-	return StaffStatus_STAFF_STATUS_UNSPECIFIED
-}
-
-// AddStaffResponse is the response of AddStaff.
-type AddStaffResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Staff         *GarageStaff           `protobuf:"bytes,1,opt,name=staff,proto3" json:"staff,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AddStaffResponse) Reset() {
-	*x = AddStaffResponse{}
-	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AddStaffResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AddStaffResponse) ProtoMessage() {}
-
-func (x *AddStaffResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AddStaffResponse.ProtoReflect.Descriptor instead.
-func (*AddStaffResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *AddStaffResponse) GetStaff() *GarageStaff {
+func (x *UpdateStaffRequest) GetStaff() *Staff {
 	if x != nil {
 		return x.Staff
 	}
 	return nil
 }
 
-// UpdateStaffResponse is the response of UpdateStaff.
+func (x *UpdateStaffRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
+	if x != nil {
+		return x.UpdateMask
+	}
+	return nil
+}
+
 type UpdateStaffResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Staff         *GarageStaff           `protobuf:"bytes,1,opt,name=staff,proto3" json:"staff,omitempty"`
+	Staff         *Staff                 `protobuf:"bytes,1,opt,name=staff,proto3" json:"staff,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UpdateStaffResponse) Reset() {
 	*x = UpdateStaffResponse{}
-	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[4]
+	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -445,7 +519,7 @@ func (x *UpdateStaffResponse) String() string {
 func (*UpdateStaffResponse) ProtoMessage() {}
 
 func (x *UpdateStaffResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[4]
+	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -458,73 +532,17 @@ func (x *UpdateStaffResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateStaffResponse.ProtoReflect.Descriptor instead.
 func (*UpdateStaffResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{4}
+	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *UpdateStaffResponse) GetStaff() *GarageStaff {
+func (x *UpdateStaffResponse) GetStaff() *Staff {
 	if x != nil {
 		return x.Staff
 	}
 	return nil
 }
 
-// RemoveStaffRequest deactivates a staff membership of a garage
-// (FR-TEN-04).
-type RemoveStaffRequest struct {
-	state    protoimpl.MessageState `protogen:"open.v1"`
-	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// ID of the staff membership to remove.
-	StaffId       string `protobuf:"bytes,2,opt,name=staff_id,json=staffId,proto3" json:"staff_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RemoveStaffRequest) Reset() {
-	*x = RemoveStaffRequest{}
-	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RemoveStaffRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RemoveStaffRequest) ProtoMessage() {}
-
-func (x *RemoveStaffRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RemoveStaffRequest.ProtoReflect.Descriptor instead.
-func (*RemoveStaffRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *RemoveStaffRequest) GetGarageId() string {
-	if x != nil {
-		return x.GarageId
-	}
-	return ""
-}
-
-func (x *RemoveStaffRequest) GetStaffId() string {
-	if x != nil {
-		return x.StaffId
-	}
-	return ""
-}
-
-// RemoveStaffResponse acknowledges a successful staff removal.
-type RemoveStaffResponse struct {
+type DeleteStaffRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	StaffId       string                 `protobuf:"bytes,2,opt,name=staff_id,json=staffId,proto3" json:"staff_id,omitempty"`
@@ -532,20 +550,20 @@ type RemoveStaffResponse struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *RemoveStaffResponse) Reset() {
-	*x = RemoveStaffResponse{}
+func (x *DeleteStaffRequest) Reset() {
+	*x = DeleteStaffRequest{}
 	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *RemoveStaffResponse) String() string {
+func (x *DeleteStaffRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RemoveStaffResponse) ProtoMessage() {}
+func (*DeleteStaffRequest) ProtoMessage() {}
 
-func (x *RemoveStaffResponse) ProtoReflect() protoreflect.Message {
+func (x *DeleteStaffRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -557,48 +575,45 @@ func (x *RemoveStaffResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RemoveStaffResponse.ProtoReflect.Descriptor instead.
-func (*RemoveStaffResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use DeleteStaffRequest.ProtoReflect.Descriptor instead.
+func (*DeleteStaffRequest) Descriptor() ([]byte, []int) {
 	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *RemoveStaffResponse) GetGarageId() string {
+func (x *DeleteStaffRequest) GetGarageId() string {
 	if x != nil {
 		return x.GarageId
 	}
 	return ""
 }
 
-func (x *RemoveStaffResponse) GetStaffId() string {
+func (x *DeleteStaffRequest) GetStaffId() string {
 	if x != nil {
 		return x.StaffId
 	}
 	return ""
 }
 
-// ListStaffRequest lists the staff members of one garage (API
-// Specification GET /api/v1/garages/{garageId}/staff).
-type ListStaffRequest struct {
+type DeleteStaffResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListStaffRequest) Reset() {
-	*x = ListStaffRequest{}
+func (x *DeleteStaffResponse) Reset() {
+	*x = DeleteStaffResponse{}
 	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListStaffRequest) String() string {
+func (x *DeleteStaffResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListStaffRequest) ProtoMessage() {}
+func (*DeleteStaffResponse) ProtoMessage() {}
 
-func (x *ListStaffRequest) ProtoReflect() protoreflect.Message {
+func (x *DeleteStaffResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -610,41 +625,86 @@ func (x *ListStaffRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListStaffRequest.ProtoReflect.Descriptor instead.
-func (*ListStaffRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use DeleteStaffResponse.ProtoReflect.Descriptor instead.
+func (*DeleteStaffResponse) Descriptor() ([]byte, []int) {
 	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *ListStaffRequest) GetGarageId() string {
+type LookupStaffCandidateRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	// Exact e-mail address or phone number of an existing account.
+	Query         string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LookupStaffCandidateRequest) Reset() {
+	*x = LookupStaffCandidateRequest{}
+	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LookupStaffCandidateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LookupStaffCandidateRequest) ProtoMessage() {}
+
+func (x *LookupStaffCandidateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LookupStaffCandidateRequest.ProtoReflect.Descriptor instead.
+func (*LookupStaffCandidateRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *LookupStaffCandidateRequest) GetGarageId() string {
 	if x != nil {
 		return x.GarageId
 	}
 	return ""
 }
 
-// ListStaffResponse is the list of a garage's staff memberships.
-type ListStaffResponse struct {
+func (x *LookupStaffCandidateRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+type LookupStaffCandidateResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Staff         []*GarageStaff         `protobuf:"bytes,1,rep,name=staff,proto3" json:"staff,omitempty"`
+	Candidate     *StaffCandidate        `protobuf:"bytes,1,opt,name=candidate,proto3" json:"candidate,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListStaffResponse) Reset() {
-	*x = ListStaffResponse{}
-	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[8]
+func (x *LookupStaffCandidateResponse) Reset() {
+	*x = LookupStaffCandidateResponse{}
+	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListStaffResponse) String() string {
+func (x *LookupStaffCandidateResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListStaffResponse) ProtoMessage() {}
+func (*LookupStaffCandidateResponse) ProtoMessage() {}
 
-func (x *ListStaffResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[8]
+func (x *LookupStaffCandidateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_staff_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -655,14 +715,14 @@ func (x *ListStaffResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListStaffResponse.ProtoReflect.Descriptor instead.
-func (*ListStaffResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{8}
+// Deprecated: Use LookupStaffCandidateResponse.ProtoReflect.Descriptor instead.
+func (*LookupStaffCandidateResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *ListStaffResponse) GetStaff() []*GarageStaff {
+func (x *LookupStaffCandidateResponse) GetCandidate() *StaffCandidate {
 	if x != nil {
-		return x.Staff
+		return x.Candidate
 	}
 	return nil
 }
@@ -671,62 +731,70 @@ var File_vietgara_tenant_v1_staff_proto protoreflect.FileDescriptor
 
 const file_vietgara_tenant_v1_staff_proto_rawDesc = "" +
 	"\n" +
-	"\x1evietgara/tenant/v1/staff.proto\x12\x12vietgara.tenant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb6\x02\n" +
-	"\vGarageStaff\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
-	"\tgarage_id\x18\x02 \x01(\tR\bgarageId\x12\x1d\n" +
+	"\x1evietgara/tenant/v1/staff.proto\x12\x12vietgara.tenant.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fvietgara/tenant/v1/access.proto\"\x81\x04\n" +
+	"\x05Staff\x12\x13\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
+	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\"\n" +
 	"\n" +
-	"account_id\x18\x03 \x01(\tR\taccountId\x12,\n" +
-	"\x04role\x18\x04 \x01(\x0e2\x18.vietgara.tenant.v1.RoleR\x04role\x127\n" +
-	"\x06status\x18\x05 \x01(\x0e2\x1f.vietgara.tenant.v1.StaffStatusR\x06status\x129\n" +
+	"account_id\x18\x03 \x01(\tB\x03\xe0A\x03R\taccountId\x12 \n" +
+	"\tfull_name\x18\x04 \x01(\tB\x03\xe0A\x03R\bfullName\x12\x19\n" +
+	"\x05email\x18\x05 \x01(\tB\x03\xe0A\x03R\x05email\x12\x1e\n" +
+	"\x05phone\x18\x06 \x01(\tB\x03\xe0A\x03H\x00R\x05phone\x88\x01\x01\x12\x19\n" +
+	"\x05owner\x18\a \x01(\bB\x03\xe0A\x03R\x05owner\x127\n" +
+	"\x06status\x18\b \x01(\x0e2\x1f.vietgara.tenant.v1.StaffStatusR\x06status\x12\x1b\n" +
+	"\tgroup_ids\x18\t \x03(\tR\bgroupIds\x12E\n" +
+	"\vpermissions\x18\n" +
+	" \x03(\x0e2\x1e.vietgara.tenant.v1.PermissionB\x03\xe0A\x03R\vpermissions\x12>\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"{\n" +
-	"\x0fAddStaffRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12\x1d\n" +
+	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\b\n" +
+	"\x06_phone\"\xd0\x01\n" +
+	"\x0eStaffCandidate\x12\x1d\n" +
 	"\n" +
-	"account_id\x18\x02 \x01(\tR\taccountId\x12,\n" +
-	"\x04role\x18\x03 \x01(\x0e2\x18.vietgara.tenant.v1.RoleR\x04role\"\xd1\x01\n" +
-	"\x12UpdateStaffRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12\x19\n" +
-	"\bstaff_id\x18\x02 \x01(\tR\astaffId\x121\n" +
-	"\x04role\x18\x03 \x01(\x0e2\x18.vietgara.tenant.v1.RoleH\x00R\x04role\x88\x01\x01\x12<\n" +
-	"\x06status\x18\x04 \x01(\x0e2\x1f.vietgara.tenant.v1.StaffStatusH\x01R\x06status\x88\x01\x01B\a\n" +
-	"\x05_roleB\t\n" +
-	"\a_status\"I\n" +
-	"\x10AddStaffResponse\x125\n" +
-	"\x05staff\x18\x01 \x01(\v2\x1f.vietgara.tenant.v1.GarageStaffR\x05staff\"L\n" +
-	"\x13UpdateStaffResponse\x125\n" +
-	"\x05staff\x18\x01 \x01(\v2\x1f.vietgara.tenant.v1.GarageStaffR\x05staff\"L\n" +
-	"\x12RemoveStaffRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12\x19\n" +
-	"\bstaff_id\x18\x02 \x01(\tR\astaffId\"M\n" +
-	"\x13RemoveStaffResponse\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12\x19\n" +
-	"\bstaff_id\x18\x02 \x01(\tR\astaffId\"/\n" +
-	"\x10ListStaffRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\"J\n" +
-	"\x11ListStaffResponse\x125\n" +
-	"\x05staff\x18\x01 \x03(\v2\x1f.vietgara.tenant.v1.GarageStaffR\x05staff*\x8a\x01\n" +
-	"\x04Role\x12\x14\n" +
-	"\x10ROLE_UNSPECIFIED\x10\x00\x12\x0e\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\x12\x1b\n" +
+	"\tfull_name\x18\x02 \x01(\tR\bfullName\x12\x14\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email\x12\x19\n" +
+	"\x05phone\x18\x04 \x01(\tH\x00R\x05phone\x88\x01\x01\x12G\n" +
 	"\n" +
-	"ROLE_OWNER\x10\x01\x12\x13\n" +
-	"\x0fROLE_ACCOUNTANT\x10\x02\x12\x13\n" +
-	"\x0fROLE_TECHNICIAN\x10\x03\x12\x18\n" +
-	"\x14ROLE_SERVICE_ADVISOR\x10\x04\x12\x18\n" +
-	"\x14ROLE_INVENTORY_STAFF\x10\x05*{\n" +
+	"membership\x18\x05 \x01(\x0e2'.vietgara.tenant.v1.CandidateMembershipR\n" +
+	"membershipB\b\n" +
+	"\x06_phone\"4\n" +
+	"\x10ListStaffRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\"B\n" +
+	"\x11ListStaffResponse\x12-\n" +
+	"\x04data\x18\x01 \x03(\v2\x19.vietgara.tenant.v1.StaffR\x04data\"\xc9\x01\n" +
+	"\x12UpdateStaffRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1e\n" +
+	"\bstaff_id\x18\x02 \x01(\tB\x03\xe0A\x02R\astaffId\x124\n" +
+	"\x05staff\x18\x03 \x01(\v2\x19.vietgara.tenant.v1.StaffB\x03\xe0A\x02R\x05staff\x12;\n" +
+	"\vupdate_mask\x18\x04 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
+	"updateMask\"F\n" +
+	"\x13UpdateStaffResponse\x12/\n" +
+	"\x05staff\x18\x01 \x01(\v2\x19.vietgara.tenant.v1.StaffR\x05staff\"V\n" +
+	"\x12DeleteStaffRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1e\n" +
+	"\bstaff_id\x18\x02 \x01(\tB\x03\xe0A\x02R\astaffId\"\x15\n" +
+	"\x13DeleteStaffResponse\"Z\n" +
+	"\x1bLookupStaffCandidateRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x19\n" +
+	"\x05query\x18\x02 \x01(\tB\x03\xe0A\x02R\x05query\"`\n" +
+	"\x1cLookupStaffCandidateResponse\x12@\n" +
+	"\tcandidate\x18\x01 \x01(\v2\".vietgara.tenant.v1.StaffCandidateR\tcandidate*_\n" +
 	"\vStaffStatus\x12\x1c\n" +
 	"\x18STAFF_STATUS_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13STAFF_STATUS_ACTIVE\x10\x01\x12\x19\n" +
-	"\x15STAFF_STATUS_INACTIVE\x10\x02\x12\x1a\n" +
-	"\x16STAFF_STATUS_SUSPENDED\x10\x032\xff\x02\n" +
-	"\fStaffService\x12U\n" +
-	"\bAddStaff\x12#.vietgara.tenant.v1.AddStaffRequest\x1a$.vietgara.tenant.v1.AddStaffResponse\x12^\n" +
-	"\vUpdateStaff\x12&.vietgara.tenant.v1.UpdateStaffRequest\x1a'.vietgara.tenant.v1.UpdateStaffResponse\x12^\n" +
-	"\vRemoveStaff\x12&.vietgara.tenant.v1.RemoveStaffRequest\x1a'.vietgara.tenant.v1.RemoveStaffResponse\x12X\n" +
-	"\tListStaff\x12$.vietgara.tenant.v1.ListStaffRequest\x1a%.vietgara.tenant.v1.ListStaffResponseBJZHgithub.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1;tenantv1b\x06proto3"
+	"\x15STAFF_STATUS_INACTIVE\x10\x02*\x9d\x01\n" +
+	"\x13CandidateMembership\x12$\n" +
+	" CANDIDATE_MEMBERSHIP_UNSPECIFIED\x10\x00\x12\x1d\n" +
+	"\x19CANDIDATE_MEMBERSHIP_NONE\x10\x01\x12\x1f\n" +
+	"\x1bCANDIDATE_MEMBERSHIP_MEMBER\x10\x02\x12 \n" +
+	"\x1cCANDIDATE_MEMBERSHIP_INVITED\x10\x032\x8d\x05\n" +
+	"\fStaffService\x12\x83\x01\n" +
+	"\tListStaff\x12$.vietgara.tenant.v1.ListStaffRequest\x1a%.vietgara.tenant.v1.ListStaffResponse\")\x82\xd3\xe4\x93\x02#\x12!/api/v1/garages/{garage_id}/staff\x12\xa2\x01\n" +
+	"\vUpdateStaff\x12&.vietgara.tenant.v1.UpdateStaffRequest\x1a'.vietgara.tenant.v1.UpdateStaffResponse\"B\x82\xd3\xe4\x93\x02<:\x05staffb\x05staff2,/api/v1/garages/{garage_id}/staff/{staff_id}\x12\x94\x01\n" +
+	"\vDeleteStaff\x12&.vietgara.tenant.v1.DeleteStaffRequest\x1a'.vietgara.tenant.v1.DeleteStaffResponse\"4\x82\xd3\xe4\x93\x02.*,/api/v1/garages/{garage_id}/staff/{staff_id}\x12\xba\x01\n" +
+	"\x14LookupStaffCandidate\x12/.vietgara.tenant.v1.LookupStaffCandidateRequest\x1a0.vietgara.tenant.v1.LookupStaffCandidateResponse\"?\x82\xd3\xe4\x93\x029b\tcandidate\x12,/api/v1/garages/{garage_id}/staff-candidatesBJZHgithub.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1;tenantv1b\x06proto3"
 
 var (
 	file_vietgara_tenant_v1_staff_proto_rawDescOnce sync.Once
@@ -741,40 +809,43 @@ func file_vietgara_tenant_v1_staff_proto_rawDescGZIP() []byte {
 }
 
 var file_vietgara_tenant_v1_staff_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_vietgara_tenant_v1_staff_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_vietgara_tenant_v1_staff_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_vietgara_tenant_v1_staff_proto_goTypes = []any{
-	(Role)(0),                     // 0: vietgara.tenant.v1.Role
-	(StaffStatus)(0),              // 1: vietgara.tenant.v1.StaffStatus
-	(*GarageStaff)(nil),           // 2: vietgara.tenant.v1.GarageStaff
-	(*AddStaffRequest)(nil),       // 3: vietgara.tenant.v1.AddStaffRequest
-	(*UpdateStaffRequest)(nil),    // 4: vietgara.tenant.v1.UpdateStaffRequest
-	(*AddStaffResponse)(nil),      // 5: vietgara.tenant.v1.AddStaffResponse
-	(*UpdateStaffResponse)(nil),   // 6: vietgara.tenant.v1.UpdateStaffResponse
-	(*RemoveStaffRequest)(nil),    // 7: vietgara.tenant.v1.RemoveStaffRequest
-	(*RemoveStaffResponse)(nil),   // 8: vietgara.tenant.v1.RemoveStaffResponse
-	(*ListStaffRequest)(nil),      // 9: vietgara.tenant.v1.ListStaffRequest
-	(*ListStaffResponse)(nil),     // 10: vietgara.tenant.v1.ListStaffResponse
-	(*timestamppb.Timestamp)(nil), // 11: google.protobuf.Timestamp
+	(StaffStatus)(0),                     // 0: vietgara.tenant.v1.StaffStatus
+	(CandidateMembership)(0),             // 1: vietgara.tenant.v1.CandidateMembership
+	(*Staff)(nil),                        // 2: vietgara.tenant.v1.Staff
+	(*StaffCandidate)(nil),               // 3: vietgara.tenant.v1.StaffCandidate
+	(*ListStaffRequest)(nil),             // 4: vietgara.tenant.v1.ListStaffRequest
+	(*ListStaffResponse)(nil),            // 5: vietgara.tenant.v1.ListStaffResponse
+	(*UpdateStaffRequest)(nil),           // 6: vietgara.tenant.v1.UpdateStaffRequest
+	(*UpdateStaffResponse)(nil),          // 7: vietgara.tenant.v1.UpdateStaffResponse
+	(*DeleteStaffRequest)(nil),           // 8: vietgara.tenant.v1.DeleteStaffRequest
+	(*DeleteStaffResponse)(nil),          // 9: vietgara.tenant.v1.DeleteStaffResponse
+	(*LookupStaffCandidateRequest)(nil),  // 10: vietgara.tenant.v1.LookupStaffCandidateRequest
+	(*LookupStaffCandidateResponse)(nil), // 11: vietgara.tenant.v1.LookupStaffCandidateResponse
+	(Permission)(0),                      // 12: vietgara.tenant.v1.Permission
+	(*timestamppb.Timestamp)(nil),        // 13: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),        // 14: google.protobuf.FieldMask
 }
 var file_vietgara_tenant_v1_staff_proto_depIdxs = []int32{
-	0,  // 0: vietgara.tenant.v1.GarageStaff.role:type_name -> vietgara.tenant.v1.Role
-	1,  // 1: vietgara.tenant.v1.GarageStaff.status:type_name -> vietgara.tenant.v1.StaffStatus
-	11, // 2: vietgara.tenant.v1.GarageStaff.created_at:type_name -> google.protobuf.Timestamp
-	11, // 3: vietgara.tenant.v1.GarageStaff.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 4: vietgara.tenant.v1.AddStaffRequest.role:type_name -> vietgara.tenant.v1.Role
-	0,  // 5: vietgara.tenant.v1.UpdateStaffRequest.role:type_name -> vietgara.tenant.v1.Role
-	1,  // 6: vietgara.tenant.v1.UpdateStaffRequest.status:type_name -> vietgara.tenant.v1.StaffStatus
-	2,  // 7: vietgara.tenant.v1.AddStaffResponse.staff:type_name -> vietgara.tenant.v1.GarageStaff
-	2,  // 8: vietgara.tenant.v1.UpdateStaffResponse.staff:type_name -> vietgara.tenant.v1.GarageStaff
-	2,  // 9: vietgara.tenant.v1.ListStaffResponse.staff:type_name -> vietgara.tenant.v1.GarageStaff
-	3,  // 10: vietgara.tenant.v1.StaffService.AddStaff:input_type -> vietgara.tenant.v1.AddStaffRequest
-	4,  // 11: vietgara.tenant.v1.StaffService.UpdateStaff:input_type -> vietgara.tenant.v1.UpdateStaffRequest
-	7,  // 12: vietgara.tenant.v1.StaffService.RemoveStaff:input_type -> vietgara.tenant.v1.RemoveStaffRequest
-	9,  // 13: vietgara.tenant.v1.StaffService.ListStaff:input_type -> vietgara.tenant.v1.ListStaffRequest
-	5,  // 14: vietgara.tenant.v1.StaffService.AddStaff:output_type -> vietgara.tenant.v1.AddStaffResponse
-	6,  // 15: vietgara.tenant.v1.StaffService.UpdateStaff:output_type -> vietgara.tenant.v1.UpdateStaffResponse
-	8,  // 16: vietgara.tenant.v1.StaffService.RemoveStaff:output_type -> vietgara.tenant.v1.RemoveStaffResponse
-	10, // 17: vietgara.tenant.v1.StaffService.ListStaff:output_type -> vietgara.tenant.v1.ListStaffResponse
+	0,  // 0: vietgara.tenant.v1.Staff.status:type_name -> vietgara.tenant.v1.StaffStatus
+	12, // 1: vietgara.tenant.v1.Staff.permissions:type_name -> vietgara.tenant.v1.Permission
+	13, // 2: vietgara.tenant.v1.Staff.created_at:type_name -> google.protobuf.Timestamp
+	13, // 3: vietgara.tenant.v1.Staff.updated_at:type_name -> google.protobuf.Timestamp
+	1,  // 4: vietgara.tenant.v1.StaffCandidate.membership:type_name -> vietgara.tenant.v1.CandidateMembership
+	2,  // 5: vietgara.tenant.v1.ListStaffResponse.data:type_name -> vietgara.tenant.v1.Staff
+	2,  // 6: vietgara.tenant.v1.UpdateStaffRequest.staff:type_name -> vietgara.tenant.v1.Staff
+	14, // 7: vietgara.tenant.v1.UpdateStaffRequest.update_mask:type_name -> google.protobuf.FieldMask
+	2,  // 8: vietgara.tenant.v1.UpdateStaffResponse.staff:type_name -> vietgara.tenant.v1.Staff
+	3,  // 9: vietgara.tenant.v1.LookupStaffCandidateResponse.candidate:type_name -> vietgara.tenant.v1.StaffCandidate
+	4,  // 10: vietgara.tenant.v1.StaffService.ListStaff:input_type -> vietgara.tenant.v1.ListStaffRequest
+	6,  // 11: vietgara.tenant.v1.StaffService.UpdateStaff:input_type -> vietgara.tenant.v1.UpdateStaffRequest
+	8,  // 12: vietgara.tenant.v1.StaffService.DeleteStaff:input_type -> vietgara.tenant.v1.DeleteStaffRequest
+	10, // 13: vietgara.tenant.v1.StaffService.LookupStaffCandidate:input_type -> vietgara.tenant.v1.LookupStaffCandidateRequest
+	5,  // 14: vietgara.tenant.v1.StaffService.ListStaff:output_type -> vietgara.tenant.v1.ListStaffResponse
+	7,  // 15: vietgara.tenant.v1.StaffService.UpdateStaff:output_type -> vietgara.tenant.v1.UpdateStaffResponse
+	9,  // 16: vietgara.tenant.v1.StaffService.DeleteStaff:output_type -> vietgara.tenant.v1.DeleteStaffResponse
+	11, // 17: vietgara.tenant.v1.StaffService.LookupStaffCandidate:output_type -> vietgara.tenant.v1.LookupStaffCandidateResponse
 	14, // [14:18] is the sub-list for method output_type
 	10, // [10:14] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name
@@ -787,14 +858,16 @@ func file_vietgara_tenant_v1_staff_proto_init() {
 	if File_vietgara_tenant_v1_staff_proto != nil {
 		return
 	}
-	file_vietgara_tenant_v1_staff_proto_msgTypes[2].OneofWrappers = []any{}
+	file_vietgara_tenant_v1_access_proto_init()
+	file_vietgara_tenant_v1_staff_proto_msgTypes[0].OneofWrappers = []any{}
+	file_vietgara_tenant_v1_staff_proto_msgTypes[1].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_tenant_v1_staff_proto_rawDesc), len(file_vietgara_tenant_v1_staff_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   9,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

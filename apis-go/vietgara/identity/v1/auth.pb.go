@@ -4,17 +4,13 @@
 // 	protoc        (unknown)
 // source: vietgara/identity/v1/auth.proto
 
-// Package vietgara.identity.v1 defines the Identity & Access Management
-// module (HLD module #1): authentication, token lifecycle and social
-// account linking.
-// See: FRD FR-IAM-01/02/04/06, API Specification Section 2, ADR-007.
-
 package identityv1
 
 import (
-	v1 "github.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -27,29 +23,34 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// EmailPasswordCredential authenticates with email + password.
-type EmailPasswordCredential struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
-	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+// Session is what every successful sign-in returns.
+type Session struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken  string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	RefreshToken string                 `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
+	// Always "Bearer".
+	TokenType string `protobuf:"bytes,3,opt,name=token_type,json=tokenType,proto3" json:"token_type,omitempty"`
+	// Access token lifetime in seconds.
+	ExpiresIn     int64    `protobuf:"varint,4,opt,name=expires_in,json=expiresIn,proto3" json:"expires_in,omitempty"`
+	Account       *Account `protobuf:"bytes,5,opt,name=account,proto3" json:"account,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *EmailPasswordCredential) Reset() {
-	*x = EmailPasswordCredential{}
+func (x *Session) Reset() {
+	*x = Session{}
 	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *EmailPasswordCredential) String() string {
+func (x *Session) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EmailPasswordCredential) ProtoMessage() {}
+func (*Session) ProtoMessage() {}
 
-func (x *EmailPasswordCredential) ProtoReflect() protoreflect.Message {
+func (x *Session) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -61,49 +62,70 @@ func (x *EmailPasswordCredential) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use EmailPasswordCredential.ProtoReflect.Descriptor instead.
-func (*EmailPasswordCredential) Descriptor() ([]byte, []int) {
+// Deprecated: Use Session.ProtoReflect.Descriptor instead.
+func (*Session) Descriptor() ([]byte, []int) {
 	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *EmailPasswordCredential) GetEmail() string {
+func (x *Session) GetAccessToken() string {
 	if x != nil {
-		return x.Email
+		return x.AccessToken
 	}
 	return ""
 }
 
-func (x *EmailPasswordCredential) GetPassword() string {
+func (x *Session) GetRefreshToken() string {
 	if x != nil {
-		return x.Password
+		return x.RefreshToken
 	}
 	return ""
 }
 
-// PhoneOtpCredential authenticates with a phone number + OTP code.
-type PhoneOtpCredential struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	Phone string                 `protobuf:"bytes,1,opt,name=phone,proto3" json:"phone,omitempty"`
-	// One-time password verified by the Identity Provider.
-	OtpCode       string `protobuf:"bytes,2,opt,name=otp_code,json=otpCode,proto3" json:"otp_code,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+func (x *Session) GetTokenType() string {
+	if x != nil {
+		return x.TokenType
+	}
+	return ""
 }
 
-func (x *PhoneOtpCredential) Reset() {
-	*x = PhoneOtpCredential{}
+func (x *Session) GetExpiresIn() int64 {
+	if x != nil {
+		return x.ExpiresIn
+	}
+	return 0
+}
+
+func (x *Session) GetAccount() *Account {
+	if x != nil {
+		return x.Account
+	}
+	return nil
+}
+
+// OtpChallenge tells the client how long the e-mailed OTP is valid.
+type OtpChallenge struct {
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	ExpiresAt *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	// A new OTP cannot be requested before this time.
+	ResendAvailableAt *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=resend_available_at,json=resendAvailableAt,proto3" json:"resend_available_at,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *OtpChallenge) Reset() {
+	*x = OtpChallenge{}
 	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PhoneOtpCredential) String() string {
+func (x *OtpChallenge) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PhoneOtpCredential) ProtoMessage() {}
+func (*OtpChallenge) ProtoMessage() {}
 
-func (x *PhoneOtpCredential) ProtoReflect() protoreflect.Message {
+func (x *OtpChallenge) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -115,99 +137,41 @@ func (x *PhoneOtpCredential) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PhoneOtpCredential.ProtoReflect.Descriptor instead.
-func (*PhoneOtpCredential) Descriptor() ([]byte, []int) {
+// Deprecated: Use OtpChallenge.ProtoReflect.Descriptor instead.
+func (*OtpChallenge) Descriptor() ([]byte, []int) {
 	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *PhoneOtpCredential) GetPhone() string {
+func (x *OtpChallenge) GetExpiresAt() *timestamppb.Timestamp {
 	if x != nil {
-		return x.Phone
+		return x.ExpiresAt
 	}
-	return ""
+	return nil
 }
 
-func (x *PhoneOtpCredential) GetOtpCode() string {
+func (x *OtpChallenge) GetResendAvailableAt() *timestamppb.Timestamp {
 	if x != nil {
-		return x.OtpCode
+		return x.ResendAvailableAt
 	}
-	return ""
+	return nil
 }
 
-// SocialCredential authenticates with a provider-issued token
-// (Google/Facebook ID token or access token).
-type SocialCredential struct {
-	state    protoimpl.MessageState `protogen:"open.v1"`
-	Provider AuthProvider           `protobuf:"varint,1,opt,name=provider,proto3,enum=vietgara.identity.v1.AuthProvider" json:"provider,omitempty"`
-	// Token issued by the social provider, exchanged by the Identity
-	// Provider (ADR-007).
-	IdToken       string `protobuf:"bytes,2,opt,name=id_token,json=idToken,proto3" json:"id_token,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SocialCredential) Reset() {
-	*x = SocialCredential{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SocialCredential) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SocialCredential) ProtoMessage() {}
-
-func (x *SocialCredential) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SocialCredential.ProtoReflect.Descriptor instead.
-func (*SocialCredential) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *SocialCredential) GetProvider() AuthProvider {
-	if x != nil {
-		return x.Provider
-	}
-	return AuthProvider_AUTH_PROVIDER_UNSPECIFIED
-}
-
-func (x *SocialCredential) GetIdToken() string {
-	if x != nil {
-		return x.IdToken
-	}
-	return ""
-}
-
-// RegisterRequest creates a new account (FR-IAM-01).
 type RegisterRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Method:
-	//
-	//	*RegisterRequest_EmailPassword
-	//	*RegisterRequest_PhoneOtp
-	//	*RegisterRequest_Social
-	Method isRegisterRequest_Method `protobuf_oneof:"method"`
-	// Display name of the account owner.
-	FullName      string `protobuf:"bytes,10,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
+	Email string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	// At least 8 characters.
+	Password string  `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	FullName string  `protobuf:"bytes,3,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
+	Phone    *string `protobuf:"bytes,4,opt,name=phone,proto3,oneof" json:"phone,omitempty"`
+	// Defaults to Vietnamese.
+	Locale        Locale `protobuf:"varint,5,opt,name=locale,proto3,enum=vietgara.identity.v1.Locale" json:"locale,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *RegisterRequest) Reset() {
 	*x = RegisterRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[3]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -219,7 +183,7 @@ func (x *RegisterRequest) String() string {
 func (*RegisterRequest) ProtoMessage() {}
 
 func (x *RegisterRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[3]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -232,41 +196,21 @@ func (x *RegisterRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterRequest.ProtoReflect.Descriptor instead.
 func (*RegisterRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{3}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *RegisterRequest) GetMethod() isRegisterRequest_Method {
+func (x *RegisterRequest) GetEmail() string {
 	if x != nil {
-		return x.Method
+		return x.Email
 	}
-	return nil
+	return ""
 }
 
-func (x *RegisterRequest) GetEmailPassword() *EmailPasswordCredential {
+func (x *RegisterRequest) GetPassword() string {
 	if x != nil {
-		if x, ok := x.Method.(*RegisterRequest_EmailPassword); ok {
-			return x.EmailPassword
-		}
+		return x.Password
 	}
-	return nil
-}
-
-func (x *RegisterRequest) GetPhoneOtp() *PhoneOtpCredential {
-	if x != nil {
-		if x, ok := x.Method.(*RegisterRequest_PhoneOtp); ok {
-			return x.PhoneOtp
-		}
-	}
-	return nil
-}
-
-func (x *RegisterRequest) GetSocial() *SocialCredential {
-	if x != nil {
-		if x, ok := x.Method.(*RegisterRequest_Social); ok {
-			return x.Social
-		}
-	}
-	return nil
+	return ""
 }
 
 func (x *RegisterRequest) GetFullName() string {
@@ -276,37 +220,68 @@ func (x *RegisterRequest) GetFullName() string {
 	return ""
 }
 
-type isRegisterRequest_Method interface {
-	isRegisterRequest_Method()
+func (x *RegisterRequest) GetPhone() string {
+	if x != nil && x.Phone != nil {
+		return *x.Phone
+	}
+	return ""
 }
 
-type RegisterRequest_EmailPassword struct {
-	EmailPassword *EmailPasswordCredential `protobuf:"bytes,1,opt,name=email_password,json=emailPassword,proto3,oneof"`
+func (x *RegisterRequest) GetLocale() Locale {
+	if x != nil {
+		return x.Locale
+	}
+	return Locale_LOCALE_UNSPECIFIED
 }
 
-type RegisterRequest_PhoneOtp struct {
-	PhoneOtp *PhoneOtpCredential `protobuf:"bytes,2,opt,name=phone_otp,json=phoneOtp,proto3,oneof"`
+type RegisterResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Session       *Session               `protobuf:"bytes,1,opt,name=session,proto3" json:"session,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-type RegisterRequest_Social struct {
-	Social *SocialCredential `protobuf:"bytes,3,opt,name=social,proto3,oneof"`
+func (x *RegisterResponse) Reset() {
+	*x = RegisterResponse{}
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
 }
 
-func (*RegisterRequest_EmailPassword) isRegisterRequest_Method() {}
+func (x *RegisterResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
 
-func (*RegisterRequest_PhoneOtp) isRegisterRequest_Method() {}
+func (*RegisterResponse) ProtoMessage() {}
 
-func (*RegisterRequest_Social) isRegisterRequest_Method() {}
+func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
 
-// LoginRequest authenticates an existing account (FR-IAM-02).
+// Deprecated: Use RegisterResponse.ProtoReflect.Descriptor instead.
+func (*RegisterResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *RegisterResponse) GetSession() *Session {
+	if x != nil {
+		return x.Session
+	}
+	return nil
+}
+
 type LoginRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Method:
-	//
-	//	*LoginRequest_EmailPassword
-	//	*LoginRequest_PhoneOtp
-	//	*LoginRequest_Social
-	Method        isLoginRequest_Method `protobuf_oneof:"method"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -341,174 +316,30 @@ func (*LoginRequest) Descriptor() ([]byte, []int) {
 	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *LoginRequest) GetMethod() isLoginRequest_Method {
+func (x *LoginRequest) GetEmail() string {
 	if x != nil {
-		return x.Method
-	}
-	return nil
-}
-
-func (x *LoginRequest) GetEmailPassword() *EmailPasswordCredential {
-	if x != nil {
-		if x, ok := x.Method.(*LoginRequest_EmailPassword); ok {
-			return x.EmailPassword
-		}
-	}
-	return nil
-}
-
-func (x *LoginRequest) GetPhoneOtp() *PhoneOtpCredential {
-	if x != nil {
-		if x, ok := x.Method.(*LoginRequest_PhoneOtp); ok {
-			return x.PhoneOtp
-		}
-	}
-	return nil
-}
-
-func (x *LoginRequest) GetSocial() *SocialCredential {
-	if x != nil {
-		if x, ok := x.Method.(*LoginRequest_Social); ok {
-			return x.Social
-		}
-	}
-	return nil
-}
-
-type isLoginRequest_Method interface {
-	isLoginRequest_Method()
-}
-
-type LoginRequest_EmailPassword struct {
-	EmailPassword *EmailPasswordCredential `protobuf:"bytes,1,opt,name=email_password,json=emailPassword,proto3,oneof"`
-}
-
-type LoginRequest_PhoneOtp struct {
-	PhoneOtp *PhoneOtpCredential `protobuf:"bytes,2,opt,name=phone_otp,json=phoneOtp,proto3,oneof"`
-}
-
-type LoginRequest_Social struct {
-	Social *SocialCredential `protobuf:"bytes,3,opt,name=social,proto3,oneof"`
-}
-
-func (*LoginRequest_EmailPassword) isLoginRequest_Method() {}
-
-func (*LoginRequest_PhoneOtp) isLoginRequest_Method() {}
-
-func (*LoginRequest_Social) isLoginRequest_Method() {}
-
-// GaragePermission is the access of an account to one garage, carried in
-// the JWT claims (ADR-007).
-type GaragePermission struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// garage_id, used as the tenant id throughout the system (ADR-005).
-	GarageId string `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// Role of the account within that garage (FR-IAM-03).
-	Role          v1.Role `protobuf:"varint,2,opt,name=role,proto3,enum=vietgara.tenant.v1.Role" json:"role,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GaragePermission) Reset() {
-	*x = GaragePermission{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GaragePermission) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GaragePermission) ProtoMessage() {}
-
-func (x *GaragePermission) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GaragePermission.ProtoReflect.Descriptor instead.
-func (*GaragePermission) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *GaragePermission) GetGarageId() string {
-	if x != nil {
-		return x.GarageId
+		return x.Email
 	}
 	return ""
 }
 
-func (x *GaragePermission) GetRole() v1.Role {
+func (x *LoginRequest) GetPassword() string {
 	if x != nil {
-		return x.Role
+		return x.Password
 	}
-	return v1.Role(0)
+	return ""
 }
 
-// RegisterResponse is the response of Register.
-type RegisterResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Auth          *AuthResponse          `protobuf:"bytes,1,opt,name=auth,proto3" json:"auth,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RegisterResponse) Reset() {
-	*x = RegisterResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RegisterResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RegisterResponse) ProtoMessage() {}
-
-func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RegisterResponse.ProtoReflect.Descriptor instead.
-func (*RegisterResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *RegisterResponse) GetAuth() *AuthResponse {
-	if x != nil {
-		return x.Auth
-	}
-	return nil
-}
-
-// LoginResponse is the response of Login.
 type LoginResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Auth          *AuthResponse          `protobuf:"bytes,1,opt,name=auth,proto3" json:"auth,omitempty"`
+	Session       *Session               `protobuf:"bytes,1,opt,name=session,proto3" json:"session,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *LoginResponse) Reset() {
 	*x = LoginResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[7]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -520,7 +351,7 @@ func (x *LoginResponse) String() string {
 func (*LoginResponse) ProtoMessage() {}
 
 func (x *LoginResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[7]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -533,154 +364,16 @@ func (x *LoginResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginResponse.ProtoReflect.Descriptor instead.
 func (*LoginResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{7}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *LoginResponse) GetAuth() *AuthResponse {
+func (x *LoginResponse) GetSession() *Session {
 	if x != nil {
-		return x.Auth
+		return x.Session
 	}
 	return nil
 }
 
-// RefreshTokenResponse is the response of RefreshToken.
-type RefreshTokenResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Auth          *AuthResponse          `protobuf:"bytes,1,opt,name=auth,proto3" json:"auth,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RefreshTokenResponse) Reset() {
-	*x = RefreshTokenResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RefreshTokenResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RefreshTokenResponse) ProtoMessage() {}
-
-func (x *RefreshTokenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RefreshTokenResponse.ProtoReflect.Descriptor instead.
-func (*RefreshTokenResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *RefreshTokenResponse) GetAuth() *AuthResponse {
-	if x != nil {
-		return x.Auth
-	}
-	return nil
-}
-
-// AuthResponse carries the token pair and account context after a
-// successful Register, Login or RefreshToken call.
-type AuthResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// JWT access token.
-	AccessToken string `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	// Refresh token used to obtain new access tokens.
-	RefreshToken string `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
-	// Token type, always "Bearer".
-	TokenType string `protobuf:"bytes,3,opt,name=token_type,json=tokenType,proto3" json:"token_type,omitempty"`
-	// Access token lifetime in seconds.
-	ExpiresIn int64 `protobuf:"varint,4,opt,name=expires_in,json=expiresIn,proto3" json:"expires_in,omitempty"`
-	// The authenticated account.
-	Account *Account `protobuf:"bytes,5,opt,name=account,proto3" json:"account,omitempty"`
-	// Garages the account has access to (empty for a brand-new account).
-	Garages       []*GaragePermission `protobuf:"bytes,6,rep,name=garages,proto3" json:"garages,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AuthResponse) Reset() {
-	*x = AuthResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AuthResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AuthResponse) ProtoMessage() {}
-
-func (x *AuthResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AuthResponse.ProtoReflect.Descriptor instead.
-func (*AuthResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *AuthResponse) GetAccessToken() string {
-	if x != nil {
-		return x.AccessToken
-	}
-	return ""
-}
-
-func (x *AuthResponse) GetRefreshToken() string {
-	if x != nil {
-		return x.RefreshToken
-	}
-	return ""
-}
-
-func (x *AuthResponse) GetTokenType() string {
-	if x != nil {
-		return x.TokenType
-	}
-	return ""
-}
-
-func (x *AuthResponse) GetExpiresIn() int64 {
-	if x != nil {
-		return x.ExpiresIn
-	}
-	return 0
-}
-
-func (x *AuthResponse) GetAccount() *Account {
-	if x != nil {
-		return x.Account
-	}
-	return nil
-}
-
-func (x *AuthResponse) GetGarages() []*GaragePermission {
-	if x != nil {
-		return x.Garages
-	}
-	return nil
-}
-
-// RefreshTokenRequest exchanges a refresh token for a new token pair.
 type RefreshTokenRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
@@ -690,7 +383,7 @@ type RefreshTokenRequest struct {
 
 func (x *RefreshTokenRequest) Reset() {
 	*x = RefreshTokenRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[10]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -702,7 +395,7 @@ func (x *RefreshTokenRequest) String() string {
 func (*RefreshTokenRequest) ProtoMessage() {}
 
 func (x *RefreshTokenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[10]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -715,7 +408,7 @@ func (x *RefreshTokenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RefreshTokenRequest.ProtoReflect.Descriptor instead.
 func (*RefreshTokenRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{10}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *RefreshTokenRequest) GetRefreshToken() string {
@@ -725,7 +418,50 @@ func (x *RefreshTokenRequest) GetRefreshToken() string {
 	return ""
 }
 
-// LogoutRequest revokes the presented refresh token.
+type RefreshTokenResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Session       *Session               `protobuf:"bytes,1,opt,name=session,proto3" json:"session,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RefreshTokenResponse) Reset() {
+	*x = RefreshTokenResponse{}
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RefreshTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RefreshTokenResponse) ProtoMessage() {}
+
+func (x *RefreshTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RefreshTokenResponse.ProtoReflect.Descriptor instead.
+func (*RefreshTokenResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *RefreshTokenResponse) GetSession() *Session {
+	if x != nil {
+		return x.Session
+	}
+	return nil
+}
+
 type LogoutRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
@@ -735,7 +471,7 @@ type LogoutRequest struct {
 
 func (x *LogoutRequest) Reset() {
 	*x = LogoutRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[11]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -747,7 +483,7 @@ func (x *LogoutRequest) String() string {
 func (*LogoutRequest) ProtoMessage() {}
 
 func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[11]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -760,7 +496,7 @@ func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutRequest.ProtoReflect.Descriptor instead.
 func (*LogoutRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{11}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *LogoutRequest) GetRefreshToken() string {
@@ -770,18 +506,15 @@ func (x *LogoutRequest) GetRefreshToken() string {
 	return ""
 }
 
-// LogoutResponse acknowledges a successful logout.
 type LogoutResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// True when the refresh token was found and revoked.
-	Revoked       bool `protobuf:"varint,1,opt,name=revoked,proto3" json:"revoked,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *LogoutResponse) Reset() {
 	*x = LogoutResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[12]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -793,7 +526,7 @@ func (x *LogoutResponse) String() string {
 func (*LogoutResponse) ProtoMessage() {}
 
 func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[12]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -806,44 +539,30 @@ func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutResponse.ProtoReflect.Descriptor instead.
 func (*LogoutResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{12}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *LogoutResponse) GetRevoked() bool {
-	if x != nil {
-		return x.Revoked
-	}
-	return false
-}
-
-// ForgotPasswordRequest requests a password-reset OTP/link via email or
-// SMS (FR-IAM-04).
-type ForgotPasswordRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Channel:
-	//
-	//	*ForgotPasswordRequest_Email
-	//	*ForgotPasswordRequest_Phone
-	Channel       isForgotPasswordRequest_Channel `protobuf_oneof:"channel"`
+type SendEmailVerificationOtpRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ForgotPasswordRequest) Reset() {
-	*x = ForgotPasswordRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[13]
+func (x *SendEmailVerificationOtpRequest) Reset() {
+	*x = SendEmailVerificationOtpRequest{}
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ForgotPasswordRequest) String() string {
+func (x *SendEmailVerificationOtpRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ForgotPasswordRequest) ProtoMessage() {}
+func (*SendEmailVerificationOtpRequest) ProtoMessage() {}
 
-func (x *ForgotPasswordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[13]
+func (x *SendEmailVerificationOtpRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -854,75 +573,174 @@ func (x *ForgotPasswordRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ForgotPasswordRequest.ProtoReflect.Descriptor instead.
-func (*ForgotPasswordRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{13}
+// Deprecated: Use SendEmailVerificationOtpRequest.ProtoReflect.Descriptor instead.
+func (*SendEmailVerificationOtpRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *ForgotPasswordRequest) GetChannel() isForgotPasswordRequest_Channel {
+type SendEmailVerificationOtpResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Challenge     *OtpChallenge          `protobuf:"bytes,1,opt,name=challenge,proto3" json:"challenge,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendEmailVerificationOtpResponse) Reset() {
+	*x = SendEmailVerificationOtpResponse{}
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendEmailVerificationOtpResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendEmailVerificationOtpResponse) ProtoMessage() {}
+
+func (x *SendEmailVerificationOtpResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[11]
 	if x != nil {
-		return x.Channel
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendEmailVerificationOtpResponse.ProtoReflect.Descriptor instead.
+func (*SendEmailVerificationOtpResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *SendEmailVerificationOtpResponse) GetChallenge() *OtpChallenge {
+	if x != nil {
+		return x.Challenge
 	}
 	return nil
 }
 
-func (x *ForgotPasswordRequest) GetEmail() string {
-	if x != nil {
-		if x, ok := x.Channel.(*ForgotPasswordRequest_Email); ok {
-			return x.Email
-		}
-	}
-	return ""
-}
-
-func (x *ForgotPasswordRequest) GetPhone() string {
-	if x != nil {
-		if x, ok := x.Channel.(*ForgotPasswordRequest_Phone); ok {
-			return x.Phone
-		}
-	}
-	return ""
-}
-
-type isForgotPasswordRequest_Channel interface {
-	isForgotPasswordRequest_Channel()
-}
-
-type ForgotPasswordRequest_Email struct {
-	Email string `protobuf:"bytes,1,opt,name=email,proto3,oneof"`
-}
-
-type ForgotPasswordRequest_Phone struct {
-	Phone string `protobuf:"bytes,2,opt,name=phone,proto3,oneof"`
-}
-
-func (*ForgotPasswordRequest_Email) isForgotPasswordRequest_Channel() {}
-
-func (*ForgotPasswordRequest_Phone) isForgotPasswordRequest_Channel() {}
-
-// ForgotPasswordResponse acknowledges that a reset OTP/link was sent.
-type ForgotPasswordResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// True when a reset OTP/link was dispatched on the requested channel.
-	Sent          bool `protobuf:"varint,1,opt,name=sent,proto3" json:"sent,omitempty"`
+type VerifyEmailRequest struct {
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	OtpCode string                 `protobuf:"bytes,1,opt,name=otp_code,json=otpCode,proto3" json:"otp_code,omitempty"`
+	// The refresh token of the current session; it is rotated so the new
+	// session carries the verified claim.
+	RefreshToken  string `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ForgotPasswordResponse) Reset() {
-	*x = ForgotPasswordResponse{}
+func (x *VerifyEmailRequest) Reset() {
+	*x = VerifyEmailRequest{}
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyEmailRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyEmailRequest) ProtoMessage() {}
+
+func (x *VerifyEmailRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyEmailRequest.ProtoReflect.Descriptor instead.
+func (*VerifyEmailRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *VerifyEmailRequest) GetOtpCode() string {
+	if x != nil {
+		return x.OtpCode
+	}
+	return ""
+}
+
+func (x *VerifyEmailRequest) GetRefreshToken() string {
+	if x != nil {
+		return x.RefreshToken
+	}
+	return ""
+}
+
+type VerifyEmailResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Session       *Session               `protobuf:"bytes,1,opt,name=session,proto3" json:"session,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyEmailResponse) Reset() {
+	*x = VerifyEmailResponse{}
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyEmailResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyEmailResponse) ProtoMessage() {}
+
+func (x *VerifyEmailResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyEmailResponse.ProtoReflect.Descriptor instead.
+func (*VerifyEmailResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *VerifyEmailResponse) GetSession() *Session {
+	if x != nil {
+		return x.Session
+	}
+	return nil
+}
+
+type RequestPasswordResetRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RequestPasswordResetRequest) Reset() {
+	*x = RequestPasswordResetRequest{}
 	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ForgotPasswordResponse) String() string {
+func (x *RequestPasswordResetRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ForgotPasswordResponse) ProtoMessage() {}
+func (*RequestPasswordResetRequest) ProtoMessage() {}
 
-func (x *ForgotPasswordResponse) ProtoReflect() protoreflect.Message {
+func (x *RequestPasswordResetRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -934,38 +752,179 @@ func (x *ForgotPasswordResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ForgotPasswordResponse.ProtoReflect.Descriptor instead.
-func (*ForgotPasswordResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use RequestPasswordResetRequest.ProtoReflect.Descriptor instead.
+func (*RequestPasswordResetRequest) Descriptor() ([]byte, []int) {
 	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{14}
 }
 
-func (x *ForgotPasswordResponse) GetSent() bool {
+func (x *RequestPasswordResetRequest) GetEmail() string {
 	if x != nil {
-		return x.Sent
+		return x.Email
 	}
-	return false
+	return ""
 }
 
-// ResetPasswordRequest sets a new password using the OTP/token received
-// via ForgotPassword (FR-IAM-04).
-type ResetPasswordRequest struct {
+type RequestPasswordResetResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Challenge     *OtpChallenge          `protobuf:"bytes,1,opt,name=challenge,proto3" json:"challenge,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RequestPasswordResetResponse) Reset() {
+	*x = RequestPasswordResetResponse{}
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RequestPasswordResetResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RequestPasswordResetResponse) ProtoMessage() {}
+
+func (x *RequestPasswordResetResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RequestPasswordResetResponse.ProtoReflect.Descriptor instead.
+func (*RequestPasswordResetResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *RequestPasswordResetResponse) GetChallenge() *OtpChallenge {
+	if x != nil {
+		return x.Challenge
+	}
+	return nil
+}
+
+type VerifyPasswordResetOtpRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	OtpCode       string                 `protobuf:"bytes,2,opt,name=otp_code,json=otpCode,proto3" json:"otp_code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyPasswordResetOtpRequest) Reset() {
+	*x = VerifyPasswordResetOtpRequest{}
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyPasswordResetOtpRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyPasswordResetOtpRequest) ProtoMessage() {}
+
+func (x *VerifyPasswordResetOtpRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyPasswordResetOtpRequest.ProtoReflect.Descriptor instead.
+func (*VerifyPasswordResetOtpRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *VerifyPasswordResetOtpRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *VerifyPasswordResetOtpRequest) GetOtpCode() string {
+	if x != nil {
+		return x.OtpCode
+	}
+	return ""
+}
+
+type VerifyPasswordResetOtpResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Channel:
-	//
-	//	*ResetPasswordRequest_Email
-	//	*ResetPasswordRequest_Phone
-	Channel isResetPasswordRequest_Channel `protobuf_oneof:"channel"`
-	// OTP code or reset token received via ForgotPassword.
-	OtpCode string `protobuf:"bytes,3,opt,name=otp_code,json=otpCode,proto3" json:"otp_code,omitempty"`
-	// New password to set.
-	NewPassword   string `protobuf:"bytes,4,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
+	// Single-use token for ResetPassword.
+	ResetToken    string                 `protobuf:"bytes,1,opt,name=reset_token,json=resetToken,proto3" json:"reset_token,omitempty"`
+	ExpiresAt     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyPasswordResetOtpResponse) Reset() {
+	*x = VerifyPasswordResetOtpResponse{}
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyPasswordResetOtpResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyPasswordResetOtpResponse) ProtoMessage() {}
+
+func (x *VerifyPasswordResetOtpResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyPasswordResetOtpResponse.ProtoReflect.Descriptor instead.
+func (*VerifyPasswordResetOtpResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *VerifyPasswordResetOtpResponse) GetResetToken() string {
+	if x != nil {
+		return x.ResetToken
+	}
+	return ""
+}
+
+func (x *VerifyPasswordResetOtpResponse) GetExpiresAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return nil
+}
+
+type ResetPasswordRequest struct {
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	ResetToken string                 `protobuf:"bytes,1,opt,name=reset_token,json=resetToken,proto3" json:"reset_token,omitempty"`
+	// At least 8 characters.
+	NewPassword   string `protobuf:"bytes,2,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ResetPasswordRequest) Reset() {
 	*x = ResetPasswordRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[15]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -977,7 +936,7 @@ func (x *ResetPasswordRequest) String() string {
 func (*ResetPasswordRequest) ProtoMessage() {}
 
 func (x *ResetPasswordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[15]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -990,37 +949,12 @@ func (x *ResetPasswordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResetPasswordRequest.ProtoReflect.Descriptor instead.
 func (*ResetPasswordRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{15}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{18}
 }
 
-func (x *ResetPasswordRequest) GetChannel() isResetPasswordRequest_Channel {
+func (x *ResetPasswordRequest) GetResetToken() string {
 	if x != nil {
-		return x.Channel
-	}
-	return nil
-}
-
-func (x *ResetPasswordRequest) GetEmail() string {
-	if x != nil {
-		if x, ok := x.Channel.(*ResetPasswordRequest_Email); ok {
-			return x.Email
-		}
-	}
-	return ""
-}
-
-func (x *ResetPasswordRequest) GetPhone() string {
-	if x != nil {
-		if x, ok := x.Channel.(*ResetPasswordRequest_Phone); ok {
-			return x.Phone
-		}
-	}
-	return ""
-}
-
-func (x *ResetPasswordRequest) GetOtpCode() string {
-	if x != nil {
-		return x.OtpCode
+		return x.ResetToken
 	}
 	return ""
 }
@@ -1032,34 +966,15 @@ func (x *ResetPasswordRequest) GetNewPassword() string {
 	return ""
 }
 
-type isResetPasswordRequest_Channel interface {
-	isResetPasswordRequest_Channel()
-}
-
-type ResetPasswordRequest_Email struct {
-	Email string `protobuf:"bytes,1,opt,name=email,proto3,oneof"`
-}
-
-type ResetPasswordRequest_Phone struct {
-	Phone string `protobuf:"bytes,2,opt,name=phone,proto3,oneof"`
-}
-
-func (*ResetPasswordRequest_Email) isResetPasswordRequest_Channel() {}
-
-func (*ResetPasswordRequest_Phone) isResetPasswordRequest_Channel() {}
-
-// ResetPasswordResponse acknowledges a successful password reset.
 type ResetPasswordResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// True when the password was updated.
-	Reset_        bool `protobuf:"varint,1,opt,name=reset,proto3" json:"reset,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ResetPasswordResponse) Reset() {
 	*x = ResetPasswordResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[16]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1071,7 +986,7 @@ func (x *ResetPasswordResponse) String() string {
 func (*ResetPasswordResponse) ProtoMessage() {}
 
 func (x *ResetPasswordResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[16]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1084,183 +999,83 @@ func (x *ResetPasswordResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResetPasswordResponse.ProtoReflect.Descriptor instead.
 func (*ResetPasswordResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *ResetPasswordResponse) GetReset_() bool {
-	if x != nil {
-		return x.Reset_
-	}
-	return false
-}
-
-// LinkSocialAccountRequest links an additional Google/Facebook account to
-// the current account (FR-IAM-06).
-type LinkSocialAccountRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Social        *SocialCredential      `protobuf:"bytes,1,opt,name=social,proto3" json:"social,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *LinkSocialAccountRequest) Reset() {
-	*x = LinkSocialAccountRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[17]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *LinkSocialAccountRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*LinkSocialAccountRequest) ProtoMessage() {}
-
-func (x *LinkSocialAccountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[17]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use LinkSocialAccountRequest.ProtoReflect.Descriptor instead.
-func (*LinkSocialAccountRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *LinkSocialAccountRequest) GetSocial() *SocialCredential {
-	if x != nil {
-		return x.Social
-	}
-	return nil
-}
-
-// LinkSocialAccountResponse is the response of LinkSocialAccount.
-type LinkSocialAccountResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Account       *Account               `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *LinkSocialAccountResponse) Reset() {
-	*x = LinkSocialAccountResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[18]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *LinkSocialAccountResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*LinkSocialAccountResponse) ProtoMessage() {}
-
-func (x *LinkSocialAccountResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[18]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use LinkSocialAccountResponse.ProtoReflect.Descriptor instead.
-func (*LinkSocialAccountResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *LinkSocialAccountResponse) GetAccount() *Account {
-	if x != nil {
-		return x.Account
-	}
-	return nil
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{19}
 }
 
 var File_vietgara_identity_v1_auth_proto protoreflect.FileDescriptor
 
 const file_vietgara_identity_v1_auth_proto_rawDesc = "" +
 	"\n" +
-	"\x1fvietgara/identity/v1/auth.proto\x12\x14vietgara.identity.v1\x1a\"vietgara/identity/v1/account.proto\x1a\x1evietgara/tenant/v1/staff.proto\"K\n" +
-	"\x17EmailPasswordCredential\x12\x14\n" +
-	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"E\n" +
-	"\x12PhoneOtpCredential\x12\x14\n" +
-	"\x05phone\x18\x01 \x01(\tR\x05phone\x12\x19\n" +
-	"\botp_code\x18\x02 \x01(\tR\aotpCode\"m\n" +
-	"\x10SocialCredential\x12>\n" +
-	"\bprovider\x18\x01 \x01(\x0e2\".vietgara.identity.v1.AuthProviderR\bprovider\x12\x19\n" +
-	"\bid_token\x18\x02 \x01(\tR\aidToken\"\x9b\x02\n" +
-	"\x0fRegisterRequest\x12V\n" +
-	"\x0eemail_password\x18\x01 \x01(\v2-.vietgara.identity.v1.EmailPasswordCredentialH\x00R\remailPassword\x12G\n" +
-	"\tphone_otp\x18\x02 \x01(\v2(.vietgara.identity.v1.PhoneOtpCredentialH\x00R\bphoneOtp\x12@\n" +
-	"\x06social\x18\x03 \x01(\v2&.vietgara.identity.v1.SocialCredentialH\x00R\x06social\x12\x1b\n" +
-	"\tfull_name\x18\n" +
-	" \x01(\tR\bfullNameB\b\n" +
-	"\x06method\"\xfb\x01\n" +
-	"\fLoginRequest\x12V\n" +
-	"\x0eemail_password\x18\x01 \x01(\v2-.vietgara.identity.v1.EmailPasswordCredentialH\x00R\remailPassword\x12G\n" +
-	"\tphone_otp\x18\x02 \x01(\v2(.vietgara.identity.v1.PhoneOtpCredentialH\x00R\bphoneOtp\x12@\n" +
-	"\x06social\x18\x03 \x01(\v2&.vietgara.identity.v1.SocialCredentialH\x00R\x06socialB\b\n" +
-	"\x06method\"]\n" +
-	"\x10GaragePermission\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12,\n" +
-	"\x04role\x18\x02 \x01(\x0e2\x18.vietgara.tenant.v1.RoleR\x04role\"J\n" +
-	"\x10RegisterResponse\x126\n" +
-	"\x04auth\x18\x01 \x01(\v2\".vietgara.identity.v1.AuthResponseR\x04auth\"G\n" +
-	"\rLoginResponse\x126\n" +
-	"\x04auth\x18\x01 \x01(\v2\".vietgara.identity.v1.AuthResponseR\x04auth\"N\n" +
-	"\x14RefreshTokenResponse\x126\n" +
-	"\x04auth\x18\x01 \x01(\v2\".vietgara.identity.v1.AuthResponseR\x04auth\"\x8f\x02\n" +
-	"\fAuthResponse\x12!\n" +
+	"\x1fvietgara/identity/v1/auth.proto\x12\x14vietgara.identity.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\"vietgara/identity/v1/account.proto\"\xc8\x01\n" +
+	"\aSession\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
 	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12\x1d\n" +
 	"\n" +
 	"token_type\x18\x03 \x01(\tR\ttokenType\x12\x1d\n" +
 	"\n" +
 	"expires_in\x18\x04 \x01(\x03R\texpiresIn\x127\n" +
-	"\aaccount\x18\x05 \x01(\v2\x1d.vietgara.identity.v1.AccountR\aaccount\x12@\n" +
-	"\agarages\x18\x06 \x03(\v2&.vietgara.identity.v1.GaragePermissionR\agarages\":\n" +
-	"\x13RefreshTokenRequest\x12#\n" +
-	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"4\n" +
-	"\rLogoutRequest\x12#\n" +
-	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"*\n" +
-	"\x0eLogoutResponse\x12\x18\n" +
-	"\arevoked\x18\x01 \x01(\bR\arevoked\"R\n" +
-	"\x15ForgotPasswordRequest\x12\x16\n" +
-	"\x05email\x18\x01 \x01(\tH\x00R\x05email\x12\x16\n" +
-	"\x05phone\x18\x02 \x01(\tH\x00R\x05phoneB\t\n" +
-	"\achannel\",\n" +
-	"\x16ForgotPasswordResponse\x12\x12\n" +
-	"\x04sent\x18\x01 \x01(\bR\x04sent\"\x8f\x01\n" +
-	"\x14ResetPasswordRequest\x12\x16\n" +
-	"\x05email\x18\x01 \x01(\tH\x00R\x05email\x12\x16\n" +
-	"\x05phone\x18\x02 \x01(\tH\x00R\x05phone\x12\x19\n" +
-	"\botp_code\x18\x03 \x01(\tR\aotpCode\x12!\n" +
-	"\fnew_password\x18\x04 \x01(\tR\vnewPasswordB\t\n" +
-	"\achannel\"-\n" +
-	"\x15ResetPasswordResponse\x12\x14\n" +
-	"\x05reset\x18\x01 \x01(\bR\x05reset\"Z\n" +
-	"\x18LinkSocialAccountRequest\x12>\n" +
-	"\x06social\x18\x01 \x01(\v2&.vietgara.identity.v1.SocialCredentialR\x06social\"T\n" +
-	"\x19LinkSocialAccountResponse\x127\n" +
-	"\aaccount\x18\x01 \x01(\v2\x1d.vietgara.identity.v1.AccountR\aaccount2\xc3\x05\n" +
-	"\vAuthService\x12Y\n" +
-	"\bRegister\x12%.vietgara.identity.v1.RegisterRequest\x1a&.vietgara.identity.v1.RegisterResponse\x12P\n" +
-	"\x05Login\x12\".vietgara.identity.v1.LoginRequest\x1a#.vietgara.identity.v1.LoginResponse\x12e\n" +
-	"\fRefreshToken\x12).vietgara.identity.v1.RefreshTokenRequest\x1a*.vietgara.identity.v1.RefreshTokenResponse\x12S\n" +
-	"\x06Logout\x12#.vietgara.identity.v1.LogoutRequest\x1a$.vietgara.identity.v1.LogoutResponse\x12k\n" +
-	"\x0eForgotPassword\x12+.vietgara.identity.v1.ForgotPasswordRequest\x1a,.vietgara.identity.v1.ForgotPasswordResponse\x12h\n" +
-	"\rResetPassword\x12*.vietgara.identity.v1.ResetPasswordRequest\x1a+.vietgara.identity.v1.ResetPasswordResponse\x12t\n" +
-	"\x11LinkSocialAccount\x12..vietgara.identity.v1.LinkSocialAccountRequest\x1a/.vietgara.identity.v1.LinkSocialAccountResponseBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/identity/v1;identityv1b\x06proto3"
+	"\aaccount\x18\x05 \x01(\v2\x1d.vietgara.identity.v1.AccountR\aaccount\"\x95\x01\n" +
+	"\fOtpChallenge\x129\n" +
+	"\n" +
+	"expires_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12J\n" +
+	"\x13resend_available_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x11resendAvailableAt\"\xca\x01\n" +
+	"\x0fRegisterRequest\x12\x19\n" +
+	"\x05email\x18\x01 \x01(\tB\x03\xe0A\x02R\x05email\x12\x1f\n" +
+	"\bpassword\x18\x02 \x01(\tB\x03\xe0A\x02R\bpassword\x12 \n" +
+	"\tfull_name\x18\x03 \x01(\tB\x03\xe0A\x02R\bfullName\x12\x19\n" +
+	"\x05phone\x18\x04 \x01(\tH\x00R\x05phone\x88\x01\x01\x124\n" +
+	"\x06locale\x18\x05 \x01(\x0e2\x1c.vietgara.identity.v1.LocaleR\x06localeB\b\n" +
+	"\x06_phone\"K\n" +
+	"\x10RegisterResponse\x127\n" +
+	"\asession\x18\x01 \x01(\v2\x1d.vietgara.identity.v1.SessionR\asession\"J\n" +
+	"\fLoginRequest\x12\x19\n" +
+	"\x05email\x18\x01 \x01(\tB\x03\xe0A\x02R\x05email\x12\x1f\n" +
+	"\bpassword\x18\x02 \x01(\tB\x03\xe0A\x02R\bpassword\"H\n" +
+	"\rLoginResponse\x127\n" +
+	"\asession\x18\x01 \x01(\v2\x1d.vietgara.identity.v1.SessionR\asession\"?\n" +
+	"\x13RefreshTokenRequest\x12(\n" +
+	"\rrefresh_token\x18\x01 \x01(\tB\x03\xe0A\x02R\frefreshToken\"O\n" +
+	"\x14RefreshTokenResponse\x127\n" +
+	"\asession\x18\x01 \x01(\v2\x1d.vietgara.identity.v1.SessionR\asession\"9\n" +
+	"\rLogoutRequest\x12(\n" +
+	"\rrefresh_token\x18\x01 \x01(\tB\x03\xe0A\x02R\frefreshToken\"\x10\n" +
+	"\x0eLogoutResponse\"!\n" +
+	"\x1fSendEmailVerificationOtpRequest\"d\n" +
+	" SendEmailVerificationOtpResponse\x12@\n" +
+	"\tchallenge\x18\x01 \x01(\v2\".vietgara.identity.v1.OtpChallengeR\tchallenge\"^\n" +
+	"\x12VerifyEmailRequest\x12\x1e\n" +
+	"\botp_code\x18\x01 \x01(\tB\x03\xe0A\x02R\aotpCode\x12(\n" +
+	"\rrefresh_token\x18\x02 \x01(\tB\x03\xe0A\x02R\frefreshToken\"N\n" +
+	"\x13VerifyEmailResponse\x127\n" +
+	"\asession\x18\x01 \x01(\v2\x1d.vietgara.identity.v1.SessionR\asession\"8\n" +
+	"\x1bRequestPasswordResetRequest\x12\x19\n" +
+	"\x05email\x18\x01 \x01(\tB\x03\xe0A\x02R\x05email\"`\n" +
+	"\x1cRequestPasswordResetResponse\x12@\n" +
+	"\tchallenge\x18\x01 \x01(\v2\".vietgara.identity.v1.OtpChallengeR\tchallenge\"Z\n" +
+	"\x1dVerifyPasswordResetOtpRequest\x12\x19\n" +
+	"\x05email\x18\x01 \x01(\tB\x03\xe0A\x02R\x05email\x12\x1e\n" +
+	"\botp_code\x18\x02 \x01(\tB\x03\xe0A\x02R\aotpCode\"|\n" +
+	"\x1eVerifyPasswordResetOtpResponse\x12\x1f\n" +
+	"\vreset_token\x18\x01 \x01(\tR\n" +
+	"resetToken\x129\n" +
+	"\n" +
+	"expires_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\"d\n" +
+	"\x14ResetPasswordRequest\x12$\n" +
+	"\vreset_token\x18\x01 \x01(\tB\x03\xe0A\x02R\n" +
+	"resetToken\x12&\n" +
+	"\fnew_password\x18\x02 \x01(\tB\x03\xe0A\x02R\vnewPassword\"\x17\n" +
+	"\x15ResetPasswordResponse2\xff\n" +
+	"\n" +
+	"\vAuthService\x12\x84\x01\n" +
+	"\bRegister\x12%.vietgara.identity.v1.RegisterRequest\x1a&.vietgara.identity.v1.RegisterResponse\")\x82\xd3\xe4\x93\x02#:\x01*b\asession\"\x15/api/v1/auth/register\x12x\n" +
+	"\x05Login\x12\".vietgara.identity.v1.LoginRequest\x1a#.vietgara.identity.v1.LoginResponse\"&\x82\xd3\xe4\x93\x02 :\x01*b\asession\"\x12/api/v1/auth/login\x12\x8f\x01\n" +
+	"\fRefreshToken\x12).vietgara.identity.v1.RefreshTokenRequest\x1a*.vietgara.identity.v1.RefreshTokenResponse\"(\x82\xd3\xe4\x93\x02\":\x01*b\asession\"\x14/api/v1/auth/refresh\x12s\n" +
+	"\x06Logout\x12#.vietgara.identity.v1.LogoutRequest\x1a$.vietgara.identity.v1.LogoutResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/api/v1/auth/logout\x12\xc4\x01\n" +
+	"\x18SendEmailVerificationOtp\x125.vietgara.identity.v1.SendEmailVerificationOtpRequest\x1a6.vietgara.identity.v1.SendEmailVerificationOtpResponse\"9\x82\xd3\xe4\x93\x023:\x01*b\tchallenge\"#/api/v1/auth/email-verification/otp\x12\x97\x01\n" +
+	"\vVerifyEmail\x12(.vietgara.identity.v1.VerifyEmailRequest\x1a).vietgara.identity.v1.VerifyEmailResponse\"3\x82\xd3\xe4\x93\x02-:\x01*b\asession\"\x1f/api/v1/auth/email-verification\x12\xb4\x01\n" +
+	"\x14RequestPasswordReset\x121.vietgara.identity.v1.RequestPasswordResetRequest\x1a2.vietgara.identity.v1.RequestPasswordResetResponse\"5\x82\xd3\xe4\x93\x02/:\x01*b\tchallenge\"\x1f/api/v1/auth/password-reset/otp\x12\xbc\x01\n" +
+	"\x16VerifyPasswordResetOtp\x123.vietgara.identity.v1.VerifyPasswordResetOtpRequest\x1a4.vietgara.identity.v1.VerifyPasswordResetOtpResponse\"7\x82\xd3\xe4\x93\x021:\x01*\",/api/v1/auth/password-reset/otp/verification\x12\x90\x01\n" +
+	"\rResetPassword\x12*.vietgara.identity.v1.ResetPasswordRequest\x1a+.vietgara.identity.v1.ResetPasswordResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/api/v1/auth/password-resetBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/identity/v1;identityv1b\x06proto3"
 
 var (
 	file_vietgara_identity_v1_auth_proto_rawDescOnce sync.Once
@@ -1274,66 +1089,67 @@ func file_vietgara_identity_v1_auth_proto_rawDescGZIP() []byte {
 	return file_vietgara_identity_v1_auth_proto_rawDescData
 }
 
-var file_vietgara_identity_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_vietgara_identity_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_vietgara_identity_v1_auth_proto_goTypes = []any{
-	(*EmailPasswordCredential)(nil),   // 0: vietgara.identity.v1.EmailPasswordCredential
-	(*PhoneOtpCredential)(nil),        // 1: vietgara.identity.v1.PhoneOtpCredential
-	(*SocialCredential)(nil),          // 2: vietgara.identity.v1.SocialCredential
-	(*RegisterRequest)(nil),           // 3: vietgara.identity.v1.RegisterRequest
-	(*LoginRequest)(nil),              // 4: vietgara.identity.v1.LoginRequest
-	(*GaragePermission)(nil),          // 5: vietgara.identity.v1.GaragePermission
-	(*RegisterResponse)(nil),          // 6: vietgara.identity.v1.RegisterResponse
-	(*LoginResponse)(nil),             // 7: vietgara.identity.v1.LoginResponse
-	(*RefreshTokenResponse)(nil),      // 8: vietgara.identity.v1.RefreshTokenResponse
-	(*AuthResponse)(nil),              // 9: vietgara.identity.v1.AuthResponse
-	(*RefreshTokenRequest)(nil),       // 10: vietgara.identity.v1.RefreshTokenRequest
-	(*LogoutRequest)(nil),             // 11: vietgara.identity.v1.LogoutRequest
-	(*LogoutResponse)(nil),            // 12: vietgara.identity.v1.LogoutResponse
-	(*ForgotPasswordRequest)(nil),     // 13: vietgara.identity.v1.ForgotPasswordRequest
-	(*ForgotPasswordResponse)(nil),    // 14: vietgara.identity.v1.ForgotPasswordResponse
-	(*ResetPasswordRequest)(nil),      // 15: vietgara.identity.v1.ResetPasswordRequest
-	(*ResetPasswordResponse)(nil),     // 16: vietgara.identity.v1.ResetPasswordResponse
-	(*LinkSocialAccountRequest)(nil),  // 17: vietgara.identity.v1.LinkSocialAccountRequest
-	(*LinkSocialAccountResponse)(nil), // 18: vietgara.identity.v1.LinkSocialAccountResponse
-	(AuthProvider)(0),                 // 19: vietgara.identity.v1.AuthProvider
-	(v1.Role)(0),                      // 20: vietgara.tenant.v1.Role
-	(*Account)(nil),                   // 21: vietgara.identity.v1.Account
+	(*Session)(nil),                          // 0: vietgara.identity.v1.Session
+	(*OtpChallenge)(nil),                     // 1: vietgara.identity.v1.OtpChallenge
+	(*RegisterRequest)(nil),                  // 2: vietgara.identity.v1.RegisterRequest
+	(*RegisterResponse)(nil),                 // 3: vietgara.identity.v1.RegisterResponse
+	(*LoginRequest)(nil),                     // 4: vietgara.identity.v1.LoginRequest
+	(*LoginResponse)(nil),                    // 5: vietgara.identity.v1.LoginResponse
+	(*RefreshTokenRequest)(nil),              // 6: vietgara.identity.v1.RefreshTokenRequest
+	(*RefreshTokenResponse)(nil),             // 7: vietgara.identity.v1.RefreshTokenResponse
+	(*LogoutRequest)(nil),                    // 8: vietgara.identity.v1.LogoutRequest
+	(*LogoutResponse)(nil),                   // 9: vietgara.identity.v1.LogoutResponse
+	(*SendEmailVerificationOtpRequest)(nil),  // 10: vietgara.identity.v1.SendEmailVerificationOtpRequest
+	(*SendEmailVerificationOtpResponse)(nil), // 11: vietgara.identity.v1.SendEmailVerificationOtpResponse
+	(*VerifyEmailRequest)(nil),               // 12: vietgara.identity.v1.VerifyEmailRequest
+	(*VerifyEmailResponse)(nil),              // 13: vietgara.identity.v1.VerifyEmailResponse
+	(*RequestPasswordResetRequest)(nil),      // 14: vietgara.identity.v1.RequestPasswordResetRequest
+	(*RequestPasswordResetResponse)(nil),     // 15: vietgara.identity.v1.RequestPasswordResetResponse
+	(*VerifyPasswordResetOtpRequest)(nil),    // 16: vietgara.identity.v1.VerifyPasswordResetOtpRequest
+	(*VerifyPasswordResetOtpResponse)(nil),   // 17: vietgara.identity.v1.VerifyPasswordResetOtpResponse
+	(*ResetPasswordRequest)(nil),             // 18: vietgara.identity.v1.ResetPasswordRequest
+	(*ResetPasswordResponse)(nil),            // 19: vietgara.identity.v1.ResetPasswordResponse
+	(*Account)(nil),                          // 20: vietgara.identity.v1.Account
+	(*timestamppb.Timestamp)(nil),            // 21: google.protobuf.Timestamp
+	(Locale)(0),                              // 22: vietgara.identity.v1.Locale
 }
 var file_vietgara_identity_v1_auth_proto_depIdxs = []int32{
-	19, // 0: vietgara.identity.v1.SocialCredential.provider:type_name -> vietgara.identity.v1.AuthProvider
-	0,  // 1: vietgara.identity.v1.RegisterRequest.email_password:type_name -> vietgara.identity.v1.EmailPasswordCredential
-	1,  // 2: vietgara.identity.v1.RegisterRequest.phone_otp:type_name -> vietgara.identity.v1.PhoneOtpCredential
-	2,  // 3: vietgara.identity.v1.RegisterRequest.social:type_name -> vietgara.identity.v1.SocialCredential
-	0,  // 4: vietgara.identity.v1.LoginRequest.email_password:type_name -> vietgara.identity.v1.EmailPasswordCredential
-	1,  // 5: vietgara.identity.v1.LoginRequest.phone_otp:type_name -> vietgara.identity.v1.PhoneOtpCredential
-	2,  // 6: vietgara.identity.v1.LoginRequest.social:type_name -> vietgara.identity.v1.SocialCredential
-	20, // 7: vietgara.identity.v1.GaragePermission.role:type_name -> vietgara.tenant.v1.Role
-	9,  // 8: vietgara.identity.v1.RegisterResponse.auth:type_name -> vietgara.identity.v1.AuthResponse
-	9,  // 9: vietgara.identity.v1.LoginResponse.auth:type_name -> vietgara.identity.v1.AuthResponse
-	9,  // 10: vietgara.identity.v1.RefreshTokenResponse.auth:type_name -> vietgara.identity.v1.AuthResponse
-	21, // 11: vietgara.identity.v1.AuthResponse.account:type_name -> vietgara.identity.v1.Account
-	5,  // 12: vietgara.identity.v1.AuthResponse.garages:type_name -> vietgara.identity.v1.GaragePermission
-	2,  // 13: vietgara.identity.v1.LinkSocialAccountRequest.social:type_name -> vietgara.identity.v1.SocialCredential
-	21, // 14: vietgara.identity.v1.LinkSocialAccountResponse.account:type_name -> vietgara.identity.v1.Account
-	3,  // 15: vietgara.identity.v1.AuthService.Register:input_type -> vietgara.identity.v1.RegisterRequest
-	4,  // 16: vietgara.identity.v1.AuthService.Login:input_type -> vietgara.identity.v1.LoginRequest
-	10, // 17: vietgara.identity.v1.AuthService.RefreshToken:input_type -> vietgara.identity.v1.RefreshTokenRequest
-	11, // 18: vietgara.identity.v1.AuthService.Logout:input_type -> vietgara.identity.v1.LogoutRequest
-	13, // 19: vietgara.identity.v1.AuthService.ForgotPassword:input_type -> vietgara.identity.v1.ForgotPasswordRequest
-	15, // 20: vietgara.identity.v1.AuthService.ResetPassword:input_type -> vietgara.identity.v1.ResetPasswordRequest
-	17, // 21: vietgara.identity.v1.AuthService.LinkSocialAccount:input_type -> vietgara.identity.v1.LinkSocialAccountRequest
-	6,  // 22: vietgara.identity.v1.AuthService.Register:output_type -> vietgara.identity.v1.RegisterResponse
-	7,  // 23: vietgara.identity.v1.AuthService.Login:output_type -> vietgara.identity.v1.LoginResponse
-	8,  // 24: vietgara.identity.v1.AuthService.RefreshToken:output_type -> vietgara.identity.v1.RefreshTokenResponse
-	12, // 25: vietgara.identity.v1.AuthService.Logout:output_type -> vietgara.identity.v1.LogoutResponse
-	14, // 26: vietgara.identity.v1.AuthService.ForgotPassword:output_type -> vietgara.identity.v1.ForgotPasswordResponse
-	16, // 27: vietgara.identity.v1.AuthService.ResetPassword:output_type -> vietgara.identity.v1.ResetPasswordResponse
-	18, // 28: vietgara.identity.v1.AuthService.LinkSocialAccount:output_type -> vietgara.identity.v1.LinkSocialAccountResponse
-	22, // [22:29] is the sub-list for method output_type
-	15, // [15:22] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	20, // 0: vietgara.identity.v1.Session.account:type_name -> vietgara.identity.v1.Account
+	21, // 1: vietgara.identity.v1.OtpChallenge.expires_at:type_name -> google.protobuf.Timestamp
+	21, // 2: vietgara.identity.v1.OtpChallenge.resend_available_at:type_name -> google.protobuf.Timestamp
+	22, // 3: vietgara.identity.v1.RegisterRequest.locale:type_name -> vietgara.identity.v1.Locale
+	0,  // 4: vietgara.identity.v1.RegisterResponse.session:type_name -> vietgara.identity.v1.Session
+	0,  // 5: vietgara.identity.v1.LoginResponse.session:type_name -> vietgara.identity.v1.Session
+	0,  // 6: vietgara.identity.v1.RefreshTokenResponse.session:type_name -> vietgara.identity.v1.Session
+	1,  // 7: vietgara.identity.v1.SendEmailVerificationOtpResponse.challenge:type_name -> vietgara.identity.v1.OtpChallenge
+	0,  // 8: vietgara.identity.v1.VerifyEmailResponse.session:type_name -> vietgara.identity.v1.Session
+	1,  // 9: vietgara.identity.v1.RequestPasswordResetResponse.challenge:type_name -> vietgara.identity.v1.OtpChallenge
+	21, // 10: vietgara.identity.v1.VerifyPasswordResetOtpResponse.expires_at:type_name -> google.protobuf.Timestamp
+	2,  // 11: vietgara.identity.v1.AuthService.Register:input_type -> vietgara.identity.v1.RegisterRequest
+	4,  // 12: vietgara.identity.v1.AuthService.Login:input_type -> vietgara.identity.v1.LoginRequest
+	6,  // 13: vietgara.identity.v1.AuthService.RefreshToken:input_type -> vietgara.identity.v1.RefreshTokenRequest
+	8,  // 14: vietgara.identity.v1.AuthService.Logout:input_type -> vietgara.identity.v1.LogoutRequest
+	10, // 15: vietgara.identity.v1.AuthService.SendEmailVerificationOtp:input_type -> vietgara.identity.v1.SendEmailVerificationOtpRequest
+	12, // 16: vietgara.identity.v1.AuthService.VerifyEmail:input_type -> vietgara.identity.v1.VerifyEmailRequest
+	14, // 17: vietgara.identity.v1.AuthService.RequestPasswordReset:input_type -> vietgara.identity.v1.RequestPasswordResetRequest
+	16, // 18: vietgara.identity.v1.AuthService.VerifyPasswordResetOtp:input_type -> vietgara.identity.v1.VerifyPasswordResetOtpRequest
+	18, // 19: vietgara.identity.v1.AuthService.ResetPassword:input_type -> vietgara.identity.v1.ResetPasswordRequest
+	3,  // 20: vietgara.identity.v1.AuthService.Register:output_type -> vietgara.identity.v1.RegisterResponse
+	5,  // 21: vietgara.identity.v1.AuthService.Login:output_type -> vietgara.identity.v1.LoginResponse
+	7,  // 22: vietgara.identity.v1.AuthService.RefreshToken:output_type -> vietgara.identity.v1.RefreshTokenResponse
+	9,  // 23: vietgara.identity.v1.AuthService.Logout:output_type -> vietgara.identity.v1.LogoutResponse
+	11, // 24: vietgara.identity.v1.AuthService.SendEmailVerificationOtp:output_type -> vietgara.identity.v1.SendEmailVerificationOtpResponse
+	13, // 25: vietgara.identity.v1.AuthService.VerifyEmail:output_type -> vietgara.identity.v1.VerifyEmailResponse
+	15, // 26: vietgara.identity.v1.AuthService.RequestPasswordReset:output_type -> vietgara.identity.v1.RequestPasswordResetResponse
+	17, // 27: vietgara.identity.v1.AuthService.VerifyPasswordResetOtp:output_type -> vietgara.identity.v1.VerifyPasswordResetOtpResponse
+	19, // 28: vietgara.identity.v1.AuthService.ResetPassword:output_type -> vietgara.identity.v1.ResetPasswordResponse
+	20, // [20:29] is the sub-list for method output_type
+	11, // [11:20] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_identity_v1_auth_proto_init() }
@@ -1342,31 +1158,14 @@ func file_vietgara_identity_v1_auth_proto_init() {
 		return
 	}
 	file_vietgara_identity_v1_account_proto_init()
-	file_vietgara_identity_v1_auth_proto_msgTypes[3].OneofWrappers = []any{
-		(*RegisterRequest_EmailPassword)(nil),
-		(*RegisterRequest_PhoneOtp)(nil),
-		(*RegisterRequest_Social)(nil),
-	}
-	file_vietgara_identity_v1_auth_proto_msgTypes[4].OneofWrappers = []any{
-		(*LoginRequest_EmailPassword)(nil),
-		(*LoginRequest_PhoneOtp)(nil),
-		(*LoginRequest_Social)(nil),
-	}
-	file_vietgara_identity_v1_auth_proto_msgTypes[13].OneofWrappers = []any{
-		(*ForgotPasswordRequest_Email)(nil),
-		(*ForgotPasswordRequest_Phone)(nil),
-	}
-	file_vietgara_identity_v1_auth_proto_msgTypes[15].OneofWrappers = []any{
-		(*ResetPasswordRequest_Email)(nil),
-		(*ResetPasswordRequest_Phone)(nil),
-	}
+	file_vietgara_identity_v1_auth_proto_msgTypes[2].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_identity_v1_auth_proto_rawDesc), len(file_vietgara_identity_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

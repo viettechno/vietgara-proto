@@ -4,12 +4,6 @@
 // - protoc             (unknown)
 // source: vietgara/license/v1/license.proto
 
-// Package vietgara.license.v1 defines the License Management module (HLD
-// module #3): subscription plans, the per-garage subscription and its
-// entitlements.
-// See: FRD FR-LIC-01/02/04, API Specification Section 4, Database Design
-// Section 6.3, LLD Section 3.
-
 package licensev1
 
 import (
@@ -25,27 +19,27 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	LicenseService_ListPlans_FullMethodName       = "/vietgara.license.v1.LicenseService/ListPlans"
-	LicenseService_GetSubscription_FullMethodName = "/vietgara.license.v1.LicenseService/GetSubscription"
-	LicenseService_ChangePlan_FullMethodName      = "/vietgara.license.v1.LicenseService/ChangePlan"
-	LicenseService_GetEntitlements_FullMethodName = "/vietgara.license.v1.LicenseService/GetEntitlements"
+	LicenseService_ListPlans_FullMethodName             = "/vietgara.license.v1.LicenseService/ListPlans"
+	LicenseService_GetMySubscription_FullMethodName     = "/vietgara.license.v1.LicenseService/GetMySubscription"
+	LicenseService_ChangeMyPlan_FullMethodName          = "/vietgara.license.v1.LicenseService/ChangeMyPlan"
+	LicenseService_GetGarageEntitlements_FullMethodName = "/vietgara.license.v1.LicenseService/GetGarageEntitlements"
 )
 
 // LicenseServiceClient is the client API for LicenseService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// LicenseService exposes plans, subscriptions and entitlements
-// (API Specification Section 4).
+// LicenseService is the garage-facing side of License Management.
 type LicenseServiceClient interface {
-	// ListPlans lists the plans a garage can subscribe to.
 	ListPlans(ctx context.Context, in *ListPlansRequest, opts ...grpc.CallOption) (*ListPlansResponse, error)
-	// GetSubscription returns the subscription of a garage.
-	GetSubscription(ctx context.Context, in *GetSubscriptionRequest, opts ...grpc.CallOption) (*GetSubscriptionResponse, error)
-	// ChangePlan upgrades, downgrades or renews a garage's subscription.
-	ChangePlan(ctx context.Context, in *ChangePlanRequest, opts ...grpc.CallOption) (*ChangePlanResponse, error)
-	// GetEntitlements returns the features and limits a garage may use.
-	GetEntitlements(ctx context.Context, in *GetEntitlementsRequest, opts ...grpc.CallOption) (*GetEntitlementsResponse, error)
+	// The signed-in owner's subscription and usage.
+	GetMySubscription(ctx context.Context, in *GetMySubscriptionRequest, opts ...grpc.CallOption) (*GetMySubscriptionResponse, error)
+	// Switches the owner to another plan (FR-LIC-02). Takes effect at once
+	// and starts a new period; online payment arrives in Phase 2. Fails with
+	// PLAN_LIMIT_REACHED when current usage exceeds the new plan.
+	ChangeMyPlan(ctx context.Context, in *ChangeMyPlanRequest, opts ...grpc.CallOption) (*ChangeMyPlanResponse, error)
+	// What the garage may use; any active member may read it.
+	GetGarageEntitlements(ctx context.Context, in *GetGarageEntitlementsRequest, opts ...grpc.CallOption) (*GetGarageEntitlementsResponse, error)
 }
 
 type licenseServiceClient struct {
@@ -66,30 +60,30 @@ func (c *licenseServiceClient) ListPlans(ctx context.Context, in *ListPlansReque
 	return out, nil
 }
 
-func (c *licenseServiceClient) GetSubscription(ctx context.Context, in *GetSubscriptionRequest, opts ...grpc.CallOption) (*GetSubscriptionResponse, error) {
+func (c *licenseServiceClient) GetMySubscription(ctx context.Context, in *GetMySubscriptionRequest, opts ...grpc.CallOption) (*GetMySubscriptionResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetSubscriptionResponse)
-	err := c.cc.Invoke(ctx, LicenseService_GetSubscription_FullMethodName, in, out, cOpts...)
+	out := new(GetMySubscriptionResponse)
+	err := c.cc.Invoke(ctx, LicenseService_GetMySubscription_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *licenseServiceClient) ChangePlan(ctx context.Context, in *ChangePlanRequest, opts ...grpc.CallOption) (*ChangePlanResponse, error) {
+func (c *licenseServiceClient) ChangeMyPlan(ctx context.Context, in *ChangeMyPlanRequest, opts ...grpc.CallOption) (*ChangeMyPlanResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ChangePlanResponse)
-	err := c.cc.Invoke(ctx, LicenseService_ChangePlan_FullMethodName, in, out, cOpts...)
+	out := new(ChangeMyPlanResponse)
+	err := c.cc.Invoke(ctx, LicenseService_ChangeMyPlan_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *licenseServiceClient) GetEntitlements(ctx context.Context, in *GetEntitlementsRequest, opts ...grpc.CallOption) (*GetEntitlementsResponse, error) {
+func (c *licenseServiceClient) GetGarageEntitlements(ctx context.Context, in *GetGarageEntitlementsRequest, opts ...grpc.CallOption) (*GetGarageEntitlementsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetEntitlementsResponse)
-	err := c.cc.Invoke(ctx, LicenseService_GetEntitlements_FullMethodName, in, out, cOpts...)
+	out := new(GetGarageEntitlementsResponse)
+	err := c.cc.Invoke(ctx, LicenseService_GetGarageEntitlements_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -100,17 +94,17 @@ func (c *licenseServiceClient) GetEntitlements(ctx context.Context, in *GetEntit
 // All implementations must embed UnimplementedLicenseServiceServer
 // for forward compatibility.
 //
-// LicenseService exposes plans, subscriptions and entitlements
-// (API Specification Section 4).
+// LicenseService is the garage-facing side of License Management.
 type LicenseServiceServer interface {
-	// ListPlans lists the plans a garage can subscribe to.
 	ListPlans(context.Context, *ListPlansRequest) (*ListPlansResponse, error)
-	// GetSubscription returns the subscription of a garage.
-	GetSubscription(context.Context, *GetSubscriptionRequest) (*GetSubscriptionResponse, error)
-	// ChangePlan upgrades, downgrades or renews a garage's subscription.
-	ChangePlan(context.Context, *ChangePlanRequest) (*ChangePlanResponse, error)
-	// GetEntitlements returns the features and limits a garage may use.
-	GetEntitlements(context.Context, *GetEntitlementsRequest) (*GetEntitlementsResponse, error)
+	// The signed-in owner's subscription and usage.
+	GetMySubscription(context.Context, *GetMySubscriptionRequest) (*GetMySubscriptionResponse, error)
+	// Switches the owner to another plan (FR-LIC-02). Takes effect at once
+	// and starts a new period; online payment arrives in Phase 2. Fails with
+	// PLAN_LIMIT_REACHED when current usage exceeds the new plan.
+	ChangeMyPlan(context.Context, *ChangeMyPlanRequest) (*ChangeMyPlanResponse, error)
+	// What the garage may use; any active member may read it.
+	GetGarageEntitlements(context.Context, *GetGarageEntitlementsRequest) (*GetGarageEntitlementsResponse, error)
 	mustEmbedUnimplementedLicenseServiceServer()
 }
 
@@ -124,14 +118,14 @@ type UnimplementedLicenseServiceServer struct{}
 func (UnimplementedLicenseServiceServer) ListPlans(context.Context, *ListPlansRequest) (*ListPlansResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListPlans not implemented")
 }
-func (UnimplementedLicenseServiceServer) GetSubscription(context.Context, *GetSubscriptionRequest) (*GetSubscriptionResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetSubscription not implemented")
+func (UnimplementedLicenseServiceServer) GetMySubscription(context.Context, *GetMySubscriptionRequest) (*GetMySubscriptionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetMySubscription not implemented")
 }
-func (UnimplementedLicenseServiceServer) ChangePlan(context.Context, *ChangePlanRequest) (*ChangePlanResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ChangePlan not implemented")
+func (UnimplementedLicenseServiceServer) ChangeMyPlan(context.Context, *ChangeMyPlanRequest) (*ChangeMyPlanResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ChangeMyPlan not implemented")
 }
-func (UnimplementedLicenseServiceServer) GetEntitlements(context.Context, *GetEntitlementsRequest) (*GetEntitlementsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetEntitlements not implemented")
+func (UnimplementedLicenseServiceServer) GetGarageEntitlements(context.Context, *GetGarageEntitlementsRequest) (*GetGarageEntitlementsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetGarageEntitlements not implemented")
 }
 func (UnimplementedLicenseServiceServer) mustEmbedUnimplementedLicenseServiceServer() {}
 func (UnimplementedLicenseServiceServer) testEmbeddedByValue()                        {}
@@ -172,56 +166,56 @@ func _LicenseService_ListPlans_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LicenseService_GetSubscription_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetSubscriptionRequest)
+func _LicenseService_GetMySubscription_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMySubscriptionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LicenseServiceServer).GetSubscription(ctx, in)
+		return srv.(LicenseServiceServer).GetMySubscription(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: LicenseService_GetSubscription_FullMethodName,
+		FullMethod: LicenseService_GetMySubscription_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LicenseServiceServer).GetSubscription(ctx, req.(*GetSubscriptionRequest))
+		return srv.(LicenseServiceServer).GetMySubscription(ctx, req.(*GetMySubscriptionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LicenseService_ChangePlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChangePlanRequest)
+func _LicenseService_ChangeMyPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangeMyPlanRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LicenseServiceServer).ChangePlan(ctx, in)
+		return srv.(LicenseServiceServer).ChangeMyPlan(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: LicenseService_ChangePlan_FullMethodName,
+		FullMethod: LicenseService_ChangeMyPlan_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LicenseServiceServer).ChangePlan(ctx, req.(*ChangePlanRequest))
+		return srv.(LicenseServiceServer).ChangeMyPlan(ctx, req.(*ChangeMyPlanRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LicenseService_GetEntitlements_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetEntitlementsRequest)
+func _LicenseService_GetGarageEntitlements_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGarageEntitlementsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LicenseServiceServer).GetEntitlements(ctx, in)
+		return srv.(LicenseServiceServer).GetGarageEntitlements(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: LicenseService_GetEntitlements_FullMethodName,
+		FullMethod: LicenseService_GetGarageEntitlements_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LicenseServiceServer).GetEntitlements(ctx, req.(*GetEntitlementsRequest))
+		return srv.(LicenseServiceServer).GetGarageEntitlements(ctx, req.(*GetGarageEntitlementsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -238,16 +232,278 @@ var LicenseService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _LicenseService_ListPlans_Handler,
 		},
 		{
-			MethodName: "GetSubscription",
-			Handler:    _LicenseService_GetSubscription_Handler,
+			MethodName: "GetMySubscription",
+			Handler:    _LicenseService_GetMySubscription_Handler,
 		},
 		{
-			MethodName: "ChangePlan",
-			Handler:    _LicenseService_ChangePlan_Handler,
+			MethodName: "ChangeMyPlan",
+			Handler:    _LicenseService_ChangeMyPlan_Handler,
 		},
 		{
-			MethodName: "GetEntitlements",
-			Handler:    _LicenseService_GetEntitlements_Handler,
+			MethodName: "GetGarageEntitlements",
+			Handler:    _LicenseService_GetGarageEntitlements_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "vietgara/license/v1/license.proto",
+}
+
+const (
+	LicenseAdminService_ListAllPlans_FullMethodName       = "/vietgara.license.v1.LicenseAdminService/ListAllPlans"
+	LicenseAdminService_CreatePlan_FullMethodName         = "/vietgara.license.v1.LicenseAdminService/CreatePlan"
+	LicenseAdminService_UpdatePlan_FullMethodName         = "/vietgara.license.v1.LicenseAdminService/UpdatePlan"
+	LicenseAdminService_ListSubscriptions_FullMethodName  = "/vietgara.license.v1.LicenseAdminService/ListSubscriptions"
+	LicenseAdminService_ExtendSubscription_FullMethodName = "/vietgara.license.v1.LicenseAdminService/ExtendSubscription"
+)
+
+// LicenseAdminServiceClient is the client API for LicenseAdminService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// LicenseAdminService is for platform admins only (FR-LIC-05).
+type LicenseAdminServiceClient interface {
+	// Every plan, including hidden and inactive ones.
+	ListAllPlans(ctx context.Context, in *ListAllPlansRequest, opts ...grpc.CallOption) (*ListAllPlansResponse, error)
+	CreatePlan(ctx context.Context, in *CreatePlanRequest, opts ...grpc.CallOption) (*CreatePlanResponse, error)
+	UpdatePlan(ctx context.Context, in *UpdatePlanRequest, opts ...grpc.CallOption) (*UpdatePlanResponse, error)
+	ListSubscriptions(ctx context.Context, in *ListSubscriptionsRequest, opts ...grpc.CallOption) (*ListSubscriptionsResponse, error)
+	// Manual renewal until online payment exists (Phase 2).
+	ExtendSubscription(ctx context.Context, in *ExtendSubscriptionRequest, opts ...grpc.CallOption) (*ExtendSubscriptionResponse, error)
+}
+
+type licenseAdminServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewLicenseAdminServiceClient(cc grpc.ClientConnInterface) LicenseAdminServiceClient {
+	return &licenseAdminServiceClient{cc}
+}
+
+func (c *licenseAdminServiceClient) ListAllPlans(ctx context.Context, in *ListAllPlansRequest, opts ...grpc.CallOption) (*ListAllPlansResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListAllPlansResponse)
+	err := c.cc.Invoke(ctx, LicenseAdminService_ListAllPlans_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseAdminServiceClient) CreatePlan(ctx context.Context, in *CreatePlanRequest, opts ...grpc.CallOption) (*CreatePlanResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreatePlanResponse)
+	err := c.cc.Invoke(ctx, LicenseAdminService_CreatePlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseAdminServiceClient) UpdatePlan(ctx context.Context, in *UpdatePlanRequest, opts ...grpc.CallOption) (*UpdatePlanResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdatePlanResponse)
+	err := c.cc.Invoke(ctx, LicenseAdminService_UpdatePlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseAdminServiceClient) ListSubscriptions(ctx context.Context, in *ListSubscriptionsRequest, opts ...grpc.CallOption) (*ListSubscriptionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSubscriptionsResponse)
+	err := c.cc.Invoke(ctx, LicenseAdminService_ListSubscriptions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseAdminServiceClient) ExtendSubscription(ctx context.Context, in *ExtendSubscriptionRequest, opts ...grpc.CallOption) (*ExtendSubscriptionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ExtendSubscriptionResponse)
+	err := c.cc.Invoke(ctx, LicenseAdminService_ExtendSubscription_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// LicenseAdminServiceServer is the server API for LicenseAdminService service.
+// All implementations must embed UnimplementedLicenseAdminServiceServer
+// for forward compatibility.
+//
+// LicenseAdminService is for platform admins only (FR-LIC-05).
+type LicenseAdminServiceServer interface {
+	// Every plan, including hidden and inactive ones.
+	ListAllPlans(context.Context, *ListAllPlansRequest) (*ListAllPlansResponse, error)
+	CreatePlan(context.Context, *CreatePlanRequest) (*CreatePlanResponse, error)
+	UpdatePlan(context.Context, *UpdatePlanRequest) (*UpdatePlanResponse, error)
+	ListSubscriptions(context.Context, *ListSubscriptionsRequest) (*ListSubscriptionsResponse, error)
+	// Manual renewal until online payment exists (Phase 2).
+	ExtendSubscription(context.Context, *ExtendSubscriptionRequest) (*ExtendSubscriptionResponse, error)
+	mustEmbedUnimplementedLicenseAdminServiceServer()
+}
+
+// UnimplementedLicenseAdminServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedLicenseAdminServiceServer struct{}
+
+func (UnimplementedLicenseAdminServiceServer) ListAllPlans(context.Context, *ListAllPlansRequest) (*ListAllPlansResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListAllPlans not implemented")
+}
+func (UnimplementedLicenseAdminServiceServer) CreatePlan(context.Context, *CreatePlanRequest) (*CreatePlanResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreatePlan not implemented")
+}
+func (UnimplementedLicenseAdminServiceServer) UpdatePlan(context.Context, *UpdatePlanRequest) (*UpdatePlanResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdatePlan not implemented")
+}
+func (UnimplementedLicenseAdminServiceServer) ListSubscriptions(context.Context, *ListSubscriptionsRequest) (*ListSubscriptionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListSubscriptions not implemented")
+}
+func (UnimplementedLicenseAdminServiceServer) ExtendSubscription(context.Context, *ExtendSubscriptionRequest) (*ExtendSubscriptionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ExtendSubscription not implemented")
+}
+func (UnimplementedLicenseAdminServiceServer) mustEmbedUnimplementedLicenseAdminServiceServer() {}
+func (UnimplementedLicenseAdminServiceServer) testEmbeddedByValue()                             {}
+
+// UnsafeLicenseAdminServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to LicenseAdminServiceServer will
+// result in compilation errors.
+type UnsafeLicenseAdminServiceServer interface {
+	mustEmbedUnimplementedLicenseAdminServiceServer()
+}
+
+func RegisterLicenseAdminServiceServer(s grpc.ServiceRegistrar, srv LicenseAdminServiceServer) {
+	// If the following call panics, it indicates UnimplementedLicenseAdminServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&LicenseAdminService_ServiceDesc, srv)
+}
+
+func _LicenseAdminService_ListAllPlans_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAllPlansRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseAdminServiceServer).ListAllPlans(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseAdminService_ListAllPlans_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseAdminServiceServer).ListAllPlans(ctx, req.(*ListAllPlansRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseAdminService_CreatePlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePlanRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseAdminServiceServer).CreatePlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseAdminService_CreatePlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseAdminServiceServer).CreatePlan(ctx, req.(*CreatePlanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseAdminService_UpdatePlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePlanRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseAdminServiceServer).UpdatePlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseAdminService_UpdatePlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseAdminServiceServer).UpdatePlan(ctx, req.(*UpdatePlanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseAdminService_ListSubscriptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSubscriptionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseAdminServiceServer).ListSubscriptions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseAdminService_ListSubscriptions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseAdminServiceServer).ListSubscriptions(ctx, req.(*ListSubscriptionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseAdminService_ExtendSubscription_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExtendSubscriptionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseAdminServiceServer).ExtendSubscription(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseAdminService_ExtendSubscription_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseAdminServiceServer).ExtendSubscription(ctx, req.(*ExtendSubscriptionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// LicenseAdminService_ServiceDesc is the grpc.ServiceDesc for LicenseAdminService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var LicenseAdminService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "vietgara.license.v1.LicenseAdminService",
+	HandlerType: (*LicenseAdminServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListAllPlans",
+			Handler:    _LicenseAdminService_ListAllPlans_Handler,
+		},
+		{
+			MethodName: "CreatePlan",
+			Handler:    _LicenseAdminService_CreatePlan_Handler,
+		},
+		{
+			MethodName: "UpdatePlan",
+			Handler:    _LicenseAdminService_UpdatePlan_Handler,
+		},
+		{
+			MethodName: "ListSubscriptions",
+			Handler:    _LicenseAdminService_ListSubscriptions_Handler,
+		},
+		{
+			MethodName: "ExtendSubscription",
+			Handler:    _LicenseAdminService_ExtendSubscription_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

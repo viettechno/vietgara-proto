@@ -4,12 +4,6 @@
 // - protoc             (unknown)
 // source: vietgara/tenant/v1/staff.proto
 
-// Package vietgara.tenant.v1 defines the Tenant/Garage Management module
-// (HLD module #2): staff memberships that assign an account a role within
-// one garage (RBAC, FR-IAM-03).
-// See: FRD FR-TEN-04, API Specification Section 3, Database Design
-// Section 2.3.
-
 package tenantv1
 
 import (
@@ -25,27 +19,27 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	StaffService_AddStaff_FullMethodName    = "/vietgara.tenant.v1.StaffService/AddStaff"
-	StaffService_UpdateStaff_FullMethodName = "/vietgara.tenant.v1.StaffService/UpdateStaff"
-	StaffService_RemoveStaff_FullMethodName = "/vietgara.tenant.v1.StaffService/RemoveStaff"
-	StaffService_ListStaff_FullMethodName   = "/vietgara.tenant.v1.StaffService/ListStaff"
+	StaffService_ListStaff_FullMethodName            = "/vietgara.tenant.v1.StaffService/ListStaff"
+	StaffService_UpdateStaff_FullMethodName          = "/vietgara.tenant.v1.StaffService/UpdateStaff"
+	StaffService_DeleteStaff_FullMethodName          = "/vietgara.tenant.v1.StaffService/DeleteStaff"
+	StaffService_LookupStaffCandidate_FullMethodName = "/vietgara.tenant.v1.StaffService/LookupStaffCandidate"
 )
 
 // StaffServiceClient is the client API for StaffService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// StaffService manages staff memberships of a garage (FR-TEN-04,
-// FR-IAM-03).
+// StaffService manages a garage's members. Reads need
+// PERMISSION_STAFF_READ, changes PERMISSION_STAFF_MANAGE. Members join
+// through InvitationService.
 type StaffServiceClient interface {
-	// AddStaff assigns an account a role within a garage (FR-TEN-04).
-	AddStaff(ctx context.Context, in *AddStaffRequest, opts ...grpc.CallOption) (*AddStaffResponse, error)
-	// UpdateStaff changes the role/status of a staff membership.
-	UpdateStaff(ctx context.Context, in *UpdateStaffRequest, opts ...grpc.CallOption) (*UpdateStaffResponse, error)
-	// RemoveStaff deactivates a staff membership.
-	RemoveStaff(ctx context.Context, in *RemoveStaffRequest, opts ...grpc.CallOption) (*RemoveStaffResponse, error)
-	// ListStaff lists the staff members of a garage.
 	ListStaff(ctx context.Context, in *ListStaffRequest, opts ...grpc.CallOption) (*ListStaffResponse, error)
+	// Activates/deactivates a member or changes their groups.
+	UpdateStaff(ctx context.Context, in *UpdateStaffRequest, opts ...grpc.CallOption) (*UpdateStaffResponse, error)
+	// Removes a member from the garage.
+	DeleteStaff(ctx context.Context, in *DeleteStaffRequest, opts ...grpc.CallOption) (*DeleteStaffResponse, error)
+	// Finds an existing account by exact e-mail or phone to invite.
+	LookupStaffCandidate(ctx context.Context, in *LookupStaffCandidateRequest, opts ...grpc.CallOption) (*LookupStaffCandidateResponse, error)
 }
 
 type staffServiceClient struct {
@@ -56,10 +50,10 @@ func NewStaffServiceClient(cc grpc.ClientConnInterface) StaffServiceClient {
 	return &staffServiceClient{cc}
 }
 
-func (c *staffServiceClient) AddStaff(ctx context.Context, in *AddStaffRequest, opts ...grpc.CallOption) (*AddStaffResponse, error) {
+func (c *staffServiceClient) ListStaff(ctx context.Context, in *ListStaffRequest, opts ...grpc.CallOption) (*ListStaffResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AddStaffResponse)
-	err := c.cc.Invoke(ctx, StaffService_AddStaff_FullMethodName, in, out, cOpts...)
+	out := new(ListStaffResponse)
+	err := c.cc.Invoke(ctx, StaffService_ListStaff_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,20 +70,20 @@ func (c *staffServiceClient) UpdateStaff(ctx context.Context, in *UpdateStaffReq
 	return out, nil
 }
 
-func (c *staffServiceClient) RemoveStaff(ctx context.Context, in *RemoveStaffRequest, opts ...grpc.CallOption) (*RemoveStaffResponse, error) {
+func (c *staffServiceClient) DeleteStaff(ctx context.Context, in *DeleteStaffRequest, opts ...grpc.CallOption) (*DeleteStaffResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RemoveStaffResponse)
-	err := c.cc.Invoke(ctx, StaffService_RemoveStaff_FullMethodName, in, out, cOpts...)
+	out := new(DeleteStaffResponse)
+	err := c.cc.Invoke(ctx, StaffService_DeleteStaff_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *staffServiceClient) ListStaff(ctx context.Context, in *ListStaffRequest, opts ...grpc.CallOption) (*ListStaffResponse, error) {
+func (c *staffServiceClient) LookupStaffCandidate(ctx context.Context, in *LookupStaffCandidateRequest, opts ...grpc.CallOption) (*LookupStaffCandidateResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListStaffResponse)
-	err := c.cc.Invoke(ctx, StaffService_ListStaff_FullMethodName, in, out, cOpts...)
+	out := new(LookupStaffCandidateResponse)
+	err := c.cc.Invoke(ctx, StaffService_LookupStaffCandidate_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -100,17 +94,17 @@ func (c *staffServiceClient) ListStaff(ctx context.Context, in *ListStaffRequest
 // All implementations must embed UnimplementedStaffServiceServer
 // for forward compatibility.
 //
-// StaffService manages staff memberships of a garage (FR-TEN-04,
-// FR-IAM-03).
+// StaffService manages a garage's members. Reads need
+// PERMISSION_STAFF_READ, changes PERMISSION_STAFF_MANAGE. Members join
+// through InvitationService.
 type StaffServiceServer interface {
-	// AddStaff assigns an account a role within a garage (FR-TEN-04).
-	AddStaff(context.Context, *AddStaffRequest) (*AddStaffResponse, error)
-	// UpdateStaff changes the role/status of a staff membership.
-	UpdateStaff(context.Context, *UpdateStaffRequest) (*UpdateStaffResponse, error)
-	// RemoveStaff deactivates a staff membership.
-	RemoveStaff(context.Context, *RemoveStaffRequest) (*RemoveStaffResponse, error)
-	// ListStaff lists the staff members of a garage.
 	ListStaff(context.Context, *ListStaffRequest) (*ListStaffResponse, error)
+	// Activates/deactivates a member or changes their groups.
+	UpdateStaff(context.Context, *UpdateStaffRequest) (*UpdateStaffResponse, error)
+	// Removes a member from the garage.
+	DeleteStaff(context.Context, *DeleteStaffRequest) (*DeleteStaffResponse, error)
+	// Finds an existing account by exact e-mail or phone to invite.
+	LookupStaffCandidate(context.Context, *LookupStaffCandidateRequest) (*LookupStaffCandidateResponse, error)
 	mustEmbedUnimplementedStaffServiceServer()
 }
 
@@ -121,17 +115,17 @@ type StaffServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedStaffServiceServer struct{}
 
-func (UnimplementedStaffServiceServer) AddStaff(context.Context, *AddStaffRequest) (*AddStaffResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method AddStaff not implemented")
+func (UnimplementedStaffServiceServer) ListStaff(context.Context, *ListStaffRequest) (*ListStaffResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListStaff not implemented")
 }
 func (UnimplementedStaffServiceServer) UpdateStaff(context.Context, *UpdateStaffRequest) (*UpdateStaffResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateStaff not implemented")
 }
-func (UnimplementedStaffServiceServer) RemoveStaff(context.Context, *RemoveStaffRequest) (*RemoveStaffResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method RemoveStaff not implemented")
+func (UnimplementedStaffServiceServer) DeleteStaff(context.Context, *DeleteStaffRequest) (*DeleteStaffResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteStaff not implemented")
 }
-func (UnimplementedStaffServiceServer) ListStaff(context.Context, *ListStaffRequest) (*ListStaffResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListStaff not implemented")
+func (UnimplementedStaffServiceServer) LookupStaffCandidate(context.Context, *LookupStaffCandidateRequest) (*LookupStaffCandidateResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method LookupStaffCandidate not implemented")
 }
 func (UnimplementedStaffServiceServer) mustEmbedUnimplementedStaffServiceServer() {}
 func (UnimplementedStaffServiceServer) testEmbeddedByValue()                      {}
@@ -154,20 +148,20 @@ func RegisterStaffServiceServer(s grpc.ServiceRegistrar, srv StaffServiceServer)
 	s.RegisterService(&StaffService_ServiceDesc, srv)
 }
 
-func _StaffService_AddStaff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddStaffRequest)
+func _StaffService_ListStaff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListStaffRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StaffServiceServer).AddStaff(ctx, in)
+		return srv.(StaffServiceServer).ListStaff(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: StaffService_AddStaff_FullMethodName,
+		FullMethod: StaffService_ListStaff_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StaffServiceServer).AddStaff(ctx, req.(*AddStaffRequest))
+		return srv.(StaffServiceServer).ListStaff(ctx, req.(*ListStaffRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -190,38 +184,38 @@ func _StaffService_UpdateStaff_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _StaffService_RemoveStaff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RemoveStaffRequest)
+func _StaffService_DeleteStaff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteStaffRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StaffServiceServer).RemoveStaff(ctx, in)
+		return srv.(StaffServiceServer).DeleteStaff(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: StaffService_RemoveStaff_FullMethodName,
+		FullMethod: StaffService_DeleteStaff_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StaffServiceServer).RemoveStaff(ctx, req.(*RemoveStaffRequest))
+		return srv.(StaffServiceServer).DeleteStaff(ctx, req.(*DeleteStaffRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _StaffService_ListStaff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListStaffRequest)
+func _StaffService_LookupStaffCandidate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LookupStaffCandidateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StaffServiceServer).ListStaff(ctx, in)
+		return srv.(StaffServiceServer).LookupStaffCandidate(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: StaffService_ListStaff_FullMethodName,
+		FullMethod: StaffService_LookupStaffCandidate_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StaffServiceServer).ListStaff(ctx, req.(*ListStaffRequest))
+		return srv.(StaffServiceServer).LookupStaffCandidate(ctx, req.(*LookupStaffCandidateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -234,20 +228,20 @@ var StaffService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*StaffServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "AddStaff",
-			Handler:    _StaffService_AddStaff_Handler,
+			MethodName: "ListStaff",
+			Handler:    _StaffService_ListStaff_Handler,
 		},
 		{
 			MethodName: "UpdateStaff",
 			Handler:    _StaffService_UpdateStaff_Handler,
 		},
 		{
-			MethodName: "RemoveStaff",
-			Handler:    _StaffService_RemoveStaff_Handler,
+			MethodName: "DeleteStaff",
+			Handler:    _StaffService_DeleteStaff_Handler,
 		},
 		{
-			MethodName: "ListStaff",
-			Handler:    _StaffService_ListStaff_Handler,
+			MethodName: "LookupStaffCandidate",
+			Handler:    _StaffService_LookupStaffCandidate_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

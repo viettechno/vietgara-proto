@@ -3,6 +3,11 @@ version: v2
 inputs:
   - directory: apis
 
+# googleapis types (annotations, field_behavior) come from the
+# google.golang.org/genproto module instead of being generated here.
+managed:
+  enabled: false
+
 plugins:
   - local: protoc-gen-go
     out: apis-go
@@ -12,3 +17,21 @@ plugins:
     out: apis-go
     opt:
       - paths=source_relative
+  # REST/JSON reverse proxy (API Specification): one *.pb.gw.go per file
+  # with google.api.http rules.
+  - local: protoc-gen-grpc-gateway
+    out: apis-go
+    opt:
+      - paths=source_relative
+      - generate_unbound_methods=false
+  # A single OpenAPI v2 document for the whole public REST API, consumed by
+  # the web admin (openapi-typescript) and published with the API docs.
+  - local: protoc-gen-openapiv2
+    out: openapi
+    strategy: all
+    opt:
+      - allow_merge=true
+      - merge_file_name=vietgara
+      - json_names_for_fields=true
+      - disable_default_errors=true
+      - omit_enum_default_value=true

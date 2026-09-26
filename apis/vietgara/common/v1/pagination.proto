@@ -1,20 +1,17 @@
 syntax = "proto3";
 
-// Package vietgara.common.v1 holds messages shared by every VietGara
-// module's API, so list endpoints page results the same way.
 package vietgara.common.v1;
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/common/v1;commonv1";
 
-// Pagination describes the page returned by a List call (API
-// Specification Section 1.1: page, page_size default 20, max 100).
+// Pagination describes the page returned by every List call (API
+// Specification Section 1.1): lists are requested with `page` (1-based,
+// default 1) and `page_size` (default 20, max 100).
 message Pagination {
-  // Total number of matching records across all pages.
+  // Total number of items matching the query, across all pages.
   int32 total = 1;
-
-  // 1-based page number that was returned.
+  // The 1-based page that was returned.
   int32 page = 2;
-
-  // Page size that was applied.
+  // The page size that was applied.
   int32 page_size = 3;
 }

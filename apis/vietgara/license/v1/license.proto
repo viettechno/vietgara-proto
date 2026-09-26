@@ -1,165 +1,265 @@
 syntax = "proto3";
 
-// Package vietgara.license.v1 defines the License Management module (HLD
-// module #3): subscription plans, the per-garage subscription and its
-// entitlements.
-// See: FRD FR-LIC-01/02/04, API Specification Section 4, Database Design
-// Section 6.3, LLD Section 3.
 package vietgara.license.v1;
 
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/pagination.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/license/v1;licensev1";
 
-// BillingCycle is how often a plan is billed.
 enum BillingCycle {
   BILLING_CYCLE_UNSPECIFIED = 0;
   BILLING_CYCLE_MONTHLY = 1;
   BILLING_CYCLE_YEARLY = 2;
 }
 
-// SubscriptionStatus is the lifecycle state of a subscription (LLD 3.1).
+// SubscriptionStatus (LLD 3.1): past_due is read-only during the grace
+// period, suspended and cancelled are locked.
 enum SubscriptionStatus {
   SUBSCRIPTION_STATUS_UNSPECIFIED = 0;
-  // Free trial period after the garage was created (FR-LIC-01).
   SUBSCRIPTION_STATUS_TRIAL = 1;
-  // Paid and within the current period.
   SUBSCRIPTION_STATUS_ACTIVE = 2;
-  // Expired but within the grace period: read-only mode (FR-LIC-04).
   SUBSCRIPTION_STATUS_PAST_DUE = 3;
-  // Expired past the grace period: fully locked.
   SUBSCRIPTION_STATUS_SUSPENDED = 4;
   SUBSCRIPTION_STATUS_CANCELLED = 5;
 }
 
-// PlanLimits caps the resources a garage may use under a plan.
-message PlanLimits {
-  // Maximum active staff members per garage.
-  int32 max_users = 1;
-
-  // Garages (branches) included in the plan.
-  int32 max_garages = 2;
+// Feature is a module a plan may include.
+enum Feature {
+  FEATURE_UNSPECIFIED = 0;
+  FEATURE_CUSTOMERS = 1;
+  FEATURE_QUOTES = 2;
+  FEATURE_REPAIR_ORDERS = 3;
+  FEATURE_INVENTORY = 4;
+  FEATURE_BILLING = 5;
+  FEATURE_DOCUMENTS = 6;
+  FEATURE_REPORTS = 7;
 }
 
-// Plan is a subscription plan offered by the platform. Maps to the "plans"
-// table (Database Design Section 6.3).
+// PlanLimits caps usage across all garages of the subscribing owner.
+message PlanLimits {
+  int32 max_garages = 1;
+  // Staff members across all garages, excluding the owner and counting
+  // pending invitations.
+  int32 max_staff = 2;
+  // Business documents (quotes, repair orders, settlements) created per
+  // calendar day (Asia/Ho_Chi_Minh).
+  int32 max_transactions_per_day = 3;
+}
+
+// Plan is a subscription offer (FR-LIC-05).
 message Plan {
-  string id = 1;
-
-  // Stable machine name, e.g. "starter".
-  string code = 2;
-
-  string name = 3;
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Unique, e.g. "pro"; "trial" is the plan every new owner starts on.
+  string code = 2 [(google.api.field_behavior) = REQUIRED];
+  string name = 3 [(google.api.field_behavior) = REQUIRED];
   string description = 4;
-
-  // Price per billing cycle, in the smallest unit of currency (VND has
-  // no minor unit).
+  // Price per billing cycle in the smallest currency unit (VND).
   int64 price = 5;
-
   string currency = 6;
   BillingCycle billing_cycle = 7;
-  PlanLimits limits = 8;
-
-  // Feature keys the plan enables, e.g. "inventory".
-  repeated string features = 9;
+  PlanLimits limits = 8 [(google.api.field_behavior) = REQUIRED];
+  repeated Feature features = 9;
+  // Shown to garage owners.
+  bool is_public = 10;
+  // Inactive plans cannot be chosen; existing subscribers keep them.
+  bool is_active = 11;
+  int32 sort_order = 12;
+  google.protobuf.Timestamp created_at = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
-// Subscription is the license of one garage (1 subscription per garage).
-// Maps to the "subscriptions" table.
+// Usage is the owner's current consumption of the plan limits.
+message Usage {
+  int32 garages = 1;
+  int32 staff = 2;
+  int32 transactions_today = 3;
+}
+
+// Subscription is an owner account's license covering all their garages
+// (FR-LIC-01..04).
 message Subscription {
   string id = 1;
-  string garage_id = 2;
+  string account_id = 2;
   SubscriptionStatus status = 3;
   Plan plan = 4;
-
-  // End of the free trial; unset once the garage has paid.
   google.protobuf.Timestamp trial_end_at = 5;
-
   google.protobuf.Timestamp current_period_start = 6;
-
-  // When the current trial or paid period ends.
   google.protobuf.Timestamp current_period_end = 7;
-
-  // End of the read-only grace period; set once the period has expired.
   google.protobuf.Timestamp grace_period_end = 8;
-
   bool auto_renew = 9;
-  google.protobuf.Timestamp created_at = 10;
-  google.protobuf.Timestamp updated_at = 11;
+  Usage usage = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
 }
 
 // Entitlements is what a garage may currently use, derived from its
-// subscription and served from the entitlement cache.
+// owner's subscription; the web admin uses it to lock UI.
 message Entitlements {
   string garage_id = 1;
   SubscriptionStatus status = 2;
   string plan_code = 3;
-
-  // Enabled feature keys.
-  repeated string features = 4;
-
+  repeated Feature features = 4;
   PlanLimits limits = 5;
-
-  // True when writes are blocked (past due or suspended).
   bool read_only = 6;
-
   google.protobuf.Timestamp current_period_end = 7;
 }
 
-// ListPlansRequest lists the plans a garage can subscribe to.
 message ListPlansRequest {}
 
-// ListPlansResponse is the list of public plans, cheapest first.
 message ListPlansResponse {
-  repeated Plan plans = 1;
+  // Public, active plans, cheapest first.
+  repeated Plan data = 1;
 }
 
-// GetSubscriptionRequest returns the subscription of a garage.
-message GetSubscriptionRequest {
-  string garage_id = 1;
-}
+message GetMySubscriptionRequest {}
 
-// GetSubscriptionResponse is the response of GetSubscription.
-message GetSubscriptionResponse {
+message GetMySubscriptionResponse {
   Subscription subscription = 1;
 }
 
-// ChangePlanRequest upgrades, downgrades or renews the subscription of a
-// garage (FR-LIC-02).
-message ChangePlanRequest {
-  string garage_id = 1;
-
-  // Target plan; the current plan renews it.
-  string plan_id = 2;
+message ChangeMyPlanRequest {
+  string plan_id = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
-// ChangePlanResponse is the response of ChangePlan.
-message ChangePlanResponse {
+message ChangeMyPlanResponse {
   Subscription subscription = 1;
 }
 
-// GetEntitlementsRequest returns what a garage may currently use.
-message GetEntitlementsRequest {
-  string garage_id = 1;
+message GetGarageEntitlementsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
-// GetEntitlementsResponse is the response of GetEntitlements.
-message GetEntitlementsResponse {
+message GetGarageEntitlementsResponse {
   Entitlements entitlements = 1;
 }
 
-// LicenseService exposes plans, subscriptions and entitlements
-// (API Specification Section 4).
+// LicenseService is the garage-facing side of License Management.
 service LicenseService {
-  // ListPlans lists the plans a garage can subscribe to.
-  rpc ListPlans(ListPlansRequest) returns (ListPlansResponse);
+  rpc ListPlans(ListPlansRequest) returns (ListPlansResponse) {
+    option (google.api.http) = {get: "/api/v1/plans"};
+  }
 
-  // GetSubscription returns the subscription of a garage.
-  rpc GetSubscription(GetSubscriptionRequest) returns (GetSubscriptionResponse);
+  // The signed-in owner's subscription and usage.
+  rpc GetMySubscription(GetMySubscriptionRequest) returns (GetMySubscriptionResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/me/subscription"
+      response_body: "subscription"
+    };
+  }
 
-  // ChangePlan upgrades, downgrades or renews a garage's subscription.
-  rpc ChangePlan(ChangePlanRequest) returns (ChangePlanResponse);
+  // Switches the owner to another plan (FR-LIC-02). Takes effect at once
+  // and starts a new period; online payment arrives in Phase 2. Fails with
+  // PLAN_LIMIT_REACHED when current usage exceeds the new plan.
+  rpc ChangeMyPlan(ChangeMyPlanRequest) returns (ChangeMyPlanResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/subscription/plan-changes"
+      body: "*"
+      response_body: "subscription"
+    };
+  }
 
-  // GetEntitlements returns the features and limits a garage may use.
-  rpc GetEntitlements(GetEntitlementsRequest) returns (GetEntitlementsResponse);
+  // What the garage may use; any active member may read it.
+  rpc GetGarageEntitlements(GetGarageEntitlementsRequest) returns (GetGarageEntitlementsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/garages/{garage_id}/entitlements"
+      response_body: "entitlements"
+    };
+  }
+}
+
+// SubscriptionSummary is one row of the platform admin's subscription list.
+message SubscriptionSummary {
+  Subscription subscription = 1;
+  string account_email = 2;
+  string account_name = 3;
+}
+
+message ListAllPlansRequest {}
+
+message ListAllPlansResponse {
+  repeated Plan data = 1;
+}
+
+message CreatePlanRequest {
+  Plan plan = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreatePlanResponse {
+  Plan plan = 1;
+}
+
+message UpdatePlanRequest {
+  string plan_id = 1 [(google.api.field_behavior) = REQUIRED];
+  Plan plan = 2 [(google.api.field_behavior) = REQUIRED];
+  // Filled from the JSON body keys when omitted; code is immutable.
+  google.protobuf.FieldMask update_mask = 3;
+}
+
+message UpdatePlanResponse {
+  Plan plan = 1;
+}
+
+message ListSubscriptionsRequest {
+  // Matches the owner's e-mail or name.
+  string query = 1;
+  SubscriptionStatus status = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message ListSubscriptionsResponse {
+  repeated SubscriptionSummary data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message ExtendSubscriptionRequest {
+  string subscription_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // 1 to 366 days added to the current period end (or to now when
+  // already expired); reactivates past-due and suspended subscriptions.
+  int32 days = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ExtendSubscriptionResponse {
+  Subscription subscription = 1;
+}
+
+// LicenseAdminService is for platform admins only (FR-LIC-05).
+service LicenseAdminService {
+  // Every plan, including hidden and inactive ones.
+  rpc ListAllPlans(ListAllPlansRequest) returns (ListAllPlansResponse) {
+    option (google.api.http) = {get: "/api/v1/admin/plans"};
+  }
+
+  rpc CreatePlan(CreatePlanRequest) returns (CreatePlanResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/plans"
+      body: "plan"
+      response_body: "plan"
+    };
+  }
+
+  rpc UpdatePlan(UpdatePlanRequest) returns (UpdatePlanResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/admin/plans/{plan_id}"
+      body: "plan"
+      response_body: "plan"
+    };
+  }
+
+  rpc ListSubscriptions(ListSubscriptionsRequest) returns (ListSubscriptionsResponse) {
+    option (google.api.http) = {get: "/api/v1/admin/subscriptions"};
+  }
+
+  // Manual renewal until online payment exists (Phase 2).
+  rpc ExtendSubscription(ExtendSubscriptionRequest) returns (ExtendSubscriptionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/subscriptions/{subscription_id}/extensions"
+      body: "*"
+      response_body: "subscription"
+    };
+  }
 }

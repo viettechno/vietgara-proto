@@ -1,141 +1,171 @@
 syntax = "proto3";
 
-// Package vietgara.tenant.v1 defines the Tenant/Garage Management module
-// (HLD module #2): garage profiles and the "1 account - many garages"
-// model. A garage is the data-isolation unit (tenant) of the platform
-// (ADR-005).
-// See: FRD FR-TEN-01/02/03/05, API Specification Section 3, Database
-// Design Section 2.2.
 package vietgara.tenant.v1;
 
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
+import "google/type/dayofweek.proto";
+import "vietgara/tenant/v1/access.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1;tenantv1";
 
-// GarageStatus is the lifecycle state of a garage.
+// GarageStatus: an inactive garage is hidden from staff and read-only for
+// its owner until reactivated (FR-TEN-02).
 enum GarageStatus {
   GARAGE_STATUS_UNSPECIFIED = 0;
   GARAGE_STATUS_ACTIVE = 1;
   GARAGE_STATUS_INACTIVE = 2;
-  GARAGE_STATUS_SUSPENDED = 3;
 }
 
-// Garage is one tenant: an independent operating and data-isolation unit
-// owned by one Account. "Branch" and "garage" are used interchangeably
-// (FR-TEN-02, ADR-005). Maps to the "garages" table (Database Design
-// Section 2.2).
+// DailyHours is the opening time of one weekday (FR-TEN-05).
+message DailyHours {
+  google.type.DayOfWeek day = 1;
+  // True when the garage does not open that day.
+  bool closed = 2;
+  // "HH:MM", 24-hour clock, garage timezone.
+  string open = 3;
+  string close = 4;
+}
+
+// NumberingTemplates configures document numbers (FR-TEN-05). Placeholders:
+// {YYYY}, {YY}, {MM}, {DD} and {SEQ:n} (sequence padded to n digits),
+// e.g. "BG-{YYYY}{MM}-{SEQ:4}".
+message NumberingTemplates {
+  string quote = 1;
+  string repair_order = 2;
+}
+
+// GarageAccess is what the signed-in account may do in the garage.
+message GarageAccess {
+  bool owner = 1;
+  repeated Permission permissions = 2;
+}
+
+// Garage is one tenant (branch) of an owner account (FR-TEN-01/02).
 message Garage {
-  // UUID primary key; equals garage_id used as tenant id system-wide.
-  string id = 1;
-
-  // ID of the owning account (1 account - many garages).
-  string account_id = 2;
-
-  // Garage display name.
-  string name = 3;
-
-  // Tax identification number.
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string owner_account_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string name = 3 [(google.api.field_behavior) = REQUIRED];
   optional string tax_code = 4;
-
-  // Address of the garage.
   optional string address = 5;
-
-  // Logo URL (Cloud Storage).
-  optional string logo_url = 6;
-
-  // IANA timezone, e.g. "Asia/Ho_Chi_Minh".
-  string timezone = 7;
-
-  // Display currency, e.g. "VND".
-  string currency = 8;
-
-  // Lifecycle state of the garage.
-  GarageStatus status = 9;
-
-  // Creation timestamp.
-  google.protobuf.Timestamp created_at = 10;
-
-  // Last update timestamp.
-  google.protobuf.Timestamp updated_at = 11;
+  optional string phone = 6;
+  optional string email = 7;
+  // Set through UploadGarageLogo.
+  optional string logo_url = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // IANA timezone, default Asia/Ho_Chi_Minh.
+  string timezone = 9;
+  // ISO 4217, default VND.
+  string currency = 10;
+  GarageStatus status = 11;
+  repeated DailyHours operating_hours = 12;
+  NumberingTemplates numbering = 13;
+  GarageAccess access = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
-// CreateGarageRequest creates a new garage under the caller's account
-// (FR-TEN-01, FR-TEN-02).
+message ListGaragesRequest {}
+
+message ListGaragesResponse {
+  // Garages the account owns or is an active member of; staff do not see
+  // inactive garages.
+  repeated Garage data = 1;
+}
+
 message CreateGarageRequest {
-  // Garage display name (required).
-  string name = 1;
-
-  // Tax identification number.
-  optional string tax_code = 2;
-
-  // Address of the garage.
-  optional string address = 3;
-
-  // IANA timezone; defaults to "Asia/Ho_Chi_Minh" when absent.
-  optional string timezone = 4;
-
-  // Display currency; defaults to "VND" when absent.
-  optional string currency = 5;
+  Garage garage = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
-// GetGarageRequest returns the details of one garage (API Specification
-// GET /api/v1/garages/{garageId}).
-message GetGarageRequest {
-  string garage_id = 1;
-}
-
-// CreateGarageResponse is the response of CreateGarage.
 message CreateGarageResponse {
   Garage garage = 1;
 }
 
-// GetGarageResponse is the response of GetGarage.
+message GetGarageRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
 message GetGarageResponse {
   Garage garage = 1;
 }
 
-// UpdateGarageResponse is the response of UpdateGarage.
+message UpdateGarageRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  Garage garage = 2 [(google.api.field_behavior) = REQUIRED];
+  // Filled from the JSON body keys when omitted. Only the owner may change
+  // status.
+  google.protobuf.FieldMask update_mask = 3;
+}
+
 message UpdateGarageResponse {
   Garage garage = 1;
 }
 
-// UpdateGarageRequest applies partial updates to an existing garage;
-// absent fields keep their current value (FR-TEN-02, FR-TEN-05).
-message UpdateGarageRequest {
-  string garage_id = 1;
-
-  optional string name = 2;
-  optional string tax_code = 3;
-  optional string address = 4;
-  optional string logo_url = 5;
-  optional string timezone = 6;
-  optional string currency = 7;
+message UploadGarageLogoRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // PNG, JPEG or WebP image, at most 1 MB (base64 in JSON).
+  bytes content = 2 [(google.api.field_behavior) = REQUIRED];
+  // image/png, image/jpeg or image/webp.
+  string content_type = 3 [(google.api.field_behavior) = REQUIRED];
 }
 
-// ListGaragesRequest lists every garage owned by the caller's account
-// (API Specification GET /api/v1/garages).
-message ListGaragesRequest {}
-
-// ListGaragesResponse is the list of garages owned by the caller's
-// account.
-message ListGaragesResponse {
-  repeated Garage garages = 1;
+message UploadGarageLogoResponse {
+  Garage garage = 1;
 }
 
-// GarageService manages garage profiles (FR-TEN-01/02/03/05).
+message DeleteGarageLogoRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteGarageLogoResponse {
+  Garage garage = 1;
+}
+
+// GarageService manages garages (FRD 3.2).
 service GarageService {
-  // CreateGarage creates a new garage under the caller's account
-  // (FR-TEN-01).
-  rpc CreateGarage(CreateGarageRequest) returns (CreateGarageResponse);
+  rpc ListGarages(ListGaragesRequest) returns (ListGaragesResponse) {
+    option (google.api.http) = {get: "/api/v1/garages"};
+  }
 
-  // GetGarage returns the details of one garage.
-  rpc GetGarage(GetGarageRequest) returns (GetGarageResponse);
+  // Creates a garage owned by the signed-in account, within the plan's
+  // garage limit.
+  rpc CreateGarage(CreateGarageRequest) returns (CreateGarageResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages"
+      body: "garage"
+      response_body: "garage"
+    };
+  }
 
-  // UpdateGarage applies partial updates to an existing garage
-  // (FR-TEN-02, FR-TEN-05).
-  rpc UpdateGarage(UpdateGarageRequest) returns (UpdateGarageResponse);
+  rpc GetGarage(GetGarageRequest) returns (GetGarageResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/garages/{garage_id}"
+      response_body: "garage"
+    };
+  }
 
-  // ListGarages lists every garage owned by the caller's account,
-  // supporting the active-garage switch flow (FR-TEN-03).
-  rpc ListGarages(ListGaragesRequest) returns (ListGaragesResponse);
+  rpc UpdateGarage(UpdateGarageRequest) returns (UpdateGarageResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}"
+      body: "garage"
+      response_body: "garage"
+    };
+  }
+
+  // Replaces the garage logo.
+  rpc UploadGarageLogo(UploadGarageLogoRequest) returns (UploadGarageLogoResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/garages/{garage_id}/logo"
+      body: "*"
+      response_body: "garage"
+    };
+  }
+
+  rpc DeleteGarageLogo(DeleteGarageLogoRequest) returns (DeleteGarageLogoResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/garages/{garage_id}/logo"
+      response_body: "garage"
+    };
+  }
 }

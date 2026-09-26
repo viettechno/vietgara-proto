@@ -1,58 +1,88 @@
 syntax = "proto3";
 
-// Package vietgara.identity.v1 defines the Identity & Access Management
-// module (HLD module #1): the Account entity and its lifecycle states.
-// See: FRD FR-IAM-*, Database Design Section 2.1, ADR-007.
 package vietgara.identity.v1;
 
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/identity/v1;identityv1";
 
-// AccountStatus is the lifecycle state of an account.
+// AccountStatus is the lifecycle of a login account (Database Design 2.1).
 enum AccountStatus {
   ACCOUNT_STATUS_UNSPECIFIED = 0;
   ACCOUNT_STATUS_ACTIVE = 1;
-  ACCOUNT_STATUS_INACTIVE = 2;
-  ACCOUNT_STATUS_SUSPENDED = 3;
+  ACCOUNT_STATUS_SUSPENDED = 2;
 }
 
-// AuthProvider identifies the authentication method an account was
-// registered with (FR-IAM-01, FR-IAM-02).
+// AuthProvider is how the account signed up (FR-IAM-01).
 enum AuthProvider {
   AUTH_PROVIDER_UNSPECIFIED = 0;
   AUTH_PROVIDER_EMAIL = 1;
-  AUTH_PROVIDER_PHONE = 2;
-  AUTH_PROVIDER_GOOGLE = 3;
-  AUTH_PROVIDER_FACEBOOK = 4;
+  AUTH_PROVIDER_GOOGLE = 2;
 }
 
-// Account is the owner-level identity of a user. It sits above the tenant
-// level: one Account may own many Garages (1 account - many garages model,
-// FR-TEN-02). It maps to the "accounts" table (Database Design Section 2.1).
+// Locale is the account's interface and e-mail language. Vietnamese is the
+// default (NFR-US-01).
+enum Locale {
+  LOCALE_UNSPECIFIED = 0;
+  LOCALE_VI = 1;
+  LOCALE_EN = 2;
+}
+
+// Account is a VietGara login (owner or staff member).
 message Account {
-  // UUID primary key.
-  string id = 1;
-
-  // Unique email; absent when the account only uses phone or social login.
-  optional string email = 2;
-
-  // Unique phone number; absent when the account only uses email or social
-  // login.
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string email = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Optional contact phone, unique across accounts; used to look staff up.
   optional string phone = 3;
-
-  // The authentication method the account was registered with.
-  AuthProvider auth_provider = 4;
-
-  // Display name of the account owner.
+  AuthProvider auth_provider = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
   string full_name = 5;
+  AccountStatus status = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // False until the e-mail OTP is confirmed; unverified accounts cannot use
+  // garage, staff or business APIs.
+  bool email_verified = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  Locale locale = 8;
+  // Platform operators manage subscription plans (FR-LIC-05).
+  bool platform_admin = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
 
-  // Lifecycle state of the account.
-  AccountStatus status = 6;
+message GetMeRequest {}
 
-  // Creation timestamp.
-  google.protobuf.Timestamp created_at = 7;
+message GetMeResponse {
+  Account account = 1;
+}
 
-  // Last update timestamp.
-  google.protobuf.Timestamp updated_at = 8;
+message UpdateMeRequest {
+  // Fields to change: full_name, phone, locale.
+  Account account = 1 [(google.api.field_behavior) = REQUIRED];
+  // Filled from the JSON body keys when omitted.
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message UpdateMeResponse {
+  Account account = 1;
+}
+
+// AccountService manages the signed-in account's own profile.
+service AccountService {
+  // Returns the signed-in account.
+  rpc GetMe(GetMeRequest) returns (GetMeResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/me"
+      response_body: "account"
+    };
+  }
+
+  // Updates the signed-in account's profile and language.
+  rpc UpdateMe(UpdateMeRequest) returns (UpdateMeResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/me"
+      body: "account"
+      response_body: "account"
+    };
+  }
 }

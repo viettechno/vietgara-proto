@@ -1,0 +1,4018 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "VietGara API",
+    "description": "Public REST/JSON API of the VietGara platform (API Specification). Generated from vietgara-proto.",
+    "version": "1.1"
+  },
+  "tags": [
+    {
+      "name": "CustomerService",
+      "description": "CustomerService manages a garage's customers (FRD 3.4). Reads need\nPERMISSION_CUSTOMER_READ, changes PERMISSION_CUSTOMER_WRITE."
+    },
+    {
+      "name": "PartnerService",
+      "description": "PartnerService manages suppliers and insurers (FR-CUS-04). Reads need\nPERMISSION_PARTNER_READ, changes PERMISSION_PARTNER_WRITE."
+    },
+    {
+      "name": "VehicleService",
+      "description": "VehicleService manages vehicles (FRD 3.4). Filter by customer with\n?customerId=. Reads need PERMISSION_CUSTOMER_READ, changes\nPERMISSION_CUSTOMER_WRITE."
+    },
+    {
+      "name": "AccountService",
+      "description": "AccountService manages the signed-in account's own profile."
+    },
+    {
+      "name": "AuthService",
+      "description": "AuthService handles sign-up, sign-in, sessions, e-mail verification and\npassword reset (FRD 3.1). Google sign-in uses the OAuth redirect routes\nGET /api/v1/auth/google/login and /callback, which are plain HTTP handlers."
+    },
+    {
+      "name": "LicenseService",
+      "description": "LicenseService is the garage-facing side of License Management."
+    },
+    {
+      "name": "LicenseAdminService",
+      "description": "LicenseAdminService is for platform admins only (FR-LIC-05)."
+    },
+    {
+      "name": "RoleService",
+      "description": "RoleService lets a garage owner manage the roles shared by their garages.\nEvery call acts on the signed-in owner's own roles."
+    },
+    {
+      "name": "StaffGroupService",
+      "description": "StaffGroupService manages a garage's staff groups. Listing needs\nPERMISSION_STAFF_READ; changes are owner-only."
+    },
+    {
+      "name": "GarageService",
+      "description": "GarageService manages garages (FRD 3.2)."
+    },
+    {
+      "name": "InvitationService",
+      "description": "InvitationService handles staff invitations: the garage side needs\nPERMISSION_STAFF_MANAGE; the /me side is the invited account."
+    },
+    {
+      "name": "StaffService",
+      "description": "StaffService manages a garage's members. Reads need\nPERMISSION_STAFF_READ, changes PERMISSION_STAFF_MANAGE. Members join\nthrough InvitationService."
+    }
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/admin/plans": {
+      "get": {
+        "summary": "Every plan, including hidden and inactive ones.",
+        "operationId": "LicenseAdminService_ListAllPlans",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListAllPlansResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "LicenseAdminService"
+        ]
+      },
+      "post": {
+        "operationId": "LicenseAdminService_CreatePlan",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Plan"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "plan",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Plan"
+            }
+          }
+        ],
+        "tags": [
+          "LicenseAdminService"
+        ]
+      }
+    },
+    "/api/v1/admin/plans/{planId}": {
+      "patch": {
+        "operationId": "LicenseAdminService_UpdatePlan",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Plan"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "plan",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Plan"
+            }
+          }
+        ],
+        "tags": [
+          "LicenseAdminService"
+        ]
+      }
+    },
+    "/api/v1/admin/subscriptions": {
+      "get": {
+        "operationId": "LicenseAdminService_ListSubscriptions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListSubscriptionsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "description": "Matches the owner's e-mail or name.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "SUBSCRIPTION_STATUS_TRIAL",
+              "SUBSCRIPTION_STATUS_ACTIVE",
+              "SUBSCRIPTION_STATUS_PAST_DUE",
+              "SUBSCRIPTION_STATUS_SUSPENDED",
+              "SUBSCRIPTION_STATUS_CANCELLED"
+            ]
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "LicenseAdminService"
+        ]
+      }
+    },
+    "/api/v1/admin/subscriptions/{subscriptionId}/extensions": {
+      "post": {
+        "summary": "Manual renewal until online payment exists (Phase 2).",
+        "operationId": "LicenseAdminService_ExtendSubscription",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Subscription"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "subscriptionId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LicenseAdminServiceExtendSubscriptionBody"
+            }
+          }
+        ],
+        "tags": [
+          "LicenseAdminService"
+        ]
+      }
+    },
+    "/api/v1/auth/email-verification": {
+      "post": {
+        "summary": "Confirms the signed-in account's e-mail with the OTP and returns a\nsession whose token is marked verified.",
+        "operationId": "AuthService_VerifyEmail",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Session"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1VerifyEmailRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/api/v1/auth/email-verification/otp": {
+      "post": {
+        "summary": "E-mails a new 6-digit verification OTP, valid for 2 minutes, to the\nsigned-in account.",
+        "operationId": "AuthService_SendEmailVerificationOtp",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1OtpChallenge"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SendEmailVerificationOtpRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Signs in with e-mail and password (FR-IAM-02).",
+        "operationId": "AuthService_Login",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Session"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1LoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "Revokes a refresh token.",
+        "operationId": "AuthService_Logout",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1LogoutResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1LogoutRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/api/v1/auth/password-reset": {
+      "post": {
+        "summary": "Sets a new password with the reset token and revokes every session.",
+        "operationId": "AuthService_ResetPassword",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ResetPasswordResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ResetPasswordRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/api/v1/auth/password-reset/otp": {
+      "post": {
+        "summary": "Starts a password reset (FR-IAM-04): e-mails an OTP valid for 2\nminutes. Always succeeds so account existence is not revealed.",
+        "operationId": "AuthService_RequestPasswordReset",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1OtpChallenge"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RequestPasswordResetRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/api/v1/auth/password-reset/otp/verification": {
+      "post": {
+        "summary": "Checks the password-reset OTP and returns a short-lived reset token.",
+        "operationId": "AuthService_VerifyPasswordResetOtp",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1VerifyPasswordResetOtpResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1VerifyPasswordResetOtpRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "summary": "Exchanges a refresh token for a new session; the old token is revoked\n(rotation).",
+        "operationId": "AuthService_RefreshToken",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Session"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RefreshTokenRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "summary": "Registers an owner account with e-mail and password (FR-IAM-01). The\naccount starts unverified and a verification OTP is e-mailed.",
+        "operationId": "AuthService_Register",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Session"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RegisterRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/api/v1/garages": {
+      "get": {
+        "operationId": "GarageService_ListGarages",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListGaragesResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "GarageService"
+        ]
+      },
+      "post": {
+        "summary": "Creates a garage owned by the signed-in account, within the plan's\ngarage limit.",
+        "operationId": "GarageService_CreateGarage",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Garage"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garage",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Garage"
+            }
+          }
+        ],
+        "tags": [
+          "GarageService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}": {
+      "get": {
+        "operationId": "GarageService_GetGarage",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Garage"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GarageService"
+        ]
+      },
+      "patch": {
+        "operationId": "GarageService_UpdateGarage",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Garage"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "garage",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Garage"
+            }
+          }
+        ],
+        "tags": [
+          "GarageService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/customers": {
+      "get": {
+        "operationId": "CustomerService_ListCustomers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListCustomersResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "query",
+            "description": "Fuzzy match on name, phone or e-mail.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "CustomerService"
+        ]
+      },
+      "post": {
+        "operationId": "CustomerService_CreateCustomer",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Customer"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customer",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Customer"
+            }
+          }
+        ],
+        "tags": [
+          "CustomerService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/customers/{customerId}": {
+      "get": {
+        "operationId": "CustomerService_GetCustomer",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Customer"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CustomerService"
+        ]
+      },
+      "delete": {
+        "summary": "Soft-deletes the customer and their vehicles; history is kept.",
+        "operationId": "CustomerService_DeleteCustomer",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteCustomerResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CustomerService"
+        ]
+      },
+      "patch": {
+        "operationId": "CustomerService_UpdateCustomer",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Customer"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customer",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Customer"
+            }
+          }
+        ],
+        "tags": [
+          "CustomerService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/entitlements": {
+      "get": {
+        "summary": "What the garage may use; any active member may read it.",
+        "operationId": "LicenseService_GetGarageEntitlements",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Entitlements"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LicenseService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/invitations": {
+      "get": {
+        "operationId": "InvitationService_ListInvitations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListInvitationsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "Unspecified lists every status.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "INVITATION_STATUS_PENDING",
+              "INVITATION_STATUS_ACCEPTED",
+              "INVITATION_STATUS_DECLINED",
+              "INVITATION_STATUS_REVOKED",
+              "INVITATION_STATUS_EXPIRED"
+            ]
+          }
+        ],
+        "tags": [
+          "InvitationService"
+        ]
+      },
+      "post": {
+        "summary": "Invites an existing account and e-mails them, within the plan's staff\nlimit.",
+        "operationId": "InvitationService_CreateInvitation",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Invitation"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InvitationServiceCreateInvitationBody"
+            }
+          }
+        ],
+        "tags": [
+          "InvitationService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/invitations/{invitationId}/revoke": {
+      "post": {
+        "summary": "Cancels a pending invitation.",
+        "operationId": "InvitationService_RevokeInvitation",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Invitation"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "invitationId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InvitationServiceRevokeInvitationBody"
+            }
+          }
+        ],
+        "tags": [
+          "InvitationService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/logo": {
+      "delete": {
+        "operationId": "GarageService_DeleteGarageLogo",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Garage"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GarageService"
+        ]
+      },
+      "put": {
+        "summary": "Replaces the garage logo.",
+        "operationId": "GarageService_UploadGarageLogo",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Garage"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GarageServiceUploadGarageLogoBody"
+            }
+          }
+        ],
+        "tags": [
+          "GarageService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/partners": {
+      "get": {
+        "operationId": "PartnerService_ListPartners",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPartnersResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PARTNER_TYPE_SUPPLIER",
+              "PARTNER_TYPE_INSURER"
+            ]
+          },
+          {
+            "name": "query",
+            "description": "Matches name, tax code or contact.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "PartnerService"
+        ]
+      },
+      "post": {
+        "operationId": "PartnerService_CreatePartner",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Partner"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partner",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Partner"
+            }
+          }
+        ],
+        "tags": [
+          "PartnerService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/partners/{partnerId}": {
+      "get": {
+        "operationId": "PartnerService_GetPartner",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Partner"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partnerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PartnerService"
+        ]
+      },
+      "delete": {
+        "operationId": "PartnerService_DeletePartner",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeletePartnerResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partnerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PartnerService"
+        ]
+      },
+      "patch": {
+        "operationId": "PartnerService_UpdatePartner",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Partner"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partnerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partner",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Partner"
+            }
+          }
+        ],
+        "tags": [
+          "PartnerService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/staff": {
+      "get": {
+        "operationId": "StaffService_ListStaff",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListStaffResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StaffService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/staff-candidates": {
+      "get": {
+        "summary": "Finds an existing account by exact e-mail or phone to invite.",
+        "operationId": "StaffService_LookupStaffCandidate",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1StaffCandidate"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "query",
+            "description": "Exact e-mail address or phone number of an existing account.",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StaffService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/staff-groups": {
+      "get": {
+        "operationId": "StaffGroupService_ListStaffGroups",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListStaffGroupsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StaffGroupService"
+        ]
+      },
+      "post": {
+        "operationId": "StaffGroupService_CreateStaffGroup",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1StaffGroup"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "group",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1StaffGroup"
+            }
+          }
+        ],
+        "tags": [
+          "StaffGroupService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/staff-groups/{groupId}": {
+      "delete": {
+        "summary": "Removes the group; its members keep their other groups.",
+        "operationId": "StaffGroupService_DeleteStaffGroup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteStaffGroupResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StaffGroupService"
+        ]
+      },
+      "patch": {
+        "operationId": "StaffGroupService_UpdateStaffGroup",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1StaffGroup"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "group",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1StaffGroup"
+            }
+          }
+        ],
+        "tags": [
+          "StaffGroupService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/staff/{staffId}": {
+      "delete": {
+        "summary": "Removes a member from the garage.",
+        "operationId": "StaffService_DeleteStaff",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteStaffResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "staffId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StaffService"
+        ]
+      },
+      "patch": {
+        "summary": "Activates/deactivates a member or changes their groups.",
+        "operationId": "StaffService_UpdateStaff",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Staff"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "staffId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "staff",
+            "description": "status and group_ids.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Staff"
+            }
+          }
+        ],
+        "tags": [
+          "StaffService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/vehicles": {
+      "get": {
+        "operationId": "VehicleService_ListVehicles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListVehiclesResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "description": "Only this customer's vehicles.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "query",
+            "description": "Matches license plate, make or model.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "VehicleService"
+        ]
+      },
+      "post": {
+        "operationId": "VehicleService_CreateVehicle",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Vehicle"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vehicle",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Vehicle"
+            }
+          }
+        ],
+        "tags": [
+          "VehicleService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/vehicles/{vehicleId}": {
+      "get": {
+        "operationId": "VehicleService_GetVehicle",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Vehicle"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "VehicleService"
+        ]
+      },
+      "delete": {
+        "operationId": "VehicleService_DeleteVehicle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteVehicleResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "VehicleService"
+        ]
+      },
+      "patch": {
+        "operationId": "VehicleService_UpdateVehicle",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Vehicle"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vehicle",
+            "description": "customer_id may move the vehicle to another customer of the garage.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Vehicle"
+            }
+          }
+        ],
+        "tags": [
+          "VehicleService"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "summary": "Returns the signed-in account.",
+        "operationId": "AccountService_GetMe",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Account"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "AccountService"
+        ]
+      },
+      "patch": {
+        "summary": "Updates the signed-in account's profile and language.",
+        "operationId": "AccountService_UpdateMe",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Account"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "account",
+            "description": "Fields to change: full_name, phone, locale.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Account"
+            }
+          }
+        ],
+        "tags": [
+          "AccountService"
+        ]
+      }
+    },
+    "/api/v1/me/invitations": {
+      "get": {
+        "operationId": "InvitationService_ListMyInvitations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListMyInvitationsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "description": "Unspecified lists every status.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "INVITATION_STATUS_PENDING",
+              "INVITATION_STATUS_ACCEPTED",
+              "INVITATION_STATUS_DECLINED",
+              "INVITATION_STATUS_REVOKED",
+              "INVITATION_STATUS_EXPIRED"
+            ]
+          }
+        ],
+        "tags": [
+          "InvitationService"
+        ]
+      }
+    },
+    "/api/v1/me/invitations/{invitationId}": {
+      "get": {
+        "operationId": "InvitationService_GetMyInvitation",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Invitation"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "invitationId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InvitationService"
+        ]
+      }
+    },
+    "/api/v1/me/invitations/{invitationId}/accept": {
+      "post": {
+        "summary": "Joins the garage with the invitation's groups.",
+        "operationId": "InvitationService_AcceptInvitation",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Invitation"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "invitationId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InvitationServiceAcceptInvitationBody"
+            }
+          }
+        ],
+        "tags": [
+          "InvitationService"
+        ]
+      }
+    },
+    "/api/v1/me/invitations/{invitationId}/decline": {
+      "post": {
+        "operationId": "InvitationService_DeclineInvitation",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Invitation"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "invitationId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InvitationServiceDeclineInvitationBody"
+            }
+          }
+        ],
+        "tags": [
+          "InvitationService"
+        ]
+      }
+    },
+    "/api/v1/me/subscription": {
+      "get": {
+        "summary": "The signed-in owner's subscription and usage.",
+        "operationId": "LicenseService_GetMySubscription",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Subscription"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "LicenseService"
+        ]
+      }
+    },
+    "/api/v1/me/subscription/plan-changes": {
+      "post": {
+        "summary": "Switches the owner to another plan (FR-LIC-02). Takes effect at once\nand starts a new period; online payment arrives in Phase 2. Fails with\nPLAN_LIMIT_REACHED when current usage exceeds the new plan.",
+        "operationId": "LicenseService_ChangeMyPlan",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Subscription"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ChangeMyPlanRequest"
+            }
+          }
+        ],
+        "tags": [
+          "LicenseService"
+        ]
+      }
+    },
+    "/api/v1/permissions": {
+      "get": {
+        "summary": "Lists the permission catalog.",
+        "operationId": "RoleService_ListPermissions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPermissionsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "RoleService"
+        ]
+      }
+    },
+    "/api/v1/plans": {
+      "get": {
+        "operationId": "LicenseService_ListPlans",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPlansResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "LicenseService"
+        ]
+      }
+    },
+    "/api/v1/roles": {
+      "get": {
+        "operationId": "RoleService_ListRoles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListRolesResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "RoleService"
+        ]
+      },
+      "post": {
+        "operationId": "RoleService_CreateRole",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Role"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "role",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Role"
+            }
+          }
+        ],
+        "tags": [
+          "RoleService"
+        ]
+      }
+    },
+    "/api/v1/roles/{roleId}": {
+      "get": {
+        "operationId": "RoleService_GetRole",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Role"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "roleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RoleService"
+        ]
+      },
+      "delete": {
+        "summary": "Fails with ROLE_IN_USE while a staff group uses the role.",
+        "operationId": "RoleService_DeleteRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteRoleResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "roleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RoleService"
+        ]
+      },
+      "patch": {
+        "operationId": "RoleService_UpdateRole",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Role"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "roleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "role",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Role"
+            }
+          }
+        ],
+        "tags": [
+          "RoleService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "GarageServiceUploadGarageLogoBody": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "format": "byte",
+          "description": "PNG, JPEG or WebP image, at most 1 MB (base64 in JSON)."
+        },
+        "contentType": {
+          "type": "string",
+          "description": "image/png, image/jpeg or image/webp."
+        }
+      },
+      "required": [
+        "content",
+        "contentType"
+      ]
+    },
+    "InvitationServiceAcceptInvitationBody": {
+      "type": "object"
+    },
+    "InvitationServiceCreateInvitationBody": {
+      "type": "object",
+      "properties": {
+        "accountId": {
+          "type": "string",
+          "description": "From LookupStaffCandidate."
+        },
+        "groupIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "accountId"
+      ]
+    },
+    "InvitationServiceDeclineInvitationBody": {
+      "type": "object"
+    },
+    "InvitationServiceRevokeInvitationBody": {
+      "type": "object"
+    },
+    "LicenseAdminServiceExtendSubscriptionBody": {
+      "type": "object",
+      "properties": {
+        "days": {
+          "type": "integer",
+          "format": "int32",
+          "description": "1 to 366 days added to the current period end (or to now when\nalready expired); reactivates past-due and suspended subscriptions."
+        }
+      },
+      "required": [
+        "days"
+      ]
+    },
+    "typeDayOfWeek": {
+      "type": "string",
+      "enum": [
+        "MONDAY",
+        "TUESDAY",
+        "WEDNESDAY",
+        "THURSDAY",
+        "FRIDAY",
+        "SATURDAY",
+        "SUNDAY"
+      ],
+      "description": "Represents a day of the week.\n\n - MONDAY: Monday\n - TUESDAY: Tuesday\n - WEDNESDAY: Wednesday\n - THURSDAY: Thursday\n - FRIDAY: Friday\n - SATURDAY: Saturday\n - SUNDAY: Sunday"
+    },
+    "v1AcceptInvitationResponse": {
+      "type": "object",
+      "properties": {
+        "invitation": {
+          "$ref": "#/definitions/v1Invitation"
+        }
+      }
+    },
+    "v1Account": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "email": {
+          "type": "string",
+          "readOnly": true
+        },
+        "phone": {
+          "type": "string",
+          "description": "Optional contact phone, unique across accounts; used to look staff up."
+        },
+        "authProvider": {
+          "$ref": "#/definitions/v1AuthProvider",
+          "readOnly": true
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1AccountStatus",
+          "readOnly": true
+        },
+        "emailVerified": {
+          "type": "boolean",
+          "description": "False until the e-mail OTP is confirmed; unverified accounts cannot use\ngarage, staff or business APIs.",
+          "readOnly": true
+        },
+        "locale": {
+          "$ref": "#/definitions/v1Locale"
+        },
+        "platformAdmin": {
+          "type": "boolean",
+          "description": "Platform operators manage subscription plans (FR-LIC-05).",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Account is a VietGara login (owner or staff member)."
+    },
+    "v1AccountStatus": {
+      "type": "string",
+      "enum": [
+        "ACCOUNT_STATUS_ACTIVE",
+        "ACCOUNT_STATUS_SUSPENDED"
+      ],
+      "description": "AccountStatus is the lifecycle of a login account (Database Design 2.1)."
+    },
+    "v1AuthProvider": {
+      "type": "string",
+      "enum": [
+        "AUTH_PROVIDER_EMAIL",
+        "AUTH_PROVIDER_GOOGLE"
+      ],
+      "description": "AuthProvider is how the account signed up (FR-IAM-01)."
+    },
+    "v1BillingCycle": {
+      "type": "string",
+      "enum": [
+        "BILLING_CYCLE_MONTHLY",
+        "BILLING_CYCLE_YEARLY"
+      ]
+    },
+    "v1CandidateMembership": {
+      "type": "string",
+      "enum": [
+        "CANDIDATE_MEMBERSHIP_NONE",
+        "CANDIDATE_MEMBERSHIP_MEMBER",
+        "CANDIDATE_MEMBERSHIP_INVITED"
+      ],
+      "description": "CandidateMembership is where a looked-up account stands with the garage."
+    },
+    "v1ChangeMyPlanRequest": {
+      "type": "object",
+      "properties": {
+        "planId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "planId"
+      ]
+    },
+    "v1ChangeMyPlanResponse": {
+      "type": "object",
+      "properties": {
+        "subscription": {
+          "$ref": "#/definitions/v1Subscription"
+        }
+      }
+    },
+    "v1CreateCustomerResponse": {
+      "type": "object",
+      "properties": {
+        "customer": {
+          "$ref": "#/definitions/v1Customer"
+        }
+      }
+    },
+    "v1CreateGarageResponse": {
+      "type": "object",
+      "properties": {
+        "garage": {
+          "$ref": "#/definitions/v1Garage"
+        }
+      }
+    },
+    "v1CreateInvitationResponse": {
+      "type": "object",
+      "properties": {
+        "invitation": {
+          "$ref": "#/definitions/v1Invitation"
+        }
+      }
+    },
+    "v1CreatePartnerResponse": {
+      "type": "object",
+      "properties": {
+        "partner": {
+          "$ref": "#/definitions/v1Partner"
+        }
+      }
+    },
+    "v1CreatePlanResponse": {
+      "type": "object",
+      "properties": {
+        "plan": {
+          "$ref": "#/definitions/v1Plan"
+        }
+      }
+    },
+    "v1CreateRoleResponse": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/v1Role"
+        }
+      }
+    },
+    "v1CreateStaffGroupResponse": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "$ref": "#/definitions/v1StaffGroup"
+        }
+      }
+    },
+    "v1CreateVehicleResponse": {
+      "type": "object",
+      "properties": {
+        "vehicle": {
+          "$ref": "#/definitions/v1Vehicle"
+        }
+      }
+    },
+    "v1Customer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Unique per garage among live customers; stored normalized."
+        },
+        "email": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "personalDataConsent": {
+          "type": "boolean",
+          "description": "Personal-data consent (Decree 13/2023/ND-CP); every change is logged."
+        },
+        "personalDataConsentAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "vehicleCount": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Customer is a vehicle owner served by one garage (FR-CUS-01).",
+      "required": [
+        "fullName"
+      ]
+    },
+    "v1DailyHours": {
+      "type": "object",
+      "properties": {
+        "day": {
+          "$ref": "#/definitions/typeDayOfWeek"
+        },
+        "closed": {
+          "type": "boolean",
+          "description": "True when the garage does not open that day."
+        },
+        "open": {
+          "type": "string",
+          "description": "\"HH:MM\", 24-hour clock, garage timezone."
+        },
+        "close": {
+          "type": "string"
+        }
+      },
+      "description": "DailyHours is the opening time of one weekday (FR-TEN-05)."
+    },
+    "v1DeclineInvitationResponse": {
+      "type": "object",
+      "properties": {
+        "invitation": {
+          "$ref": "#/definitions/v1Invitation"
+        }
+      }
+    },
+    "v1DeleteCustomerResponse": {
+      "type": "object"
+    },
+    "v1DeleteGarageLogoResponse": {
+      "type": "object",
+      "properties": {
+        "garage": {
+          "$ref": "#/definitions/v1Garage"
+        }
+      }
+    },
+    "v1DeletePartnerResponse": {
+      "type": "object"
+    },
+    "v1DeleteRoleResponse": {
+      "type": "object"
+    },
+    "v1DeleteStaffGroupResponse": {
+      "type": "object"
+    },
+    "v1DeleteStaffResponse": {
+      "type": "object"
+    },
+    "v1DeleteVehicleResponse": {
+      "type": "object"
+    },
+    "v1Entitlements": {
+      "type": "object",
+      "properties": {
+        "garageId": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1SubscriptionStatus"
+        },
+        "planCode": {
+          "type": "string"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Feature"
+          }
+        },
+        "limits": {
+          "$ref": "#/definitions/v1PlanLimits"
+        },
+        "readOnly": {
+          "type": "boolean"
+        },
+        "currentPeriodEnd": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "Entitlements is what a garage may currently use, derived from its\nowner's subscription; the web admin uses it to lock UI."
+    },
+    "v1Error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Stable, machine-readable code the client translates, e.g.\nVALIDATION_ERROR, EMAIL_NOT_VERIFIED, OTP_EXPIRED, PLAN_LIMIT_REACHED."
+        },
+        "message": {
+          "type": "string",
+          "description": "English, developer-facing description; clients show a localized text\nfor `code` instead."
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ErrorDetail"
+          },
+          "description": "Field-level problems for VALIDATION_ERROR."
+        }
+      },
+      "description": "Error describes why a request failed."
+    },
+    "v1ErrorDetail": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "JSON name of the field, e.g. \"email\" or \"garage.name\"."
+        },
+        "issue": {
+          "type": "string",
+          "description": "Machine-readable problem: required, invalid, too_long, taken, ..."
+        }
+      },
+      "description": "ErrorDetail is one invalid request field."
+    },
+    "v1ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "$ref": "#/definitions/v1Error"
+        }
+      },
+      "description": "ErrorResponse is the body of every non-2xx REST response:\n`{\"error\": {\"code\", \"message\", \"details\"}}`."
+    },
+    "v1ExtendSubscriptionResponse": {
+      "type": "object",
+      "properties": {
+        "subscription": {
+          "$ref": "#/definitions/v1Subscription"
+        }
+      }
+    },
+    "v1Feature": {
+      "type": "string",
+      "enum": [
+        "FEATURE_CUSTOMERS",
+        "FEATURE_QUOTES",
+        "FEATURE_REPAIR_ORDERS",
+        "FEATURE_INVENTORY",
+        "FEATURE_BILLING",
+        "FEATURE_DOCUMENTS",
+        "FEATURE_REPORTS"
+      ],
+      "description": "Feature is a module a plan may include."
+    },
+    "v1Garage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "ownerAccountId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "taxCode": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "logoUrl": {
+          "type": "string",
+          "description": "Set through UploadGarageLogo.",
+          "readOnly": true
+        },
+        "timezone": {
+          "type": "string",
+          "description": "IANA timezone, default Asia/Ho_Chi_Minh."
+        },
+        "currency": {
+          "type": "string",
+          "description": "ISO 4217, default VND."
+        },
+        "status": {
+          "$ref": "#/definitions/v1GarageStatus"
+        },
+        "operatingHours": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1DailyHours"
+          }
+        },
+        "numbering": {
+          "$ref": "#/definitions/v1NumberingTemplates"
+        },
+        "access": {
+          "$ref": "#/definitions/v1GarageAccess",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Garage is one tenant (branch) of an owner account (FR-TEN-01/02).",
+      "required": [
+        "name"
+      ]
+    },
+    "v1GarageAccess": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "boolean"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Permission"
+          }
+        }
+      },
+      "description": "GarageAccess is what the signed-in account may do in the garage."
+    },
+    "v1GarageStatus": {
+      "type": "string",
+      "enum": [
+        "GARAGE_STATUS_ACTIVE",
+        "GARAGE_STATUS_INACTIVE"
+      ],
+      "description": "GarageStatus: an inactive garage is hidden from staff and read-only for\nits owner until reactivated (FR-TEN-02)."
+    },
+    "v1GetCustomerResponse": {
+      "type": "object",
+      "properties": {
+        "customer": {
+          "$ref": "#/definitions/v1Customer"
+        }
+      }
+    },
+    "v1GetGarageEntitlementsResponse": {
+      "type": "object",
+      "properties": {
+        "entitlements": {
+          "$ref": "#/definitions/v1Entitlements"
+        }
+      }
+    },
+    "v1GetGarageResponse": {
+      "type": "object",
+      "properties": {
+        "garage": {
+          "$ref": "#/definitions/v1Garage"
+        }
+      }
+    },
+    "v1GetMeResponse": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "$ref": "#/definitions/v1Account"
+        }
+      }
+    },
+    "v1GetMyInvitationResponse": {
+      "type": "object",
+      "properties": {
+        "invitation": {
+          "$ref": "#/definitions/v1Invitation"
+        }
+      }
+    },
+    "v1GetMySubscriptionResponse": {
+      "type": "object",
+      "properties": {
+        "subscription": {
+          "$ref": "#/definitions/v1Subscription"
+        }
+      }
+    },
+    "v1GetPartnerResponse": {
+      "type": "object",
+      "properties": {
+        "partner": {
+          "$ref": "#/definitions/v1Partner"
+        }
+      }
+    },
+    "v1GetRoleResponse": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/v1Role"
+        }
+      }
+    },
+    "v1GetVehicleResponse": {
+      "type": "object",
+      "properties": {
+        "vehicle": {
+          "$ref": "#/definitions/v1Vehicle"
+        }
+      }
+    },
+    "v1Invitation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "accountId": {
+          "type": "string"
+        },
+        "fullName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "email": {
+          "type": "string",
+          "readOnly": true
+        },
+        "groupIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Staff groups the member joins on acceptance."
+        },
+        "status": {
+          "$ref": "#/definitions/v1InvitationStatus",
+          "readOnly": true
+        },
+        "invitedByName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "respondedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Invitation asks an existing account to join a garage (FR-TEN-04). It is\ne-mailed to the account and expires after 7 days."
+    },
+    "v1InvitationStatus": {
+      "type": "string",
+      "enum": [
+        "INVITATION_STATUS_PENDING",
+        "INVITATION_STATUS_ACCEPTED",
+        "INVITATION_STATUS_DECLINED",
+        "INVITATION_STATUS_REVOKED",
+        "INVITATION_STATUS_EXPIRED"
+      ]
+    },
+    "v1ListAllPlansResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Plan"
+          }
+        }
+      }
+    },
+    "v1ListCustomersResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Customer"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1ListGaragesResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Garage"
+          },
+          "description": "Garages the account owns or is an active member of; staff do not see\ninactive garages."
+        }
+      }
+    },
+    "v1ListInvitationsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Invitation"
+          }
+        }
+      }
+    },
+    "v1ListMyInvitationsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Invitation"
+          }
+        }
+      }
+    },
+    "v1ListPartnersResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Partner"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1ListPermissionsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PermissionInfo"
+          }
+        }
+      }
+    },
+    "v1ListPlansResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Plan"
+          },
+          "description": "Public, active plans, cheapest first."
+        }
+      }
+    },
+    "v1ListRolesResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Role"
+          }
+        }
+      }
+    },
+    "v1ListStaffGroupsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1StaffGroup"
+          }
+        }
+      }
+    },
+    "v1ListStaffResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Staff"
+          }
+        }
+      }
+    },
+    "v1ListSubscriptionsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SubscriptionSummary"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1ListVehiclesResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Vehicle"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1Locale": {
+      "type": "string",
+      "enum": [
+        "LOCALE_VI",
+        "LOCALE_EN"
+      ],
+      "description": "Locale is the account's interface and e-mail language. Vietnamese is the\ndefault (NFR-US-01)."
+    },
+    "v1LoginRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "email",
+        "password"
+      ]
+    },
+    "v1LoginResponse": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/v1Session"
+        }
+      }
+    },
+    "v1LogoutRequest": {
+      "type": "object",
+      "properties": {
+        "refreshToken": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "refreshToken"
+      ]
+    },
+    "v1LogoutResponse": {
+      "type": "object"
+    },
+    "v1LookupStaffCandidateResponse": {
+      "type": "object",
+      "properties": {
+        "candidate": {
+          "$ref": "#/definitions/v1StaffCandidate"
+        }
+      }
+    },
+    "v1NumberingTemplates": {
+      "type": "object",
+      "properties": {
+        "quote": {
+          "type": "string"
+        },
+        "repairOrder": {
+          "type": "string"
+        }
+      },
+      "description": "NumberingTemplates configures document numbers (FR-TEN-05). Placeholders:\n{YYYY}, {YY}, {MM}, {DD} and {SEQ:n} (sequence padded to n digits),\ne.g. \"BG-{YYYY}{MM}-{SEQ:4}\"."
+    },
+    "v1OtpChallenge": {
+      "type": "object",
+      "properties": {
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "resendAvailableAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "A new OTP cannot be requested before this time."
+        }
+      },
+      "description": "OtpChallenge tells the client how long the e-mailed OTP is valid."
+    },
+    "v1Pagination": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Total number of items matching the query, across all pages."
+        },
+        "page": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The 1-based page that was returned."
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The page size that was applied."
+        }
+      },
+      "description": "Pagination describes the page returned by every List call (API\nSpecification Section 1.1): lists are requested with `page` (1-based,\ndefault 1) and `page_size` (default 20, max 100)."
+    },
+    "v1Partner": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "type": {
+          "$ref": "#/definitions/v1PartnerType"
+        },
+        "name": {
+          "type": "string",
+          "description": "Unique per garage and type (case-insensitive)."
+        },
+        "taxCode": {
+          "type": "string"
+        },
+        "contact": {
+          "$ref": "#/definitions/v1PartnerContact"
+        },
+        "note": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Partner is a parts supplier or insurer in the garage's directory\n(FR-CUS-04).",
+      "required": [
+        "type",
+        "name"
+      ]
+    },
+    "v1PartnerContact": {
+      "type": "object",
+      "properties": {
+        "contactPerson": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        }
+      }
+    },
+    "v1PartnerType": {
+      "type": "string",
+      "enum": [
+        "PARTNER_TYPE_SUPPLIER",
+        "PARTNER_TYPE_INSURER"
+      ]
+    },
+    "v1Permission": {
+      "type": "string",
+      "enum": [
+        "PERMISSION_GARAGE_UPDATE",
+        "PERMISSION_STAFF_READ",
+        "PERMISSION_STAFF_MANAGE",
+        "PERMISSION_CUSTOMER_READ",
+        "PERMISSION_CUSTOMER_WRITE",
+        "PERMISSION_PARTNER_READ",
+        "PERMISSION_PARTNER_WRITE",
+        "PERMISSION_SUBSCRIPTION_READ",
+        "PERMISSION_QUOTE_READ",
+        "PERMISSION_QUOTE_WRITE",
+        "PERMISSION_REPAIR_ORDER_READ",
+        "PERMISSION_REPAIR_ORDER_WRITE",
+        "PERMISSION_INVENTORY_READ",
+        "PERMISSION_INVENTORY_WRITE",
+        "PERMISSION_BILLING_READ",
+        "PERMISSION_BILLING_WRITE",
+        "PERMISSION_REPORT_READ"
+      ],
+      "description": "Permission is one action a staff member may perform in a garage\n(FR-IAM-03). The catalog is fixed by the platform; garage owners combine\npermissions into roles. Owners always hold every permission; every\nactive member may read the garage profile.\n\n - PERMISSION_GARAGE_UPDATE: Edit the garage profile, configuration and logo.\n - PERMISSION_STAFF_MANAGE: Invite, activate/deactivate and remove staff, and change their groups.\n - PERMISSION_CUSTOMER_READ: Customers and their vehicles.\n - PERMISSION_PARTNER_READ: Suppliers and insurers."
+    },
+    "v1PermissionInfo": {
+      "type": "object",
+      "properties": {
+        "permission": {
+          "$ref": "#/definitions/v1Permission"
+        },
+        "module": {
+          "type": "string",
+          "description": "Module the permission belongs to, e.g. \"customer\", used to group the\nrole editor."
+        }
+      },
+      "description": "PermissionInfo describes one catalog entry."
+    },
+    "v1Plan": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "code": {
+          "type": "string",
+          "description": "Unique, e.g. \"pro\"; \"trial\" is the plan every new owner starts on."
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "price": {
+          "type": "string",
+          "format": "int64",
+          "description": "Price per billing cycle in the smallest currency unit (VND)."
+        },
+        "currency": {
+          "type": "string"
+        },
+        "billingCycle": {
+          "$ref": "#/definitions/v1BillingCycle"
+        },
+        "limits": {
+          "$ref": "#/definitions/v1PlanLimits"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Feature"
+          }
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Shown to garage owners."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Inactive plans cannot be chosen; existing subscribers keep them."
+        },
+        "sortOrder": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Plan is a subscription offer (FR-LIC-05).",
+      "required": [
+        "code",
+        "name",
+        "limits"
+      ]
+    },
+    "v1PlanLimits": {
+      "type": "object",
+      "properties": {
+        "maxGarages": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxStaff": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Staff members across all garages, excluding the owner and counting\npending invitations."
+        },
+        "maxTransactionsPerDay": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Business documents (quotes, repair orders, settlements) created per\ncalendar day (Asia/Ho_Chi_Minh)."
+        }
+      },
+      "description": "PlanLimits caps usage across all garages of the subscribing owner."
+    },
+    "v1RefreshTokenRequest": {
+      "type": "object",
+      "properties": {
+        "refreshToken": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "refreshToken"
+      ]
+    },
+    "v1RefreshTokenResponse": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/v1Session"
+        }
+      }
+    },
+    "v1RegisterRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "description": "At least 8 characters."
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "locale": {
+          "$ref": "#/definitions/v1Locale",
+          "description": "Defaults to Vietnamese."
+        }
+      },
+      "required": [
+        "email",
+        "password",
+        "fullName"
+      ]
+    },
+    "v1RegisterResponse": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/v1Session"
+        }
+      }
+    },
+    "v1RequestPasswordResetRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "email"
+      ]
+    },
+    "v1RequestPasswordResetResponse": {
+      "type": "object",
+      "properties": {
+        "challenge": {
+          "$ref": "#/definitions/v1OtpChallenge"
+        }
+      }
+    },
+    "v1ResetPasswordRequest": {
+      "type": "object",
+      "properties": {
+        "resetToken": {
+          "type": "string"
+        },
+        "newPassword": {
+          "type": "string",
+          "description": "At least 8 characters."
+        }
+      },
+      "required": [
+        "resetToken",
+        "newPassword"
+      ]
+    },
+    "v1ResetPasswordResponse": {
+      "type": "object"
+    },
+    "v1RevokeInvitationResponse": {
+      "type": "object",
+      "properties": {
+        "invitation": {
+          "$ref": "#/definitions/v1Invitation"
+        }
+      }
+    },
+    "v1Role": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Permission"
+          }
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Created by the platform; still editable.",
+          "readOnly": true
+        },
+        "groupCount": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Number of staff groups using the role.",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Role is a named set of permissions defined by a garage owner and shared\nby all the owner's garages. Default roles are created when the owner\nverifies their e-mail.",
+      "required": [
+        "name"
+      ]
+    },
+    "v1SendEmailVerificationOtpRequest": {
+      "type": "object"
+    },
+    "v1SendEmailVerificationOtpResponse": {
+      "type": "object",
+      "properties": {
+        "challenge": {
+          "$ref": "#/definitions/v1OtpChallenge"
+        }
+      }
+    },
+    "v1Session": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string"
+        },
+        "refreshToken": {
+          "type": "string"
+        },
+        "tokenType": {
+          "type": "string",
+          "description": "Always \"Bearer\"."
+        },
+        "expiresIn": {
+          "type": "string",
+          "format": "int64",
+          "description": "Access token lifetime in seconds."
+        },
+        "account": {
+          "$ref": "#/definitions/v1Account"
+        }
+      },
+      "description": "Session is what every successful sign-in returns."
+    },
+    "v1Staff": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "accountId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "fullName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "email": {
+          "type": "string",
+          "readOnly": true
+        },
+        "phone": {
+          "type": "string",
+          "readOnly": true
+        },
+        "owner": {
+          "type": "boolean",
+          "description": "The garage owner; cannot be deactivated, removed or grouped.",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1StaffStatus"
+        },
+        "groupIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Staff groups of this garage the member belongs to."
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Permission"
+          },
+          "description": "Union of the permissions of the member's groups.",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Staff is an account's membership of a garage (FR-TEN-04)."
+    },
+    "v1StaffCandidate": {
+      "type": "object",
+      "properties": {
+        "accountId": {
+          "type": "string"
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "membership": {
+          "$ref": "#/definitions/v1CandidateMembership"
+        }
+      },
+      "description": "StaffCandidate is an existing account found by e-mail or phone."
+    },
+    "v1StaffGroup": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "roleId": {
+          "type": "string"
+        },
+        "roleName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "memberCount": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "StaffGroup is a set of staff in one garage that all receive the\npermissions of the group's role.",
+      "required": [
+        "name",
+        "roleId"
+      ]
+    },
+    "v1StaffStatus": {
+      "type": "string",
+      "enum": [
+        "STAFF_STATUS_ACTIVE",
+        "STAFF_STATUS_INACTIVE"
+      ],
+      "description": "StaffStatus: inactive staff keep their record but lose access."
+    },
+    "v1Subscription": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "accountId": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1SubscriptionStatus"
+        },
+        "plan": {
+          "$ref": "#/definitions/v1Plan"
+        },
+        "trialEndAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "currentPeriodStart": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "currentPeriodEnd": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "gracePeriodEnd": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "autoRenew": {
+          "type": "boolean"
+        },
+        "usage": {
+          "$ref": "#/definitions/v1Usage"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "Subscription is an owner account's license covering all their garages\n(FR-LIC-01..04)."
+    },
+    "v1SubscriptionStatus": {
+      "type": "string",
+      "enum": [
+        "SUBSCRIPTION_STATUS_TRIAL",
+        "SUBSCRIPTION_STATUS_ACTIVE",
+        "SUBSCRIPTION_STATUS_PAST_DUE",
+        "SUBSCRIPTION_STATUS_SUSPENDED",
+        "SUBSCRIPTION_STATUS_CANCELLED"
+      ],
+      "description": "SubscriptionStatus (LLD 3.1): past_due is read-only during the grace\nperiod, suspended and cancelled are locked."
+    },
+    "v1SubscriptionSummary": {
+      "type": "object",
+      "properties": {
+        "subscription": {
+          "$ref": "#/definitions/v1Subscription"
+        },
+        "accountEmail": {
+          "type": "string"
+        },
+        "accountName": {
+          "type": "string"
+        }
+      },
+      "description": "SubscriptionSummary is one row of the platform admin's subscription list."
+    },
+    "v1UpdateCustomerResponse": {
+      "type": "object",
+      "properties": {
+        "customer": {
+          "$ref": "#/definitions/v1Customer"
+        }
+      }
+    },
+    "v1UpdateGarageResponse": {
+      "type": "object",
+      "properties": {
+        "garage": {
+          "$ref": "#/definitions/v1Garage"
+        }
+      }
+    },
+    "v1UpdateMeResponse": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "$ref": "#/definitions/v1Account"
+        }
+      }
+    },
+    "v1UpdatePartnerResponse": {
+      "type": "object",
+      "properties": {
+        "partner": {
+          "$ref": "#/definitions/v1Partner"
+        }
+      }
+    },
+    "v1UpdatePlanResponse": {
+      "type": "object",
+      "properties": {
+        "plan": {
+          "$ref": "#/definitions/v1Plan"
+        }
+      }
+    },
+    "v1UpdateRoleResponse": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/v1Role"
+        }
+      }
+    },
+    "v1UpdateStaffGroupResponse": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "$ref": "#/definitions/v1StaffGroup"
+        }
+      }
+    },
+    "v1UpdateStaffResponse": {
+      "type": "object",
+      "properties": {
+        "staff": {
+          "$ref": "#/definitions/v1Staff"
+        }
+      }
+    },
+    "v1UpdateVehicleResponse": {
+      "type": "object",
+      "properties": {
+        "vehicle": {
+          "$ref": "#/definitions/v1Vehicle"
+        }
+      }
+    },
+    "v1UploadGarageLogoResponse": {
+      "type": "object",
+      "properties": {
+        "garage": {
+          "$ref": "#/definitions/v1Garage"
+        }
+      }
+    },
+    "v1Usage": {
+      "type": "object",
+      "properties": {
+        "garages": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "staff": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "transactionsToday": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "description": "Usage is the owner's current consumption of the plan limits."
+    },
+    "v1Vehicle": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "customerId": {
+          "type": "string"
+        },
+        "customerName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "licensePlate": {
+          "type": "string",
+          "description": "Unique per garage (ignoring punctuation and case)."
+        },
+        "make": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "year": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "vin": {
+          "type": "string"
+        },
+        "engineNumber": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Vehicle belongs to one customer of the garage (FR-CUS-02).",
+      "required": [
+        "customerId",
+        "licensePlate"
+      ]
+    },
+    "v1VerifyEmailRequest": {
+      "type": "object",
+      "properties": {
+        "otpCode": {
+          "type": "string"
+        },
+        "refreshToken": {
+          "type": "string",
+          "description": "The refresh token of the current session; it is rotated so the new\nsession carries the verified claim."
+        }
+      },
+      "required": [
+        "otpCode",
+        "refreshToken"
+      ]
+    },
+    "v1VerifyEmailResponse": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/v1Session"
+        }
+      }
+    },
+    "v1VerifyPasswordResetOtpRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "otpCode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "email",
+        "otpCode"
+      ]
+    },
+    "v1VerifyPasswordResetOtpResponse": {
+      "type": "object",
+      "properties": {
+        "resetToken": {
+          "type": "string",
+          "description": "Single-use token for ResetPassword."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "bearer": {
+      "type": "apiKey",
+      "description": "Access token issued by the auth endpoints: `Bearer \u003ctoken\u003e`.",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "bearer": []
+    }
+  ]
+}

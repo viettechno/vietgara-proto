@@ -4,11 +4,6 @@
 // - protoc             (unknown)
 // source: vietgara/identity/v1/auth.proto
 
-// Package vietgara.identity.v1 defines the Identity & Access Management
-// module (HLD module #1): authentication, token lifecycle and social
-// account linking.
-// See: FRD FR-IAM-01/02/04/06, API Specification Section 2, ADR-007.
-
 package identityv1
 
 import (
@@ -24,40 +19,48 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuthService_Register_FullMethodName          = "/vietgara.identity.v1.AuthService/Register"
-	AuthService_Login_FullMethodName             = "/vietgara.identity.v1.AuthService/Login"
-	AuthService_RefreshToken_FullMethodName      = "/vietgara.identity.v1.AuthService/RefreshToken"
-	AuthService_Logout_FullMethodName            = "/vietgara.identity.v1.AuthService/Logout"
-	AuthService_ForgotPassword_FullMethodName    = "/vietgara.identity.v1.AuthService/ForgotPassword"
-	AuthService_ResetPassword_FullMethodName     = "/vietgara.identity.v1.AuthService/ResetPassword"
-	AuthService_LinkSocialAccount_FullMethodName = "/vietgara.identity.v1.AuthService/LinkSocialAccount"
+	AuthService_Register_FullMethodName                 = "/vietgara.identity.v1.AuthService/Register"
+	AuthService_Login_FullMethodName                    = "/vietgara.identity.v1.AuthService/Login"
+	AuthService_RefreshToken_FullMethodName             = "/vietgara.identity.v1.AuthService/RefreshToken"
+	AuthService_Logout_FullMethodName                   = "/vietgara.identity.v1.AuthService/Logout"
+	AuthService_SendEmailVerificationOtp_FullMethodName = "/vietgara.identity.v1.AuthService/SendEmailVerificationOtp"
+	AuthService_VerifyEmail_FullMethodName              = "/vietgara.identity.v1.AuthService/VerifyEmail"
+	AuthService_RequestPasswordReset_FullMethodName     = "/vietgara.identity.v1.AuthService/RequestPasswordReset"
+	AuthService_VerifyPasswordResetOtp_FullMethodName   = "/vietgara.identity.v1.AuthService/VerifyPasswordResetOtp"
+	AuthService_ResetPassword_FullMethodName            = "/vietgara.identity.v1.AuthService/ResetPassword"
 )
 
 // AuthServiceClient is the client API for AuthService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// AuthService handles account registration and authentication for the
-// internal JWT issued to other VietGara services (ADR-007).
+// AuthService handles sign-up, sign-in, sessions, e-mail verification and
+// password reset (FRD 3.1). Google sign-in uses the OAuth redirect routes
+// GET /api/v1/auth/google/login and /callback, which are plain HTTP handlers.
 type AuthServiceClient interface {
-	// Register creates a new account (FR-IAM-01).
+	// Registers an owner account with e-mail and password (FR-IAM-01). The
+	// account starts unverified and a verification OTP is e-mailed.
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
-	// Login authenticates an existing account (FR-IAM-02).
+	// Signs in with e-mail and password (FR-IAM-02).
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	// RefreshToken exchanges a refresh token for a new access token pair,
-	// keeping long-lived mobile sessions valid (FR-IAM-02).
+	// Exchanges a refresh token for a new session; the old token is revoked
+	// (rotation).
 	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*RefreshTokenResponse, error)
-	// Logout revokes the presented refresh token (FR-IAM-02).
+	// Revokes a refresh token.
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
-	// ForgotPassword sends a password-reset OTP or link by email or SMS
-	// (FR-IAM-04).
-	ForgotPassword(ctx context.Context, in *ForgotPasswordRequest, opts ...grpc.CallOption) (*ForgotPasswordResponse, error)
-	// ResetPassword sets a new password using the OTP/token received via
-	// ForgotPassword (FR-IAM-04).
+	// E-mails a new 6-digit verification OTP, valid for 2 minutes, to the
+	// signed-in account.
+	SendEmailVerificationOtp(ctx context.Context, in *SendEmailVerificationOtpRequest, opts ...grpc.CallOption) (*SendEmailVerificationOtpResponse, error)
+	// Confirms the signed-in account's e-mail with the OTP and returns a
+	// session whose token is marked verified.
+	VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error)
+	// Starts a password reset (FR-IAM-04): e-mails an OTP valid for 2
+	// minutes. Always succeeds so account existence is not revealed.
+	RequestPasswordReset(ctx context.Context, in *RequestPasswordResetRequest, opts ...grpc.CallOption) (*RequestPasswordResetResponse, error)
+	// Checks the password-reset OTP and returns a short-lived reset token.
+	VerifyPasswordResetOtp(ctx context.Context, in *VerifyPasswordResetOtpRequest, opts ...grpc.CallOption) (*VerifyPasswordResetOtpResponse, error)
+	// Sets a new password with the reset token and revokes every session.
 	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*ResetPasswordResponse, error)
-	// LinkSocialAccount links an additional Google/Facebook account to the
-	// current account (FR-IAM-06).
-	LinkSocialAccount(ctx context.Context, in *LinkSocialAccountRequest, opts ...grpc.CallOption) (*LinkSocialAccountResponse, error)
 }
 
 type authServiceClient struct {
@@ -108,10 +111,40 @@ func (c *authServiceClient) Logout(ctx context.Context, in *LogoutRequest, opts 
 	return out, nil
 }
 
-func (c *authServiceClient) ForgotPassword(ctx context.Context, in *ForgotPasswordRequest, opts ...grpc.CallOption) (*ForgotPasswordResponse, error) {
+func (c *authServiceClient) SendEmailVerificationOtp(ctx context.Context, in *SendEmailVerificationOtpRequest, opts ...grpc.CallOption) (*SendEmailVerificationOtpResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ForgotPasswordResponse)
-	err := c.cc.Invoke(ctx, AuthService_ForgotPassword_FullMethodName, in, out, cOpts...)
+	out := new(SendEmailVerificationOtpResponse)
+	err := c.cc.Invoke(ctx, AuthService_SendEmailVerificationOtp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(VerifyEmailResponse)
+	err := c.cc.Invoke(ctx, AuthService_VerifyEmail_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) RequestPasswordReset(ctx context.Context, in *RequestPasswordResetRequest, opts ...grpc.CallOption) (*RequestPasswordResetResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RequestPasswordResetResponse)
+	err := c.cc.Invoke(ctx, AuthService_RequestPasswordReset_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) VerifyPasswordResetOtp(ctx context.Context, in *VerifyPasswordResetOtpRequest, opts ...grpc.CallOption) (*VerifyPasswordResetOtpResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(VerifyPasswordResetOtpResponse)
+	err := c.cc.Invoke(ctx, AuthService_VerifyPasswordResetOtp_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -128,41 +161,37 @@ func (c *authServiceClient) ResetPassword(ctx context.Context, in *ResetPassword
 	return out, nil
 }
 
-func (c *authServiceClient) LinkSocialAccount(ctx context.Context, in *LinkSocialAccountRequest, opts ...grpc.CallOption) (*LinkSocialAccountResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(LinkSocialAccountResponse)
-	err := c.cc.Invoke(ctx, AuthService_LinkSocialAccount_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility.
 //
-// AuthService handles account registration and authentication for the
-// internal JWT issued to other VietGara services (ADR-007).
+// AuthService handles sign-up, sign-in, sessions, e-mail verification and
+// password reset (FRD 3.1). Google sign-in uses the OAuth redirect routes
+// GET /api/v1/auth/google/login and /callback, which are plain HTTP handlers.
 type AuthServiceServer interface {
-	// Register creates a new account (FR-IAM-01).
+	// Registers an owner account with e-mail and password (FR-IAM-01). The
+	// account starts unverified and a verification OTP is e-mailed.
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
-	// Login authenticates an existing account (FR-IAM-02).
+	// Signs in with e-mail and password (FR-IAM-02).
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	// RefreshToken exchanges a refresh token for a new access token pair,
-	// keeping long-lived mobile sessions valid (FR-IAM-02).
+	// Exchanges a refresh token for a new session; the old token is revoked
+	// (rotation).
 	RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error)
-	// Logout revokes the presented refresh token (FR-IAM-02).
+	// Revokes a refresh token.
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
-	// ForgotPassword sends a password-reset OTP or link by email or SMS
-	// (FR-IAM-04).
-	ForgotPassword(context.Context, *ForgotPasswordRequest) (*ForgotPasswordResponse, error)
-	// ResetPassword sets a new password using the OTP/token received via
-	// ForgotPassword (FR-IAM-04).
+	// E-mails a new 6-digit verification OTP, valid for 2 minutes, to the
+	// signed-in account.
+	SendEmailVerificationOtp(context.Context, *SendEmailVerificationOtpRequest) (*SendEmailVerificationOtpResponse, error)
+	// Confirms the signed-in account's e-mail with the OTP and returns a
+	// session whose token is marked verified.
+	VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error)
+	// Starts a password reset (FR-IAM-04): e-mails an OTP valid for 2
+	// minutes. Always succeeds so account existence is not revealed.
+	RequestPasswordReset(context.Context, *RequestPasswordResetRequest) (*RequestPasswordResetResponse, error)
+	// Checks the password-reset OTP and returns a short-lived reset token.
+	VerifyPasswordResetOtp(context.Context, *VerifyPasswordResetOtpRequest) (*VerifyPasswordResetOtpResponse, error)
+	// Sets a new password with the reset token and revokes every session.
 	ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error)
-	// LinkSocialAccount links an additional Google/Facebook account to the
-	// current account (FR-IAM-06).
-	LinkSocialAccount(context.Context, *LinkSocialAccountRequest) (*LinkSocialAccountResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -185,14 +214,20 @@ func (UnimplementedAuthServiceServer) RefreshToken(context.Context, *RefreshToke
 func (UnimplementedAuthServiceServer) Logout(context.Context, *LogoutRequest) (*LogoutResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Logout not implemented")
 }
-func (UnimplementedAuthServiceServer) ForgotPassword(context.Context, *ForgotPasswordRequest) (*ForgotPasswordResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ForgotPassword not implemented")
+func (UnimplementedAuthServiceServer) SendEmailVerificationOtp(context.Context, *SendEmailVerificationOtpRequest) (*SendEmailVerificationOtpResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SendEmailVerificationOtp not implemented")
+}
+func (UnimplementedAuthServiceServer) VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method VerifyEmail not implemented")
+}
+func (UnimplementedAuthServiceServer) RequestPasswordReset(context.Context, *RequestPasswordResetRequest) (*RequestPasswordResetResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RequestPasswordReset not implemented")
+}
+func (UnimplementedAuthServiceServer) VerifyPasswordResetOtp(context.Context, *VerifyPasswordResetOtpRequest) (*VerifyPasswordResetOtpResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method VerifyPasswordResetOtp not implemented")
 }
 func (UnimplementedAuthServiceServer) ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ResetPassword not implemented")
-}
-func (UnimplementedAuthServiceServer) LinkSocialAccount(context.Context, *LinkSocialAccountRequest) (*LinkSocialAccountResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method LinkSocialAccount not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
@@ -287,20 +322,74 @@ func _AuthService_Logout_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthService_ForgotPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ForgotPasswordRequest)
+func _AuthService_SendEmailVerificationOtp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendEmailVerificationOtpRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServiceServer).ForgotPassword(ctx, in)
+		return srv.(AuthServiceServer).SendEmailVerificationOtp(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AuthService_ForgotPassword_FullMethodName,
+		FullMethod: AuthService_SendEmailVerificationOtp_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).ForgotPassword(ctx, req.(*ForgotPasswordRequest))
+		return srv.(AuthServiceServer).SendEmailVerificationOtp(ctx, req.(*SendEmailVerificationOtpRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_VerifyEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyEmailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).VerifyEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_VerifyEmail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).VerifyEmail(ctx, req.(*VerifyEmailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_RequestPasswordReset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestPasswordResetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).RequestPasswordReset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_RequestPasswordReset_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).RequestPasswordReset(ctx, req.(*RequestPasswordResetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_VerifyPasswordResetOtp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyPasswordResetOtpRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).VerifyPasswordResetOtp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_VerifyPasswordResetOtp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).VerifyPasswordResetOtp(ctx, req.(*VerifyPasswordResetOtpRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -319,24 +408,6 @@ func _AuthService_ResetPassword_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServiceServer).ResetPassword(ctx, req.(*ResetPasswordRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AuthService_LinkSocialAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LinkSocialAccountRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AuthServiceServer).LinkSocialAccount(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AuthService_LinkSocialAccount_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).LinkSocialAccount(ctx, req.(*LinkSocialAccountRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -365,16 +436,24 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthService_Logout_Handler,
 		},
 		{
-			MethodName: "ForgotPassword",
-			Handler:    _AuthService_ForgotPassword_Handler,
+			MethodName: "SendEmailVerificationOtp",
+			Handler:    _AuthService_SendEmailVerificationOtp_Handler,
+		},
+		{
+			MethodName: "VerifyEmail",
+			Handler:    _AuthService_VerifyEmail_Handler,
+		},
+		{
+			MethodName: "RequestPasswordReset",
+			Handler:    _AuthService_RequestPasswordReset_Handler,
+		},
+		{
+			MethodName: "VerifyPasswordResetOtp",
+			Handler:    _AuthService_VerifyPasswordResetOtp_Handler,
 		},
 		{
 			MethodName: "ResetPassword",
 			Handler:    _AuthService_ResetPassword_Handler,
-		},
-		{
-			MethodName: "LinkSocialAccount",
-			Handler:    _AuthService_LinkSocialAccount_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

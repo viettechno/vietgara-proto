@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package vietgara.common.v1;
+
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/common/v1;commonv1";
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "VietGara API"
+    version: "1.1"
+    description: "Public REST/JSON API of the VietGara platform (API Specification). Generated from vietgara-proto."
+  }
+  schemes: [
+    HTTP,
+    HTTPS
+  ]
+  consumes: "application/json"
+  produces: "application/json"
+  security_definitions: {
+    security: {
+      key: "bearer"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+        description: "Access token issued by the auth endpoints: `Bearer <token>`."
+      }
+    }
+  }
+  security: {
+    security_requirement: {key: "bearer"}
+  }
+  responses: {
+    key: "default"
+    value: {
+      description: "Error (API Specification Section 1.1)."
+      schema: {
+        json_schema: {ref: ".vietgara.common.v1.ErrorResponse"}
+      }
+    }
+  }
+};
+
+// ErrorResponse is the body of every non-2xx REST response:
+// `{"error": {"code", "message", "details"}}`.
+message ErrorResponse {
+  Error error = 1;
+}
+
+// Error describes why a request failed.
+message Error {
+  // Stable, machine-readable code the client translates, e.g.
+  // VALIDATION_ERROR, EMAIL_NOT_VERIFIED, OTP_EXPIRED, PLAN_LIMIT_REACHED.
+  string code = 1;
+  // English, developer-facing description; clients show a localized text
+  // for `code` instead.
+  string message = 2;
+  // Field-level problems for VALIDATION_ERROR.
+  repeated ErrorDetail details = 3;
+}
+
+// ErrorDetail is one invalid request field.
+message ErrorDetail {
+  // JSON name of the field, e.g. "email" or "garage.name".
+  string field = 1;
+  // Machine-readable problem: required, invalid, too_long, taken, ...
+  string issue = 2;
+}

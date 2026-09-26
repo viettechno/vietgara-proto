@@ -1,0 +1,228 @@
+syntax = "proto3";
+
+package vietgara.tenant.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1;tenantv1";
+
+// Permission is one action a staff member may perform in a garage
+// (FR-IAM-03). The catalog is fixed by the platform; garage owners combine
+// permissions into roles. Owners always hold every permission; every
+// active member may read the garage profile.
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+  // Edit the garage profile, configuration and logo.
+  PERMISSION_GARAGE_UPDATE = 1;
+  PERMISSION_STAFF_READ = 2;
+  // Invite, activate/deactivate and remove staff, and change their groups.
+  PERMISSION_STAFF_MANAGE = 3;
+  // Customers and their vehicles.
+  PERMISSION_CUSTOMER_READ = 4;
+  PERMISSION_CUSTOMER_WRITE = 5;
+  // Suppliers and insurers.
+  PERMISSION_PARTNER_READ = 6;
+  PERMISSION_PARTNER_WRITE = 7;
+  PERMISSION_SUBSCRIPTION_READ = 8;
+  PERMISSION_QUOTE_READ = 9;
+  PERMISSION_QUOTE_WRITE = 10;
+  PERMISSION_REPAIR_ORDER_READ = 11;
+  PERMISSION_REPAIR_ORDER_WRITE = 12;
+  PERMISSION_INVENTORY_READ = 13;
+  PERMISSION_INVENTORY_WRITE = 14;
+  PERMISSION_BILLING_READ = 15;
+  PERMISSION_BILLING_WRITE = 16;
+  PERMISSION_REPORT_READ = 17;
+}
+
+// PermissionInfo describes one catalog entry.
+message PermissionInfo {
+  Permission permission = 1;
+  // Module the permission belongs to, e.g. "customer", used to group the
+  // role editor.
+  string module = 2;
+}
+
+// Role is a named set of permissions defined by a garage owner and shared
+// by all the owner's garages. Default roles are created when the owner
+// verifies their e-mail.
+message Role {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string name = 2 [(google.api.field_behavior) = REQUIRED];
+  string description = 3;
+  repeated Permission permissions = 4;
+  // Created by the platform; still editable.
+  bool is_default = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Number of staff groups using the role.
+  int32 group_count = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// StaffGroup is a set of staff in one garage that all receive the
+// permissions of the group's role.
+message StaffGroup {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string name = 3 [(google.api.field_behavior) = REQUIRED];
+  string description = 4;
+  string role_id = 5 [(google.api.field_behavior) = REQUIRED];
+  string role_name = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int32 member_count = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListPermissionsRequest {}
+
+message ListPermissionsResponse {
+  repeated PermissionInfo data = 1;
+}
+
+message ListRolesRequest {}
+
+message ListRolesResponse {
+  repeated Role data = 1;
+}
+
+message GetRoleRequest {
+  string role_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetRoleResponse {
+  Role role = 1;
+}
+
+message CreateRoleRequest {
+  Role role = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateRoleResponse {
+  Role role = 1;
+}
+
+message UpdateRoleRequest {
+  string role_id = 1 [(google.api.field_behavior) = REQUIRED];
+  Role role = 2 [(google.api.field_behavior) = REQUIRED];
+  // name, description, permissions; filled from the JSON body when omitted.
+  google.protobuf.FieldMask update_mask = 3;
+}
+
+message UpdateRoleResponse {
+  Role role = 1;
+}
+
+message DeleteRoleRequest {
+  string role_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteRoleResponse {}
+
+// RoleService lets a garage owner manage the roles shared by their garages.
+// Every call acts on the signed-in owner's own roles.
+service RoleService {
+  // Lists the permission catalog.
+  rpc ListPermissions(ListPermissionsRequest) returns (ListPermissionsResponse) {
+    option (google.api.http) = {get: "/api/v1/permissions"};
+  }
+
+  rpc ListRoles(ListRolesRequest) returns (ListRolesResponse) {
+    option (google.api.http) = {get: "/api/v1/roles"};
+  }
+
+  rpc GetRole(GetRoleRequest) returns (GetRoleResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/roles/{role_id}"
+      response_body: "role"
+    };
+  }
+
+  rpc CreateRole(CreateRoleRequest) returns (CreateRoleResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/roles"
+      body: "role"
+      response_body: "role"
+    };
+  }
+
+  rpc UpdateRole(UpdateRoleRequest) returns (UpdateRoleResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/roles/{role_id}"
+      body: "role"
+      response_body: "role"
+    };
+  }
+
+  // Fails with ROLE_IN_USE while a staff group uses the role.
+  rpc DeleteRole(DeleteRoleRequest) returns (DeleteRoleResponse) {
+    option (google.api.http) = {delete: "/api/v1/roles/{role_id}"};
+  }
+}
+
+message ListStaffGroupsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ListStaffGroupsResponse {
+  repeated StaffGroup data = 1;
+}
+
+message CreateStaffGroupRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  StaffGroup group = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateStaffGroupResponse {
+  StaffGroup group = 1;
+}
+
+message UpdateStaffGroupRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string group_id = 2 [(google.api.field_behavior) = REQUIRED];
+  StaffGroup group = 3 [(google.api.field_behavior) = REQUIRED];
+  // name, description, role_id; filled from the JSON body when omitted.
+  google.protobuf.FieldMask update_mask = 4;
+}
+
+message UpdateStaffGroupResponse {
+  StaffGroup group = 1;
+}
+
+message DeleteStaffGroupRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string group_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteStaffGroupResponse {}
+
+// StaffGroupService manages a garage's staff groups. Listing needs
+// PERMISSION_STAFF_READ; changes are owner-only.
+service StaffGroupService {
+  rpc ListStaffGroups(ListStaffGroupsRequest) returns (ListStaffGroupsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/staff-groups"};
+  }
+
+  rpc CreateStaffGroup(CreateStaffGroupRequest) returns (CreateStaffGroupResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/staff-groups"
+      body: "group"
+      response_body: "group"
+    };
+  }
+
+  rpc UpdateStaffGroup(UpdateStaffGroupRequest) returns (UpdateStaffGroupResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/staff-groups/{group_id}"
+      body: "group"
+      response_body: "group"
+    };
+  }
+
+  // Removes the group; its members keep their other groups.
+  rpc DeleteStaffGroup(DeleteStaffGroupRequest) returns (DeleteStaffGroupResponse) {
+    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/staff-groups/{group_id}"};
+  }
+}
