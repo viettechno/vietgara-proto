@@ -4,11 +4,6 @@
 // - protoc             (unknown)
 // source: vietgara/customer/v1/customer.proto
 
-// Package vietgara.customer.v1 defines the Customer & Vehicle module (HLD
-// module #4): customer profiles of one garage.
-// See: FRD FR-CUS-01, API Specification Section 5, Database Design
-// Section 3.1.
-
 package customerv1
 
 import (
@@ -24,10 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	CustomerService_ListCustomers_FullMethodName  = "/vietgara.customer.v1.CustomerService/ListCustomers"
 	CustomerService_CreateCustomer_FullMethodName = "/vietgara.customer.v1.CustomerService/CreateCustomer"
 	CustomerService_GetCustomer_FullMethodName    = "/vietgara.customer.v1.CustomerService/GetCustomer"
 	CustomerService_UpdateCustomer_FullMethodName = "/vietgara.customer.v1.CustomerService/UpdateCustomer"
-	CustomerService_ListCustomers_FullMethodName  = "/vietgara.customer.v1.CustomerService/ListCustomers"
 	CustomerService_DeleteCustomer_FullMethodName = "/vietgara.customer.v1.CustomerService/DeleteCustomer"
 )
 
@@ -35,17 +30,14 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// CustomerService manages the customer profiles of a garage (FR-CUS-01).
+// CustomerService manages a garage's customers (FRD 3.4). Reads need
+// PERMISSION_CUSTOMER_READ, changes PERMISSION_CUSTOMER_WRITE.
 type CustomerServiceClient interface {
-	// CreateCustomer creates a customer profile.
-	CreateCustomer(ctx context.Context, in *CreateCustomerRequest, opts ...grpc.CallOption) (*CreateCustomerResponse, error)
-	// GetCustomer returns one customer.
-	GetCustomer(ctx context.Context, in *GetCustomerRequest, opts ...grpc.CallOption) (*GetCustomerResponse, error)
-	// UpdateCustomer applies partial updates to a customer.
-	UpdateCustomer(ctx context.Context, in *UpdateCustomerRequest, opts ...grpc.CallOption) (*UpdateCustomerResponse, error)
-	// ListCustomers searches the customers of a garage.
 	ListCustomers(ctx context.Context, in *ListCustomersRequest, opts ...grpc.CallOption) (*ListCustomersResponse, error)
-	// DeleteCustomer soft-deletes a customer and their vehicles.
+	CreateCustomer(ctx context.Context, in *CreateCustomerRequest, opts ...grpc.CallOption) (*CreateCustomerResponse, error)
+	GetCustomer(ctx context.Context, in *GetCustomerRequest, opts ...grpc.CallOption) (*GetCustomerResponse, error)
+	UpdateCustomer(ctx context.Context, in *UpdateCustomerRequest, opts ...grpc.CallOption) (*UpdateCustomerResponse, error)
+	// Soft-deletes the customer and their vehicles; history is kept.
 	DeleteCustomer(ctx context.Context, in *DeleteCustomerRequest, opts ...grpc.CallOption) (*DeleteCustomerResponse, error)
 }
 
@@ -55,6 +47,16 @@ type customerServiceClient struct {
 
 func NewCustomerServiceClient(cc grpc.ClientConnInterface) CustomerServiceClient {
 	return &customerServiceClient{cc}
+}
+
+func (c *customerServiceClient) ListCustomers(ctx context.Context, in *ListCustomersRequest, opts ...grpc.CallOption) (*ListCustomersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListCustomersResponse)
+	err := c.cc.Invoke(ctx, CustomerService_ListCustomers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *customerServiceClient) CreateCustomer(ctx context.Context, in *CreateCustomerRequest, opts ...grpc.CallOption) (*CreateCustomerResponse, error) {
@@ -87,16 +89,6 @@ func (c *customerServiceClient) UpdateCustomer(ctx context.Context, in *UpdateCu
 	return out, nil
 }
 
-func (c *customerServiceClient) ListCustomers(ctx context.Context, in *ListCustomersRequest, opts ...grpc.CallOption) (*ListCustomersResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListCustomersResponse)
-	err := c.cc.Invoke(ctx, CustomerService_ListCustomers_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *customerServiceClient) DeleteCustomer(ctx context.Context, in *DeleteCustomerRequest, opts ...grpc.CallOption) (*DeleteCustomerResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DeleteCustomerResponse)
@@ -111,17 +103,14 @@ func (c *customerServiceClient) DeleteCustomer(ctx context.Context, in *DeleteCu
 // All implementations must embed UnimplementedCustomerServiceServer
 // for forward compatibility.
 //
-// CustomerService manages the customer profiles of a garage (FR-CUS-01).
+// CustomerService manages a garage's customers (FRD 3.4). Reads need
+// PERMISSION_CUSTOMER_READ, changes PERMISSION_CUSTOMER_WRITE.
 type CustomerServiceServer interface {
-	// CreateCustomer creates a customer profile.
-	CreateCustomer(context.Context, *CreateCustomerRequest) (*CreateCustomerResponse, error)
-	// GetCustomer returns one customer.
-	GetCustomer(context.Context, *GetCustomerRequest) (*GetCustomerResponse, error)
-	// UpdateCustomer applies partial updates to a customer.
-	UpdateCustomer(context.Context, *UpdateCustomerRequest) (*UpdateCustomerResponse, error)
-	// ListCustomers searches the customers of a garage.
 	ListCustomers(context.Context, *ListCustomersRequest) (*ListCustomersResponse, error)
-	// DeleteCustomer soft-deletes a customer and their vehicles.
+	CreateCustomer(context.Context, *CreateCustomerRequest) (*CreateCustomerResponse, error)
+	GetCustomer(context.Context, *GetCustomerRequest) (*GetCustomerResponse, error)
+	UpdateCustomer(context.Context, *UpdateCustomerRequest) (*UpdateCustomerResponse, error)
+	// Soft-deletes the customer and their vehicles; history is kept.
 	DeleteCustomer(context.Context, *DeleteCustomerRequest) (*DeleteCustomerResponse, error)
 	mustEmbedUnimplementedCustomerServiceServer()
 }
@@ -133,6 +122,9 @@ type CustomerServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedCustomerServiceServer struct{}
 
+func (UnimplementedCustomerServiceServer) ListCustomers(context.Context, *ListCustomersRequest) (*ListCustomersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListCustomers not implemented")
+}
 func (UnimplementedCustomerServiceServer) CreateCustomer(context.Context, *CreateCustomerRequest) (*CreateCustomerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateCustomer not implemented")
 }
@@ -141,9 +133,6 @@ func (UnimplementedCustomerServiceServer) GetCustomer(context.Context, *GetCusto
 }
 func (UnimplementedCustomerServiceServer) UpdateCustomer(context.Context, *UpdateCustomerRequest) (*UpdateCustomerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateCustomer not implemented")
-}
-func (UnimplementedCustomerServiceServer) ListCustomers(context.Context, *ListCustomersRequest) (*ListCustomersResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListCustomers not implemented")
 }
 func (UnimplementedCustomerServiceServer) DeleteCustomer(context.Context, *DeleteCustomerRequest) (*DeleteCustomerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteCustomer not implemented")
@@ -167,6 +156,24 @@ func RegisterCustomerServiceServer(s grpc.ServiceRegistrar, srv CustomerServiceS
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&CustomerService_ServiceDesc, srv)
+}
+
+func _CustomerService_ListCustomers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListCustomersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CustomerServiceServer).ListCustomers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CustomerService_ListCustomers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CustomerServiceServer).ListCustomers(ctx, req.(*ListCustomersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _CustomerService_CreateCustomer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -223,24 +230,6 @@ func _CustomerService_UpdateCustomer_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CustomerService_ListCustomers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListCustomersRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CustomerServiceServer).ListCustomers(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: CustomerService_ListCustomers_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CustomerServiceServer).ListCustomers(ctx, req.(*ListCustomersRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _CustomerService_DeleteCustomer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteCustomerRequest)
 	if err := dec(in); err != nil {
@@ -267,6 +256,10 @@ var CustomerService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*CustomerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "ListCustomers",
+			Handler:    _CustomerService_ListCustomers_Handler,
+		},
+		{
 			MethodName: "CreateCustomer",
 			Handler:    _CustomerService_CreateCustomer_Handler,
 		},
@@ -277,10 +270,6 @@ var CustomerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateCustomer",
 			Handler:    _CustomerService_UpdateCustomer_Handler,
-		},
-		{
-			MethodName: "ListCustomers",
-			Handler:    _CustomerService_ListCustomers_Handler,
 		},
 		{
 			MethodName: "DeleteCustomer",

@@ -1,53 +1,80 @@
 # VietGara Proto
 
-Source-of-truth repository for the **internal service-to-service contracts**
-of the VietGara platform, defined with Protocol Buffers and served over gRPC
-(ADR-006). REST/JSON remains the external protocol at the API Gateway (see
-API Specification) — this repo only covers internal communication.
+Source-of-truth repository for the **VietGara API contracts**, defined with
+Protocol Buffers. The same `.proto` files describe:
+
+- the **gRPC** services the backend implements (ADR-006), and
+- the **REST/JSON API** served through the API Gateway: every RPC carries a
+  `google.api.http` annotation, the backend serves it in-process with
+  [grpc-gateway](https://github.com/grpc-ecosystem/grpc-gateway), and the
+  OpenAPI document generated here (`openapi/vietgara.swagger.json`) is the
+  source of the web admin's TypeScript types.
 
 ## Roles / Purposes
 
-- **Define the API contracts** of VietGara business modules as `.proto`
-  files, versioned per module (`vietgara.<module>.v1`).
-- **Generate Go code** (`gen/go`) consumed by `vietgara-backend` (and, in the
-  future, any other Go service of the platform). Generated code is committed
-  so consumers need no protobuf toolchain.
-- **Enforce quality** on the contracts: `buf lint` (naming/package rules),
-  `buf format`, and `buf breaking` to prevent incompatible changes between
-  releases.
+- **Define the API contracts** of the VietGara modules as `.proto` files,
+  versioned per module (`vietgara.<module>.v1`).
+- **Generate code**: Go messages and gRPC stubs, grpc-gateway handlers
+  (`apis-go/`), and one merged OpenAPI v2 document (`openapi/`). Generated
+  code is committed so consumers need no protobuf toolchain.
+- **Enforce quality**: `buf lint`, `buf format`, `buf breaking`, and a CI
+  check that the generated code matches the sources.
+
+## API conventions
+
+| Rule | Convention |
+| --- | --- |
+| Resources | Plural nouns under `/api/v1`; garage data under `/api/v1/garages/{garage_id}/…`; the caller's own data under `/api/v1/me/…` |
+| Methods | `Get`/`List` → GET, `Create` → POST (201), `Update` → PATCH with the resource as the body and an optional `update_mask` (filled from the JSON keys when omitted), `Delete` → DELETE (204) |
+| Actions | Custom verbs as sub-resources: `…/invitations/{id}/accept`, `/me/subscription/plan-changes`, `/admin/subscriptions/{id}/extensions` |
+| Lists | `repeated … data` plus `vietgara.common.v1.Pagination` (`page`, `page_size`, `total`) for paged lists |
+| Enums | `<ENUM>_UNSPECIFIED = 0`; JSON uses the value names |
+| Fields | `google.api.field_behavior` marks `REQUIRED` and `OUTPUT_ONLY` fields |
+| Errors | `vietgara.common.v1.ErrorResponse`: `{"error": {"code", "message", "details"}}`; `code` is a stable reason such as `PLAN_LIMIT_REACHED` |
+| Security | Bearer JWT on every RPC except sign-in, sign-up and password reset |
 
 ## Modules
 
 | Proto package | Module | Services |
 | --- | --- | --- |
-| `vietgara.identity.v1` | Identity & Access Management (HLD #1) | `AuthService` — Register, Login, RefreshToken, Logout, ForgotPassword, ResetPassword, LinkSocialAccount |
-| `vietgara.tenant.v1` | Tenant/Garage Management (HLD #2) | `GarageService` — CreateGarage, GetGarage, UpdateGarage, ListGarages |
-| | | `StaffService` — AddStaff, UpdateStaff, RemoveStaff, ListStaff |
-| `vietgara.common.v1` | Shared messages | `Pagination` — the page returned by every List call (no services) |
-| `vietgara.license.v1` | License Management (HLD #3) | `LicenseService` — ListPlans, GetSubscription, ChangePlan, GetEntitlements |
-| `vietgara.customer.v1` | Customer & Vehicle (HLD #4) | `CustomerService` — CreateCustomer, GetCustomer, UpdateCustomer, ListCustomers, DeleteCustomer |
-| | | `VehicleService` — CreateVehicle, GetVehicle, UpdateVehicle, ListVehicles, DeleteVehicle |
-| | | `PartnerService` — CreatePartner, GetPartner, UpdatePartner, ListPartners, DeletePartner |
+| `vietgara.identity.v1` | Identity & Access (HLD #1) | `AuthService`: Register, Login, RefreshToken, Logout, SendEmailVerificationOtp, VerifyEmail, RequestPasswordReset, VerifyPasswordResetOtp, ResetPassword |
+| | | `AccountService`: GetMe, UpdateMe |
+| `vietgara.tenant.v1` | Tenant/Garage (HLD #2) | `GarageService`: ListGarages, CreateGarage, GetGarage, UpdateGarage, UploadGarageLogo, DeleteGarageLogo |
+| | | `StaffService`: ListStaff, UpdateStaff, DeleteStaff, LookupStaffCandidate |
+| | | `InvitationService`: CreateInvitation, ListInvitations, RevokeInvitation, ListMyInvitations, GetMyInvitation, AcceptInvitation, DeclineInvitation |
+| | | `RoleService`: ListPermissions, ListRoles, GetRole, CreateRole, UpdateRole, DeleteRole |
+| | | `StaffGroupService`: ListStaffGroups, CreateStaffGroup, UpdateStaffGroup, DeleteStaffGroup |
+| `vietgara.license.v1` | License (HLD #3) | `LicenseService`: ListPlans, GetMySubscription, ChangeMyPlan, GetGarageEntitlements |
+| | | `LicenseAdminService`: ListAllPlans, CreatePlan, UpdatePlan, ListSubscriptions, ExtendSubscription |
+| `vietgara.customer.v1` | Customer & Vehicle (HLD #4) | `CustomerService`, `VehicleService`, `PartnerService`: List, Create, Get, Update, Delete |
+| `vietgara.common.v1` | Shared messages | `Pagination`, `ErrorResponse` and the OpenAPI document options (no services) |
 
-Each module maps to a functional group in the FRD and owns its data per
-Database Design (Database-per-service, ADR-008).
+```mermaid
+flowchart LR
+  P[".proto sources<br/>apis/vietgara"] -->|buf generate| G["apis-go<br/>messages, gRPC stubs,<br/>gateway handlers"]
+  P -->|protoc-gen-openapiv2| O["openapi/vietgara.swagger.json"]
+  G --> B["vietgara-backend<br/>gRPC + REST (grpc-gateway)"]
+  O -->|npm run generate:api| W["vietgara-web-admin<br/>src/api/schema.d.ts"]
+```
 
 ## Repository Layout
 
 ```
 vietgara-proto/
-├── apis/vietgara/          # .proto sources (the contract)
-│   ├── identity/v1/         # account.proto, auth.proto
-│   ├── tenant/v1/           # garage.proto, staff.proto
-│   ├── common/v1/           # pagination.proto (shared by every module)
-│   ├── license/v1/          # license.proto
-│   └── customer/v1/         # customer.proto, vehicle.proto, partner.proto
+├── apis/vietgara/           # .proto sources (the contract)
+│   ├── common/v1/            # pagination.proto, error.proto (+ OpenAPI options)
+│   ├── identity/v1/          # account.proto, auth.proto
+│   ├── tenant/v1/            # garage.proto, staff.proto, invitation.proto, access.proto
+│   ├── license/v1/           # license.proto
+│   └── customer/v1/          # customer.proto, vehicle.proto, partner.proto
 ├── apis-go/                  # generated Go code (committed)
-├── buf.yaml                 # workspace + lint/breaking config
-├── buf.gen.yaml             # Go codegen config
-├── go.mod                   # module github.com/viettechno/vietgara-proto
+├── openapi/                  # generated OpenAPI v2 document (committed)
+├── buf.yaml                  # module, deps (googleapis, grpc-gateway), lint/breaking config
+├── buf.gen.yaml              # plugins: go, go-grpc, grpc-gateway, openapiv2
+├── go.mod                    # module github.com/viettechno/vietgara-proto
 ├── Makefile
-└── make/                    # tools.mk (installers), proto.mk (tasks)
+├── make/                     # tools.mk (installers), proto.mk (tasks)
+└── .github/workflows/ci.yml  # lint, format, generated-code and breaking checks
 ```
 
 ## Prerequisites
@@ -58,29 +85,45 @@ vietgara-proto/
 ## Common Commands
 
 ```sh
-make install-tools        # install pinned tools: buf, protoc-gen-go,
-                          # protoc-gen-go-grpc, grpcui
-make generate             # regenerate Go code into gen/go
-make lint                 # buf lint on all proto files
-make format               # format proto files in place
-make format-check         # fail if any proto file is not formatted
-make breaking             # detect breaking changes vs origin main
-make verify               # lint + format-check + generate + go build ./...
-make clean                # remove gen/go
-make help                 # list all targets
+make install-codegen-tools  # buf, protoc-gen-go, protoc-gen-go-grpc,
+                            # protoc-gen-grpc-gateway, protoc-gen-openapiv2
+make install-tools          # the above plus grpcui and grpcurl
+make generate               # regenerate apis-go/ and openapi/
+make generate-check         # fail when committed generated code is stale
+make lint                   # buf lint
+make format                 # format proto files in place
+make format-check           # fail if any proto file is not formatted
+make breaking               # detect breaking changes vs master
+make verify                 # lint + format-check + generate + go build ./...
+make clean                  # remove apis-go/
+make help                   # list all targets
 ```
 
-Tool versions are pinned in `make/tools.mk` (buf `1.72.0`,
-protoc-gen-go `v1.36.11`, protoc-gen-go-grpc `v1.6.2`, grpcui `v1.5.3`).
+Tool versions are pinned in `make/tools.mk` (buf `1.72.0`, protoc-gen-go
+`v1.36.11`, protoc-gen-go-grpc `v1.6.2`, grpc-gateway plugins `v2.30.0`,
+grpcui `v1.5.3`, grpcurl `v1.8.7`).
+
+## Continuous Integration
+
+`.github/workflows/ci.yml` runs on pushes and pull requests to `master`:
+
+- **verify**: `buf lint`, `buf format --diff --exit-code`,
+  `make generate-check` and `go build ./...`;
+- **breaking** (pull requests): `buf breaking` against the base branch. A
+  deliberate breaking change (for example a contract not released yet) is
+  acknowledged with the `breaking-change` pull-request label.
 
 ## Contributing a Change
 
-1. Edit the `.proto` sources under `apis/vietgara/...`.
+1. Edit the `.proto` sources under `apis/vietgara/...`; give each new RPC an
+   `google.api.http` rule following the conventions above.
 2. `make format` then `make lint`.
-3. `make generate` and commit the regenerated `gen/go` files together with
-   the `.proto` change (they must never drift).
-4. Before release, run `make breaking` (needs at least one commit on
-   `main`).
+3. `make generate` and commit `apis-go/` and `openapi/` together with the
+   `.proto` change (they must never drift).
+4. Regenerate the web admin types (`npm run generate:api` in
+   `vietgara-web-admin`) and bump the module in `vietgara-backend`.
+5. Run `make breaking`; label the pull request `breaking-change` only when the
+   break is intended.
 
 ## Consuming from a Go Service
 
@@ -148,13 +191,12 @@ Choose a different port for the web UI and disable auto-open:
 grpcui -plaintext -port 9000 -open-browser=false localhost:50051
 ```
 
-Send tenant-scoped calls with the same headers the API Gateway sets
-(Bearer token + `x-garage-id`):
+Send authenticated calls with the Bearer token the API returns (garage-scoped
+RPCs take the garage from their `garage_id` field):
 
 ```sh
 grpcui -plaintext \
   -H 'authorization: Bearer <access-token>' \
-  -H 'x-garage-id: <garage-id>' \
   localhost:50051
 ```
 

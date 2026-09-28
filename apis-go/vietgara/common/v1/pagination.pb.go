@@ -4,9 +4,6 @@
 // 	protoc        (unknown)
 // source: vietgara/common/v1/pagination.proto
 
-// Package vietgara.common.v1 holds messages shared by every VietGara
-// module's API, so list endpoints page results the same way.
-
 package commonv1
 
 import (
@@ -24,15 +21,16 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Pagination describes the page returned by a List call (API
-// Specification Section 1.1: page, page_size default 20, max 100).
+// Pagination describes the page returned by every List call (API
+// Specification Section 1.1): lists are requested with `page` (1-based,
+// default 1) and `page_size` (default 20, max 100).
 type Pagination struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Total number of matching records across all pages.
+	// Total number of items matching the query, across all pages.
 	Total int32 `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`
-	// 1-based page number that was returned.
+	// The 1-based page that was returned.
 	Page int32 `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
-	// Page size that was applied.
+	// The page size that was applied.
 	PageSize      int32 `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

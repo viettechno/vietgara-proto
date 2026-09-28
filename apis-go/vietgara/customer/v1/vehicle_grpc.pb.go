@@ -4,11 +4,6 @@
 // - protoc             (unknown)
 // source: vietgara/customer/v1/vehicle.proto
 
-// Package vietgara.customer.v1 defines the Customer & Vehicle module (HLD
-// module #4): vehicles registered to a garage's customers.
-// See: FRD FR-CUS-02, API Specification Section 5, Database Design
-// Section 3.2.
-
 package customerv1
 
 import (
@@ -24,10 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	VehicleService_ListVehicles_FullMethodName  = "/vietgara.customer.v1.VehicleService/ListVehicles"
 	VehicleService_CreateVehicle_FullMethodName = "/vietgara.customer.v1.VehicleService/CreateVehicle"
 	VehicleService_GetVehicle_FullMethodName    = "/vietgara.customer.v1.VehicleService/GetVehicle"
 	VehicleService_UpdateVehicle_FullMethodName = "/vietgara.customer.v1.VehicleService/UpdateVehicle"
-	VehicleService_ListVehicles_FullMethodName  = "/vietgara.customer.v1.VehicleService/ListVehicles"
 	VehicleService_DeleteVehicle_FullMethodName = "/vietgara.customer.v1.VehicleService/DeleteVehicle"
 )
 
@@ -35,17 +30,14 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// VehicleService manages the vehicles of a garage's customers (FR-CUS-02).
+// VehicleService manages vehicles (FRD 3.4). Filter by customer with
+// ?customerId=. Reads need PERMISSION_CUSTOMER_READ, changes
+// PERMISSION_CUSTOMER_WRITE.
 type VehicleServiceClient interface {
-	// CreateVehicle registers a vehicle to a customer.
-	CreateVehicle(ctx context.Context, in *CreateVehicleRequest, opts ...grpc.CallOption) (*CreateVehicleResponse, error)
-	// GetVehicle returns one vehicle.
-	GetVehicle(ctx context.Context, in *GetVehicleRequest, opts ...grpc.CallOption) (*GetVehicleResponse, error)
-	// UpdateVehicle applies partial updates to a vehicle.
-	UpdateVehicle(ctx context.Context, in *UpdateVehicleRequest, opts ...grpc.CallOption) (*UpdateVehicleResponse, error)
-	// ListVehicles searches the vehicles of a garage.
 	ListVehicles(ctx context.Context, in *ListVehiclesRequest, opts ...grpc.CallOption) (*ListVehiclesResponse, error)
-	// DeleteVehicle soft-deletes a vehicle.
+	CreateVehicle(ctx context.Context, in *CreateVehicleRequest, opts ...grpc.CallOption) (*CreateVehicleResponse, error)
+	GetVehicle(ctx context.Context, in *GetVehicleRequest, opts ...grpc.CallOption) (*GetVehicleResponse, error)
+	UpdateVehicle(ctx context.Context, in *UpdateVehicleRequest, opts ...grpc.CallOption) (*UpdateVehicleResponse, error)
 	DeleteVehicle(ctx context.Context, in *DeleteVehicleRequest, opts ...grpc.CallOption) (*DeleteVehicleResponse, error)
 }
 
@@ -55,6 +47,16 @@ type vehicleServiceClient struct {
 
 func NewVehicleServiceClient(cc grpc.ClientConnInterface) VehicleServiceClient {
 	return &vehicleServiceClient{cc}
+}
+
+func (c *vehicleServiceClient) ListVehicles(ctx context.Context, in *ListVehiclesRequest, opts ...grpc.CallOption) (*ListVehiclesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListVehiclesResponse)
+	err := c.cc.Invoke(ctx, VehicleService_ListVehicles_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *vehicleServiceClient) CreateVehicle(ctx context.Context, in *CreateVehicleRequest, opts ...grpc.CallOption) (*CreateVehicleResponse, error) {
@@ -87,16 +89,6 @@ func (c *vehicleServiceClient) UpdateVehicle(ctx context.Context, in *UpdateVehi
 	return out, nil
 }
 
-func (c *vehicleServiceClient) ListVehicles(ctx context.Context, in *ListVehiclesRequest, opts ...grpc.CallOption) (*ListVehiclesResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListVehiclesResponse)
-	err := c.cc.Invoke(ctx, VehicleService_ListVehicles_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *vehicleServiceClient) DeleteVehicle(ctx context.Context, in *DeleteVehicleRequest, opts ...grpc.CallOption) (*DeleteVehicleResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DeleteVehicleResponse)
@@ -111,17 +103,14 @@ func (c *vehicleServiceClient) DeleteVehicle(ctx context.Context, in *DeleteVehi
 // All implementations must embed UnimplementedVehicleServiceServer
 // for forward compatibility.
 //
-// VehicleService manages the vehicles of a garage's customers (FR-CUS-02).
+// VehicleService manages vehicles (FRD 3.4). Filter by customer with
+// ?customerId=. Reads need PERMISSION_CUSTOMER_READ, changes
+// PERMISSION_CUSTOMER_WRITE.
 type VehicleServiceServer interface {
-	// CreateVehicle registers a vehicle to a customer.
-	CreateVehicle(context.Context, *CreateVehicleRequest) (*CreateVehicleResponse, error)
-	// GetVehicle returns one vehicle.
-	GetVehicle(context.Context, *GetVehicleRequest) (*GetVehicleResponse, error)
-	// UpdateVehicle applies partial updates to a vehicle.
-	UpdateVehicle(context.Context, *UpdateVehicleRequest) (*UpdateVehicleResponse, error)
-	// ListVehicles searches the vehicles of a garage.
 	ListVehicles(context.Context, *ListVehiclesRequest) (*ListVehiclesResponse, error)
-	// DeleteVehicle soft-deletes a vehicle.
+	CreateVehicle(context.Context, *CreateVehicleRequest) (*CreateVehicleResponse, error)
+	GetVehicle(context.Context, *GetVehicleRequest) (*GetVehicleResponse, error)
+	UpdateVehicle(context.Context, *UpdateVehicleRequest) (*UpdateVehicleResponse, error)
 	DeleteVehicle(context.Context, *DeleteVehicleRequest) (*DeleteVehicleResponse, error)
 	mustEmbedUnimplementedVehicleServiceServer()
 }
@@ -133,6 +122,9 @@ type VehicleServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedVehicleServiceServer struct{}
 
+func (UnimplementedVehicleServiceServer) ListVehicles(context.Context, *ListVehiclesRequest) (*ListVehiclesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListVehicles not implemented")
+}
 func (UnimplementedVehicleServiceServer) CreateVehicle(context.Context, *CreateVehicleRequest) (*CreateVehicleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateVehicle not implemented")
 }
@@ -141,9 +133,6 @@ func (UnimplementedVehicleServiceServer) GetVehicle(context.Context, *GetVehicle
 }
 func (UnimplementedVehicleServiceServer) UpdateVehicle(context.Context, *UpdateVehicleRequest) (*UpdateVehicleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateVehicle not implemented")
-}
-func (UnimplementedVehicleServiceServer) ListVehicles(context.Context, *ListVehiclesRequest) (*ListVehiclesResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListVehicles not implemented")
 }
 func (UnimplementedVehicleServiceServer) DeleteVehicle(context.Context, *DeleteVehicleRequest) (*DeleteVehicleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteVehicle not implemented")
@@ -167,6 +156,24 @@ func RegisterVehicleServiceServer(s grpc.ServiceRegistrar, srv VehicleServiceSer
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&VehicleService_ServiceDesc, srv)
+}
+
+func _VehicleService_ListVehicles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListVehiclesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VehicleServiceServer).ListVehicles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VehicleService_ListVehicles_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VehicleServiceServer).ListVehicles(ctx, req.(*ListVehiclesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _VehicleService_CreateVehicle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -223,24 +230,6 @@ func _VehicleService_UpdateVehicle_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _VehicleService_ListVehicles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListVehiclesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(VehicleServiceServer).ListVehicles(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: VehicleService_ListVehicles_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VehicleServiceServer).ListVehicles(ctx, req.(*ListVehiclesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _VehicleService_DeleteVehicle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteVehicleRequest)
 	if err := dec(in); err != nil {
@@ -267,6 +256,10 @@ var VehicleService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*VehicleServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "ListVehicles",
+			Handler:    _VehicleService_ListVehicles_Handler,
+		},
+		{
 			MethodName: "CreateVehicle",
 			Handler:    _VehicleService_CreateVehicle_Handler,
 		},
@@ -277,10 +270,6 @@ var VehicleService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateVehicle",
 			Handler:    _VehicleService_UpdateVehicle_Handler,
-		},
-		{
-			MethodName: "ListVehicles",
-			Handler:    _VehicleService_ListVehicles_Handler,
 		},
 		{
 			MethodName: "DeleteVehicle",

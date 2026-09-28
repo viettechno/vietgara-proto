@@ -4,18 +4,14 @@
 // 	protoc        (unknown)
 // source: vietgara/tenant/v1/garage.proto
 
-// Package vietgara.tenant.v1 defines the Tenant/Garage Management module
-// (HLD module #2): garage profiles and the "1 account - many garages"
-// model. A garage is the data-isolation unit (tenant) of the platform
-// (ADR-005).
-// See: FRD FR-TEN-01/02/03/05, API Specification Section 3, Database
-// Design Section 2.2.
-
 package tenantv1
 
 import (
+	_ "google.golang.org/genproto/googleapis/api/annotations"
+	dayofweek "google.golang.org/genproto/googleapis/type/dayofweek"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -29,14 +25,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// GarageStatus is the lifecycle state of a garage.
+// GarageStatus: an inactive garage is hidden from staff and read-only for
+// its owner until reactivated (FR-TEN-02).
 type GarageStatus int32
 
 const (
 	GarageStatus_GARAGE_STATUS_UNSPECIFIED GarageStatus = 0
 	GarageStatus_GARAGE_STATUS_ACTIVE      GarageStatus = 1
 	GarageStatus_GARAGE_STATUS_INACTIVE    GarageStatus = 2
-	GarageStatus_GARAGE_STATUS_SUSPENDED   GarageStatus = 3
 )
 
 // Enum value maps for GarageStatus.
@@ -45,13 +41,11 @@ var (
 		0: "GARAGE_STATUS_UNSPECIFIED",
 		1: "GARAGE_STATUS_ACTIVE",
 		2: "GARAGE_STATUS_INACTIVE",
-		3: "GARAGE_STATUS_SUSPENDED",
 	}
 	GarageStatus_value = map[string]int32{
 		"GARAGE_STATUS_UNSPECIFIED": 0,
 		"GARAGE_STATUS_ACTIVE":      1,
 		"GARAGE_STATUS_INACTIVE":    2,
-		"GARAGE_STATUS_SUSPENDED":   3,
 	}
 )
 
@@ -82,41 +76,214 @@ func (GarageStatus) EnumDescriptor() ([]byte, []int) {
 	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{0}
 }
 
-// Garage is one tenant: an independent operating and data-isolation unit
-// owned by one Account. "Branch" and "garage" are used interchangeably
-// (FR-TEN-02, ADR-005). Maps to the "garages" table (Database Design
-// Section 2.2).
-type Garage struct {
+// DailyHours is the opening time of one weekday (FR-TEN-05).
+type DailyHours struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// UUID primary key; equals garage_id used as tenant id system-wide.
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// ID of the owning account (1 account - many garages).
-	AccountId string `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	// Garage display name.
-	Name string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	// Tax identification number.
-	TaxCode *string `protobuf:"bytes,4,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
-	// Address of the garage.
-	Address *string `protobuf:"bytes,5,opt,name=address,proto3,oneof" json:"address,omitempty"`
-	// Logo URL (Cloud Storage).
-	LogoUrl *string `protobuf:"bytes,6,opt,name=logo_url,json=logoUrl,proto3,oneof" json:"logo_url,omitempty"`
-	// IANA timezone, e.g. "Asia/Ho_Chi_Minh".
-	Timezone string `protobuf:"bytes,7,opt,name=timezone,proto3" json:"timezone,omitempty"`
-	// Display currency, e.g. "VND".
-	Currency string `protobuf:"bytes,8,opt,name=currency,proto3" json:"currency,omitempty"`
-	// Lifecycle state of the garage.
-	Status GarageStatus `protobuf:"varint,9,opt,name=status,proto3,enum=vietgara.tenant.v1.GarageStatus" json:"status,omitempty"`
-	// Creation timestamp.
-	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	// Last update timestamp.
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Day   dayofweek.DayOfWeek    `protobuf:"varint,1,opt,name=day,proto3,enum=google.type.DayOfWeek" json:"day,omitempty"`
+	// True when the garage does not open that day.
+	Closed bool `protobuf:"varint,2,opt,name=closed,proto3" json:"closed,omitempty"`
+	// "HH:MM", 24-hour clock, garage timezone.
+	Open          string `protobuf:"bytes,3,opt,name=open,proto3" json:"open,omitempty"`
+	Close         string `protobuf:"bytes,4,opt,name=close,proto3" json:"close,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
+func (x *DailyHours) Reset() {
+	*x = DailyHours{}
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DailyHours) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DailyHours) ProtoMessage() {}
+
+func (x *DailyHours) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DailyHours.ProtoReflect.Descriptor instead.
+func (*DailyHours) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *DailyHours) GetDay() dayofweek.DayOfWeek {
+	if x != nil {
+		return x.Day
+	}
+	return dayofweek.DayOfWeek(0)
+}
+
+func (x *DailyHours) GetClosed() bool {
+	if x != nil {
+		return x.Closed
+	}
+	return false
+}
+
+func (x *DailyHours) GetOpen() string {
+	if x != nil {
+		return x.Open
+	}
+	return ""
+}
+
+func (x *DailyHours) GetClose() string {
+	if x != nil {
+		return x.Close
+	}
+	return ""
+}
+
+// NumberingTemplates configures document numbers (FR-TEN-05). Placeholders:
+// {YYYY}, {YY}, {MM}, {DD} and {SEQ:n} (sequence padded to n digits),
+// e.g. "BG-{YYYY}{MM}-{SEQ:4}".
+type NumberingTemplates struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Quote         string                 `protobuf:"bytes,1,opt,name=quote,proto3" json:"quote,omitempty"`
+	RepairOrder   string                 `protobuf:"bytes,2,opt,name=repair_order,json=repairOrder,proto3" json:"repair_order,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NumberingTemplates) Reset() {
+	*x = NumberingTemplates{}
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NumberingTemplates) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NumberingTemplates) ProtoMessage() {}
+
+func (x *NumberingTemplates) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NumberingTemplates.ProtoReflect.Descriptor instead.
+func (*NumberingTemplates) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *NumberingTemplates) GetQuote() string {
+	if x != nil {
+		return x.Quote
+	}
+	return ""
+}
+
+func (x *NumberingTemplates) GetRepairOrder() string {
+	if x != nil {
+		return x.RepairOrder
+	}
+	return ""
+}
+
+// GarageAccess is what the signed-in account may do in the garage.
+type GarageAccess struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Owner         bool                   `protobuf:"varint,1,opt,name=owner,proto3" json:"owner,omitempty"`
+	Permissions   []Permission           `protobuf:"varint,2,rep,packed,name=permissions,proto3,enum=vietgara.tenant.v1.Permission" json:"permissions,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GarageAccess) Reset() {
+	*x = GarageAccess{}
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GarageAccess) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GarageAccess) ProtoMessage() {}
+
+func (x *GarageAccess) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GarageAccess.ProtoReflect.Descriptor instead.
+func (*GarageAccess) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GarageAccess) GetOwner() bool {
+	if x != nil {
+		return x.Owner
+	}
+	return false
+}
+
+func (x *GarageAccess) GetPermissions() []Permission {
+	if x != nil {
+		return x.Permissions
+	}
+	return nil
+}
+
+// Garage is one tenant (branch) of an owner account (FR-TEN-01/02).
+type Garage struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	OwnerAccountId string                 `protobuf:"bytes,2,opt,name=owner_account_id,json=ownerAccountId,proto3" json:"owner_account_id,omitempty"`
+	Name           string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	TaxCode        *string                `protobuf:"bytes,4,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
+	Address        *string                `protobuf:"bytes,5,opt,name=address,proto3,oneof" json:"address,omitempty"`
+	Phone          *string                `protobuf:"bytes,6,opt,name=phone,proto3,oneof" json:"phone,omitempty"`
+	Email          *string                `protobuf:"bytes,7,opt,name=email,proto3,oneof" json:"email,omitempty"`
+	// Set through UploadGarageLogo.
+	LogoUrl *string `protobuf:"bytes,8,opt,name=logo_url,json=logoUrl,proto3,oneof" json:"logo_url,omitempty"`
+	// IANA timezone, default Asia/Ho_Chi_Minh.
+	Timezone string `protobuf:"bytes,9,opt,name=timezone,proto3" json:"timezone,omitempty"`
+	// ISO 4217, default VND.
+	Currency       string                 `protobuf:"bytes,10,opt,name=currency,proto3" json:"currency,omitempty"`
+	Status         GarageStatus           `protobuf:"varint,11,opt,name=status,proto3,enum=vietgara.tenant.v1.GarageStatus" json:"status,omitempty"`
+	OperatingHours []*DailyHours          `protobuf:"bytes,12,rep,name=operating_hours,json=operatingHours,proto3" json:"operating_hours,omitempty"`
+	Numbering      *NumberingTemplates    `protobuf:"bytes,13,opt,name=numbering,proto3" json:"numbering,omitempty"`
+	Access         *GarageAccess          `protobuf:"bytes,14,opt,name=access,proto3" json:"access,omitempty"`
+	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt      *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
 func (x *Garage) Reset() {
 	*x = Garage{}
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[0]
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -128,7 +295,7 @@ func (x *Garage) String() string {
 func (*Garage) ProtoMessage() {}
 
 func (x *Garage) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[0]
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -141,7 +308,7 @@ func (x *Garage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Garage.ProtoReflect.Descriptor instead.
 func (*Garage) Descriptor() ([]byte, []int) {
-	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{0}
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Garage) GetId() string {
@@ -151,9 +318,9 @@ func (x *Garage) GetId() string {
 	return ""
 }
 
-func (x *Garage) GetAccountId() string {
+func (x *Garage) GetOwnerAccountId() string {
 	if x != nil {
-		return x.AccountId
+		return x.OwnerAccountId
 	}
 	return ""
 }
@@ -175,6 +342,20 @@ func (x *Garage) GetTaxCode() string {
 func (x *Garage) GetAddress() string {
 	if x != nil && x.Address != nil {
 		return *x.Address
+	}
+	return ""
+}
+
+func (x *Garage) GetPhone() string {
+	if x != nil && x.Phone != nil {
+		return *x.Phone
+	}
+	return ""
+}
+
+func (x *Garage) GetEmail() string {
+	if x != nil && x.Email != nil {
+		return *x.Email
 	}
 	return ""
 }
@@ -207,6 +388,27 @@ func (x *Garage) GetStatus() GarageStatus {
 	return GarageStatus_GARAGE_STATUS_UNSPECIFIED
 }
 
+func (x *Garage) GetOperatingHours() []*DailyHours {
+	if x != nil {
+		return x.OperatingHours
+	}
+	return nil
+}
+
+func (x *Garage) GetNumbering() *NumberingTemplates {
+	if x != nil {
+		return x.Numbering
+	}
+	return nil
+}
+
+func (x *Garage) GetAccess() *GarageAccess {
+	if x != nil {
+		return x.Access
+	}
+	return nil
+}
+
 func (x *Garage) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
@@ -221,366 +423,6 @@ func (x *Garage) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-// CreateGarageRequest creates a new garage under the caller's account
-// (FR-TEN-01, FR-TEN-02).
-type CreateGarageRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Garage display name (required).
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// Tax identification number.
-	TaxCode *string `protobuf:"bytes,2,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
-	// Address of the garage.
-	Address *string `protobuf:"bytes,3,opt,name=address,proto3,oneof" json:"address,omitempty"`
-	// IANA timezone; defaults to "Asia/Ho_Chi_Minh" when absent.
-	Timezone *string `protobuf:"bytes,4,opt,name=timezone,proto3,oneof" json:"timezone,omitempty"`
-	// Display currency; defaults to "VND" when absent.
-	Currency      *string `protobuf:"bytes,5,opt,name=currency,proto3,oneof" json:"currency,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateGarageRequest) Reset() {
-	*x = CreateGarageRequest{}
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateGarageRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateGarageRequest) ProtoMessage() {}
-
-func (x *CreateGarageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateGarageRequest.ProtoReflect.Descriptor instead.
-func (*CreateGarageRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *CreateGarageRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *CreateGarageRequest) GetTaxCode() string {
-	if x != nil && x.TaxCode != nil {
-		return *x.TaxCode
-	}
-	return ""
-}
-
-func (x *CreateGarageRequest) GetAddress() string {
-	if x != nil && x.Address != nil {
-		return *x.Address
-	}
-	return ""
-}
-
-func (x *CreateGarageRequest) GetTimezone() string {
-	if x != nil && x.Timezone != nil {
-		return *x.Timezone
-	}
-	return ""
-}
-
-func (x *CreateGarageRequest) GetCurrency() string {
-	if x != nil && x.Currency != nil {
-		return *x.Currency
-	}
-	return ""
-}
-
-// GetGarageRequest returns the details of one garage (API Specification
-// GET /api/v1/garages/{garageId}).
-type GetGarageRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetGarageRequest) Reset() {
-	*x = GetGarageRequest{}
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetGarageRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetGarageRequest) ProtoMessage() {}
-
-func (x *GetGarageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetGarageRequest.ProtoReflect.Descriptor instead.
-func (*GetGarageRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *GetGarageRequest) GetGarageId() string {
-	if x != nil {
-		return x.GarageId
-	}
-	return ""
-}
-
-// CreateGarageResponse is the response of CreateGarage.
-type CreateGarageResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Garage        *Garage                `protobuf:"bytes,1,opt,name=garage,proto3" json:"garage,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateGarageResponse) Reset() {
-	*x = CreateGarageResponse{}
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateGarageResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateGarageResponse) ProtoMessage() {}
-
-func (x *CreateGarageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateGarageResponse.ProtoReflect.Descriptor instead.
-func (*CreateGarageResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *CreateGarageResponse) GetGarage() *Garage {
-	if x != nil {
-		return x.Garage
-	}
-	return nil
-}
-
-// GetGarageResponse is the response of GetGarage.
-type GetGarageResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Garage        *Garage                `protobuf:"bytes,1,opt,name=garage,proto3" json:"garage,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetGarageResponse) Reset() {
-	*x = GetGarageResponse{}
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetGarageResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetGarageResponse) ProtoMessage() {}
-
-func (x *GetGarageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetGarageResponse.ProtoReflect.Descriptor instead.
-func (*GetGarageResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *GetGarageResponse) GetGarage() *Garage {
-	if x != nil {
-		return x.Garage
-	}
-	return nil
-}
-
-// UpdateGarageResponse is the response of UpdateGarage.
-type UpdateGarageResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Garage        *Garage                `protobuf:"bytes,1,opt,name=garage,proto3" json:"garage,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateGarageResponse) Reset() {
-	*x = UpdateGarageResponse{}
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateGarageResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateGarageResponse) ProtoMessage() {}
-
-func (x *UpdateGarageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateGarageResponse.ProtoReflect.Descriptor instead.
-func (*UpdateGarageResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *UpdateGarageResponse) GetGarage() *Garage {
-	if x != nil {
-		return x.Garage
-	}
-	return nil
-}
-
-// UpdateGarageRequest applies partial updates to an existing garage;
-// absent fields keep their current value (FR-TEN-02, FR-TEN-05).
-type UpdateGarageRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	Name          *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	TaxCode       *string                `protobuf:"bytes,3,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
-	Address       *string                `protobuf:"bytes,4,opt,name=address,proto3,oneof" json:"address,omitempty"`
-	LogoUrl       *string                `protobuf:"bytes,5,opt,name=logo_url,json=logoUrl,proto3,oneof" json:"logo_url,omitempty"`
-	Timezone      *string                `protobuf:"bytes,6,opt,name=timezone,proto3,oneof" json:"timezone,omitempty"`
-	Currency      *string                `protobuf:"bytes,7,opt,name=currency,proto3,oneof" json:"currency,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateGarageRequest) Reset() {
-	*x = UpdateGarageRequest{}
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateGarageRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateGarageRequest) ProtoMessage() {}
-
-func (x *UpdateGarageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateGarageRequest.ProtoReflect.Descriptor instead.
-func (*UpdateGarageRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *UpdateGarageRequest) GetGarageId() string {
-	if x != nil {
-		return x.GarageId
-	}
-	return ""
-}
-
-func (x *UpdateGarageRequest) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *UpdateGarageRequest) GetTaxCode() string {
-	if x != nil && x.TaxCode != nil {
-		return *x.TaxCode
-	}
-	return ""
-}
-
-func (x *UpdateGarageRequest) GetAddress() string {
-	if x != nil && x.Address != nil {
-		return *x.Address
-	}
-	return ""
-}
-
-func (x *UpdateGarageRequest) GetLogoUrl() string {
-	if x != nil && x.LogoUrl != nil {
-		return *x.LogoUrl
-	}
-	return ""
-}
-
-func (x *UpdateGarageRequest) GetTimezone() string {
-	if x != nil && x.Timezone != nil {
-		return *x.Timezone
-	}
-	return ""
-}
-
-func (x *UpdateGarageRequest) GetCurrency() string {
-	if x != nil && x.Currency != nil {
-		return *x.Currency
-	}
-	return ""
-}
-
-// ListGaragesRequest lists every garage owned by the caller's account
-// (API Specification GET /api/v1/garages).
 type ListGaragesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -589,7 +431,7 @@ type ListGaragesRequest struct {
 
 func (x *ListGaragesRequest) Reset() {
 	*x = ListGaragesRequest{}
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[7]
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -601,7 +443,7 @@ func (x *ListGaragesRequest) String() string {
 func (*ListGaragesRequest) ProtoMessage() {}
 
 func (x *ListGaragesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[7]
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -614,21 +456,21 @@ func (x *ListGaragesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGaragesRequest.ProtoReflect.Descriptor instead.
 func (*ListGaragesRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{7}
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{4}
 }
 
-// ListGaragesResponse is the list of garages owned by the caller's
-// account.
 type ListGaragesResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Garages       []*Garage              `protobuf:"bytes,1,rep,name=garages,proto3" json:"garages,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Garages the account owns or is an active member of; staff do not see
+	// inactive garages.
+	Data          []*Garage `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListGaragesResponse) Reset() {
 	*x = ListGaragesResponse{}
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[8]
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -640,7 +482,7 @@ func (x *ListGaragesResponse) String() string {
 func (*ListGaragesResponse) ProtoMessage() {}
 
 func (x *ListGaragesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[8]
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -653,12 +495,488 @@ func (x *ListGaragesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGaragesResponse.ProtoReflect.Descriptor instead.
 func (*ListGaragesResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ListGaragesResponse) GetData() []*Garage {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type CreateGarageRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Garage        *Garage                `protobuf:"bytes,1,opt,name=garage,proto3" json:"garage,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateGarageRequest) Reset() {
+	*x = CreateGarageRequest{}
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateGarageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateGarageRequest) ProtoMessage() {}
+
+func (x *CreateGarageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateGarageRequest.ProtoReflect.Descriptor instead.
+func (*CreateGarageRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *CreateGarageRequest) GetGarage() *Garage {
+	if x != nil {
+		return x.Garage
+	}
+	return nil
+}
+
+type CreateGarageResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Garage        *Garage                `protobuf:"bytes,1,opt,name=garage,proto3" json:"garage,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateGarageResponse) Reset() {
+	*x = CreateGarageResponse{}
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateGarageResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateGarageResponse) ProtoMessage() {}
+
+func (x *CreateGarageResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateGarageResponse.ProtoReflect.Descriptor instead.
+func (*CreateGarageResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *CreateGarageResponse) GetGarage() *Garage {
+	if x != nil {
+		return x.Garage
+	}
+	return nil
+}
+
+type GetGarageRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetGarageRequest) Reset() {
+	*x = GetGarageRequest{}
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetGarageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetGarageRequest) ProtoMessage() {}
+
+func (x *GetGarageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetGarageRequest.ProtoReflect.Descriptor instead.
+func (*GetGarageRequest) Descriptor() ([]byte, []int) {
 	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *ListGaragesResponse) GetGarages() []*Garage {
+func (x *GetGarageRequest) GetGarageId() string {
 	if x != nil {
-		return x.Garages
+		return x.GarageId
+	}
+	return ""
+}
+
+type GetGarageResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Garage        *Garage                `protobuf:"bytes,1,opt,name=garage,proto3" json:"garage,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetGarageResponse) Reset() {
+	*x = GetGarageResponse{}
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetGarageResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetGarageResponse) ProtoMessage() {}
+
+func (x *GetGarageResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetGarageResponse.ProtoReflect.Descriptor instead.
+func (*GetGarageResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GetGarageResponse) GetGarage() *Garage {
+	if x != nil {
+		return x.Garage
+	}
+	return nil
+}
+
+type UpdateGarageRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	Garage   *Garage                `protobuf:"bytes,2,opt,name=garage,proto3" json:"garage,omitempty"`
+	// Filled from the JSON body keys when omitted. Only the owner may change
+	// status.
+	UpdateMask    *fieldmaskpb.FieldMask `protobuf:"bytes,3,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateGarageRequest) Reset() {
+	*x = UpdateGarageRequest{}
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateGarageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateGarageRequest) ProtoMessage() {}
+
+func (x *UpdateGarageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateGarageRequest.ProtoReflect.Descriptor instead.
+func (*UpdateGarageRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *UpdateGarageRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *UpdateGarageRequest) GetGarage() *Garage {
+	if x != nil {
+		return x.Garage
+	}
+	return nil
+}
+
+func (x *UpdateGarageRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
+	if x != nil {
+		return x.UpdateMask
+	}
+	return nil
+}
+
+type UpdateGarageResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Garage        *Garage                `protobuf:"bytes,1,opt,name=garage,proto3" json:"garage,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateGarageResponse) Reset() {
+	*x = UpdateGarageResponse{}
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateGarageResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateGarageResponse) ProtoMessage() {}
+
+func (x *UpdateGarageResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateGarageResponse.ProtoReflect.Descriptor instead.
+func (*UpdateGarageResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *UpdateGarageResponse) GetGarage() *Garage {
+	if x != nil {
+		return x.Garage
+	}
+	return nil
+}
+
+type UploadGarageLogoRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	// PNG, JPEG or WebP image, at most 1 MB (base64 in JSON).
+	Content []byte `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	// image/png, image/jpeg or image/webp.
+	ContentType   string `protobuf:"bytes,3,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadGarageLogoRequest) Reset() {
+	*x = UploadGarageLogoRequest{}
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadGarageLogoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadGarageLogoRequest) ProtoMessage() {}
+
+func (x *UploadGarageLogoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadGarageLogoRequest.ProtoReflect.Descriptor instead.
+func (*UploadGarageLogoRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *UploadGarageLogoRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *UploadGarageLogoRequest) GetContent() []byte {
+	if x != nil {
+		return x.Content
+	}
+	return nil
+}
+
+func (x *UploadGarageLogoRequest) GetContentType() string {
+	if x != nil {
+		return x.ContentType
+	}
+	return ""
+}
+
+type UploadGarageLogoResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Garage        *Garage                `protobuf:"bytes,1,opt,name=garage,proto3" json:"garage,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadGarageLogoResponse) Reset() {
+	*x = UploadGarageLogoResponse{}
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadGarageLogoResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadGarageLogoResponse) ProtoMessage() {}
+
+func (x *UploadGarageLogoResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadGarageLogoResponse.ProtoReflect.Descriptor instead.
+func (*UploadGarageLogoResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *UploadGarageLogoResponse) GetGarage() *Garage {
+	if x != nil {
+		return x.Garage
+	}
+	return nil
+}
+
+type DeleteGarageLogoRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteGarageLogoRequest) Reset() {
+	*x = DeleteGarageLogoRequest{}
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteGarageLogoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteGarageLogoRequest) ProtoMessage() {}
+
+func (x *DeleteGarageLogoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteGarageLogoRequest.ProtoReflect.Descriptor instead.
+func (*DeleteGarageLogoRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *DeleteGarageLogoRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+type DeleteGarageLogoResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Garage        *Garage                `protobuf:"bytes,1,opt,name=garage,proto3" json:"garage,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteGarageLogoResponse) Reset() {
+	*x = DeleteGarageLogoResponse{}
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteGarageLogoResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteGarageLogoResponse) ProtoMessage() {}
+
+func (x *DeleteGarageLogoResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_tenant_v1_garage_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteGarageLogoResponse.ProtoReflect.Descriptor instead.
+func (*DeleteGarageLogoResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *DeleteGarageLogoResponse) GetGarage() *Garage {
+	if x != nil {
+		return x.Garage
 	}
 	return nil
 }
@@ -667,74 +985,84 @@ var File_vietgara_tenant_v1_garage_proto protoreflect.FileDescriptor
 
 const file_vietgara_tenant_v1_garage_proto_rawDesc = "" +
 	"\n" +
-	"\x1fvietgara/tenant/v1/garage.proto\x12\x12vietgara.tenant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb8\x03\n" +
-	"\x06Garage\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
+	"\x1fvietgara/tenant/v1/garage.proto\x12\x12vietgara.tenant.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/type/dayofweek.proto\x1a\x1fvietgara/tenant/v1/access.proto\"x\n" +
 	"\n" +
-	"account_id\x18\x02 \x01(\tR\taccountId\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12\x1e\n" +
+	"DailyHours\x12(\n" +
+	"\x03day\x18\x01 \x01(\x0e2\x16.google.type.DayOfWeekR\x03day\x12\x16\n" +
+	"\x06closed\x18\x02 \x01(\bR\x06closed\x12\x12\n" +
+	"\x04open\x18\x03 \x01(\tR\x04open\x12\x14\n" +
+	"\x05close\x18\x04 \x01(\tR\x05close\"M\n" +
+	"\x12NumberingTemplates\x12\x14\n" +
+	"\x05quote\x18\x01 \x01(\tR\x05quote\x12!\n" +
+	"\frepair_order\x18\x02 \x01(\tR\vrepairOrder\"f\n" +
+	"\fGarageAccess\x12\x14\n" +
+	"\x05owner\x18\x01 \x01(\bR\x05owner\x12@\n" +
+	"\vpermissions\x18\x02 \x03(\x0e2\x1e.vietgara.tenant.v1.PermissionR\vpermissions\"\xf9\x05\n" +
+	"\x06Garage\x12\x13\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12-\n" +
+	"\x10owner_account_id\x18\x02 \x01(\tB\x03\xe0A\x03R\x0eownerAccountId\x12\x17\n" +
+	"\x04name\x18\x03 \x01(\tB\x03\xe0A\x02R\x04name\x12\x1e\n" +
 	"\btax_code\x18\x04 \x01(\tH\x00R\ataxCode\x88\x01\x01\x12\x1d\n" +
-	"\aaddress\x18\x05 \x01(\tH\x01R\aaddress\x88\x01\x01\x12\x1e\n" +
-	"\blogo_url\x18\x06 \x01(\tH\x02R\alogoUrl\x88\x01\x01\x12\x1a\n" +
-	"\btimezone\x18\a \x01(\tR\btimezone\x12\x1a\n" +
-	"\bcurrency\x18\b \x01(\tR\bcurrency\x128\n" +
-	"\x06status\x18\t \x01(\x0e2 .vietgara.tenant.v1.GarageStatusR\x06status\x129\n" +
+	"\aaddress\x18\x05 \x01(\tH\x01R\aaddress\x88\x01\x01\x12\x19\n" +
+	"\x05phone\x18\x06 \x01(\tH\x02R\x05phone\x88\x01\x01\x12\x19\n" +
+	"\x05email\x18\a \x01(\tH\x03R\x05email\x88\x01\x01\x12#\n" +
+	"\blogo_url\x18\b \x01(\tB\x03\xe0A\x03H\x04R\alogoUrl\x88\x01\x01\x12\x1a\n" +
+	"\btimezone\x18\t \x01(\tR\btimezone\x12\x1a\n" +
+	"\bcurrency\x18\n" +
+	" \x01(\tR\bcurrency\x128\n" +
+	"\x06status\x18\v \x01(\x0e2 .vietgara.tenant.v1.GarageStatusR\x06status\x12G\n" +
+	"\x0foperating_hours\x18\f \x03(\v2\x1e.vietgara.tenant.v1.DailyHoursR\x0eoperatingHours\x12D\n" +
+	"\tnumbering\x18\r \x01(\v2&.vietgara.tenant.v1.NumberingTemplatesR\tnumbering\x12=\n" +
+	"\x06access\x18\x0e \x01(\v2 .vietgara.tenant.v1.GarageAccessB\x03\xe0A\x03R\x06access\x12>\n" +
 	"\n" +
-	"created_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtB\v\n" +
+	"updated_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\v\n" +
 	"\t_tax_codeB\n" +
 	"\n" +
-	"\b_addressB\v\n" +
-	"\t_logo_url\"\xdd\x01\n" +
-	"\x13CreateGarageRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1e\n" +
-	"\btax_code\x18\x02 \x01(\tH\x00R\ataxCode\x88\x01\x01\x12\x1d\n" +
-	"\aaddress\x18\x03 \x01(\tH\x01R\aaddress\x88\x01\x01\x12\x1f\n" +
-	"\btimezone\x18\x04 \x01(\tH\x02R\btimezone\x88\x01\x01\x12\x1f\n" +
-	"\bcurrency\x18\x05 \x01(\tH\x03R\bcurrency\x88\x01\x01B\v\n" +
-	"\t_tax_codeB\n" +
-	"\n" +
-	"\b_addressB\v\n" +
-	"\t_timezoneB\v\n" +
-	"\t_currency\"/\n" +
-	"\x10GetGarageRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\"J\n" +
+	"\b_addressB\b\n" +
+	"\x06_phoneB\b\n" +
+	"\x06_emailB\v\n" +
+	"\t_logo_url\"\x14\n" +
+	"\x12ListGaragesRequest\"E\n" +
+	"\x13ListGaragesResponse\x12.\n" +
+	"\x04data\x18\x01 \x03(\v2\x1a.vietgara.tenant.v1.GarageR\x04data\"N\n" +
+	"\x13CreateGarageRequest\x127\n" +
+	"\x06garage\x18\x01 \x01(\v2\x1a.vietgara.tenant.v1.GarageB\x03\xe0A\x02R\x06garage\"J\n" +
 	"\x14CreateGarageResponse\x122\n" +
-	"\x06garage\x18\x01 \x01(\v2\x1a.vietgara.tenant.v1.GarageR\x06garage\"G\n" +
+	"\x06garage\x18\x01 \x01(\v2\x1a.vietgara.tenant.v1.GarageR\x06garage\"4\n" +
+	"\x10GetGarageRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\"G\n" +
 	"\x11GetGarageResponse\x122\n" +
-	"\x06garage\x18\x01 \x01(\v2\x1a.vietgara.tenant.v1.GarageR\x06garage\"J\n" +
+	"\x06garage\x18\x01 \x01(\v2\x1a.vietgara.tenant.v1.GarageR\x06garage\"\xad\x01\n" +
+	"\x13UpdateGarageRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x127\n" +
+	"\x06garage\x18\x02 \x01(\v2\x1a.vietgara.tenant.v1.GarageB\x03\xe0A\x02R\x06garage\x12;\n" +
+	"\vupdate_mask\x18\x03 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
+	"updateMask\"J\n" +
 	"\x14UpdateGarageResponse\x122\n" +
-	"\x06garage\x18\x01 \x01(\v2\x1a.vietgara.tenant.v1.GarageR\x06garage\"\xb5\x02\n" +
-	"\x13UpdateGarageRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12\x17\n" +
-	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12\x1e\n" +
-	"\btax_code\x18\x03 \x01(\tH\x01R\ataxCode\x88\x01\x01\x12\x1d\n" +
-	"\aaddress\x18\x04 \x01(\tH\x02R\aaddress\x88\x01\x01\x12\x1e\n" +
-	"\blogo_url\x18\x05 \x01(\tH\x03R\alogoUrl\x88\x01\x01\x12\x1f\n" +
-	"\btimezone\x18\x06 \x01(\tH\x04R\btimezone\x88\x01\x01\x12\x1f\n" +
-	"\bcurrency\x18\a \x01(\tH\x05R\bcurrency\x88\x01\x01B\a\n" +
-	"\x05_nameB\v\n" +
-	"\t_tax_codeB\n" +
-	"\n" +
-	"\b_addressB\v\n" +
-	"\t_logo_urlB\v\n" +
-	"\t_timezoneB\v\n" +
-	"\t_currency\"\x14\n" +
-	"\x12ListGaragesRequest\"K\n" +
-	"\x13ListGaragesResponse\x124\n" +
-	"\agarages\x18\x01 \x03(\v2\x1a.vietgara.tenant.v1.GarageR\agarages*\x80\x01\n" +
+	"\x06garage\x18\x01 \x01(\v2\x1a.vietgara.tenant.v1.GarageR\x06garage\"\x82\x01\n" +
+	"\x17UploadGarageLogoRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1d\n" +
+	"\acontent\x18\x02 \x01(\fB\x03\xe0A\x02R\acontent\x12&\n" +
+	"\fcontent_type\x18\x03 \x01(\tB\x03\xe0A\x02R\vcontentType\"N\n" +
+	"\x18UploadGarageLogoResponse\x122\n" +
+	"\x06garage\x18\x01 \x01(\v2\x1a.vietgara.tenant.v1.GarageR\x06garage\";\n" +
+	"\x17DeleteGarageLogoRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\"N\n" +
+	"\x18DeleteGarageLogoResponse\x122\n" +
+	"\x06garage\x18\x01 \x01(\v2\x1a.vietgara.tenant.v1.GarageR\x06garage*c\n" +
 	"\fGarageStatus\x12\x1d\n" +
 	"\x19GARAGE_STATUS_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14GARAGE_STATUS_ACTIVE\x10\x01\x12\x1a\n" +
-	"\x16GARAGE_STATUS_INACTIVE\x10\x02\x12\x1b\n" +
-	"\x17GARAGE_STATUS_SUSPENDED\x10\x032\x8f\x03\n" +
-	"\rGarageService\x12a\n" +
-	"\fCreateGarage\x12'.vietgara.tenant.v1.CreateGarageRequest\x1a(.vietgara.tenant.v1.CreateGarageResponse\x12X\n" +
-	"\tGetGarage\x12$.vietgara.tenant.v1.GetGarageRequest\x1a%.vietgara.tenant.v1.GetGarageResponse\x12a\n" +
-	"\fUpdateGarage\x12'.vietgara.tenant.v1.UpdateGarageRequest\x1a(.vietgara.tenant.v1.UpdateGarageResponse\x12^\n" +
-	"\vListGarages\x12&.vietgara.tenant.v1.ListGaragesRequest\x1a'.vietgara.tenant.v1.ListGaragesResponseBJZHgithub.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1;tenantv1b\x06proto3"
+	"\x16GARAGE_STATUS_INACTIVE\x10\x022\xfd\x06\n" +
+	"\rGarageService\x12w\n" +
+	"\vListGarages\x12&.vietgara.tenant.v1.ListGaragesRequest\x1a'.vietgara.tenant.v1.ListGaragesResponse\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/api/v1/garages\x12\x8a\x01\n" +
+	"\fCreateGarage\x12'.vietgara.tenant.v1.CreateGarageRequest\x1a(.vietgara.tenant.v1.CreateGarageResponse\"'\x82\xd3\xe4\x93\x02!:\x06garageb\x06garage\"\x0f/api/v1/garages\x12\x85\x01\n" +
+	"\tGetGarage\x12$.vietgara.tenant.v1.GetGarageRequest\x1a%.vietgara.tenant.v1.GetGarageResponse\"+\x82\xd3\xe4\x93\x02%b\x06garage\x12\x1b/api/v1/garages/{garage_id}\x12\x96\x01\n" +
+	"\fUpdateGarage\x12'.vietgara.tenant.v1.UpdateGarageRequest\x1a(.vietgara.tenant.v1.UpdateGarageResponse\"3\x82\xd3\xe4\x93\x02-:\x06garageb\x06garage2\x1b/api/v1/garages/{garage_id}\x12\xa2\x01\n" +
+	"\x10UploadGarageLogo\x12+.vietgara.tenant.v1.UploadGarageLogoRequest\x1a,.vietgara.tenant.v1.UploadGarageLogoResponse\"3\x82\xd3\xe4\x93\x02-:\x01*b\x06garage\x1a /api/v1/garages/{garage_id}/logo\x12\x9f\x01\n" +
+	"\x10DeleteGarageLogo\x12+.vietgara.tenant.v1.DeleteGarageLogoRequest\x1a,.vietgara.tenant.v1.DeleteGarageLogoResponse\"0\x82\xd3\xe4\x93\x02*b\x06garage* /api/v1/garages/{garage_id}/logoBJZHgithub.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1;tenantv1b\x06proto3"
 
 var (
 	file_vietgara_tenant_v1_garage_proto_rawDescOnce sync.Once
@@ -749,41 +1077,65 @@ func file_vietgara_tenant_v1_garage_proto_rawDescGZIP() []byte {
 }
 
 var file_vietgara_tenant_v1_garage_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_vietgara_tenant_v1_garage_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_vietgara_tenant_v1_garage_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_vietgara_tenant_v1_garage_proto_goTypes = []any{
-	(GarageStatus)(0),             // 0: vietgara.tenant.v1.GarageStatus
-	(*Garage)(nil),                // 1: vietgara.tenant.v1.Garage
-	(*CreateGarageRequest)(nil),   // 2: vietgara.tenant.v1.CreateGarageRequest
-	(*GetGarageRequest)(nil),      // 3: vietgara.tenant.v1.GetGarageRequest
-	(*CreateGarageResponse)(nil),  // 4: vietgara.tenant.v1.CreateGarageResponse
-	(*GetGarageResponse)(nil),     // 5: vietgara.tenant.v1.GetGarageResponse
-	(*UpdateGarageResponse)(nil),  // 6: vietgara.tenant.v1.UpdateGarageResponse
-	(*UpdateGarageRequest)(nil),   // 7: vietgara.tenant.v1.UpdateGarageRequest
-	(*ListGaragesRequest)(nil),    // 8: vietgara.tenant.v1.ListGaragesRequest
-	(*ListGaragesResponse)(nil),   // 9: vietgara.tenant.v1.ListGaragesResponse
-	(*timestamppb.Timestamp)(nil), // 10: google.protobuf.Timestamp
+	(GarageStatus)(0),                // 0: vietgara.tenant.v1.GarageStatus
+	(*DailyHours)(nil),               // 1: vietgara.tenant.v1.DailyHours
+	(*NumberingTemplates)(nil),       // 2: vietgara.tenant.v1.NumberingTemplates
+	(*GarageAccess)(nil),             // 3: vietgara.tenant.v1.GarageAccess
+	(*Garage)(nil),                   // 4: vietgara.tenant.v1.Garage
+	(*ListGaragesRequest)(nil),       // 5: vietgara.tenant.v1.ListGaragesRequest
+	(*ListGaragesResponse)(nil),      // 6: vietgara.tenant.v1.ListGaragesResponse
+	(*CreateGarageRequest)(nil),      // 7: vietgara.tenant.v1.CreateGarageRequest
+	(*CreateGarageResponse)(nil),     // 8: vietgara.tenant.v1.CreateGarageResponse
+	(*GetGarageRequest)(nil),         // 9: vietgara.tenant.v1.GetGarageRequest
+	(*GetGarageResponse)(nil),        // 10: vietgara.tenant.v1.GetGarageResponse
+	(*UpdateGarageRequest)(nil),      // 11: vietgara.tenant.v1.UpdateGarageRequest
+	(*UpdateGarageResponse)(nil),     // 12: vietgara.tenant.v1.UpdateGarageResponse
+	(*UploadGarageLogoRequest)(nil),  // 13: vietgara.tenant.v1.UploadGarageLogoRequest
+	(*UploadGarageLogoResponse)(nil), // 14: vietgara.tenant.v1.UploadGarageLogoResponse
+	(*DeleteGarageLogoRequest)(nil),  // 15: vietgara.tenant.v1.DeleteGarageLogoRequest
+	(*DeleteGarageLogoResponse)(nil), // 16: vietgara.tenant.v1.DeleteGarageLogoResponse
+	(dayofweek.DayOfWeek)(0),         // 17: google.type.DayOfWeek
+	(Permission)(0),                  // 18: vietgara.tenant.v1.Permission
+	(*timestamppb.Timestamp)(nil),    // 19: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),    // 20: google.protobuf.FieldMask
 }
 var file_vietgara_tenant_v1_garage_proto_depIdxs = []int32{
-	0,  // 0: vietgara.tenant.v1.Garage.status:type_name -> vietgara.tenant.v1.GarageStatus
-	10, // 1: vietgara.tenant.v1.Garage.created_at:type_name -> google.protobuf.Timestamp
-	10, // 2: vietgara.tenant.v1.Garage.updated_at:type_name -> google.protobuf.Timestamp
-	1,  // 3: vietgara.tenant.v1.CreateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	1,  // 4: vietgara.tenant.v1.GetGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	1,  // 5: vietgara.tenant.v1.UpdateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	1,  // 6: vietgara.tenant.v1.ListGaragesResponse.garages:type_name -> vietgara.tenant.v1.Garage
-	2,  // 7: vietgara.tenant.v1.GarageService.CreateGarage:input_type -> vietgara.tenant.v1.CreateGarageRequest
-	3,  // 8: vietgara.tenant.v1.GarageService.GetGarage:input_type -> vietgara.tenant.v1.GetGarageRequest
-	7,  // 9: vietgara.tenant.v1.GarageService.UpdateGarage:input_type -> vietgara.tenant.v1.UpdateGarageRequest
-	8,  // 10: vietgara.tenant.v1.GarageService.ListGarages:input_type -> vietgara.tenant.v1.ListGaragesRequest
-	4,  // 11: vietgara.tenant.v1.GarageService.CreateGarage:output_type -> vietgara.tenant.v1.CreateGarageResponse
-	5,  // 12: vietgara.tenant.v1.GarageService.GetGarage:output_type -> vietgara.tenant.v1.GetGarageResponse
-	6,  // 13: vietgara.tenant.v1.GarageService.UpdateGarage:output_type -> vietgara.tenant.v1.UpdateGarageResponse
-	9,  // 14: vietgara.tenant.v1.GarageService.ListGarages:output_type -> vietgara.tenant.v1.ListGaragesResponse
-	11, // [11:15] is the sub-list for method output_type
-	7,  // [7:11] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	17, // 0: vietgara.tenant.v1.DailyHours.day:type_name -> google.type.DayOfWeek
+	18, // 1: vietgara.tenant.v1.GarageAccess.permissions:type_name -> vietgara.tenant.v1.Permission
+	0,  // 2: vietgara.tenant.v1.Garage.status:type_name -> vietgara.tenant.v1.GarageStatus
+	1,  // 3: vietgara.tenant.v1.Garage.operating_hours:type_name -> vietgara.tenant.v1.DailyHours
+	2,  // 4: vietgara.tenant.v1.Garage.numbering:type_name -> vietgara.tenant.v1.NumberingTemplates
+	3,  // 5: vietgara.tenant.v1.Garage.access:type_name -> vietgara.tenant.v1.GarageAccess
+	19, // 6: vietgara.tenant.v1.Garage.created_at:type_name -> google.protobuf.Timestamp
+	19, // 7: vietgara.tenant.v1.Garage.updated_at:type_name -> google.protobuf.Timestamp
+	4,  // 8: vietgara.tenant.v1.ListGaragesResponse.data:type_name -> vietgara.tenant.v1.Garage
+	4,  // 9: vietgara.tenant.v1.CreateGarageRequest.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 10: vietgara.tenant.v1.CreateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 11: vietgara.tenant.v1.GetGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 12: vietgara.tenant.v1.UpdateGarageRequest.garage:type_name -> vietgara.tenant.v1.Garage
+	20, // 13: vietgara.tenant.v1.UpdateGarageRequest.update_mask:type_name -> google.protobuf.FieldMask
+	4,  // 14: vietgara.tenant.v1.UpdateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 15: vietgara.tenant.v1.UploadGarageLogoResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 16: vietgara.tenant.v1.DeleteGarageLogoResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	5,  // 17: vietgara.tenant.v1.GarageService.ListGarages:input_type -> vietgara.tenant.v1.ListGaragesRequest
+	7,  // 18: vietgara.tenant.v1.GarageService.CreateGarage:input_type -> vietgara.tenant.v1.CreateGarageRequest
+	9,  // 19: vietgara.tenant.v1.GarageService.GetGarage:input_type -> vietgara.tenant.v1.GetGarageRequest
+	11, // 20: vietgara.tenant.v1.GarageService.UpdateGarage:input_type -> vietgara.tenant.v1.UpdateGarageRequest
+	13, // 21: vietgara.tenant.v1.GarageService.UploadGarageLogo:input_type -> vietgara.tenant.v1.UploadGarageLogoRequest
+	15, // 22: vietgara.tenant.v1.GarageService.DeleteGarageLogo:input_type -> vietgara.tenant.v1.DeleteGarageLogoRequest
+	6,  // 23: vietgara.tenant.v1.GarageService.ListGarages:output_type -> vietgara.tenant.v1.ListGaragesResponse
+	8,  // 24: vietgara.tenant.v1.GarageService.CreateGarage:output_type -> vietgara.tenant.v1.CreateGarageResponse
+	10, // 25: vietgara.tenant.v1.GarageService.GetGarage:output_type -> vietgara.tenant.v1.GetGarageResponse
+	12, // 26: vietgara.tenant.v1.GarageService.UpdateGarage:output_type -> vietgara.tenant.v1.UpdateGarageResponse
+	14, // 27: vietgara.tenant.v1.GarageService.UploadGarageLogo:output_type -> vietgara.tenant.v1.UploadGarageLogoResponse
+	16, // 28: vietgara.tenant.v1.GarageService.DeleteGarageLogo:output_type -> vietgara.tenant.v1.DeleteGarageLogoResponse
+	23, // [23:29] is the sub-list for method output_type
+	17, // [17:23] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_tenant_v1_garage_proto_init() }
@@ -791,16 +1143,15 @@ func file_vietgara_tenant_v1_garage_proto_init() {
 	if File_vietgara_tenant_v1_garage_proto != nil {
 		return
 	}
-	file_vietgara_tenant_v1_garage_proto_msgTypes[0].OneofWrappers = []any{}
-	file_vietgara_tenant_v1_garage_proto_msgTypes[1].OneofWrappers = []any{}
-	file_vietgara_tenant_v1_garage_proto_msgTypes[6].OneofWrappers = []any{}
+	file_vietgara_tenant_v1_access_proto_init()
+	file_vietgara_tenant_v1_garage_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_tenant_v1_garage_proto_rawDesc), len(file_vietgara_tenant_v1_garage_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   9,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

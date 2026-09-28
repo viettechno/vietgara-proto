@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Lint, format and generated code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install pinned codegen tools
+        run: |
+          make install-codegen-tools
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Lint
+        run: buf lint
+
+      - name: Format check
+        run: buf format --diff --exit-code
+
+      # apis-go/ and openapi/ are committed; they must match the .proto sources.
+      - name: Generated code is up to date
+        run: make generate-check
+
+      - name: Build generated Go code
+        run: go build ./...
+
+  breaking:
+    name: Breaking changes
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install buf
+        run: |
+          make install-buf
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      # A deliberate breaking change (a new major version, or a contract not
+      # released yet) is acknowledged with the "breaking-change" label.
+      - name: buf breaking
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'breaking-change') }}
+        run: buf breaking --against ".git#ref=origin/${{ github.base_ref }}"

@@ -1,160 +1,117 @@
 syntax = "proto3";
 
-// Package vietgara.customer.v1 defines the Customer & Vehicle module (HLD
-// module #4): vehicles registered to a garage's customers.
-// See: FRD FR-CUS-02, API Specification Section 5, Database Design
-// Section 3.2.
 package vietgara.customer.v1;
 
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "vietgara/common/v1/pagination.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1";
 
-// Vehicle is a vehicle owned by one customer of a garage (FR-CUS-02).
-// Maps to the "vehicles" table (Database Design Section 3.2).
+// Vehicle belongs to one customer of the garage (FR-CUS-02).
 message Vehicle {
-  // UUID primary key.
-  string id = 1;
-
-  // Garage the vehicle belongs to (tenant context).
-  string garage_id = 2;
-
-  // Owning customer.
-  string customer_id = 3;
-
-  // Display name of the owning customer (read-only).
-  string customer_name = 4;
-
-  // License plate, upper-cased; unique per garage ignoring spaces, dots
-  // and dashes.
-  string license_plate = 5;
-
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string customer_id = 3 [(google.api.field_behavior) = REQUIRED];
+  string customer_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Unique per garage (ignoring punctuation and case).
+  string license_plate = 5 [(google.api.field_behavior) = REQUIRED];
   optional string make = 6;
   optional string model = 7;
-
-  // Model year.
   optional int32 year = 8;
-
-  // Chassis number (VIN).
   optional string vin = 9;
-
   optional string engine_number = 10;
-
-  // Creation timestamp.
-  google.protobuf.Timestamp created_at = 11;
-
-  // Last update timestamp.
-  google.protobuf.Timestamp updated_at = 12;
+  google.protobuf.Timestamp created_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
-// CreateVehicleRequest registers a vehicle to a customer (FR-CUS-02).
 message CreateVehicleRequest {
-  string garage_id = 1;
-
-  // Owning customer (required).
-  string customer_id = 2;
-
-  // License plate (required).
-  string license_plate = 3;
-
-  optional string make = 4;
-  optional string model = 5;
-  optional int32 year = 6;
-  optional string vin = 7;
-  optional string engine_number = 8;
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  Vehicle vehicle = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-// CreateVehicleResponse is the response of CreateVehicle.
 message CreateVehicleResponse {
   Vehicle vehicle = 1;
 }
 
-// GetVehicleRequest returns one vehicle of a garage.
 message GetVehicleRequest {
-  string garage_id = 1;
-  string vehicle_id = 2;
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string vehicle_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-// GetVehicleResponse is the response of GetVehicle.
 message GetVehicleResponse {
   Vehicle vehicle = 1;
 }
 
-// UpdateVehicleRequest applies partial updates to a vehicle; absent fields
-// keep their current value and an empty optional string clears it.
 message UpdateVehicleRequest {
-  string garage_id = 1;
-  string vehicle_id = 2;
-
-  // Transfers the vehicle to another customer of the same garage.
-  optional string customer_id = 3;
-
-  optional string license_plate = 4;
-  optional string make = 5;
-  optional string model = 6;
-
-  // Model year; 0 clears it.
-  optional int32 year = 7;
-
-  optional string vin = 8;
-  optional string engine_number = 9;
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string vehicle_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // customer_id may move the vehicle to another customer of the garage.
+  Vehicle vehicle = 3 [(google.api.field_behavior) = REQUIRED];
+  // Filled from the JSON body keys when omitted.
+  google.protobuf.FieldMask update_mask = 4;
 }
 
-// UpdateVehicleResponse is the response of UpdateVehicle.
 message UpdateVehicleResponse {
   Vehicle vehicle = 1;
 }
 
-// ListVehiclesRequest searches the vehicles of a garage, optionally only
-// those of one customer.
 message ListVehiclesRequest {
-  string garage_id = 1;
-
-  // Restricts the list to one customer's vehicles when set.
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Only this customer's vehicles.
   string customer_id = 2;
-
-  // Matches license plate (ignoring spaces, dots and dashes), make, model
-  // or VIN; empty lists every vehicle.
+  // Matches license plate, make or model.
   string query = 3;
-
-  // 1-based page number; defaults to 1.
   int32 page = 4;
-
-  // Page size; defaults to 20, capped at 100.
   int32 page_size = 5;
 }
 
-// ListVehiclesResponse is one page of vehicles, newest first.
 message ListVehiclesResponse {
-  repeated Vehicle vehicles = 1;
+  repeated Vehicle data = 1;
   vietgara.common.v1.Pagination pagination = 2;
 }
 
-// DeleteVehicleRequest soft-deletes a vehicle; historical documents keep
-// referencing it.
 message DeleteVehicleRequest {
-  string garage_id = 1;
-  string vehicle_id = 2;
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string vehicle_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-// DeleteVehicleResponse acknowledges a successful deletion.
 message DeleteVehicleResponse {}
 
-// VehicleService manages the vehicles of a garage's customers (FR-CUS-02).
+// VehicleService manages vehicles (FRD 3.4). Filter by customer with
+// ?customerId=. Reads need PERMISSION_CUSTOMER_READ, changes
+// PERMISSION_CUSTOMER_WRITE.
 service VehicleService {
-  // CreateVehicle registers a vehicle to a customer.
-  rpc CreateVehicle(CreateVehicleRequest) returns (CreateVehicleResponse);
+  rpc ListVehicles(ListVehiclesRequest) returns (ListVehiclesResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/vehicles"};
+  }
 
-  // GetVehicle returns one vehicle.
-  rpc GetVehicle(GetVehicleRequest) returns (GetVehicleResponse);
+  rpc CreateVehicle(CreateVehicleRequest) returns (CreateVehicleResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/vehicles"
+      body: "vehicle"
+      response_body: "vehicle"
+    };
+  }
 
-  // UpdateVehicle applies partial updates to a vehicle.
-  rpc UpdateVehicle(UpdateVehicleRequest) returns (UpdateVehicleResponse);
+  rpc GetVehicle(GetVehicleRequest) returns (GetVehicleResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/garages/{garage_id}/vehicles/{vehicle_id}"
+      response_body: "vehicle"
+    };
+  }
 
-  // ListVehicles searches the vehicles of a garage.
-  rpc ListVehicles(ListVehiclesRequest) returns (ListVehiclesResponse);
+  rpc UpdateVehicle(UpdateVehicleRequest) returns (UpdateVehicleResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/vehicles/{vehicle_id}"
+      body: "vehicle"
+      response_body: "vehicle"
+    };
+  }
 
-  // DeleteVehicle soft-deletes a vehicle.
-  rpc DeleteVehicle(DeleteVehicleRequest) returns (DeleteVehicleResponse);
+  rpc DeleteVehicle(DeleteVehicleRequest) returns (DeleteVehicleResponse) {
+    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/vehicles/{vehicle_id}"};
+  }
 }

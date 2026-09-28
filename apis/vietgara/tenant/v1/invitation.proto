@@ -1,0 +1,154 @@
+syntax = "proto3";
+
+package vietgara.tenant.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1;tenantv1";
+
+enum InvitationStatus {
+  INVITATION_STATUS_UNSPECIFIED = 0;
+  INVITATION_STATUS_PENDING = 1;
+  INVITATION_STATUS_ACCEPTED = 2;
+  INVITATION_STATUS_DECLINED = 3;
+  INVITATION_STATUS_REVOKED = 4;
+  INVITATION_STATUS_EXPIRED = 5;
+}
+
+// Invitation asks an existing account to join a garage (FR-TEN-04). It is
+// e-mailed to the account and expires after 7 days.
+message Invitation {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string account_id = 4;
+  string full_name = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string email = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Staff groups the member joins on acceptance.
+  repeated string group_ids = 7;
+  InvitationStatus status = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string invited_by_name = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp expires_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp responded_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message CreateInvitationRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // From LookupStaffCandidate.
+  string account_id = 2 [(google.api.field_behavior) = REQUIRED];
+  repeated string group_ids = 3;
+}
+
+message CreateInvitationResponse {
+  Invitation invitation = 1;
+}
+
+message ListInvitationsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Unspecified lists every status.
+  InvitationStatus status = 2;
+}
+
+message ListInvitationsResponse {
+  repeated Invitation data = 1;
+}
+
+message RevokeInvitationRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string invitation_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message RevokeInvitationResponse {
+  Invitation invitation = 1;
+}
+
+message ListMyInvitationsRequest {
+  // Unspecified lists every status.
+  InvitationStatus status = 1;
+}
+
+message ListMyInvitationsResponse {
+  repeated Invitation data = 1;
+}
+
+message GetMyInvitationRequest {
+  string invitation_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetMyInvitationResponse {
+  Invitation invitation = 1;
+}
+
+message AcceptInvitationRequest {
+  string invitation_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message AcceptInvitationResponse {
+  Invitation invitation = 1;
+}
+
+message DeclineInvitationRequest {
+  string invitation_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeclineInvitationResponse {
+  Invitation invitation = 1;
+}
+
+// InvitationService handles staff invitations: the garage side needs
+// PERMISSION_STAFF_WRITE; the /me side is the invited account.
+service InvitationService {
+  // Invites an existing account and e-mails them, within the plan's staff
+  // limit.
+  rpc CreateInvitation(CreateInvitationRequest) returns (CreateInvitationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/invitations"
+      body: "*"
+      response_body: "invitation"
+    };
+  }
+
+  rpc ListInvitations(ListInvitationsRequest) returns (ListInvitationsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/invitations"};
+  }
+
+  // Cancels a pending invitation.
+  rpc RevokeInvitation(RevokeInvitationRequest) returns (RevokeInvitationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/invitations/{invitation_id}/revoke"
+      body: "*"
+      response_body: "invitation"
+    };
+  }
+
+  rpc ListMyInvitations(ListMyInvitationsRequest) returns (ListMyInvitationsResponse) {
+    option (google.api.http) = {get: "/api/v1/me/invitations"};
+  }
+
+  rpc GetMyInvitation(GetMyInvitationRequest) returns (GetMyInvitationResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/me/invitations/{invitation_id}"
+      response_body: "invitation"
+    };
+  }
+
+  // Joins the garage with the invitation's groups.
+  rpc AcceptInvitation(AcceptInvitationRequest) returns (AcceptInvitationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/invitations/{invitation_id}/accept"
+      body: "*"
+      response_body: "invitation"
+    };
+  }
+
+  rpc DeclineInvitation(DeclineInvitationRequest) returns (DeclineInvitationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/invitations/{invitation_id}/decline"
+      body: "*"
+      response_body: "invitation"
+    };
+  }
+}

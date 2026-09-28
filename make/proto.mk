@@ -2,9 +2,9 @@
 # the toolchain -- regenerate after every .proto change).
 GEN_DIR := apis-go
 
-# Input used by `make breaking`. Needs at least one commit on main before
+# Input used by `make breaking`. Needs at least one commit on master before
 # the first run (e.g. `git add -A && git commit -m "init proto modules"`).
-BUF_BREAKING_AGAINST ?= .git#branch=main
+BUF_BREAKING_AGAINST ?= .git#branch=master
 
 .PHONY: \
 	generate \
@@ -13,14 +13,15 @@ BUF_BREAKING_AGAINST ?= .git#branch=main
 	format-check \
 	breaking \
 	verify \
+	generate-check \
 	clean
 
-generate: install-tools ## Generate Go code from proto files into $(GEN_DIR)
+generate: install-codegen-tools ## Generate Go, gateway and OpenAPI code from proto files
 	@printf "$(CYAN)▶ Generating Go code from proto files...$(RESET)\n"
 	@buf generate
 	@printf "$(BOLD)$(GREEN)Generated code is up to date in $(GEN_DIR).$(RESET)\n"
 
-lint: install-tools ## Lint proto files (buf lint)
+lint: install-buf ## Lint proto files (buf lint)
 	@printf "$(CYAN)▶ Linting proto files...$(RESET)\n"
 	@buf lint
 	@printf "$(BOLD)$(GREEN)Proto files pass lint.$(RESET)\n"
@@ -39,6 +40,10 @@ breaking: ## Check breaking changes against $(BUF_BREAKING_AGAINST)
 
 verify: lint format-check generate ## Lint, format-check and regenerate everything
 	@go build ./...
+
+generate-check: generate ## Fail when the committed generated code is stale
+	@git diff --exit-code -- $(GEN_DIR) openapi || (printf "$(RED)Generated code is stale: run make generate and commit.$(RESET)\n"; exit 1)
+	@test -z "$$(git status --porcelain -- $(GEN_DIR) openapi)" || (git status --short -- $(GEN_DIR) openapi; printf "$(RED)Untracked generated files: run make generate and commit.$(RESET)\n"; exit 1)
 	@printf "$(BOLD)$(GREEN)All checks passed.$(RESET)\n"
 
 clean: ## Remove generated Go code

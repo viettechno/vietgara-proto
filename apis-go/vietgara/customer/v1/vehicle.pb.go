@@ -4,17 +4,14 @@
 // 	protoc        (unknown)
 // source: vietgara/customer/v1/vehicle.proto
 
-// Package vietgara.customer.v1 defines the Customer & Vehicle module (HLD
-// module #4): vehicles registered to a garage's customers.
-// See: FRD FR-CUS-02, API Specification Section 5, Database Design
-// Section 3.2.
-
 package customerv1
 
 import (
 	v1 "github.com/viettechno/vietgara-proto/apis-go/vietgara/common/v1"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -28,31 +25,21 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Vehicle is a vehicle owned by one customer of a garage (FR-CUS-02).
-// Maps to the "vehicles" table (Database Design Section 3.2).
+// Vehicle belongs to one customer of the garage (FR-CUS-02).
 type Vehicle struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// UUID primary key.
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// Garage the vehicle belongs to (tenant context).
-	GarageId string `protobuf:"bytes,2,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// Owning customer.
-	CustomerId string `protobuf:"bytes,3,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
-	// Display name of the owning customer (read-only).
-	CustomerName string `protobuf:"bytes,4,opt,name=customer_name,json=customerName,proto3" json:"customer_name,omitempty"`
-	// License plate, upper-cased; unique per garage ignoring spaces, dots
-	// and dashes.
-	LicensePlate string  `protobuf:"bytes,5,opt,name=license_plate,json=licensePlate,proto3" json:"license_plate,omitempty"`
-	Make         *string `protobuf:"bytes,6,opt,name=make,proto3,oneof" json:"make,omitempty"`
-	Model        *string `protobuf:"bytes,7,opt,name=model,proto3,oneof" json:"model,omitempty"`
-	// Model year.
-	Year *int32 `protobuf:"varint,8,opt,name=year,proto3,oneof" json:"year,omitempty"`
-	// Chassis number (VIN).
-	Vin          *string `protobuf:"bytes,9,opt,name=vin,proto3,oneof" json:"vin,omitempty"`
-	EngineNumber *string `protobuf:"bytes,10,opt,name=engine_number,json=engineNumber,proto3,oneof" json:"engine_number,omitempty"`
-	// Creation timestamp.
-	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	// Last update timestamp.
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	Id           string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	GarageId     string                 `protobuf:"bytes,2,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	CustomerId   string                 `protobuf:"bytes,3,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	CustomerName string                 `protobuf:"bytes,4,opt,name=customer_name,json=customerName,proto3" json:"customer_name,omitempty"`
+	// Unique per garage (ignoring punctuation and case).
+	LicensePlate  string                 `protobuf:"bytes,5,opt,name=license_plate,json=licensePlate,proto3" json:"license_plate,omitempty"`
+	Make          *string                `protobuf:"bytes,6,opt,name=make,proto3,oneof" json:"make,omitempty"`
+	Model         *string                `protobuf:"bytes,7,opt,name=model,proto3,oneof" json:"model,omitempty"`
+	Year          *int32                 `protobuf:"varint,8,opt,name=year,proto3,oneof" json:"year,omitempty"`
+	Vin           *string                `protobuf:"bytes,9,opt,name=vin,proto3,oneof" json:"vin,omitempty"`
+	EngineNumber  *string                `protobuf:"bytes,10,opt,name=engine_number,json=engineNumber,proto3,oneof" json:"engine_number,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -172,19 +159,10 @@ func (x *Vehicle) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-// CreateVehicleRequest registers a vehicle to a customer (FR-CUS-02).
 type CreateVehicleRequest struct {
-	state    protoimpl.MessageState `protogen:"open.v1"`
-	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// Owning customer (required).
-	CustomerId string `protobuf:"bytes,2,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
-	// License plate (required).
-	LicensePlate  string  `protobuf:"bytes,3,opt,name=license_plate,json=licensePlate,proto3" json:"license_plate,omitempty"`
-	Make          *string `protobuf:"bytes,4,opt,name=make,proto3,oneof" json:"make,omitempty"`
-	Model         *string `protobuf:"bytes,5,opt,name=model,proto3,oneof" json:"model,omitempty"`
-	Year          *int32  `protobuf:"varint,6,opt,name=year,proto3,oneof" json:"year,omitempty"`
-	Vin           *string `protobuf:"bytes,7,opt,name=vin,proto3,oneof" json:"vin,omitempty"`
-	EngineNumber  *string `protobuf:"bytes,8,opt,name=engine_number,json=engineNumber,proto3,oneof" json:"engine_number,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	Vehicle       *Vehicle               `protobuf:"bytes,2,opt,name=vehicle,proto3" json:"vehicle,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -226,56 +204,13 @@ func (x *CreateVehicleRequest) GetGarageId() string {
 	return ""
 }
 
-func (x *CreateVehicleRequest) GetCustomerId() string {
+func (x *CreateVehicleRequest) GetVehicle() *Vehicle {
 	if x != nil {
-		return x.CustomerId
+		return x.Vehicle
 	}
-	return ""
+	return nil
 }
 
-func (x *CreateVehicleRequest) GetLicensePlate() string {
-	if x != nil {
-		return x.LicensePlate
-	}
-	return ""
-}
-
-func (x *CreateVehicleRequest) GetMake() string {
-	if x != nil && x.Make != nil {
-		return *x.Make
-	}
-	return ""
-}
-
-func (x *CreateVehicleRequest) GetModel() string {
-	if x != nil && x.Model != nil {
-		return *x.Model
-	}
-	return ""
-}
-
-func (x *CreateVehicleRequest) GetYear() int32 {
-	if x != nil && x.Year != nil {
-		return *x.Year
-	}
-	return 0
-}
-
-func (x *CreateVehicleRequest) GetVin() string {
-	if x != nil && x.Vin != nil {
-		return *x.Vin
-	}
-	return ""
-}
-
-func (x *CreateVehicleRequest) GetEngineNumber() string {
-	if x != nil && x.EngineNumber != nil {
-		return *x.EngineNumber
-	}
-	return ""
-}
-
-// CreateVehicleResponse is the response of CreateVehicle.
 type CreateVehicleResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Vehicle       *Vehicle               `protobuf:"bytes,1,opt,name=vehicle,proto3" json:"vehicle,omitempty"`
@@ -320,7 +255,6 @@ func (x *CreateVehicleResponse) GetVehicle() *Vehicle {
 	return nil
 }
 
-// GetVehicleRequest returns one vehicle of a garage.
 type GetVehicleRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
@@ -373,7 +307,6 @@ func (x *GetVehicleRequest) GetVehicleId() string {
 	return ""
 }
 
-// GetVehicleResponse is the response of GetVehicle.
 type GetVehicleResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Vehicle       *Vehicle               `protobuf:"bytes,1,opt,name=vehicle,proto3" json:"vehicle,omitempty"`
@@ -418,21 +351,14 @@ func (x *GetVehicleResponse) GetVehicle() *Vehicle {
 	return nil
 }
 
-// UpdateVehicleRequest applies partial updates to a vehicle; absent fields
-// keep their current value and an empty optional string clears it.
 type UpdateVehicleRequest struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	GarageId  string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	VehicleId string                 `protobuf:"bytes,2,opt,name=vehicle_id,json=vehicleId,proto3" json:"vehicle_id,omitempty"`
-	// Transfers the vehicle to another customer of the same garage.
-	CustomerId   *string `protobuf:"bytes,3,opt,name=customer_id,json=customerId,proto3,oneof" json:"customer_id,omitempty"`
-	LicensePlate *string `protobuf:"bytes,4,opt,name=license_plate,json=licensePlate,proto3,oneof" json:"license_plate,omitempty"`
-	Make         *string `protobuf:"bytes,5,opt,name=make,proto3,oneof" json:"make,omitempty"`
-	Model        *string `protobuf:"bytes,6,opt,name=model,proto3,oneof" json:"model,omitempty"`
-	// Model year; 0 clears it.
-	Year          *int32  `protobuf:"varint,7,opt,name=year,proto3,oneof" json:"year,omitempty"`
-	Vin           *string `protobuf:"bytes,8,opt,name=vin,proto3,oneof" json:"vin,omitempty"`
-	EngineNumber  *string `protobuf:"bytes,9,opt,name=engine_number,json=engineNumber,proto3,oneof" json:"engine_number,omitempty"`
+	// customer_id may move the vehicle to another customer of the garage.
+	Vehicle *Vehicle `protobuf:"bytes,3,opt,name=vehicle,proto3" json:"vehicle,omitempty"`
+	// Filled from the JSON body keys when omitted.
+	UpdateMask    *fieldmaskpb.FieldMask `protobuf:"bytes,4,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -481,56 +407,20 @@ func (x *UpdateVehicleRequest) GetVehicleId() string {
 	return ""
 }
 
-func (x *UpdateVehicleRequest) GetCustomerId() string {
-	if x != nil && x.CustomerId != nil {
-		return *x.CustomerId
+func (x *UpdateVehicleRequest) GetVehicle() *Vehicle {
+	if x != nil {
+		return x.Vehicle
 	}
-	return ""
+	return nil
 }
 
-func (x *UpdateVehicleRequest) GetLicensePlate() string {
-	if x != nil && x.LicensePlate != nil {
-		return *x.LicensePlate
+func (x *UpdateVehicleRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
+	if x != nil {
+		return x.UpdateMask
 	}
-	return ""
+	return nil
 }
 
-func (x *UpdateVehicleRequest) GetMake() string {
-	if x != nil && x.Make != nil {
-		return *x.Make
-	}
-	return ""
-}
-
-func (x *UpdateVehicleRequest) GetModel() string {
-	if x != nil && x.Model != nil {
-		return *x.Model
-	}
-	return ""
-}
-
-func (x *UpdateVehicleRequest) GetYear() int32 {
-	if x != nil && x.Year != nil {
-		return *x.Year
-	}
-	return 0
-}
-
-func (x *UpdateVehicleRequest) GetVin() string {
-	if x != nil && x.Vin != nil {
-		return *x.Vin
-	}
-	return ""
-}
-
-func (x *UpdateVehicleRequest) GetEngineNumber() string {
-	if x != nil && x.EngineNumber != nil {
-		return *x.EngineNumber
-	}
-	return ""
-}
-
-// UpdateVehicleResponse is the response of UpdateVehicle.
 type UpdateVehicleResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Vehicle       *Vehicle               `protobuf:"bytes,1,opt,name=vehicle,proto3" json:"vehicle,omitempty"`
@@ -575,20 +465,15 @@ func (x *UpdateVehicleResponse) GetVehicle() *Vehicle {
 	return nil
 }
 
-// ListVehiclesRequest searches the vehicles of a garage, optionally only
-// those of one customer.
 type ListVehiclesRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// Restricts the list to one customer's vehicles when set.
+	// Only this customer's vehicles.
 	CustomerId string `protobuf:"bytes,2,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
-	// Matches license plate (ignoring spaces, dots and dashes), make, model
-	// or VIN; empty lists every vehicle.
-	Query string `protobuf:"bytes,3,opt,name=query,proto3" json:"query,omitempty"`
-	// 1-based page number; defaults to 1.
-	Page int32 `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"`
-	// Page size; defaults to 20, capped at 100.
-	PageSize      int32 `protobuf:"varint,5,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	// Matches license plate, make or model.
+	Query         string `protobuf:"bytes,3,opt,name=query,proto3" json:"query,omitempty"`
+	Page          int32  `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32  `protobuf:"varint,5,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -658,10 +543,9 @@ func (x *ListVehiclesRequest) GetPageSize() int32 {
 	return 0
 }
 
-// ListVehiclesResponse is one page of vehicles, newest first.
 type ListVehiclesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Vehicles      []*Vehicle             `protobuf:"bytes,1,rep,name=vehicles,proto3" json:"vehicles,omitempty"`
+	Data          []*Vehicle             `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
 	Pagination    *v1.Pagination         `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -697,9 +581,9 @@ func (*ListVehiclesResponse) Descriptor() ([]byte, []int) {
 	return file_vietgara_customer_v1_vehicle_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *ListVehiclesResponse) GetVehicles() []*Vehicle {
+func (x *ListVehiclesResponse) GetData() []*Vehicle {
 	if x != nil {
-		return x.Vehicles
+		return x.Data
 	}
 	return nil
 }
@@ -711,8 +595,6 @@ func (x *ListVehiclesResponse) GetPagination() *v1.Pagination {
 	return nil
 }
 
-// DeleteVehicleRequest soft-deletes a vehicle; historical documents keep
-// referencing it.
 type DeleteVehicleRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
@@ -765,7 +647,6 @@ func (x *DeleteVehicleRequest) GetVehicleId() string {
 	return ""
 }
 
-// DeleteVehicleResponse acknowledges a successful deletion.
 type DeleteVehicleResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -806,97 +687,73 @@ var File_vietgara_customer_v1_vehicle_proto protoreflect.FileDescriptor
 
 const file_vietgara_customer_v1_vehicle_proto_rawDesc = "" +
 	"\n" +
-	"\"vietgara/customer/v1/vehicle.proto\x12\x14vietgara.customer.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xdb\x03\n" +
-	"\aVehicle\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
-	"\tgarage_id\x18\x02 \x01(\tR\bgarageId\x12\x1f\n" +
-	"\vcustomer_id\x18\x03 \x01(\tR\n" +
-	"customerId\x12#\n" +
-	"\rcustomer_name\x18\x04 \x01(\tR\fcustomerName\x12#\n" +
-	"\rlicense_plate\x18\x05 \x01(\tR\flicensePlate\x12\x17\n" +
+	"\"vietgara/customer/v1/vehicle.proto\x12\x14vietgara.customer.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xfe\x03\n" +
+	"\aVehicle\x12\x13\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
+	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12$\n" +
+	"\vcustomer_id\x18\x03 \x01(\tB\x03\xe0A\x02R\n" +
+	"customerId\x12(\n" +
+	"\rcustomer_name\x18\x04 \x01(\tB\x03\xe0A\x03R\fcustomerName\x12(\n" +
+	"\rlicense_plate\x18\x05 \x01(\tB\x03\xe0A\x02R\flicensePlate\x12\x17\n" +
 	"\x04make\x18\x06 \x01(\tH\x00R\x04make\x88\x01\x01\x12\x19\n" +
 	"\x05model\x18\a \x01(\tH\x01R\x05model\x88\x01\x01\x12\x17\n" +
 	"\x04year\x18\b \x01(\x05H\x02R\x04year\x88\x01\x01\x12\x15\n" +
 	"\x03vin\x18\t \x01(\tH\x03R\x03vin\x88\x01\x01\x12(\n" +
 	"\rengine_number\x18\n" +
-	" \x01(\tH\x04R\fengineNumber\x88\x01\x01\x129\n" +
+	" \x01(\tH\x04R\fengineNumber\x88\x01\x01\x12>\n" +
 	"\n" +
-	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtB\a\n" +
+	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\a\n" +
 	"\x05_makeB\b\n" +
 	"\x06_modelB\a\n" +
 	"\x05_yearB\x06\n" +
 	"\x04_vinB\x10\n" +
-	"\x0e_engine_number\"\xbd\x02\n" +
-	"\x14CreateVehicleRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12\x1f\n" +
-	"\vcustomer_id\x18\x02 \x01(\tR\n" +
-	"customerId\x12#\n" +
-	"\rlicense_plate\x18\x03 \x01(\tR\flicensePlate\x12\x17\n" +
-	"\x04make\x18\x04 \x01(\tH\x00R\x04make\x88\x01\x01\x12\x19\n" +
-	"\x05model\x18\x05 \x01(\tH\x01R\x05model\x88\x01\x01\x12\x17\n" +
-	"\x04year\x18\x06 \x01(\x05H\x02R\x04year\x88\x01\x01\x12\x15\n" +
-	"\x03vin\x18\a \x01(\tH\x03R\x03vin\x88\x01\x01\x12(\n" +
-	"\rengine_number\x18\b \x01(\tH\x04R\fengineNumber\x88\x01\x01B\a\n" +
-	"\x05_makeB\b\n" +
-	"\x06_modelB\a\n" +
-	"\x05_yearB\x06\n" +
-	"\x04_vinB\x10\n" +
-	"\x0e_engine_number\"P\n" +
+	"\x0e_engine_number\"v\n" +
+	"\x14CreateVehicleRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12<\n" +
+	"\avehicle\x18\x02 \x01(\v2\x1d.vietgara.customer.v1.VehicleB\x03\xe0A\x02R\avehicle\"P\n" +
 	"\x15CreateVehicleResponse\x127\n" +
-	"\avehicle\x18\x01 \x01(\v2\x1d.vietgara.customer.v1.VehicleR\avehicle\"O\n" +
-	"\x11GetVehicleRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12\x1d\n" +
+	"\avehicle\x18\x01 \x01(\v2\x1d.vietgara.customer.v1.VehicleR\avehicle\"Y\n" +
+	"\x11GetVehicleRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\"\n" +
 	"\n" +
-	"vehicle_id\x18\x02 \x01(\tR\tvehicleId\"M\n" +
+	"vehicle_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tvehicleId\"M\n" +
 	"\x12GetVehicleResponse\x127\n" +
-	"\avehicle\x18\x01 \x01(\v2\x1d.vietgara.customer.v1.VehicleR\avehicle\"\x88\x03\n" +
-	"\x14UpdateVehicleRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12\x1d\n" +
+	"\avehicle\x18\x01 \x01(\v2\x1d.vietgara.customer.v1.VehicleR\avehicle\"\xd7\x01\n" +
+	"\x14UpdateVehicleRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\"\n" +
 	"\n" +
-	"vehicle_id\x18\x02 \x01(\tR\tvehicleId\x12$\n" +
-	"\vcustomer_id\x18\x03 \x01(\tH\x00R\n" +
-	"customerId\x88\x01\x01\x12(\n" +
-	"\rlicense_plate\x18\x04 \x01(\tH\x01R\flicensePlate\x88\x01\x01\x12\x17\n" +
-	"\x04make\x18\x05 \x01(\tH\x02R\x04make\x88\x01\x01\x12\x19\n" +
-	"\x05model\x18\x06 \x01(\tH\x03R\x05model\x88\x01\x01\x12\x17\n" +
-	"\x04year\x18\a \x01(\x05H\x04R\x04year\x88\x01\x01\x12\x15\n" +
-	"\x03vin\x18\b \x01(\tH\x05R\x03vin\x88\x01\x01\x12(\n" +
-	"\rengine_number\x18\t \x01(\tH\x06R\fengineNumber\x88\x01\x01B\x0e\n" +
-	"\f_customer_idB\x10\n" +
-	"\x0e_license_plateB\a\n" +
-	"\x05_makeB\b\n" +
-	"\x06_modelB\a\n" +
-	"\x05_yearB\x06\n" +
-	"\x04_vinB\x10\n" +
-	"\x0e_engine_number\"P\n" +
+	"vehicle_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tvehicleId\x12<\n" +
+	"\avehicle\x18\x03 \x01(\v2\x1d.vietgara.customer.v1.VehicleB\x03\xe0A\x02R\avehicle\x12;\n" +
+	"\vupdate_mask\x18\x04 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
+	"updateMask\"P\n" +
 	"\x15UpdateVehicleResponse\x127\n" +
-	"\avehicle\x18\x01 \x01(\v2\x1d.vietgara.customer.v1.VehicleR\avehicle\"\x9a\x01\n" +
-	"\x13ListVehiclesRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12\x1f\n" +
+	"\avehicle\x18\x01 \x01(\v2\x1d.vietgara.customer.v1.VehicleR\avehicle\"\x9f\x01\n" +
+	"\x13ListVehiclesRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1f\n" +
 	"\vcustomer_id\x18\x02 \x01(\tR\n" +
 	"customerId\x12\x14\n" +
 	"\x05query\x18\x03 \x01(\tR\x05query\x12\x12\n" +
 	"\x04page\x18\x04 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x05 \x01(\x05R\bpageSize\"\x91\x01\n" +
-	"\x14ListVehiclesResponse\x129\n" +
-	"\bvehicles\x18\x01 \x03(\v2\x1d.vietgara.customer.v1.VehicleR\bvehicles\x12>\n" +
+	"\tpage_size\x18\x05 \x01(\x05R\bpageSize\"\x89\x01\n" +
+	"\x14ListVehiclesResponse\x121\n" +
+	"\x04data\x18\x01 \x03(\v2\x1d.vietgara.customer.v1.VehicleR\x04data\x12>\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1e.vietgara.common.v1.PaginationR\n" +
-	"pagination\"R\n" +
-	"\x14DeleteVehicleRequest\x12\x1b\n" +
-	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12\x1d\n" +
+	"pagination\"\\\n" +
+	"\x14DeleteVehicleRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\"\n" +
 	"\n" +
-	"vehicle_id\x18\x02 \x01(\tR\tvehicleId\"\x17\n" +
-	"\x15DeleteVehicleResponse2\x96\x04\n" +
-	"\x0eVehicleService\x12h\n" +
-	"\rCreateVehicle\x12*.vietgara.customer.v1.CreateVehicleRequest\x1a+.vietgara.customer.v1.CreateVehicleResponse\x12_\n" +
+	"vehicle_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tvehicleId\"\x17\n" +
+	"\x15DeleteVehicleResponse2\xd5\x06\n" +
+	"\x0eVehicleService\x12\x93\x01\n" +
+	"\fListVehicles\x12).vietgara.customer.v1.ListVehiclesRequest\x1a*.vietgara.customer.v1.ListVehiclesResponse\",\x82\xd3\xe4\x93\x02&\x12$/api/v1/garages/{garage_id}/vehicles\x12\xa8\x01\n" +
+	"\rCreateVehicle\x12*.vietgara.customer.v1.CreateVehicleRequest\x1a+.vietgara.customer.v1.CreateVehicleResponse\">\x82\xd3\xe4\x93\x028:\avehicleb\avehicle\"$/api/v1/garages/{garage_id}/vehicles\x12\xa3\x01\n" +
 	"\n" +
-	"GetVehicle\x12'.vietgara.customer.v1.GetVehicleRequest\x1a(.vietgara.customer.v1.GetVehicleResponse\x12h\n" +
-	"\rUpdateVehicle\x12*.vietgara.customer.v1.UpdateVehicleRequest\x1a+.vietgara.customer.v1.UpdateVehicleResponse\x12e\n" +
-	"\fListVehicles\x12).vietgara.customer.v1.ListVehiclesRequest\x1a*.vietgara.customer.v1.ListVehiclesResponse\x12h\n" +
-	"\rDeleteVehicle\x12*.vietgara.customer.v1.DeleteVehicleRequest\x1a+.vietgara.customer.v1.DeleteVehicleResponseBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1b\x06proto3"
+	"GetVehicle\x12'.vietgara.customer.v1.GetVehicleRequest\x1a(.vietgara.customer.v1.GetVehicleResponse\"B\x82\xd3\xe4\x93\x02<b\avehicle\x121/api/v1/garages/{garage_id}/vehicles/{vehicle_id}\x12\xb5\x01\n" +
+	"\rUpdateVehicle\x12*.vietgara.customer.v1.UpdateVehicleRequest\x1a+.vietgara.customer.v1.UpdateVehicleResponse\"K\x82\xd3\xe4\x93\x02E:\avehicleb\avehicle21/api/v1/garages/{garage_id}/vehicles/{vehicle_id}\x12\xa3\x01\n" +
+	"\rDeleteVehicle\x12*.vietgara.customer.v1.DeleteVehicleRequest\x1a+.vietgara.customer.v1.DeleteVehicleResponse\"9\x82\xd3\xe4\x93\x023*1/api/v1/garages/{garage_id}/vehicles/{vehicle_id}BNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1b\x06proto3"
 
 var (
 	file_vietgara_customer_v1_vehicle_proto_rawDescOnce sync.Once
@@ -924,31 +781,35 @@ var file_vietgara_customer_v1_vehicle_proto_goTypes = []any{
 	(*DeleteVehicleRequest)(nil),  // 9: vietgara.customer.v1.DeleteVehicleRequest
 	(*DeleteVehicleResponse)(nil), // 10: vietgara.customer.v1.DeleteVehicleResponse
 	(*timestamppb.Timestamp)(nil), // 11: google.protobuf.Timestamp
-	(*v1.Pagination)(nil),         // 12: vietgara.common.v1.Pagination
+	(*fieldmaskpb.FieldMask)(nil), // 12: google.protobuf.FieldMask
+	(*v1.Pagination)(nil),         // 13: vietgara.common.v1.Pagination
 }
 var file_vietgara_customer_v1_vehicle_proto_depIdxs = []int32{
 	11, // 0: vietgara.customer.v1.Vehicle.created_at:type_name -> google.protobuf.Timestamp
 	11, // 1: vietgara.customer.v1.Vehicle.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 2: vietgara.customer.v1.CreateVehicleResponse.vehicle:type_name -> vietgara.customer.v1.Vehicle
-	0,  // 3: vietgara.customer.v1.GetVehicleResponse.vehicle:type_name -> vietgara.customer.v1.Vehicle
-	0,  // 4: vietgara.customer.v1.UpdateVehicleResponse.vehicle:type_name -> vietgara.customer.v1.Vehicle
-	0,  // 5: vietgara.customer.v1.ListVehiclesResponse.vehicles:type_name -> vietgara.customer.v1.Vehicle
-	12, // 6: vietgara.customer.v1.ListVehiclesResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	1,  // 7: vietgara.customer.v1.VehicleService.CreateVehicle:input_type -> vietgara.customer.v1.CreateVehicleRequest
-	3,  // 8: vietgara.customer.v1.VehicleService.GetVehicle:input_type -> vietgara.customer.v1.GetVehicleRequest
-	5,  // 9: vietgara.customer.v1.VehicleService.UpdateVehicle:input_type -> vietgara.customer.v1.UpdateVehicleRequest
+	0,  // 2: vietgara.customer.v1.CreateVehicleRequest.vehicle:type_name -> vietgara.customer.v1.Vehicle
+	0,  // 3: vietgara.customer.v1.CreateVehicleResponse.vehicle:type_name -> vietgara.customer.v1.Vehicle
+	0,  // 4: vietgara.customer.v1.GetVehicleResponse.vehicle:type_name -> vietgara.customer.v1.Vehicle
+	0,  // 5: vietgara.customer.v1.UpdateVehicleRequest.vehicle:type_name -> vietgara.customer.v1.Vehicle
+	12, // 6: vietgara.customer.v1.UpdateVehicleRequest.update_mask:type_name -> google.protobuf.FieldMask
+	0,  // 7: vietgara.customer.v1.UpdateVehicleResponse.vehicle:type_name -> vietgara.customer.v1.Vehicle
+	0,  // 8: vietgara.customer.v1.ListVehiclesResponse.data:type_name -> vietgara.customer.v1.Vehicle
+	13, // 9: vietgara.customer.v1.ListVehiclesResponse.pagination:type_name -> vietgara.common.v1.Pagination
 	7,  // 10: vietgara.customer.v1.VehicleService.ListVehicles:input_type -> vietgara.customer.v1.ListVehiclesRequest
-	9,  // 11: vietgara.customer.v1.VehicleService.DeleteVehicle:input_type -> vietgara.customer.v1.DeleteVehicleRequest
-	2,  // 12: vietgara.customer.v1.VehicleService.CreateVehicle:output_type -> vietgara.customer.v1.CreateVehicleResponse
-	4,  // 13: vietgara.customer.v1.VehicleService.GetVehicle:output_type -> vietgara.customer.v1.GetVehicleResponse
-	6,  // 14: vietgara.customer.v1.VehicleService.UpdateVehicle:output_type -> vietgara.customer.v1.UpdateVehicleResponse
+	1,  // 11: vietgara.customer.v1.VehicleService.CreateVehicle:input_type -> vietgara.customer.v1.CreateVehicleRequest
+	3,  // 12: vietgara.customer.v1.VehicleService.GetVehicle:input_type -> vietgara.customer.v1.GetVehicleRequest
+	5,  // 13: vietgara.customer.v1.VehicleService.UpdateVehicle:input_type -> vietgara.customer.v1.UpdateVehicleRequest
+	9,  // 14: vietgara.customer.v1.VehicleService.DeleteVehicle:input_type -> vietgara.customer.v1.DeleteVehicleRequest
 	8,  // 15: vietgara.customer.v1.VehicleService.ListVehicles:output_type -> vietgara.customer.v1.ListVehiclesResponse
-	10, // 16: vietgara.customer.v1.VehicleService.DeleteVehicle:output_type -> vietgara.customer.v1.DeleteVehicleResponse
-	12, // [12:17] is the sub-list for method output_type
-	7,  // [7:12] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	2,  // 16: vietgara.customer.v1.VehicleService.CreateVehicle:output_type -> vietgara.customer.v1.CreateVehicleResponse
+	4,  // 17: vietgara.customer.v1.VehicleService.GetVehicle:output_type -> vietgara.customer.v1.GetVehicleResponse
+	6,  // 18: vietgara.customer.v1.VehicleService.UpdateVehicle:output_type -> vietgara.customer.v1.UpdateVehicleResponse
+	10, // 19: vietgara.customer.v1.VehicleService.DeleteVehicle:output_type -> vietgara.customer.v1.DeleteVehicleResponse
+	15, // [15:20] is the sub-list for method output_type
+	10, // [10:15] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_customer_v1_vehicle_proto_init() }
@@ -957,8 +818,6 @@ func file_vietgara_customer_v1_vehicle_proto_init() {
 		return
 	}
 	file_vietgara_customer_v1_vehicle_proto_msgTypes[0].OneofWrappers = []any{}
-	file_vietgara_customer_v1_vehicle_proto_msgTypes[1].OneofWrappers = []any{}
-	file_vietgara_customer_v1_vehicle_proto_msgTypes[5].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

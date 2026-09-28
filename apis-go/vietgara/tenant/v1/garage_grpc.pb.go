@@ -4,13 +4,6 @@
 // - protoc             (unknown)
 // source: vietgara/tenant/v1/garage.proto
 
-// Package vietgara.tenant.v1 defines the Tenant/Garage Management module
-// (HLD module #2): garage profiles and the "1 account - many garages"
-// model. A garage is the data-isolation unit (tenant) of the platform
-// (ADR-005).
-// See: FRD FR-TEN-01/02/03/05, API Specification Section 3, Database
-// Design Section 2.2.
-
 package tenantv1
 
 import (
@@ -26,29 +19,29 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	GarageService_CreateGarage_FullMethodName = "/vietgara.tenant.v1.GarageService/CreateGarage"
-	GarageService_GetGarage_FullMethodName    = "/vietgara.tenant.v1.GarageService/GetGarage"
-	GarageService_UpdateGarage_FullMethodName = "/vietgara.tenant.v1.GarageService/UpdateGarage"
-	GarageService_ListGarages_FullMethodName  = "/vietgara.tenant.v1.GarageService/ListGarages"
+	GarageService_ListGarages_FullMethodName      = "/vietgara.tenant.v1.GarageService/ListGarages"
+	GarageService_CreateGarage_FullMethodName     = "/vietgara.tenant.v1.GarageService/CreateGarage"
+	GarageService_GetGarage_FullMethodName        = "/vietgara.tenant.v1.GarageService/GetGarage"
+	GarageService_UpdateGarage_FullMethodName     = "/vietgara.tenant.v1.GarageService/UpdateGarage"
+	GarageService_UploadGarageLogo_FullMethodName = "/vietgara.tenant.v1.GarageService/UploadGarageLogo"
+	GarageService_DeleteGarageLogo_FullMethodName = "/vietgara.tenant.v1.GarageService/DeleteGarageLogo"
 )
 
 // GarageServiceClient is the client API for GarageService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// GarageService manages garage profiles (FR-TEN-01/02/03/05).
+// GarageService manages garages (FRD 3.2).
 type GarageServiceClient interface {
-	// CreateGarage creates a new garage under the caller's account
-	// (FR-TEN-01).
-	CreateGarage(ctx context.Context, in *CreateGarageRequest, opts ...grpc.CallOption) (*CreateGarageResponse, error)
-	// GetGarage returns the details of one garage.
-	GetGarage(ctx context.Context, in *GetGarageRequest, opts ...grpc.CallOption) (*GetGarageResponse, error)
-	// UpdateGarage applies partial updates to an existing garage
-	// (FR-TEN-02, FR-TEN-05).
-	UpdateGarage(ctx context.Context, in *UpdateGarageRequest, opts ...grpc.CallOption) (*UpdateGarageResponse, error)
-	// ListGarages lists every garage owned by the caller's account,
-	// supporting the active-garage switch flow (FR-TEN-03).
 	ListGarages(ctx context.Context, in *ListGaragesRequest, opts ...grpc.CallOption) (*ListGaragesResponse, error)
+	// Creates a garage owned by the signed-in account, within the plan's
+	// garage limit.
+	CreateGarage(ctx context.Context, in *CreateGarageRequest, opts ...grpc.CallOption) (*CreateGarageResponse, error)
+	GetGarage(ctx context.Context, in *GetGarageRequest, opts ...grpc.CallOption) (*GetGarageResponse, error)
+	UpdateGarage(ctx context.Context, in *UpdateGarageRequest, opts ...grpc.CallOption) (*UpdateGarageResponse, error)
+	// Replaces the garage logo.
+	UploadGarageLogo(ctx context.Context, in *UploadGarageLogoRequest, opts ...grpc.CallOption) (*UploadGarageLogoResponse, error)
+	DeleteGarageLogo(ctx context.Context, in *DeleteGarageLogoRequest, opts ...grpc.CallOption) (*DeleteGarageLogoResponse, error)
 }
 
 type garageServiceClient struct {
@@ -57,6 +50,16 @@ type garageServiceClient struct {
 
 func NewGarageServiceClient(cc grpc.ClientConnInterface) GarageServiceClient {
 	return &garageServiceClient{cc}
+}
+
+func (c *garageServiceClient) ListGarages(ctx context.Context, in *ListGaragesRequest, opts ...grpc.CallOption) (*ListGaragesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListGaragesResponse)
+	err := c.cc.Invoke(ctx, GarageService_ListGarages_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *garageServiceClient) CreateGarage(ctx context.Context, in *CreateGarageRequest, opts ...grpc.CallOption) (*CreateGarageResponse, error) {
@@ -89,10 +92,20 @@ func (c *garageServiceClient) UpdateGarage(ctx context.Context, in *UpdateGarage
 	return out, nil
 }
 
-func (c *garageServiceClient) ListGarages(ctx context.Context, in *ListGaragesRequest, opts ...grpc.CallOption) (*ListGaragesResponse, error) {
+func (c *garageServiceClient) UploadGarageLogo(ctx context.Context, in *UploadGarageLogoRequest, opts ...grpc.CallOption) (*UploadGarageLogoResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListGaragesResponse)
-	err := c.cc.Invoke(ctx, GarageService_ListGarages_FullMethodName, in, out, cOpts...)
+	out := new(UploadGarageLogoResponse)
+	err := c.cc.Invoke(ctx, GarageService_UploadGarageLogo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *garageServiceClient) DeleteGarageLogo(ctx context.Context, in *DeleteGarageLogoRequest, opts ...grpc.CallOption) (*DeleteGarageLogoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteGarageLogoResponse)
+	err := c.cc.Invoke(ctx, GarageService_DeleteGarageLogo_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -103,19 +116,17 @@ func (c *garageServiceClient) ListGarages(ctx context.Context, in *ListGaragesRe
 // All implementations must embed UnimplementedGarageServiceServer
 // for forward compatibility.
 //
-// GarageService manages garage profiles (FR-TEN-01/02/03/05).
+// GarageService manages garages (FRD 3.2).
 type GarageServiceServer interface {
-	// CreateGarage creates a new garage under the caller's account
-	// (FR-TEN-01).
-	CreateGarage(context.Context, *CreateGarageRequest) (*CreateGarageResponse, error)
-	// GetGarage returns the details of one garage.
-	GetGarage(context.Context, *GetGarageRequest) (*GetGarageResponse, error)
-	// UpdateGarage applies partial updates to an existing garage
-	// (FR-TEN-02, FR-TEN-05).
-	UpdateGarage(context.Context, *UpdateGarageRequest) (*UpdateGarageResponse, error)
-	// ListGarages lists every garage owned by the caller's account,
-	// supporting the active-garage switch flow (FR-TEN-03).
 	ListGarages(context.Context, *ListGaragesRequest) (*ListGaragesResponse, error)
+	// Creates a garage owned by the signed-in account, within the plan's
+	// garage limit.
+	CreateGarage(context.Context, *CreateGarageRequest) (*CreateGarageResponse, error)
+	GetGarage(context.Context, *GetGarageRequest) (*GetGarageResponse, error)
+	UpdateGarage(context.Context, *UpdateGarageRequest) (*UpdateGarageResponse, error)
+	// Replaces the garage logo.
+	UploadGarageLogo(context.Context, *UploadGarageLogoRequest) (*UploadGarageLogoResponse, error)
+	DeleteGarageLogo(context.Context, *DeleteGarageLogoRequest) (*DeleteGarageLogoResponse, error)
 	mustEmbedUnimplementedGarageServiceServer()
 }
 
@@ -126,6 +137,9 @@ type GarageServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedGarageServiceServer struct{}
 
+func (UnimplementedGarageServiceServer) ListGarages(context.Context, *ListGaragesRequest) (*ListGaragesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListGarages not implemented")
+}
 func (UnimplementedGarageServiceServer) CreateGarage(context.Context, *CreateGarageRequest) (*CreateGarageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateGarage not implemented")
 }
@@ -135,8 +149,11 @@ func (UnimplementedGarageServiceServer) GetGarage(context.Context, *GetGarageReq
 func (UnimplementedGarageServiceServer) UpdateGarage(context.Context, *UpdateGarageRequest) (*UpdateGarageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateGarage not implemented")
 }
-func (UnimplementedGarageServiceServer) ListGarages(context.Context, *ListGaragesRequest) (*ListGaragesResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListGarages not implemented")
+func (UnimplementedGarageServiceServer) UploadGarageLogo(context.Context, *UploadGarageLogoRequest) (*UploadGarageLogoResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UploadGarageLogo not implemented")
+}
+func (UnimplementedGarageServiceServer) DeleteGarageLogo(context.Context, *DeleteGarageLogoRequest) (*DeleteGarageLogoResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteGarageLogo not implemented")
 }
 func (UnimplementedGarageServiceServer) mustEmbedUnimplementedGarageServiceServer() {}
 func (UnimplementedGarageServiceServer) testEmbeddedByValue()                       {}
@@ -157,6 +174,24 @@ func RegisterGarageServiceServer(s grpc.ServiceRegistrar, srv GarageServiceServe
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&GarageService_ServiceDesc, srv)
+}
+
+func _GarageService_ListGarages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListGaragesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GarageServiceServer).ListGarages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GarageService_ListGarages_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GarageServiceServer).ListGarages(ctx, req.(*ListGaragesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _GarageService_CreateGarage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -213,20 +248,38 @@ func _GarageService_UpdateGarage_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GarageService_ListGarages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListGaragesRequest)
+func _GarageService_UploadGarageLogo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadGarageLogoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GarageServiceServer).ListGarages(ctx, in)
+		return srv.(GarageServiceServer).UploadGarageLogo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: GarageService_ListGarages_FullMethodName,
+		FullMethod: GarageService_UploadGarageLogo_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GarageServiceServer).ListGarages(ctx, req.(*ListGaragesRequest))
+		return srv.(GarageServiceServer).UploadGarageLogo(ctx, req.(*UploadGarageLogoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GarageService_DeleteGarageLogo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteGarageLogoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GarageServiceServer).DeleteGarageLogo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GarageService_DeleteGarageLogo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GarageServiceServer).DeleteGarageLogo(ctx, req.(*DeleteGarageLogoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -238,6 +291,10 @@ var GarageService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "vietgara.tenant.v1.GarageService",
 	HandlerType: (*GarageServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListGarages",
+			Handler:    _GarageService_ListGarages_Handler,
+		},
 		{
 			MethodName: "CreateGarage",
 			Handler:    _GarageService_CreateGarage_Handler,
@@ -251,8 +308,12 @@ var GarageService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GarageService_UpdateGarage_Handler,
 		},
 		{
-			MethodName: "ListGarages",
-			Handler:    _GarageService_ListGarages_Handler,
+			MethodName: "UploadGarageLogo",
+			Handler:    _GarageService_UploadGarageLogo_Handler,
+		},
+		{
+			MethodName: "DeleteGarageLogo",
+			Handler:    _GarageService_DeleteGarageLogo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

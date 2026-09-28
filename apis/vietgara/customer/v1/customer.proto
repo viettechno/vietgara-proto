@@ -1,152 +1,114 @@
 syntax = "proto3";
 
-// Package vietgara.customer.v1 defines the Customer & Vehicle module (HLD
-// module #4): customer profiles of one garage.
-// See: FRD FR-CUS-01, API Specification Section 5, Database Design
-// Section 3.1.
 package vietgara.customer.v1;
 
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "vietgara/common/v1/pagination.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1";
 
-// Customer is a vehicle owner served by one garage (FR-CUS-01). Maps to
-// the "customers" table (Database Design Section 3.1).
+// Customer is a vehicle owner served by one garage (FR-CUS-01).
 message Customer {
-  // UUID primary key.
-  string id = 1;
-
-  // Garage the customer belongs to (tenant context).
-  string garage_id = 2;
-
-  // Customer full name.
-  string full_name = 3;
-
-  // Phone number, unique per garage.
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string full_name = 3 [(google.api.field_behavior) = REQUIRED];
+  // Unique per garage among live customers; stored normalized.
   optional string phone = 4;
-
-  // Email address.
   optional string email = 5;
-
-  // Postal address.
   optional string address = 6;
-
-  // Whether the customer currently consents to the processing of their
-  // personal data (Decree 13/2023/ND-CP). The full history is kept in the
-  // consent log.
+  // Personal-data consent (Decree 13/2023/ND-CP); every change is logged.
   bool personal_data_consent = 7;
-
-  // When the latest consent decision was recorded.
-  google.protobuf.Timestamp personal_data_consent_at = 8;
-
-  // Number of vehicles registered to the customer.
-  int32 vehicle_count = 9;
-
-  // Creation timestamp.
-  google.protobuf.Timestamp created_at = 10;
-
-  // Last update timestamp.
-  google.protobuf.Timestamp updated_at = 11;
+  google.protobuf.Timestamp personal_data_consent_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int32 vehicle_count = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
-// CreateCustomerRequest creates a customer profile (FR-CUS-01).
 message CreateCustomerRequest {
-  string garage_id = 1;
-
-  // Customer full name (required).
-  string full_name = 2;
-
-  optional string phone = 3;
-  optional string email = 4;
-  optional string address = 5;
-
-  // Records the customer's personal-data consent decision.
-  bool personal_data_consent = 6;
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  Customer customer = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-// CreateCustomerResponse is the response of CreateCustomer.
 message CreateCustomerResponse {
   Customer customer = 1;
 }
 
-// GetCustomerRequest returns one customer of a garage.
 message GetCustomerRequest {
-  string garage_id = 1;
-  string customer_id = 2;
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-// GetCustomerResponse is the response of GetCustomer.
 message GetCustomerResponse {
   Customer customer = 1;
 }
 
-// UpdateCustomerRequest applies partial updates to a customer; absent
-// fields keep their current value and an empty optional string clears it
-// (FR-CUS-01).
 message UpdateCustomerRequest {
-  string garage_id = 1;
-  string customer_id = 2;
-
-  optional string full_name = 3;
-  optional string phone = 4;
-  optional string email = 5;
-  optional string address = 6;
-
-  // Records a new consent decision when set.
-  optional bool personal_data_consent = 7;
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
+  Customer customer = 3 [(google.api.field_behavior) = REQUIRED];
+  // Filled from the JSON body keys when omitted.
+  google.protobuf.FieldMask update_mask = 4;
 }
 
-// UpdateCustomerResponse is the response of UpdateCustomer.
 message UpdateCustomerResponse {
   Customer customer = 1;
 }
 
-// ListCustomersRequest searches the customers of a garage.
 message ListCustomersRequest {
-  string garage_id = 1;
-
-  // Matches name, phone, email or the license plate of one of the
-  // customer's vehicles; empty lists every customer.
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Fuzzy match on name, phone or e-mail.
   string query = 2;
-
-  // 1-based page number; defaults to 1.
   int32 page = 3;
-
-  // Page size; defaults to 20, capped at 100.
   int32 page_size = 4;
 }
 
-// ListCustomersResponse is one page of customers, newest first.
 message ListCustomersResponse {
-  repeated Customer customers = 1;
+  repeated Customer data = 1;
   vietgara.common.v1.Pagination pagination = 2;
 }
 
-// DeleteCustomerRequest soft-deletes a customer together with their
-// vehicles; historical documents keep referencing them.
 message DeleteCustomerRequest {
-  string garage_id = 1;
-  string customer_id = 2;
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-// DeleteCustomerResponse acknowledges a successful deletion.
 message DeleteCustomerResponse {}
 
-// CustomerService manages the customer profiles of a garage (FR-CUS-01).
+// CustomerService manages a garage's customers (FRD 3.4). Reads need
+// PERMISSION_CUSTOMER_READ, changes PERMISSION_CUSTOMER_WRITE.
 service CustomerService {
-  // CreateCustomer creates a customer profile.
-  rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse);
+  rpc ListCustomers(ListCustomersRequest) returns (ListCustomersResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/customers"};
+  }
 
-  // GetCustomer returns one customer.
-  rpc GetCustomer(GetCustomerRequest) returns (GetCustomerResponse);
+  rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/customers"
+      body: "customer"
+      response_body: "customer"
+    };
+  }
 
-  // UpdateCustomer applies partial updates to a customer.
-  rpc UpdateCustomer(UpdateCustomerRequest) returns (UpdateCustomerResponse);
+  rpc GetCustomer(GetCustomerRequest) returns (GetCustomerResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/garages/{garage_id}/customers/{customer_id}"
+      response_body: "customer"
+    };
+  }
 
-  // ListCustomers searches the customers of a garage.
-  rpc ListCustomers(ListCustomersRequest) returns (ListCustomersResponse);
+  rpc UpdateCustomer(UpdateCustomerRequest) returns (UpdateCustomerResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/customers/{customer_id}"
+      body: "customer"
+      response_body: "customer"
+    };
+  }
 
-  // DeleteCustomer soft-deletes a customer and their vehicles.
-  rpc DeleteCustomer(DeleteCustomerRequest) returns (DeleteCustomerResponse);
+  // Soft-deletes the customer and their vehicles; history is kept.
+  rpc DeleteCustomer(DeleteCustomerRequest) returns (DeleteCustomerResponse) {
+    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/customers/{customer_id}"};
+  }
 }
