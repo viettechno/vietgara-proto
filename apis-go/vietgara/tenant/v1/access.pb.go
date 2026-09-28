@@ -25,18 +25,20 @@ const (
 )
 
 // Permission is one action a staff member may perform in a garage
-// (FR-IAM-03). The catalog is fixed by the platform; garage owners combine
-// permissions into roles. Owners always hold every permission; every
-// active member may read the garage profile.
+// (FR-IAM-03). The catalog is fixed by the platform and grouped by module,
+// each module offering a read and/or a write action; garage owners combine
+// permissions into roles. A write permission includes the read permission
+// of its module. Owners always hold every permission; every active member
+// may read the garage profile.
 type Permission int32
 
 const (
 	Permission_PERMISSION_UNSPECIFIED Permission = 0
 	// Edit the garage profile, configuration and logo.
-	Permission_PERMISSION_GARAGE_UPDATE Permission = 1
-	Permission_PERMISSION_STAFF_READ    Permission = 2
+	Permission_PERMISSION_GARAGE_WRITE Permission = 1
+	Permission_PERMISSION_STAFF_READ   Permission = 2
 	// Invite, activate/deactivate and remove staff, and change their groups.
-	Permission_PERMISSION_STAFF_MANAGE Permission = 3
+	Permission_PERMISSION_STAFF_WRITE Permission = 3
 	// Customers and their vehicles.
 	Permission_PERMISSION_CUSTOMER_READ  Permission = 4
 	Permission_PERMISSION_CUSTOMER_WRITE Permission = 5
@@ -59,9 +61,9 @@ const (
 var (
 	Permission_name = map[int32]string{
 		0:  "PERMISSION_UNSPECIFIED",
-		1:  "PERMISSION_GARAGE_UPDATE",
+		1:  "PERMISSION_GARAGE_WRITE",
 		2:  "PERMISSION_STAFF_READ",
-		3:  "PERMISSION_STAFF_MANAGE",
+		3:  "PERMISSION_STAFF_WRITE",
 		4:  "PERMISSION_CUSTOMER_READ",
 		5:  "PERMISSION_CUSTOMER_WRITE",
 		6:  "PERMISSION_PARTNER_READ",
@@ -79,9 +81,9 @@ var (
 	}
 	Permission_value = map[string]int32{
 		"PERMISSION_UNSPECIFIED":        0,
-		"PERMISSION_GARAGE_UPDATE":      1,
+		"PERMISSION_GARAGE_WRITE":       1,
 		"PERMISSION_STAFF_READ":         2,
-		"PERMISSION_STAFF_MANAGE":       3,
+		"PERMISSION_STAFF_WRITE":        3,
 		"PERMISSION_CUSTOMER_READ":      4,
 		"PERMISSION_CUSTOMER_WRITE":     5,
 		"PERMISSION_PARTNER_READ":       6,
@@ -132,7 +134,9 @@ type PermissionInfo struct {
 	Permission Permission             `protobuf:"varint,1,opt,name=permission,proto3,enum=vietgara.tenant.v1.Permission" json:"permission,omitempty"`
 	// Module the permission belongs to, e.g. "customer", used to group the
 	// role editor.
-	Module        string `protobuf:"bytes,2,opt,name=module,proto3" json:"module,omitempty"`
+	Module string `protobuf:"bytes,2,opt,name=module,proto3" json:"module,omitempty"`
+	// "read" or "write": the permission's column in the role editor.
+	Action        string `protobuf:"bytes,3,opt,name=action,proto3" json:"action,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -181,6 +185,13 @@ func (x *PermissionInfo) GetModule() string {
 	return ""
 }
 
+func (x *PermissionInfo) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
 // Role is a named set of permissions defined by a garage owner and shared
 // by all the owner's garages. Default roles are created when the owner
 // verifies their e-mail.
@@ -193,11 +204,14 @@ type Role struct {
 	// Created by the platform; still editable.
 	IsDefault bool `protobuf:"varint,5,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
 	// Number of staff groups using the role.
-	GroupCount    int32                  `protobuf:"varint,6,opt,name=group_count,json=groupCount,proto3" json:"group_count,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	GroupCount int32                  `protobuf:"varint,6,opt,name=group_count,json=groupCount,proto3" json:"group_count,omitempty"`
+	CreatedAt  *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt  *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	// For a default role, the permissions the platform created it with: what
+	// the role editor's "Reset to default" restores. Empty for other roles.
+	DefaultPermissions []Permission `protobuf:"varint,9,rep,packed,name=default_permissions,json=defaultPermissions,proto3,enum=vietgara.tenant.v1.Permission" json:"default_permissions,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *Role) Reset() {
@@ -282,6 +296,13 @@ func (x *Role) GetCreatedAt() *timestamppb.Timestamp {
 func (x *Role) GetUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.UpdatedAt
+	}
+	return nil
+}
+
+func (x *Role) GetDefaultPermissions() []Permission {
+	if x != nil {
+		return x.DefaultPermissions
 	}
 	return nil
 }
@@ -1306,12 +1327,13 @@ var File_vietgara_tenant_v1_access_proto protoreflect.FileDescriptor
 
 const file_vietgara_tenant_v1_access_proto_rawDesc = "" +
 	"\n" +
-	"\x1fvietgara/tenant/v1/access.proto\x12\x12vietgara.tenant.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"h\n" +
+	"\x1fvietgara/tenant/v1/access.proto\x12\x12vietgara.tenant.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x80\x01\n" +
 	"\x0ePermissionInfo\x12>\n" +
 	"\n" +
 	"permission\x18\x01 \x01(\x0e2\x1e.vietgara.tenant.v1.PermissionR\n" +
 	"permission\x12\x16\n" +
-	"\x06module\x18\x02 \x01(\tR\x06module\"\xe2\x02\n" +
+	"\x06module\x18\x02 \x01(\tR\x06module\x12\x16\n" +
+	"\x06action\x18\x03 \x01(\tR\x06action\"\xb8\x03\n" +
 	"\x04Role\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x17\n" +
 	"\x04name\x18\x02 \x01(\tB\x03\xe0A\x02R\x04name\x12 \n" +
@@ -1324,7 +1346,8 @@ const file_vietgara_tenant_v1_access_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\"\xe6\x02\n" +
+	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12T\n" +
+	"\x13default_permissions\x18\t \x03(\x0e2\x1e.vietgara.tenant.v1.PermissionB\x03\xe0A\x03R\x12defaultPermissions\"\xe6\x02\n" +
 	"\n" +
 	"StaffGroup\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
@@ -1382,13 +1405,13 @@ const file_vietgara_tenant_v1_access_proto_rawDesc = "" +
 	"\x17DeleteStaffGroupRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1e\n" +
 	"\bgroup_id\x18\x02 \x01(\tB\x03\xe0A\x02R\agroupId\"\x1a\n" +
-	"\x18DeleteStaffGroupResponse*\xaa\x04\n" +
+	"\x18DeleteStaffGroupResponse*\xa8\x04\n" +
 	"\n" +
 	"Permission\x12\x1a\n" +
-	"\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x1c\n" +
-	"\x18PERMISSION_GARAGE_UPDATE\x10\x01\x12\x19\n" +
-	"\x15PERMISSION_STAFF_READ\x10\x02\x12\x1b\n" +
-	"\x17PERMISSION_STAFF_MANAGE\x10\x03\x12\x1c\n" +
+	"\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x1b\n" +
+	"\x17PERMISSION_GARAGE_WRITE\x10\x01\x12\x19\n" +
+	"\x15PERMISSION_STAFF_READ\x10\x02\x12\x1a\n" +
+	"\x16PERMISSION_STAFF_WRITE\x10\x03\x12\x1c\n" +
 	"\x18PERMISSION_CUSTOMER_READ\x10\x04\x12\x1d\n" +
 	"\x19PERMISSION_CUSTOMER_WRITE\x10\x05\x12\x1b\n" +
 	"\x17PERMISSION_PARTNER_READ\x10\x06\x12\x1c\n" +
@@ -1467,47 +1490,48 @@ var file_vietgara_tenant_v1_access_proto_depIdxs = []int32{
 	0,  // 1: vietgara.tenant.v1.Role.permissions:type_name -> vietgara.tenant.v1.Permission
 	24, // 2: vietgara.tenant.v1.Role.created_at:type_name -> google.protobuf.Timestamp
 	24, // 3: vietgara.tenant.v1.Role.updated_at:type_name -> google.protobuf.Timestamp
-	24, // 4: vietgara.tenant.v1.StaffGroup.created_at:type_name -> google.protobuf.Timestamp
-	24, // 5: vietgara.tenant.v1.StaffGroup.updated_at:type_name -> google.protobuf.Timestamp
-	1,  // 6: vietgara.tenant.v1.ListPermissionsResponse.data:type_name -> vietgara.tenant.v1.PermissionInfo
-	2,  // 7: vietgara.tenant.v1.ListRolesResponse.data:type_name -> vietgara.tenant.v1.Role
-	2,  // 8: vietgara.tenant.v1.GetRoleResponse.role:type_name -> vietgara.tenant.v1.Role
-	2,  // 9: vietgara.tenant.v1.CreateRoleRequest.role:type_name -> vietgara.tenant.v1.Role
-	2,  // 10: vietgara.tenant.v1.CreateRoleResponse.role:type_name -> vietgara.tenant.v1.Role
-	2,  // 11: vietgara.tenant.v1.UpdateRoleRequest.role:type_name -> vietgara.tenant.v1.Role
-	25, // 12: vietgara.tenant.v1.UpdateRoleRequest.update_mask:type_name -> google.protobuf.FieldMask
-	2,  // 13: vietgara.tenant.v1.UpdateRoleResponse.role:type_name -> vietgara.tenant.v1.Role
-	3,  // 14: vietgara.tenant.v1.ListStaffGroupsResponse.data:type_name -> vietgara.tenant.v1.StaffGroup
-	3,  // 15: vietgara.tenant.v1.CreateStaffGroupRequest.group:type_name -> vietgara.tenant.v1.StaffGroup
-	3,  // 16: vietgara.tenant.v1.CreateStaffGroupResponse.group:type_name -> vietgara.tenant.v1.StaffGroup
-	3,  // 17: vietgara.tenant.v1.UpdateStaffGroupRequest.group:type_name -> vietgara.tenant.v1.StaffGroup
-	25, // 18: vietgara.tenant.v1.UpdateStaffGroupRequest.update_mask:type_name -> google.protobuf.FieldMask
-	3,  // 19: vietgara.tenant.v1.UpdateStaffGroupResponse.group:type_name -> vietgara.tenant.v1.StaffGroup
-	4,  // 20: vietgara.tenant.v1.RoleService.ListPermissions:input_type -> vietgara.tenant.v1.ListPermissionsRequest
-	6,  // 21: vietgara.tenant.v1.RoleService.ListRoles:input_type -> vietgara.tenant.v1.ListRolesRequest
-	8,  // 22: vietgara.tenant.v1.RoleService.GetRole:input_type -> vietgara.tenant.v1.GetRoleRequest
-	10, // 23: vietgara.tenant.v1.RoleService.CreateRole:input_type -> vietgara.tenant.v1.CreateRoleRequest
-	12, // 24: vietgara.tenant.v1.RoleService.UpdateRole:input_type -> vietgara.tenant.v1.UpdateRoleRequest
-	14, // 25: vietgara.tenant.v1.RoleService.DeleteRole:input_type -> vietgara.tenant.v1.DeleteRoleRequest
-	16, // 26: vietgara.tenant.v1.StaffGroupService.ListStaffGroups:input_type -> vietgara.tenant.v1.ListStaffGroupsRequest
-	18, // 27: vietgara.tenant.v1.StaffGroupService.CreateStaffGroup:input_type -> vietgara.tenant.v1.CreateStaffGroupRequest
-	20, // 28: vietgara.tenant.v1.StaffGroupService.UpdateStaffGroup:input_type -> vietgara.tenant.v1.UpdateStaffGroupRequest
-	22, // 29: vietgara.tenant.v1.StaffGroupService.DeleteStaffGroup:input_type -> vietgara.tenant.v1.DeleteStaffGroupRequest
-	5,  // 30: vietgara.tenant.v1.RoleService.ListPermissions:output_type -> vietgara.tenant.v1.ListPermissionsResponse
-	7,  // 31: vietgara.tenant.v1.RoleService.ListRoles:output_type -> vietgara.tenant.v1.ListRolesResponse
-	9,  // 32: vietgara.tenant.v1.RoleService.GetRole:output_type -> vietgara.tenant.v1.GetRoleResponse
-	11, // 33: vietgara.tenant.v1.RoleService.CreateRole:output_type -> vietgara.tenant.v1.CreateRoleResponse
-	13, // 34: vietgara.tenant.v1.RoleService.UpdateRole:output_type -> vietgara.tenant.v1.UpdateRoleResponse
-	15, // 35: vietgara.tenant.v1.RoleService.DeleteRole:output_type -> vietgara.tenant.v1.DeleteRoleResponse
-	17, // 36: vietgara.tenant.v1.StaffGroupService.ListStaffGroups:output_type -> vietgara.tenant.v1.ListStaffGroupsResponse
-	19, // 37: vietgara.tenant.v1.StaffGroupService.CreateStaffGroup:output_type -> vietgara.tenant.v1.CreateStaffGroupResponse
-	21, // 38: vietgara.tenant.v1.StaffGroupService.UpdateStaffGroup:output_type -> vietgara.tenant.v1.UpdateStaffGroupResponse
-	23, // 39: vietgara.tenant.v1.StaffGroupService.DeleteStaffGroup:output_type -> vietgara.tenant.v1.DeleteStaffGroupResponse
-	30, // [30:40] is the sub-list for method output_type
-	20, // [20:30] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	0,  // 4: vietgara.tenant.v1.Role.default_permissions:type_name -> vietgara.tenant.v1.Permission
+	24, // 5: vietgara.tenant.v1.StaffGroup.created_at:type_name -> google.protobuf.Timestamp
+	24, // 6: vietgara.tenant.v1.StaffGroup.updated_at:type_name -> google.protobuf.Timestamp
+	1,  // 7: vietgara.tenant.v1.ListPermissionsResponse.data:type_name -> vietgara.tenant.v1.PermissionInfo
+	2,  // 8: vietgara.tenant.v1.ListRolesResponse.data:type_name -> vietgara.tenant.v1.Role
+	2,  // 9: vietgara.tenant.v1.GetRoleResponse.role:type_name -> vietgara.tenant.v1.Role
+	2,  // 10: vietgara.tenant.v1.CreateRoleRequest.role:type_name -> vietgara.tenant.v1.Role
+	2,  // 11: vietgara.tenant.v1.CreateRoleResponse.role:type_name -> vietgara.tenant.v1.Role
+	2,  // 12: vietgara.tenant.v1.UpdateRoleRequest.role:type_name -> vietgara.tenant.v1.Role
+	25, // 13: vietgara.tenant.v1.UpdateRoleRequest.update_mask:type_name -> google.protobuf.FieldMask
+	2,  // 14: vietgara.tenant.v1.UpdateRoleResponse.role:type_name -> vietgara.tenant.v1.Role
+	3,  // 15: vietgara.tenant.v1.ListStaffGroupsResponse.data:type_name -> vietgara.tenant.v1.StaffGroup
+	3,  // 16: vietgara.tenant.v1.CreateStaffGroupRequest.group:type_name -> vietgara.tenant.v1.StaffGroup
+	3,  // 17: vietgara.tenant.v1.CreateStaffGroupResponse.group:type_name -> vietgara.tenant.v1.StaffGroup
+	3,  // 18: vietgara.tenant.v1.UpdateStaffGroupRequest.group:type_name -> vietgara.tenant.v1.StaffGroup
+	25, // 19: vietgara.tenant.v1.UpdateStaffGroupRequest.update_mask:type_name -> google.protobuf.FieldMask
+	3,  // 20: vietgara.tenant.v1.UpdateStaffGroupResponse.group:type_name -> vietgara.tenant.v1.StaffGroup
+	4,  // 21: vietgara.tenant.v1.RoleService.ListPermissions:input_type -> vietgara.tenant.v1.ListPermissionsRequest
+	6,  // 22: vietgara.tenant.v1.RoleService.ListRoles:input_type -> vietgara.tenant.v1.ListRolesRequest
+	8,  // 23: vietgara.tenant.v1.RoleService.GetRole:input_type -> vietgara.tenant.v1.GetRoleRequest
+	10, // 24: vietgara.tenant.v1.RoleService.CreateRole:input_type -> vietgara.tenant.v1.CreateRoleRequest
+	12, // 25: vietgara.tenant.v1.RoleService.UpdateRole:input_type -> vietgara.tenant.v1.UpdateRoleRequest
+	14, // 26: vietgara.tenant.v1.RoleService.DeleteRole:input_type -> vietgara.tenant.v1.DeleteRoleRequest
+	16, // 27: vietgara.tenant.v1.StaffGroupService.ListStaffGroups:input_type -> vietgara.tenant.v1.ListStaffGroupsRequest
+	18, // 28: vietgara.tenant.v1.StaffGroupService.CreateStaffGroup:input_type -> vietgara.tenant.v1.CreateStaffGroupRequest
+	20, // 29: vietgara.tenant.v1.StaffGroupService.UpdateStaffGroup:input_type -> vietgara.tenant.v1.UpdateStaffGroupRequest
+	22, // 30: vietgara.tenant.v1.StaffGroupService.DeleteStaffGroup:input_type -> vietgara.tenant.v1.DeleteStaffGroupRequest
+	5,  // 31: vietgara.tenant.v1.RoleService.ListPermissions:output_type -> vietgara.tenant.v1.ListPermissionsResponse
+	7,  // 32: vietgara.tenant.v1.RoleService.ListRoles:output_type -> vietgara.tenant.v1.ListRolesResponse
+	9,  // 33: vietgara.tenant.v1.RoleService.GetRole:output_type -> vietgara.tenant.v1.GetRoleResponse
+	11, // 34: vietgara.tenant.v1.RoleService.CreateRole:output_type -> vietgara.tenant.v1.CreateRoleResponse
+	13, // 35: vietgara.tenant.v1.RoleService.UpdateRole:output_type -> vietgara.tenant.v1.UpdateRoleResponse
+	15, // 36: vietgara.tenant.v1.RoleService.DeleteRole:output_type -> vietgara.tenant.v1.DeleteRoleResponse
+	17, // 37: vietgara.tenant.v1.StaffGroupService.ListStaffGroups:output_type -> vietgara.tenant.v1.ListStaffGroupsResponse
+	19, // 38: vietgara.tenant.v1.StaffGroupService.CreateStaffGroup:output_type -> vietgara.tenant.v1.CreateStaffGroupResponse
+	21, // 39: vietgara.tenant.v1.StaffGroupService.UpdateStaffGroup:output_type -> vietgara.tenant.v1.UpdateStaffGroupResponse
+	23, // 40: vietgara.tenant.v1.StaffGroupService.DeleteStaffGroup:output_type -> vietgara.tenant.v1.DeleteStaffGroupResponse
+	31, // [31:41] is the sub-list for method output_type
+	21, // [21:31] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_tenant_v1_access_proto_init() }

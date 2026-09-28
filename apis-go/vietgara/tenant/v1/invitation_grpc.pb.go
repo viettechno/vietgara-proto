@@ -33,7 +33,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
 // InvitationService handles staff invitations: the garage side needs
-// PERMISSION_STAFF_MANAGE; the /me side is the invited account.
+// PERMISSION_STAFF_WRITE; the /me side is the invited account.
 type InvitationServiceClient interface {
 	// Invites an existing account and e-mails them, within the plan's staff
 	// limit.
@@ -131,7 +131,7 @@ func (c *invitationServiceClient) DeclineInvitation(ctx context.Context, in *Dec
 // for forward compatibility.
 //
 // InvitationService handles staff invitations: the garage side needs
-// PERMISSION_STAFF_MANAGE; the /me side is the invited account.
+// PERMISSION_STAFF_WRITE; the /me side is the invited account.
 type InvitationServiceServer interface {
 	// Invites an existing account and e-mails them, within the plan's staff
 	// limit.

@@ -92,7 +92,7 @@ message LookupStaffCandidateResponse {
 }
 
 // StaffService manages a garage's members. Reads need
-// PERMISSION_STAFF_READ, changes PERMISSION_STAFF_MANAGE. Members join
+// PERMISSION_STAFF_READ, changes PERMISSION_STAFF_WRITE. Members join
 // through InvitationService.
 service StaffService {
   rpc ListStaff(ListStaffRequest) returns (ListStaffResponse) {

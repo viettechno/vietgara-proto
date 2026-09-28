@@ -30,7 +30,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
 // StaffService manages a garage's members. Reads need
-// PERMISSION_STAFF_READ, changes PERMISSION_STAFF_MANAGE. Members join
+// PERMISSION_STAFF_READ, changes PERMISSION_STAFF_WRITE. Members join
 // through InvitationService.
 type StaffServiceClient interface {
 	ListStaff(ctx context.Context, in *ListStaffRequest, opts ...grpc.CallOption) (*ListStaffResponse, error)
@@ -95,7 +95,7 @@ func (c *staffServiceClient) LookupStaffCandidate(ctx context.Context, in *Looku
 // for forward compatibility.
 //
 // StaffService manages a garage's members. Reads need
-// PERMISSION_STAFF_READ, changes PERMISSION_STAFF_MANAGE. Members join
+// PERMISSION_STAFF_READ, changes PERMISSION_STAFF_WRITE. Members join
 // through InvitationService.
 type StaffServiceServer interface {
 	ListStaff(context.Context, *ListStaffRequest) (*ListStaffResponse, error)

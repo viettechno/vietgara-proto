@@ -48,11 +48,11 @@
     },
     {
       "name": "InvitationService",
-      "description": "InvitationService handles staff invitations: the garage side needs\nPERMISSION_STAFF_MANAGE; the /me side is the invited account."
+      "description": "InvitationService handles staff invitations: the garage side needs\nPERMISSION_STAFF_WRITE; the /me side is the invited account."
     },
     {
       "name": "StaffService",
-      "description": "StaffService manages a garage's members. Reads need\nPERMISSION_STAFF_READ, changes PERMISSION_STAFF_MANAGE. Members join\nthrough InvitationService."
+      "description": "StaffService manages a garage's members. Reads need\nPERMISSION_STAFF_READ, changes PERMISSION_STAFF_WRITE. Members join\nthrough InvitationService."
     }
   ],
   "schemes": [
@@ -3283,9 +3283,9 @@
     "v1Permission": {
       "type": "string",
       "enum": [
-        "PERMISSION_GARAGE_UPDATE",
+        "PERMISSION_GARAGE_WRITE",
         "PERMISSION_STAFF_READ",
-        "PERMISSION_STAFF_MANAGE",
+        "PERMISSION_STAFF_WRITE",
         "PERMISSION_CUSTOMER_READ",
         "PERMISSION_CUSTOMER_WRITE",
         "PERMISSION_PARTNER_READ",
@@ -3301,7 +3301,7 @@
         "PERMISSION_BILLING_WRITE",
         "PERMISSION_REPORT_READ"
       ],
-      "description": "Permission is one action a staff member may perform in a garage\n(FR-IAM-03). The catalog is fixed by the platform; garage owners combine\npermissions into roles. Owners always hold every permission; every\nactive member may read the garage profile.\n\n - PERMISSION_GARAGE_UPDATE: Edit the garage profile, configuration and logo.\n - PERMISSION_STAFF_MANAGE: Invite, activate/deactivate and remove staff, and change their groups.\n - PERMISSION_CUSTOMER_READ: Customers and their vehicles.\n - PERMISSION_PARTNER_READ: Suppliers and insurers."
+      "description": "Permission is one action a staff member may perform in a garage\n(FR-IAM-03). The catalog is fixed by the platform and grouped by module,\neach module offering a read and/or a write action; garage owners combine\npermissions into roles. A write permission includes the read permission\nof its module. Owners always hold every permission; every active member\nmay read the garage profile.\n\n - PERMISSION_GARAGE_WRITE: Edit the garage profile, configuration and logo.\n - PERMISSION_STAFF_WRITE: Invite, activate/deactivate and remove staff, and change their groups.\n - PERMISSION_CUSTOMER_READ: Customers and their vehicles.\n - PERMISSION_PARTNER_READ: Suppliers and insurers."
     },
     "v1PermissionInfo": {
       "type": "object",
@@ -3312,6 +3312,10 @@
         "module": {
           "type": "string",
           "description": "Module the permission belongs to, e.g. \"customer\", used to group the\nrole editor."
+        },
+        "action": {
+          "type": "string",
+          "description": "\"read\" or \"write\": the permission's column in the role editor."
         }
       },
       "description": "PermissionInfo describes one catalog entry."
@@ -3541,6 +3545,14 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time",
+          "readOnly": true
+        },
+        "defaultPermissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Permission"
+          },
+          "description": "For a default role, the permissions the platform created it with: what\nthe role editor's \"Reset to default\" restores. Empty for other roles.",
           "readOnly": true
         }
       },

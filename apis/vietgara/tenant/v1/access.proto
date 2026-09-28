@@ -10,16 +10,18 @@ import "google/protobuf/timestamp.proto";
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1;tenantv1";
 
 // Permission is one action a staff member may perform in a garage
-// (FR-IAM-03). The catalog is fixed by the platform; garage owners combine
-// permissions into roles. Owners always hold every permission; every
-// active member may read the garage profile.
+// (FR-IAM-03). The catalog is fixed by the platform and grouped by module,
+// each module offering a read and/or a write action; garage owners combine
+// permissions into roles. A write permission includes the read permission
+// of its module. Owners always hold every permission; every active member
+// may read the garage profile.
 enum Permission {
   PERMISSION_UNSPECIFIED = 0;
   // Edit the garage profile, configuration and logo.
-  PERMISSION_GARAGE_UPDATE = 1;
+  PERMISSION_GARAGE_WRITE = 1;
   PERMISSION_STAFF_READ = 2;
   // Invite, activate/deactivate and remove staff, and change their groups.
-  PERMISSION_STAFF_MANAGE = 3;
+  PERMISSION_STAFF_WRITE = 3;
   // Customers and their vehicles.
   PERMISSION_CUSTOMER_READ = 4;
   PERMISSION_CUSTOMER_WRITE = 5;
@@ -44,6 +46,8 @@ message PermissionInfo {
   // Module the permission belongs to, e.g. "customer", used to group the
   // role editor.
   string module = 2;
+  // "read" or "write": the permission's column in the role editor.
+  string action = 3;
 }
 
 // Role is a named set of permissions defined by a garage owner and shared
@@ -60,6 +64,9 @@ message Role {
   int32 group_count = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp created_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp updated_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // For a default role, the permissions the platform created it with: what
+  // the role editor's "Reset to default" restores. Empty for other roles.
+  repeated Permission default_permissions = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // StaffGroup is a set of staff in one garage that all receive the
