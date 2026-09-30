@@ -25,6 +25,61 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// VehicleHistoryEntryType names which module produced a history entry
+// (FR-CUS-03). Repair order and settlement entries appear once those
+// modules ship (Releases 1.3, 1.4); only QUOTE is produced today.
+type VehicleHistoryEntryType int32
+
+const (
+	VehicleHistoryEntryType_VEHICLE_HISTORY_ENTRY_TYPE_UNSPECIFIED  VehicleHistoryEntryType = 0
+	VehicleHistoryEntryType_VEHICLE_HISTORY_ENTRY_TYPE_QUOTE        VehicleHistoryEntryType = 1
+	VehicleHistoryEntryType_VEHICLE_HISTORY_ENTRY_TYPE_REPAIR_ORDER VehicleHistoryEntryType = 2
+	VehicleHistoryEntryType_VEHICLE_HISTORY_ENTRY_TYPE_SETTLEMENT   VehicleHistoryEntryType = 3
+)
+
+// Enum value maps for VehicleHistoryEntryType.
+var (
+	VehicleHistoryEntryType_name = map[int32]string{
+		0: "VEHICLE_HISTORY_ENTRY_TYPE_UNSPECIFIED",
+		1: "VEHICLE_HISTORY_ENTRY_TYPE_QUOTE",
+		2: "VEHICLE_HISTORY_ENTRY_TYPE_REPAIR_ORDER",
+		3: "VEHICLE_HISTORY_ENTRY_TYPE_SETTLEMENT",
+	}
+	VehicleHistoryEntryType_value = map[string]int32{
+		"VEHICLE_HISTORY_ENTRY_TYPE_UNSPECIFIED":  0,
+		"VEHICLE_HISTORY_ENTRY_TYPE_QUOTE":        1,
+		"VEHICLE_HISTORY_ENTRY_TYPE_REPAIR_ORDER": 2,
+		"VEHICLE_HISTORY_ENTRY_TYPE_SETTLEMENT":   3,
+	}
+)
+
+func (x VehicleHistoryEntryType) Enum() *VehicleHistoryEntryType {
+	p := new(VehicleHistoryEntryType)
+	*p = x
+	return p
+}
+
+func (x VehicleHistoryEntryType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (VehicleHistoryEntryType) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_customer_v1_vehicle_proto_enumTypes[0].Descriptor()
+}
+
+func (VehicleHistoryEntryType) Type() protoreflect.EnumType {
+	return &file_vietgara_customer_v1_vehicle_proto_enumTypes[0]
+}
+
+func (x VehicleHistoryEntryType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use VehicleHistoryEntryType.Descriptor instead.
+func (VehicleHistoryEntryType) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_customer_v1_vehicle_proto_rawDescGZIP(), []int{0}
+}
+
 // Vehicle belongs to one customer of the garage (FR-CUS-02).
 type Vehicle struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
@@ -683,6 +738,190 @@ func (*DeleteVehicleResponse) Descriptor() ([]byte, []int) {
 	return file_vietgara_customer_v1_vehicle_proto_rawDescGZIP(), []int{10}
 }
 
+// VehicleHistoryEntry is one quote, repair order or settlement of a
+// vehicle, newest first (FR-CUS-03).
+type VehicleHistoryEntry struct {
+	state    protoimpl.MessageState  `protogen:"open.v1"`
+	Type     VehicleHistoryEntryType `protobuf:"varint,1,opt,name=type,proto3,enum=vietgara.customer.v1.VehicleHistoryEntryType" json:"type,omitempty"`
+	EntityId string                  `protobuf:"bytes,2,opt,name=entity_id,json=entityId,proto3" json:"entity_id,omitempty"`
+	// The quote/repair-order/settlement's own document number.
+	Number string `protobuf:"bytes,3,opt,name=number,proto3" json:"number,omitempty"`
+	// The status string of the originating entity (e.g. a QuoteStatus name).
+	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	TotalAmount   int64                  `protobuf:"varint,5,opt,name=total_amount,json=totalAmount,proto3" json:"total_amount,omitempty"`
+	OccurredAt    *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VehicleHistoryEntry) Reset() {
+	*x = VehicleHistoryEntry{}
+	mi := &file_vietgara_customer_v1_vehicle_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VehicleHistoryEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VehicleHistoryEntry) ProtoMessage() {}
+
+func (x *VehicleHistoryEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customer_v1_vehicle_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VehicleHistoryEntry.ProtoReflect.Descriptor instead.
+func (*VehicleHistoryEntry) Descriptor() ([]byte, []int) {
+	return file_vietgara_customer_v1_vehicle_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *VehicleHistoryEntry) GetType() VehicleHistoryEntryType {
+	if x != nil {
+		return x.Type
+	}
+	return VehicleHistoryEntryType_VEHICLE_HISTORY_ENTRY_TYPE_UNSPECIFIED
+}
+
+func (x *VehicleHistoryEntry) GetEntityId() string {
+	if x != nil {
+		return x.EntityId
+	}
+	return ""
+}
+
+func (x *VehicleHistoryEntry) GetNumber() string {
+	if x != nil {
+		return x.Number
+	}
+	return ""
+}
+
+func (x *VehicleHistoryEntry) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *VehicleHistoryEntry) GetTotalAmount() int64 {
+	if x != nil {
+		return x.TotalAmount
+	}
+	return 0
+}
+
+func (x *VehicleHistoryEntry) GetOccurredAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.OccurredAt
+	}
+	return nil
+}
+
+type GetVehicleHistoryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	VehicleId     string                 `protobuf:"bytes,2,opt,name=vehicle_id,json=vehicleId,proto3" json:"vehicle_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetVehicleHistoryRequest) Reset() {
+	*x = GetVehicleHistoryRequest{}
+	mi := &file_vietgara_customer_v1_vehicle_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetVehicleHistoryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetVehicleHistoryRequest) ProtoMessage() {}
+
+func (x *GetVehicleHistoryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customer_v1_vehicle_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetVehicleHistoryRequest.ProtoReflect.Descriptor instead.
+func (*GetVehicleHistoryRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_customer_v1_vehicle_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *GetVehicleHistoryRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *GetVehicleHistoryRequest) GetVehicleId() string {
+	if x != nil {
+		return x.VehicleId
+	}
+	return ""
+}
+
+type GetVehicleHistoryResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []*VehicleHistoryEntry `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetVehicleHistoryResponse) Reset() {
+	*x = GetVehicleHistoryResponse{}
+	mi := &file_vietgara_customer_v1_vehicle_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetVehicleHistoryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetVehicleHistoryResponse) ProtoMessage() {}
+
+func (x *GetVehicleHistoryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customer_v1_vehicle_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetVehicleHistoryResponse.ProtoReflect.Descriptor instead.
+func (*GetVehicleHistoryResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_customer_v1_vehicle_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *GetVehicleHistoryResponse) GetData() []*VehicleHistoryEntry {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
 var File_vietgara_customer_v1_vehicle_proto protoreflect.FileDescriptor
 
 const file_vietgara_customer_v1_vehicle_proto_rawDesc = "" +
@@ -746,14 +985,34 @@ const file_vietgara_customer_v1_vehicle_proto_rawDesc = "" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\"\n" +
 	"\n" +
 	"vehicle_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tvehicleId\"\x17\n" +
-	"\x15DeleteVehicleResponse2\xd5\x06\n" +
+	"\x15DeleteVehicleResponse\"\x85\x02\n" +
+	"\x13VehicleHistoryEntry\x12A\n" +
+	"\x04type\x18\x01 \x01(\x0e2-.vietgara.customer.v1.VehicleHistoryEntryTypeR\x04type\x12\x1b\n" +
+	"\tentity_id\x18\x02 \x01(\tR\bentityId\x12\x16\n" +
+	"\x06number\x18\x03 \x01(\tR\x06number\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\x12!\n" +
+	"\ftotal_amount\x18\x05 \x01(\x03R\vtotalAmount\x12;\n" +
+	"\voccurred_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"occurredAt\"`\n" +
+	"\x18GetVehicleHistoryRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\"\n" +
+	"\n" +
+	"vehicle_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tvehicleId\"Z\n" +
+	"\x19GetVehicleHistoryResponse\x12=\n" +
+	"\x04data\x18\x01 \x03(\v2).vietgara.customer.v1.VehicleHistoryEntryR\x04data*\xc3\x01\n" +
+	"\x17VehicleHistoryEntryType\x12*\n" +
+	"&VEHICLE_HISTORY_ENTRY_TYPE_UNSPECIFIED\x10\x00\x12$\n" +
+	" VEHICLE_HISTORY_ENTRY_TYPE_QUOTE\x10\x01\x12+\n" +
+	"'VEHICLE_HISTORY_ENTRY_TYPE_REPAIR_ORDER\x10\x02\x12)\n" +
+	"%VEHICLE_HISTORY_ENTRY_TYPE_SETTLEMENT\x10\x032\x8f\b\n" +
 	"\x0eVehicleService\x12\x93\x01\n" +
 	"\fListVehicles\x12).vietgara.customer.v1.ListVehiclesRequest\x1a*.vietgara.customer.v1.ListVehiclesResponse\",\x82\xd3\xe4\x93\x02&\x12$/api/v1/garages/{garage_id}/vehicles\x12\xa8\x01\n" +
 	"\rCreateVehicle\x12*.vietgara.customer.v1.CreateVehicleRequest\x1a+.vietgara.customer.v1.CreateVehicleResponse\">\x82\xd3\xe4\x93\x028:\avehicleb\avehicle\"$/api/v1/garages/{garage_id}/vehicles\x12\xa3\x01\n" +
 	"\n" +
 	"GetVehicle\x12'.vietgara.customer.v1.GetVehicleRequest\x1a(.vietgara.customer.v1.GetVehicleResponse\"B\x82\xd3\xe4\x93\x02<b\avehicle\x121/api/v1/garages/{garage_id}/vehicles/{vehicle_id}\x12\xb5\x01\n" +
 	"\rUpdateVehicle\x12*.vietgara.customer.v1.UpdateVehicleRequest\x1a+.vietgara.customer.v1.UpdateVehicleResponse\"K\x82\xd3\xe4\x93\x02E:\avehicleb\avehicle21/api/v1/garages/{garage_id}/vehicles/{vehicle_id}\x12\xa3\x01\n" +
-	"\rDeleteVehicle\x12*.vietgara.customer.v1.DeleteVehicleRequest\x1a+.vietgara.customer.v1.DeleteVehicleResponse\"9\x82\xd3\xe4\x93\x023*1/api/v1/garages/{garage_id}/vehicles/{vehicle_id}BNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1b\x06proto3"
+	"\rDeleteVehicle\x12*.vietgara.customer.v1.DeleteVehicleRequest\x1a+.vietgara.customer.v1.DeleteVehicleResponse\"9\x82\xd3\xe4\x93\x023*1/api/v1/garages/{garage_id}/vehicles/{vehicle_id}\x12\xb7\x01\n" +
+	"\x11GetVehicleHistory\x12..vietgara.customer.v1.GetVehicleHistoryRequest\x1a/.vietgara.customer.v1.GetVehicleHistoryResponse\"A\x82\xd3\xe4\x93\x02;\x129/api/v1/garages/{garage_id}/vehicles/{vehicle_id}/historyBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1b\x06proto3"
 
 var (
 	file_vietgara_customer_v1_vehicle_proto_rawDescOnce sync.Once
@@ -767,49 +1026,59 @@ func file_vietgara_customer_v1_vehicle_proto_rawDescGZIP() []byte {
 	return file_vietgara_customer_v1_vehicle_proto_rawDescData
 }
 
-var file_vietgara_customer_v1_vehicle_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_vietgara_customer_v1_vehicle_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_vietgara_customer_v1_vehicle_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_vietgara_customer_v1_vehicle_proto_goTypes = []any{
-	(*Vehicle)(nil),               // 0: vietgara.customer.v1.Vehicle
-	(*CreateVehicleRequest)(nil),  // 1: vietgara.customer.v1.CreateVehicleRequest
-	(*CreateVehicleResponse)(nil), // 2: vietgara.customer.v1.CreateVehicleResponse
-	(*GetVehicleRequest)(nil),     // 3: vietgara.customer.v1.GetVehicleRequest
-	(*GetVehicleResponse)(nil),    // 4: vietgara.customer.v1.GetVehicleResponse
-	(*UpdateVehicleRequest)(nil),  // 5: vietgara.customer.v1.UpdateVehicleRequest
-	(*UpdateVehicleResponse)(nil), // 6: vietgara.customer.v1.UpdateVehicleResponse
-	(*ListVehiclesRequest)(nil),   // 7: vietgara.customer.v1.ListVehiclesRequest
-	(*ListVehiclesResponse)(nil),  // 8: vietgara.customer.v1.ListVehiclesResponse
-	(*DeleteVehicleRequest)(nil),  // 9: vietgara.customer.v1.DeleteVehicleRequest
-	(*DeleteVehicleResponse)(nil), // 10: vietgara.customer.v1.DeleteVehicleResponse
-	(*timestamppb.Timestamp)(nil), // 11: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil), // 12: google.protobuf.FieldMask
-	(*v1.Pagination)(nil),         // 13: vietgara.common.v1.Pagination
+	(VehicleHistoryEntryType)(0),      // 0: vietgara.customer.v1.VehicleHistoryEntryType
+	(*Vehicle)(nil),                   // 1: vietgara.customer.v1.Vehicle
+	(*CreateVehicleRequest)(nil),      // 2: vietgara.customer.v1.CreateVehicleRequest
+	(*CreateVehicleResponse)(nil),     // 3: vietgara.customer.v1.CreateVehicleResponse
+	(*GetVehicleRequest)(nil),         // 4: vietgara.customer.v1.GetVehicleRequest
+	(*GetVehicleResponse)(nil),        // 5: vietgara.customer.v1.GetVehicleResponse
+	(*UpdateVehicleRequest)(nil),      // 6: vietgara.customer.v1.UpdateVehicleRequest
+	(*UpdateVehicleResponse)(nil),     // 7: vietgara.customer.v1.UpdateVehicleResponse
+	(*ListVehiclesRequest)(nil),       // 8: vietgara.customer.v1.ListVehiclesRequest
+	(*ListVehiclesResponse)(nil),      // 9: vietgara.customer.v1.ListVehiclesResponse
+	(*DeleteVehicleRequest)(nil),      // 10: vietgara.customer.v1.DeleteVehicleRequest
+	(*DeleteVehicleResponse)(nil),     // 11: vietgara.customer.v1.DeleteVehicleResponse
+	(*VehicleHistoryEntry)(nil),       // 12: vietgara.customer.v1.VehicleHistoryEntry
+	(*GetVehicleHistoryRequest)(nil),  // 13: vietgara.customer.v1.GetVehicleHistoryRequest
+	(*GetVehicleHistoryResponse)(nil), // 14: vietgara.customer.v1.GetVehicleHistoryResponse
+	(*timestamppb.Timestamp)(nil),     // 15: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),     // 16: google.protobuf.FieldMask
+	(*v1.Pagination)(nil),             // 17: vietgara.common.v1.Pagination
 }
 var file_vietgara_customer_v1_vehicle_proto_depIdxs = []int32{
-	11, // 0: vietgara.customer.v1.Vehicle.created_at:type_name -> google.protobuf.Timestamp
-	11, // 1: vietgara.customer.v1.Vehicle.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 2: vietgara.customer.v1.CreateVehicleRequest.vehicle:type_name -> vietgara.customer.v1.Vehicle
-	0,  // 3: vietgara.customer.v1.CreateVehicleResponse.vehicle:type_name -> vietgara.customer.v1.Vehicle
-	0,  // 4: vietgara.customer.v1.GetVehicleResponse.vehicle:type_name -> vietgara.customer.v1.Vehicle
-	0,  // 5: vietgara.customer.v1.UpdateVehicleRequest.vehicle:type_name -> vietgara.customer.v1.Vehicle
-	12, // 6: vietgara.customer.v1.UpdateVehicleRequest.update_mask:type_name -> google.protobuf.FieldMask
-	0,  // 7: vietgara.customer.v1.UpdateVehicleResponse.vehicle:type_name -> vietgara.customer.v1.Vehicle
-	0,  // 8: vietgara.customer.v1.ListVehiclesResponse.data:type_name -> vietgara.customer.v1.Vehicle
-	13, // 9: vietgara.customer.v1.ListVehiclesResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	7,  // 10: vietgara.customer.v1.VehicleService.ListVehicles:input_type -> vietgara.customer.v1.ListVehiclesRequest
-	1,  // 11: vietgara.customer.v1.VehicleService.CreateVehicle:input_type -> vietgara.customer.v1.CreateVehicleRequest
-	3,  // 12: vietgara.customer.v1.VehicleService.GetVehicle:input_type -> vietgara.customer.v1.GetVehicleRequest
-	5,  // 13: vietgara.customer.v1.VehicleService.UpdateVehicle:input_type -> vietgara.customer.v1.UpdateVehicleRequest
-	9,  // 14: vietgara.customer.v1.VehicleService.DeleteVehicle:input_type -> vietgara.customer.v1.DeleteVehicleRequest
-	8,  // 15: vietgara.customer.v1.VehicleService.ListVehicles:output_type -> vietgara.customer.v1.ListVehiclesResponse
-	2,  // 16: vietgara.customer.v1.VehicleService.CreateVehicle:output_type -> vietgara.customer.v1.CreateVehicleResponse
-	4,  // 17: vietgara.customer.v1.VehicleService.GetVehicle:output_type -> vietgara.customer.v1.GetVehicleResponse
-	6,  // 18: vietgara.customer.v1.VehicleService.UpdateVehicle:output_type -> vietgara.customer.v1.UpdateVehicleResponse
-	10, // 19: vietgara.customer.v1.VehicleService.DeleteVehicle:output_type -> vietgara.customer.v1.DeleteVehicleResponse
-	15, // [15:20] is the sub-list for method output_type
-	10, // [10:15] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	15, // 0: vietgara.customer.v1.Vehicle.created_at:type_name -> google.protobuf.Timestamp
+	15, // 1: vietgara.customer.v1.Vehicle.updated_at:type_name -> google.protobuf.Timestamp
+	1,  // 2: vietgara.customer.v1.CreateVehicleRequest.vehicle:type_name -> vietgara.customer.v1.Vehicle
+	1,  // 3: vietgara.customer.v1.CreateVehicleResponse.vehicle:type_name -> vietgara.customer.v1.Vehicle
+	1,  // 4: vietgara.customer.v1.GetVehicleResponse.vehicle:type_name -> vietgara.customer.v1.Vehicle
+	1,  // 5: vietgara.customer.v1.UpdateVehicleRequest.vehicle:type_name -> vietgara.customer.v1.Vehicle
+	16, // 6: vietgara.customer.v1.UpdateVehicleRequest.update_mask:type_name -> google.protobuf.FieldMask
+	1,  // 7: vietgara.customer.v1.UpdateVehicleResponse.vehicle:type_name -> vietgara.customer.v1.Vehicle
+	1,  // 8: vietgara.customer.v1.ListVehiclesResponse.data:type_name -> vietgara.customer.v1.Vehicle
+	17, // 9: vietgara.customer.v1.ListVehiclesResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	0,  // 10: vietgara.customer.v1.VehicleHistoryEntry.type:type_name -> vietgara.customer.v1.VehicleHistoryEntryType
+	15, // 11: vietgara.customer.v1.VehicleHistoryEntry.occurred_at:type_name -> google.protobuf.Timestamp
+	12, // 12: vietgara.customer.v1.GetVehicleHistoryResponse.data:type_name -> vietgara.customer.v1.VehicleHistoryEntry
+	8,  // 13: vietgara.customer.v1.VehicleService.ListVehicles:input_type -> vietgara.customer.v1.ListVehiclesRequest
+	2,  // 14: vietgara.customer.v1.VehicleService.CreateVehicle:input_type -> vietgara.customer.v1.CreateVehicleRequest
+	4,  // 15: vietgara.customer.v1.VehicleService.GetVehicle:input_type -> vietgara.customer.v1.GetVehicleRequest
+	6,  // 16: vietgara.customer.v1.VehicleService.UpdateVehicle:input_type -> vietgara.customer.v1.UpdateVehicleRequest
+	10, // 17: vietgara.customer.v1.VehicleService.DeleteVehicle:input_type -> vietgara.customer.v1.DeleteVehicleRequest
+	13, // 18: vietgara.customer.v1.VehicleService.GetVehicleHistory:input_type -> vietgara.customer.v1.GetVehicleHistoryRequest
+	9,  // 19: vietgara.customer.v1.VehicleService.ListVehicles:output_type -> vietgara.customer.v1.ListVehiclesResponse
+	3,  // 20: vietgara.customer.v1.VehicleService.CreateVehicle:output_type -> vietgara.customer.v1.CreateVehicleResponse
+	5,  // 21: vietgara.customer.v1.VehicleService.GetVehicle:output_type -> vietgara.customer.v1.GetVehicleResponse
+	7,  // 22: vietgara.customer.v1.VehicleService.UpdateVehicle:output_type -> vietgara.customer.v1.UpdateVehicleResponse
+	11, // 23: vietgara.customer.v1.VehicleService.DeleteVehicle:output_type -> vietgara.customer.v1.DeleteVehicleResponse
+	14, // 24: vietgara.customer.v1.VehicleService.GetVehicleHistory:output_type -> vietgara.customer.v1.GetVehicleHistoryResponse
+	19, // [19:25] is the sub-list for method output_type
+	13, // [13:19] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_customer_v1_vehicle_proto_init() }
@@ -823,13 +1092,14 @@ func file_vietgara_customer_v1_vehicle_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_customer_v1_vehicle_proto_rawDesc), len(file_vietgara_customer_v1_vehicle_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   11,
+			NumEnums:      1,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_vietgara_customer_v1_vehicle_proto_goTypes,
 		DependencyIndexes: file_vietgara_customer_v1_vehicle_proto_depIdxs,
+		EnumInfos:         file_vietgara_customer_v1_vehicle_proto_enumTypes,
 		MessageInfos:      file_vietgara_customer_v1_vehicle_proto_msgTypes,
 	}.Build()
 	File_vietgara_customer_v1_vehicle_proto = out.File

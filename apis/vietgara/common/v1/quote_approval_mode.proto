@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package vietgara.common.v1;
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/common/v1;commonv1";
+
+// QuoteApprovalMode selects how a quote is approved by the customer
+// (FR-QUO-02). Used by both Tenant (a garage's default, FR-TEN-05) and
+// Quote & Pricing (the mode of one quote), so it lives here rather than in
+// either module's package.
+enum QuoteApprovalMode {
+  QUOTE_APPROVAL_MODE_UNSPECIFIED = 0;
+  // A public approval link is generated; it is e-mailed to the customer
+  // automatically when they have an e-mail on file (so they are notified
+  // of the proposed work even if they decide over the phone), and they may
+  // approve or reject each line online with no login.
+  QUOTE_APPROVAL_MODE_LINK = 1;
+  // No link is generated or sent. A staff member records the customer's
+  // decision directly (e.g. approved face to face at the counter), for
+  // garages that prefer not to depend on the customer's e-mail or a link.
+  QUOTE_APPROVAL_MODE_MANUAL = 2;
+}
