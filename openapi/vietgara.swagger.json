@@ -27,6 +27,10 @@
       "description": "AuthService handles sign-up, sign-in, sessions, e-mail verification and\npassword reset (FRD 3.1). Google sign-in uses the OAuth redirect routes\nGET /api/v1/auth/google/login and /callback, which are plain HTTP handlers."
     },
     {
+      "name": "InventoryService",
+      "description": "InventoryService manages parts stock (FRD 3.7). Reads need\nPERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE."
+    },
+    {
       "name": "LicenseService",
       "description": "LicenseService is the garage-facing side of License Management."
     },
@@ -41,6 +45,10 @@
     {
       "name": "PublicQuoteService",
       "description": "PublicQuoteService serves the customer-facing approval link (FR-QUO-02),\nreachable with no access token: the token in the path is the\nauthorization (Security Architecture Section 2, public link pattern)."
+    },
+    {
+      "name": "RepairOrderService",
+      "description": "RepairOrderService manages repair orders (FRD 3.6). Reads need\nPERMISSION_REPAIR_ORDER_READ, changes PERMISSION_REPAIR_ORDER_WRITE."
     },
     {
       "name": "RoleService",
@@ -909,6 +917,206 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/inventory-items": {
+      "get": {
+        "summary": "Items with their current stock on hand (FR-INV-03), the same list\nthe Stock on Hand screen shows.",
+        "operationId": "InventoryService_ListItems",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListItemsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "query",
+            "description": "Matches SKU or name.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      },
+      "post": {
+        "operationId": "InventoryService_CreateItem",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Item"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "item",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Item"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/inventory-items/{itemId}": {
+      "get": {
+        "operationId": "InventoryService_GetItem",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Item"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      },
+      "delete": {
+        "operationId": "InventoryService_DeleteItem",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteItemResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      },
+      "patch": {
+        "operationId": "InventoryService_UpdateItem",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Item"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "item",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Item"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/invitations": {
       "get": {
         "operationId": "InvitationService_ListInvitations",
@@ -1667,6 +1875,309 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/repair-orders": {
+      "get": {
+        "operationId": "RepairOrderService_ListRepairOrders",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListRepairOrdersResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vehicleId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": " - REPAIR_ORDER_STATUS_OPEN: \"To Do\": not yet started.\n - REPAIR_ORDER_STATUS_WAITING_ON_PARTS: Blocked on a part not currently in stock.\n - REPAIR_ORDER_STATUS_COMPLETED: Every line is done; ready for the advisor to close it.\n - REPAIR_ORDER_STATUS_CLOSED: Closed (FR-REP-06): no further edits; ready for settlement (Release\n1.4) and triggers stock deduction (Event Design, repair_order.closed).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "REPAIR_ORDER_STATUS_OPEN",
+              "REPAIR_ORDER_STATUS_IN_PROGRESS",
+              "REPAIR_ORDER_STATUS_WAITING_ON_PARTS",
+              "REPAIR_ORDER_STATUS_COMPLETED",
+              "REPAIR_ORDER_STATUS_CLOSED"
+            ]
+          },
+          {
+            "name": "technicianId",
+            "description": "Only repair orders with a line assigned to this technician.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "RepairOrderService"
+        ]
+      },
+      "post": {
+        "summary": "Creates an ad-hoc repair order (FR-REP-01); counts against the plan's\ndaily transaction limit (FR-LIC-02). A quote converts into one\nthrough QuoteService.ConvertQuote instead.",
+        "operationId": "RepairOrderService_CreateRepairOrder",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1RepairOrder"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrder",
+            "description": "Ad-hoc creation (FR-REP-01): quote_id is never set through this RPC.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RepairOrder"
+            }
+          }
+        ],
+        "tags": [
+          "RepairOrderService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}": {
+      "get": {
+        "operationId": "RepairOrderService_GetRepairOrder",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1RepairOrder"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RepairOrderService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/closing": {
+      "post": {
+        "summary": "Closes the repair order (FR-REP-06): fails FAILED_PRECONDITION\nunless every line is completed. Publishes repair_order.closed, which\ndeducts stock for the part lines (Event Design).",
+        "operationId": "RepairOrderService_CloseRepairOrder",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1RepairOrder"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RepairOrderServiceCloseRepairOrderBody"
+            }
+          }
+        ],
+        "tags": [
+          "RepairOrderService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/lines/{lineId}": {
+      "patch": {
+        "summary": "Assigns technicians and/or updates one line's own progress\n(FR-REP-02/03); the repair order's overall status (the Kanban\ncolumn) is derived from its lines and returned in the response.",
+        "operationId": "RepairOrderService_UpdateRepairOrderLine",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1RepairOrder"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lineId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "line",
+            "description": "status and/or assigned_technician_ids (FR-REP-02/03).",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RepairOrderLine"
+            }
+          }
+        ],
+        "tags": [
+          "RepairOrderService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/reports/stock-movements": {
+      "get": {
+        "summary": "The stock in/out/on-hand movement report (FR-INV-05); Excel export\nof the same data is added with the Document/Print Service (Release\n1.4).",
+        "operationId": "InventoryService_ListStockTransactions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListStockTransactionsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "STOCK_TRANSACTION_TYPE_IN",
+              "STOCK_TRANSACTION_TYPE_OUT"
+            ]
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/staff": {
       "get": {
         "operationId": "StaffService_ListStaff",
@@ -1958,6 +2469,45 @@
         ],
         "tags": [
           "StaffService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/stock-receipts": {
+      "post": {
+        "summary": "Records a goods-receipt note from a supplier (FR-INV-01), increasing\nstock on hand.",
+        "operationId": "InventoryService_CreateStockReceipt",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateStockReceiptResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InventoryServiceCreateStockReceiptBody"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
         ]
       }
     },
@@ -2741,6 +3291,25 @@
         "contentType"
       ]
     },
+    "InventoryServiceCreateStockReceiptBody": {
+      "type": "object",
+      "properties": {
+        "itemId": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "string"
+        },
+        "unitCost": {
+          "type": "string",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "itemId",
+        "quantity"
+      ]
+    },
     "InvitationServiceAcceptInvitationBody": {
       "type": "object"
     },
@@ -2816,6 +3385,9 @@
       ]
     },
     "QuoteServiceSendQuoteBody": {
+      "type": "object"
+    },
+    "RepairOrderServiceCloseRepairOrderBody": {
       "type": "object"
     },
     "typeDayOfWeek": {
@@ -2942,6 +3514,14 @@
         }
       }
     },
+    "v1CloseRepairOrderResponse": {
+      "type": "object",
+      "properties": {
+        "repairOrder": {
+          "$ref": "#/definitions/v1RepairOrder"
+        }
+      }
+    },
     "v1ConvertQuoteResponse": {
       "type": "object",
       "properties": {
@@ -2978,6 +3558,14 @@
         }
       }
     },
+    "v1CreateItemResponse": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/v1Item"
+        }
+      }
+    },
     "v1CreatePartnerResponse": {
       "type": "object",
       "properties": {
@@ -3002,6 +3590,14 @@
         }
       }
     },
+    "v1CreateRepairOrderResponse": {
+      "type": "object",
+      "properties": {
+        "repairOrder": {
+          "$ref": "#/definitions/v1RepairOrder"
+        }
+      }
+    },
     "v1CreateRoleResponse": {
       "type": "object",
       "properties": {
@@ -3015,6 +3611,18 @@
       "properties": {
         "group": {
           "$ref": "#/definitions/v1StaffGroup"
+        }
+      }
+    },
+    "v1CreateStockReceiptResponse": {
+      "type": "object",
+      "properties": {
+        "transaction": {
+          "$ref": "#/definitions/v1StockTransaction"
+        },
+        "item": {
+          "$ref": "#/definitions/v1Item",
+          "description": "The item's on-hand quantity after this receipt."
         }
       }
     },
@@ -3126,6 +3734,9 @@
           "$ref": "#/definitions/v1Garage"
         }
       }
+    },
+    "v1DeleteItemResponse": {
+      "type": "object"
     },
     "v1DeletePartnerResponse": {
       "type": "object"
@@ -3365,6 +3976,14 @@
         }
       }
     },
+    "v1GetItemResponse": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/v1Item"
+        }
+      }
+    },
     "v1GetMeResponse": {
       "type": "object",
       "properties": {
@@ -3410,6 +4029,14 @@
       "properties": {
         "quote": {
           "$ref": "#/definitions/v1Quote"
+        }
+      }
+    },
+    "v1GetRepairOrderResponse": {
+      "type": "object",
+      "properties": {
+        "repairOrder": {
+          "$ref": "#/definitions/v1RepairOrder"
         }
       }
     },
@@ -3510,6 +4137,54 @@
         "INVITATION_STATUS_EXPIRED"
       ]
     },
+    "v1Item": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "sku": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string",
+          "description": "e.g. \"piece\", \"liter\"; free text."
+        },
+        "reorderThreshold": {
+          "type": "integer",
+          "format": "int32",
+          "description": "A quantityOnHand at or below this triggers the low-stock badge\n(FR-INV-04's UI half; the notification itself is Release 2)."
+        },
+        "quantityOnHand": {
+          "type": "string",
+          "description": "Decimal string; derived from stock_transactions, never written\ndirectly (FR-INV-03).",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Item is one part code a garage stocks (FR-INV-01..03).",
+      "required": [
+        "sku",
+        "name"
+      ]
+    },
     "v1ListAllPlansResponse": {
       "type": "object",
       "properties": {
@@ -3559,6 +4234,21 @@
             "type": "object",
             "$ref": "#/definitions/v1Invitation"
           }
+        }
+      }
+    },
+    "v1ListItemsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Item"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
         }
       }
     },
@@ -3629,6 +4319,21 @@
         }
       }
     },
+    "v1ListRepairOrdersResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RepairOrder"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
     "v1ListRolesResponse": {
       "type": "object",
       "properties": {
@@ -3662,6 +4367,21 @@
             "type": "object",
             "$ref": "#/definitions/v1Staff"
           }
+        }
+      }
+    },
+    "v1ListStockTransactionsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1StockTransaction"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
         }
       }
     },
@@ -4272,6 +4992,153 @@
         }
       }
     },
+    "v1RepairOrder": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "quoteId": {
+          "type": "string",
+          "description": "Set when converted from a quote; empty for ad-hoc repair orders.",
+          "readOnly": true
+        },
+        "vehicleId": {
+          "type": "string"
+        },
+        "vehicleLicensePlate": {
+          "type": "string",
+          "readOnly": true
+        },
+        "customerName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "number": {
+          "type": "string",
+          "description": "Rendered from the garage's repair_order_number_template (FR-TEN-05).",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1RepairOrderStatus",
+          "readOnly": true
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RepairOrderLine"
+          }
+        },
+        "totalAmount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "closedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "RepairOrder is a repair job for one vehicle (FR-REP-01), either\nconverted from an approved quote (Release 1.2's ConvertQuote) or\ncreated directly for ad-hoc work.",
+      "required": [
+        "vehicleId"
+      ]
+    },
+    "v1RepairOrderItemType": {
+      "type": "string",
+      "enum": [
+        "REPAIR_ORDER_ITEM_TYPE_LABOR",
+        "REPAIR_ORDER_ITEM_TYPE_PART"
+      ],
+      "description": "RepairOrderItemType: a repair order line is either labor or a part."
+    },
+    "v1RepairOrderLine": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "itemType": {
+          "$ref": "#/definitions/v1RepairOrderItemType"
+        },
+        "itemRefId": {
+          "type": "string",
+          "description": "An Inventory item id for PART lines (FR-INV-02 stock deduction on\nclose needs this); free text or empty for a part not carried in\nstock. Validated against the garage's items when set."
+        },
+        "description": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "string",
+          "description": "Decimal string, e.g. \"1\" or \"1.5\"."
+        },
+        "unitPrice": {
+          "type": "string",
+          "format": "int64",
+          "description": "Integer VND."
+        },
+        "lineTotal": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1RepairOrderLineStatus"
+        },
+        "assignedTechnicianIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Technician account ids assigned to this line (FR-REP-02); a line may\nhave more than one."
+        }
+      },
+      "description": "RepairOrderLine is one labor or part line of a repair order.",
+      "required": [
+        "itemType",
+        "description",
+        "quantity",
+        "unitPrice"
+      ]
+    },
+    "v1RepairOrderLineStatus": {
+      "type": "string",
+      "enum": [
+        "REPAIR_ORDER_LINE_STATUS_NOT_STARTED",
+        "REPAIR_ORDER_LINE_STATUS_IN_PROGRESS",
+        "REPAIR_ORDER_LINE_STATUS_COMPLETED"
+      ],
+      "description": "RepairOrderLineStatus is one line's own progress (FR-REP-03), tracked\nseparately from the repair order's overall status."
+    },
+    "v1RepairOrderStatus": {
+      "type": "string",
+      "enum": [
+        "REPAIR_ORDER_STATUS_OPEN",
+        "REPAIR_ORDER_STATUS_IN_PROGRESS",
+        "REPAIR_ORDER_STATUS_WAITING_ON_PARTS",
+        "REPAIR_ORDER_STATUS_COMPLETED",
+        "REPAIR_ORDER_STATUS_CLOSED"
+      ],
+      "description": "RepairOrderStatus is the lifecycle of a repair order (FR-REP-01..06),\nshown as the Kanban board's columns (UI Design Spec Section 3.3).\n\n - REPAIR_ORDER_STATUS_OPEN: \"To Do\": not yet started.\n - REPAIR_ORDER_STATUS_WAITING_ON_PARTS: Blocked on a part not currently in stock.\n - REPAIR_ORDER_STATUS_COMPLETED: Every line is done; ready for the advisor to close it.\n - REPAIR_ORDER_STATUS_CLOSED: Closed (FR-REP-06): no further edits; ready for settlement (Release\n1.4) and triggers stock deduction (Event Design, repair_order.closed)."
+    },
     "v1RequestPasswordResetRequest": {
       "type": "object",
       "properties": {
@@ -4561,6 +5428,73 @@
       ],
       "description": "StaffStatus: inactive staff keep their record but lose access."
     },
+    "v1StockTransaction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "itemId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "itemSku": {
+          "type": "string",
+          "readOnly": true
+        },
+        "itemName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "type": {
+          "$ref": "#/definitions/v1StockTransactionType",
+          "readOnly": true
+        },
+        "quantity": {
+          "type": "string",
+          "description": "Decimal string, always positive; type says the direction.",
+          "readOnly": true
+        },
+        "unitCost": {
+          "type": "string",
+          "format": "int64",
+          "description": "Integer VND; set on IN transactions from a purchase.",
+          "readOnly": true
+        },
+        "refType": {
+          "$ref": "#/definitions/v1StockTransactionRefType",
+          "readOnly": true
+        },
+        "refId": {
+          "type": "string",
+          "description": "The repair order id, for an OUT transaction caused by one.",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "StockTransaction is one recorded stock movement."
+    },
+    "v1StockTransactionRefType": {
+      "type": "string",
+      "enum": [
+        "STOCK_TRANSACTION_REF_TYPE_PURCHASE",
+        "STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER"
+      ],
+      "description": "StockTransactionRefType names what caused a stock movement.\n\n - STOCK_TRANSACTION_REF_TYPE_PURCHASE: A manual stock receipt from a supplier (FR-INV-01).\n - STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER: Automatic deduction when a repair order with part lines closes\n(FR-INV-02)."
+    },
+    "v1StockTransactionType": {
+      "type": "string",
+      "enum": [
+        "STOCK_TRANSACTION_TYPE_IN",
+        "STOCK_TRANSACTION_TYPE_OUT"
+      ],
+      "description": "StockTransactionType: a movement either adds to stock or removes from it."
+    },
     "v1Subscription": {
       "type": "object",
       "properties": {
@@ -4651,6 +5585,14 @@
         }
       }
     },
+    "v1UpdateItemResponse": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/v1Item"
+        }
+      }
+    },
     "v1UpdateMeResponse": {
       "type": "object",
       "properties": {
@@ -4680,6 +5622,14 @@
       "properties": {
         "quote": {
           "$ref": "#/definitions/v1Quote"
+        }
+      }
+    },
+    "v1UpdateRepairOrderLineResponse": {
+      "type": "object",
+      "properties": {
+        "repairOrder": {
+          "$ref": "#/definitions/v1RepairOrder"
         }
       }
     },
