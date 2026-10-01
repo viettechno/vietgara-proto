@@ -7,6 +7,7 @@ import "google/api/field_behavior.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "google/type/dayofweek.proto";
+import "vietgara/common/v1/quote_approval_mode.proto";
 import "vietgara/tenant/v1/access.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/tenant/v1;tenantv1";
@@ -64,6 +65,10 @@ message Garage {
   GarageAccess access = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp created_at = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp updated_at = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The approval mode new quotes of this garage start with (FR-TEN-05,
+  // Release 1.2); a service advisor may still change it per quote.
+  // Default LINK.
+  vietgara.common.v1.QuoteApprovalMode default_quote_approval_mode = 17;
 }
 
 message ListGaragesRequest {}

@@ -1,0 +1,302 @@
+syntax = "proto3";
+
+package vietgara.quote.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/pagination.proto";
+import "vietgara/common/v1/quote_approval_mode.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/quote/v1;quotev1";
+
+// QuoteStatus is the lifecycle of a quote (FR-QUO-01..04).
+enum QuoteStatus {
+  QUOTE_STATUS_UNSPECIFIED = 0;
+  // Being edited by the service advisor; not visible to the customer yet.
+  QUOTE_STATUS_DRAFT = 1;
+  // A LINK-mode quote waiting on the customer's decision.
+  QUOTE_STATUS_SENT = 2;
+  // At least one line was approved.
+  QUOTE_STATUS_APPROVED = 3;
+  // Every line was rejected.
+  QUOTE_STATUS_REJECTED = 4;
+  // Converted into a repair order (FR-QUO-04); no further edits.
+  QUOTE_STATUS_CONVERTED = 5;
+}
+
+// QuoteItemType: a quote line is either labor or a part.
+enum QuoteItemType {
+  QUOTE_ITEM_TYPE_UNSPECIFIED = 0;
+  QUOTE_ITEM_TYPE_LABOR = 1;
+  QUOTE_ITEM_TYPE_PART = 2;
+}
+
+// QuoteLineDecision is the customer's decision on one line item
+// (FR-QUO-03), recorded either by the customer through the public link or
+// by a staff member on their behalf (manual approval mode).
+enum QuoteLineDecision {
+  QUOTE_LINE_DECISION_UNSPECIFIED = 0;
+  QUOTE_LINE_DECISION_PENDING = 1;
+  QUOTE_LINE_DECISION_APPROVED = 2;
+  QUOTE_LINE_DECISION_REJECTED = 3;
+}
+
+// QuoteLine is one labor or part line of a quote.
+message QuoteLine {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  QuoteItemType item_type = 2 [(google.api.field_behavior) = REQUIRED];
+  // A parts-catalog reference once the Inventory module ships (Release
+  // 1.3); free text for now.
+  optional string item_ref_id = 3;
+  string description = 4 [(google.api.field_behavior) = REQUIRED];
+  // Decimal string, e.g. "1" or "1.5".
+  string quantity = 5 [(google.api.field_behavior) = REQUIRED];
+  // Integer VND.
+  int64 unit_price = 6 [(google.api.field_behavior) = REQUIRED];
+  int64 line_total = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  QuoteLineDecision decision = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// Quote is a price estimate awaiting the customer's approval (FR-QUO-01).
+message Quote {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string customer_id = 3 [(google.api.field_behavior) = REQUIRED];
+  string customer_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string vehicle_id = 5 [(google.api.field_behavior) = REQUIRED];
+  string vehicle_license_plate = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Assigned from the garage's quote numbering template (FR-TEN-05) when
+  // the quote is first created.
+  string number = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  QuoteStatus status = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Defaults to the garage's default_quote_approval_mode; changeable while
+  // the quote is a draft.
+  vietgara.common.v1.QuoteApprovalMode approval_mode = 9;
+  repeated QuoteLine lines = 10;
+  int64 total_amount = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string notes = 12;
+  google.protobuf.Timestamp sent_at = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp decided_at = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp converted_at = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListQuotesRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2;
+  string vehicle_id = 3;
+  // Unspecified lists every status.
+  QuoteStatus status = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+message ListQuotesResponse {
+  repeated Quote data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message CreateQuoteRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  Quote quote = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateQuoteResponse {
+  Quote quote = 1;
+}
+
+message GetQuoteRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string quote_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetQuoteResponse {
+  Quote quote = 1;
+}
+
+message UpdateQuoteRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string quote_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Only while the quote is still a draft. "lines" replaces the whole set.
+  Quote quote = 3 [(google.api.field_behavior) = REQUIRED];
+  // Filled from the JSON body keys when omitted.
+  google.protobuf.FieldMask update_mask = 4;
+}
+
+message UpdateQuoteResponse {
+  Quote quote = 1;
+}
+
+message DeleteQuoteRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string quote_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteQuoteResponse {}
+
+message SendQuoteRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string quote_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message SendQuoteResponse {
+  Quote quote = 1;
+  // The public approval URL, returned once for the advisor to copy or
+  // share; set only for QUOTE_APPROVAL_MODE_LINK. Also e-mailed to the
+  // customer automatically when they have an e-mail on file.
+  string public_url = 2;
+  // Whether the e-mail above was actually sent (false: no e-mail on file,
+  // or approval_mode is MANUAL).
+  bool emailed = 3;
+}
+
+message QuoteLineDecisionInput {
+  string line_id = 1 [(google.api.field_behavior) = REQUIRED];
+  bool approved = 2;
+}
+
+message RecordQuoteDecisionRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string quote_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // One decision per line of the quote.
+  repeated QuoteLineDecisionInput decisions = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message RecordQuoteDecisionResponse {
+  Quote quote = 1;
+}
+
+message ConvertQuoteRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string quote_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ConvertQuoteResponse {
+  Quote quote = 1;
+  // The draft repair order created from the quote's approved lines
+  // (FR-QUO-04); managed further by the Repair Order module (Release 1.3).
+  string repair_order_id = 2;
+}
+
+// QuoteService manages quotes (FRD 3.5). Reads need PERMISSION_QUOTE_READ,
+// changes PERMISSION_QUOTE_WRITE.
+service QuoteService {
+  rpc ListQuotes(ListQuotesRequest) returns (ListQuotesResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/quotes"};
+  }
+
+  // Counts against the plan's max_transactions_per_day (FR-LIC-02).
+  rpc CreateQuote(CreateQuoteRequest) returns (CreateQuoteResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/quotes"
+      body: "quote"
+      response_body: "quote"
+    };
+  }
+
+  rpc GetQuote(GetQuoteRequest) returns (GetQuoteResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/garages/{garage_id}/quotes/{quote_id}"
+      response_body: "quote"
+    };
+  }
+
+  // Fails with FAILED_PRECONDITION once the quote is no longer a draft.
+  rpc UpdateQuote(UpdateQuoteRequest) returns (UpdateQuoteResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/quotes/{quote_id}"
+      body: "quote"
+      response_body: "quote"
+    };
+  }
+
+  rpc DeleteQuote(DeleteQuoteRequest) returns (DeleteQuoteResponse) {
+    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/quotes/{quote_id}"};
+  }
+
+  // Sends the quote for customer approval (FR-QUO-02): generates the
+  // public link for LINK mode (e-mailing it when the customer has an
+  // e-mail on file), or simply marks a MANUAL-mode quote ready for
+  // RecordQuoteDecision.
+  rpc SendQuote(SendQuoteRequest) returns (SendQuoteResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/quotes/{quote_id}/sending"
+      body: "*"
+    };
+  }
+
+  // Records the customer's decision on behalf of the customer (FR-QUO-03),
+  // for a MANUAL-mode quote or as a staff override of a LINK-mode one
+  // (e.g. the customer decided by phone).
+  rpc RecordQuoteDecision(RecordQuoteDecisionRequest) returns (RecordQuoteDecisionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/quotes/{quote_id}/decision"
+      body: "*"
+      response_body: "quote"
+    };
+  }
+
+  // Converts an approved quote into a draft repair order (FR-QUO-04),
+  // preserving only the approved lines.
+  rpc ConvertQuote(ConvertQuoteRequest) returns (ConvertQuoteResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/quotes/{quote_id}/conversion"
+      body: "*"
+    };
+  }
+}
+
+// PublicQuote is what an unauthenticated customer sees through the
+// approval link: no internal identifiers, only what they need to decide.
+message PublicQuote {
+  string number = 1;
+  QuoteStatus status = 2;
+  string garage_name = 3;
+  string customer_name = 4;
+  string vehicle_license_plate = 5;
+  repeated QuoteLine lines = 6;
+  int64 total_amount = 7;
+  string notes = 8;
+  // The link stops working after this time or once decided.
+  google.protobuf.Timestamp expires_at = 9;
+}
+
+message GetPublicQuoteRequest {
+  string token = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetPublicQuoteResponse {
+  PublicQuote quote = 1;
+}
+
+message DecidePublicQuoteRequest {
+  string token = 1 [(google.api.field_behavior) = REQUIRED];
+  repeated QuoteLineDecisionInput decisions = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DecidePublicQuoteResponse {
+  PublicQuote quote = 1;
+}
+
+// PublicQuoteService serves the customer-facing approval link (FR-QUO-02),
+// reachable with no access token: the token in the path is the
+// authorization (Security Architecture Section 2, public link pattern).
+service PublicQuoteService {
+  rpc GetPublicQuote(GetPublicQuoteRequest) returns (GetPublicQuoteResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/public/quotes/{token}"
+      response_body: "quote"
+    };
+  }
+
+  rpc DecidePublicQuote(DecidePublicQuoteRequest) returns (DecidePublicQuoteResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/public/quotes/{token}/decision"
+      body: "*"
+      response_body: "quote"
+    };
+  }
+}

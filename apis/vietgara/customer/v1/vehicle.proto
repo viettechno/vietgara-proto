@@ -80,6 +80,38 @@ message DeleteVehicleRequest {
 
 message DeleteVehicleResponse {}
 
+// VehicleHistoryEntryType names which module produced a history entry
+// (FR-CUS-03). Repair order and settlement entries appear once those
+// modules ship (Releases 1.3, 1.4); only QUOTE is produced today.
+enum VehicleHistoryEntryType {
+  VEHICLE_HISTORY_ENTRY_TYPE_UNSPECIFIED = 0;
+  VEHICLE_HISTORY_ENTRY_TYPE_QUOTE = 1;
+  VEHICLE_HISTORY_ENTRY_TYPE_REPAIR_ORDER = 2;
+  VEHICLE_HISTORY_ENTRY_TYPE_SETTLEMENT = 3;
+}
+
+// VehicleHistoryEntry is one quote, repair order or settlement of a
+// vehicle, newest first (FR-CUS-03).
+message VehicleHistoryEntry {
+  VehicleHistoryEntryType type = 1;
+  string entity_id = 2;
+  // The quote/repair-order/settlement's own document number.
+  string number = 3;
+  // The status string of the originating entity (e.g. a QuoteStatus name).
+  string status = 4;
+  int64 total_amount = 5;
+  google.protobuf.Timestamp occurred_at = 6;
+}
+
+message GetVehicleHistoryRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string vehicle_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetVehicleHistoryResponse {
+  repeated VehicleHistoryEntry data = 1;
+}
+
 // VehicleService manages vehicles (FRD 3.4). Filter by customer with
 // ?customerId=. Reads need PERMISSION_CUSTOMER_READ, changes
 // PERMISSION_CUSTOMER_WRITE.
@@ -113,5 +145,10 @@ service VehicleService {
 
   rpc DeleteVehicle(DeleteVehicleRequest) returns (DeleteVehicleResponse) {
     option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/vehicles/{vehicle_id}"};
+  }
+
+  // Vehicle repair history (FR-CUS-03, Release 1.2).
+  rpc GetVehicleHistory(GetVehicleHistoryRequest) returns (GetVehicleHistoryResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/vehicles/{vehicle_id}/history"};
   }
 }

@@ -7,6 +7,7 @@
 package tenantv1
 
 import (
+	v1 "github.com/viettechno/vietgara-proto/apis-go/vietgara/common/v1"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	dayofweek "google.golang.org/genproto/googleapis/type/dayofweek"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -277,8 +278,12 @@ type Garage struct {
 	Access         *GarageAccess          `protobuf:"bytes,14,opt,name=access,proto3" json:"access,omitempty"`
 	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt      *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// The approval mode new quotes of this garage start with (FR-TEN-05,
+	// Release 1.2); a service advisor may still change it per quote.
+	// Default LINK.
+	DefaultQuoteApprovalMode v1.QuoteApprovalMode `protobuf:"varint,17,opt,name=default_quote_approval_mode,json=defaultQuoteApprovalMode,proto3,enum=vietgara.common.v1.QuoteApprovalMode" json:"default_quote_approval_mode,omitempty"`
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
 }
 
 func (x *Garage) Reset() {
@@ -421,6 +426,13 @@ func (x *Garage) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *Garage) GetDefaultQuoteApprovalMode() v1.QuoteApprovalMode {
+	if x != nil {
+		return x.DefaultQuoteApprovalMode
+	}
+	return v1.QuoteApprovalMode(0)
 }
 
 type ListGaragesRequest struct {
@@ -985,7 +997,7 @@ var File_vietgara_tenant_v1_garage_proto protoreflect.FileDescriptor
 
 const file_vietgara_tenant_v1_garage_proto_rawDesc = "" +
 	"\n" +
-	"\x1fvietgara/tenant/v1/garage.proto\x12\x12vietgara.tenant.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/type/dayofweek.proto\x1a\x1fvietgara/tenant/v1/access.proto\"x\n" +
+	"\x1fvietgara/tenant/v1/garage.proto\x12\x12vietgara.tenant.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/type/dayofweek.proto\x1a,vietgara/common/v1/quote_approval_mode.proto\x1a\x1fvietgara/tenant/v1/access.proto\"x\n" +
 	"\n" +
 	"DailyHours\x12(\n" +
 	"\x03day\x18\x01 \x01(\x0e2\x16.google.type.DayOfWeekR\x03day\x12\x16\n" +
@@ -997,7 +1009,7 @@ const file_vietgara_tenant_v1_garage_proto_rawDesc = "" +
 	"\frepair_order\x18\x02 \x01(\tR\vrepairOrder\"f\n" +
 	"\fGarageAccess\x12\x14\n" +
 	"\x05owner\x18\x01 \x01(\bR\x05owner\x12@\n" +
-	"\vpermissions\x18\x02 \x03(\x0e2\x1e.vietgara.tenant.v1.PermissionR\vpermissions\"\xf9\x05\n" +
+	"\vpermissions\x18\x02 \x03(\x0e2\x1e.vietgara.tenant.v1.PermissionR\vpermissions\"\xdf\x06\n" +
 	"\x06Garage\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12-\n" +
 	"\x10owner_account_id\x18\x02 \x01(\tB\x03\xe0A\x03R\x0eownerAccountId\x12\x17\n" +
@@ -1017,7 +1029,8 @@ const file_vietgara_tenant_v1_garage_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\v\n" +
+	"updated_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12d\n" +
+	"\x1bdefault_quote_approval_mode\x18\x11 \x01(\x0e2%.vietgara.common.v1.QuoteApprovalModeR\x18defaultQuoteApprovalModeB\v\n" +
 	"\t_tax_codeB\n" +
 	"\n" +
 	"\b_addressB\b\n" +
@@ -1099,7 +1112,8 @@ var file_vietgara_tenant_v1_garage_proto_goTypes = []any{
 	(dayofweek.DayOfWeek)(0),         // 17: google.type.DayOfWeek
 	(Permission)(0),                  // 18: vietgara.tenant.v1.Permission
 	(*timestamppb.Timestamp)(nil),    // 19: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),    // 20: google.protobuf.FieldMask
+	(v1.QuoteApprovalMode)(0),        // 20: vietgara.common.v1.QuoteApprovalMode
+	(*fieldmaskpb.FieldMask)(nil),    // 21: google.protobuf.FieldMask
 }
 var file_vietgara_tenant_v1_garage_proto_depIdxs = []int32{
 	17, // 0: vietgara.tenant.v1.DailyHours.day:type_name -> google.type.DayOfWeek
@@ -1110,32 +1124,33 @@ var file_vietgara_tenant_v1_garage_proto_depIdxs = []int32{
 	3,  // 5: vietgara.tenant.v1.Garage.access:type_name -> vietgara.tenant.v1.GarageAccess
 	19, // 6: vietgara.tenant.v1.Garage.created_at:type_name -> google.protobuf.Timestamp
 	19, // 7: vietgara.tenant.v1.Garage.updated_at:type_name -> google.protobuf.Timestamp
-	4,  // 8: vietgara.tenant.v1.ListGaragesResponse.data:type_name -> vietgara.tenant.v1.Garage
-	4,  // 9: vietgara.tenant.v1.CreateGarageRequest.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 10: vietgara.tenant.v1.CreateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 11: vietgara.tenant.v1.GetGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 12: vietgara.tenant.v1.UpdateGarageRequest.garage:type_name -> vietgara.tenant.v1.Garage
-	20, // 13: vietgara.tenant.v1.UpdateGarageRequest.update_mask:type_name -> google.protobuf.FieldMask
-	4,  // 14: vietgara.tenant.v1.UpdateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 15: vietgara.tenant.v1.UploadGarageLogoResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 16: vietgara.tenant.v1.DeleteGarageLogoResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	5,  // 17: vietgara.tenant.v1.GarageService.ListGarages:input_type -> vietgara.tenant.v1.ListGaragesRequest
-	7,  // 18: vietgara.tenant.v1.GarageService.CreateGarage:input_type -> vietgara.tenant.v1.CreateGarageRequest
-	9,  // 19: vietgara.tenant.v1.GarageService.GetGarage:input_type -> vietgara.tenant.v1.GetGarageRequest
-	11, // 20: vietgara.tenant.v1.GarageService.UpdateGarage:input_type -> vietgara.tenant.v1.UpdateGarageRequest
-	13, // 21: vietgara.tenant.v1.GarageService.UploadGarageLogo:input_type -> vietgara.tenant.v1.UploadGarageLogoRequest
-	15, // 22: vietgara.tenant.v1.GarageService.DeleteGarageLogo:input_type -> vietgara.tenant.v1.DeleteGarageLogoRequest
-	6,  // 23: vietgara.tenant.v1.GarageService.ListGarages:output_type -> vietgara.tenant.v1.ListGaragesResponse
-	8,  // 24: vietgara.tenant.v1.GarageService.CreateGarage:output_type -> vietgara.tenant.v1.CreateGarageResponse
-	10, // 25: vietgara.tenant.v1.GarageService.GetGarage:output_type -> vietgara.tenant.v1.GetGarageResponse
-	12, // 26: vietgara.tenant.v1.GarageService.UpdateGarage:output_type -> vietgara.tenant.v1.UpdateGarageResponse
-	14, // 27: vietgara.tenant.v1.GarageService.UploadGarageLogo:output_type -> vietgara.tenant.v1.UploadGarageLogoResponse
-	16, // 28: vietgara.tenant.v1.GarageService.DeleteGarageLogo:output_type -> vietgara.tenant.v1.DeleteGarageLogoResponse
-	23, // [23:29] is the sub-list for method output_type
-	17, // [17:23] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	20, // 8: vietgara.tenant.v1.Garage.default_quote_approval_mode:type_name -> vietgara.common.v1.QuoteApprovalMode
+	4,  // 9: vietgara.tenant.v1.ListGaragesResponse.data:type_name -> vietgara.tenant.v1.Garage
+	4,  // 10: vietgara.tenant.v1.CreateGarageRequest.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 11: vietgara.tenant.v1.CreateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 12: vietgara.tenant.v1.GetGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 13: vietgara.tenant.v1.UpdateGarageRequest.garage:type_name -> vietgara.tenant.v1.Garage
+	21, // 14: vietgara.tenant.v1.UpdateGarageRequest.update_mask:type_name -> google.protobuf.FieldMask
+	4,  // 15: vietgara.tenant.v1.UpdateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 16: vietgara.tenant.v1.UploadGarageLogoResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 17: vietgara.tenant.v1.DeleteGarageLogoResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	5,  // 18: vietgara.tenant.v1.GarageService.ListGarages:input_type -> vietgara.tenant.v1.ListGaragesRequest
+	7,  // 19: vietgara.tenant.v1.GarageService.CreateGarage:input_type -> vietgara.tenant.v1.CreateGarageRequest
+	9,  // 20: vietgara.tenant.v1.GarageService.GetGarage:input_type -> vietgara.tenant.v1.GetGarageRequest
+	11, // 21: vietgara.tenant.v1.GarageService.UpdateGarage:input_type -> vietgara.tenant.v1.UpdateGarageRequest
+	13, // 22: vietgara.tenant.v1.GarageService.UploadGarageLogo:input_type -> vietgara.tenant.v1.UploadGarageLogoRequest
+	15, // 23: vietgara.tenant.v1.GarageService.DeleteGarageLogo:input_type -> vietgara.tenant.v1.DeleteGarageLogoRequest
+	6,  // 24: vietgara.tenant.v1.GarageService.ListGarages:output_type -> vietgara.tenant.v1.ListGaragesResponse
+	8,  // 25: vietgara.tenant.v1.GarageService.CreateGarage:output_type -> vietgara.tenant.v1.CreateGarageResponse
+	10, // 26: vietgara.tenant.v1.GarageService.GetGarage:output_type -> vietgara.tenant.v1.GetGarageResponse
+	12, // 27: vietgara.tenant.v1.GarageService.UpdateGarage:output_type -> vietgara.tenant.v1.UpdateGarageResponse
+	14, // 28: vietgara.tenant.v1.GarageService.UploadGarageLogo:output_type -> vietgara.tenant.v1.UploadGarageLogoResponse
+	16, // 29: vietgara.tenant.v1.GarageService.DeleteGarageLogo:output_type -> vietgara.tenant.v1.DeleteGarageLogoResponse
+	24, // [24:30] is the sub-list for method output_type
+	18, // [18:24] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_tenant_v1_garage_proto_init() }
