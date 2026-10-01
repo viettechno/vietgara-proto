@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package vietgara.document.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/api/httpbody.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/document/v1;documentv1";
+
+message ExportQuotePdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string quote_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ExportSettlementReceiptPdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ExportStockMovementsExcelRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Same optional filter as InventoryService.ListStockTransactions.
+  string item_id = 2;
+}
+
+// DocumentService renders PDFs and Excel reports on request (FRD 3.13).
+// No templates are stored -- FR-DOC-03 (letting a garage customize the
+// logo and layout) is Phase 4 -- every document is generated fresh from
+// the owning module's own data, read through a narrow interface the same
+// way every other cross-module read works (HLD Section 2: a module never
+// queries another module's tables directly). Each RPC needs the same
+// permission as the data it renders (quote.read, billing.read,
+// inventory.read), not a permission of its own.
+service DocumentService {
+  // FR-DOC-01: the quote as a PDF, using the garage's standard layout.
+  rpc ExportQuotePdf(ExportQuotePdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf"};
+  }
+
+  // FR-DOC-01: the settlement as a receipt PDF.
+  rpc ExportSettlementReceiptPdf(ExportSettlementReceiptPdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/settlements/{settlement_id}/receipt-pdf"};
+  }
+
+  // FR-DOC-02: the stock in/out/on-hand movement report (FR-INV-05) as an
+  // Excel workbook; same filter as the JSON report
+  // (InventoryService.ListStockTransactions).
+  rpc ExportStockMovementsExcel(ExportStockMovementsExcelRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/stock-movements/excel"};
+  }
+}

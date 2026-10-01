@@ -12,6 +12,14 @@ deps:
 lint:
   use:
     - STANDARD
+  except:
+    # google.api.HttpBody is the well-known type for a binary (PDF/Excel)
+    # response (DocumentService, Release 1.4); it is necessarily reused
+    # across RPCs and keeps its own name, unlike a normal per-RPC
+    # response message. This is the same exception Google's own APIs
+    # that return HttpBody carve out.
+    - RPC_REQUEST_RESPONSE_UNIQUE
+    - RPC_RESPONSE_STANDARD_NAME
 
 breaking:
   use:
