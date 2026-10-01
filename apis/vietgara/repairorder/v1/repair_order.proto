@@ -1,0 +1,188 @@
+syntax = "proto3";
+
+package vietgara.repairorder.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/pagination.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/repairorder/v1;repairorderv1";
+
+// RepairOrderStatus is the lifecycle of a repair order (FR-REP-01..06),
+// shown as the Kanban board's columns (UI Design Spec Section 3.3).
+enum RepairOrderStatus {
+  REPAIR_ORDER_STATUS_UNSPECIFIED = 0;
+  // "To Do": not yet started.
+  REPAIR_ORDER_STATUS_OPEN = 1;
+  REPAIR_ORDER_STATUS_IN_PROGRESS = 2;
+  // Blocked on a part not currently in stock.
+  REPAIR_ORDER_STATUS_WAITING_ON_PARTS = 3;
+  // Every line is done; ready for the advisor to close it.
+  REPAIR_ORDER_STATUS_COMPLETED = 4;
+  // Closed (FR-REP-06): no further edits; ready for settlement (Release
+  // 1.4) and triggers stock deduction (Event Design, repair_order.closed).
+  REPAIR_ORDER_STATUS_CLOSED = 5;
+}
+
+// RepairOrderItemType: a repair order line is either labor or a part.
+enum RepairOrderItemType {
+  REPAIR_ORDER_ITEM_TYPE_UNSPECIFIED = 0;
+  REPAIR_ORDER_ITEM_TYPE_LABOR = 1;
+  REPAIR_ORDER_ITEM_TYPE_PART = 2;
+}
+
+// RepairOrderLineStatus is one line's own progress (FR-REP-03), tracked
+// separately from the repair order's overall status.
+enum RepairOrderLineStatus {
+  REPAIR_ORDER_LINE_STATUS_UNSPECIFIED = 0;
+  REPAIR_ORDER_LINE_STATUS_NOT_STARTED = 1;
+  REPAIR_ORDER_LINE_STATUS_IN_PROGRESS = 2;
+  REPAIR_ORDER_LINE_STATUS_COMPLETED = 3;
+}
+
+// RepairOrderLine is one labor or part line of a repair order.
+message RepairOrderLine {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  RepairOrderItemType item_type = 2 [(google.api.field_behavior) = REQUIRED];
+  // An Inventory item id for PART lines (FR-INV-02 stock deduction on
+  // close needs this); free text or empty for a part not carried in
+  // stock. Validated against the garage's items when set.
+  optional string item_ref_id = 3;
+  string description = 4 [(google.api.field_behavior) = REQUIRED];
+  // Decimal string, e.g. "1" or "1.5".
+  string quantity = 5 [(google.api.field_behavior) = REQUIRED];
+  // Integer VND.
+  int64 unit_price = 6 [(google.api.field_behavior) = REQUIRED];
+  int64 line_total = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  RepairOrderLineStatus status = 8;
+  // Technician account ids assigned to this line (FR-REP-02); a line may
+  // have more than one.
+  repeated string assigned_technician_ids = 9;
+}
+
+// RepairOrder is a repair job for one vehicle (FR-REP-01), either
+// converted from an approved quote (Release 1.2's ConvertQuote) or
+// created directly for ad-hoc work.
+message RepairOrder {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Set when converted from a quote; empty for ad-hoc repair orders.
+  string quote_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string vehicle_id = 4 [(google.api.field_behavior) = REQUIRED];
+  string vehicle_license_plate = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string customer_name = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Rendered from the garage's repair_order_number_template (FR-TEN-05).
+  string number = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  RepairOrderStatus status = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated RepairOrderLine lines = 9;
+  int64 total_amount = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp closed_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListRepairOrdersRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string vehicle_id = 2;
+  RepairOrderStatus status = 3;
+  // Only repair orders with a line assigned to this technician.
+  string technician_id = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+message ListRepairOrdersResponse {
+  repeated RepairOrder data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message CreateRepairOrderRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Ad-hoc creation (FR-REP-01): quote_id is never set through this RPC.
+  RepairOrder repair_order = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateRepairOrderResponse {
+  RepairOrder repair_order = 1;
+}
+
+message GetRepairOrderRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetRepairOrderResponse {
+  RepairOrder repair_order = 1;
+}
+
+message UpdateRepairOrderLineRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string line_id = 3 [(google.api.field_behavior) = REQUIRED];
+  // status and/or assigned_technician_ids (FR-REP-02/03).
+  RepairOrderLine line = 4 [(google.api.field_behavior) = REQUIRED];
+  google.protobuf.FieldMask update_mask = 5;
+}
+
+message UpdateRepairOrderLineResponse {
+  RepairOrder repair_order = 1;
+}
+
+message CloseRepairOrderRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CloseRepairOrderResponse {
+  RepairOrder repair_order = 1;
+}
+
+// RepairOrderService manages repair orders (FRD 3.6). Reads need
+// PERMISSION_REPAIR_ORDER_READ, changes PERMISSION_REPAIR_ORDER_WRITE.
+service RepairOrderService {
+  rpc ListRepairOrders(ListRepairOrdersRequest) returns (ListRepairOrdersResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/repair-orders"};
+  }
+
+  // Creates an ad-hoc repair order (FR-REP-01); counts against the plan's
+  // daily transaction limit (FR-LIC-02). A quote converts into one
+  // through QuoteService.ConvertQuote instead.
+  rpc CreateRepairOrder(CreateRepairOrderRequest) returns (CreateRepairOrderResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/repair-orders"
+      body: "repair_order"
+      response_body: "repair_order"
+    };
+  }
+
+  rpc GetRepairOrder(GetRepairOrderRequest) returns (GetRepairOrderResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}"
+      response_body: "repair_order"
+    };
+  }
+
+  // Assigns technicians and/or updates one line's own progress
+  // (FR-REP-02/03); the repair order's overall status (the Kanban
+  // column) is derived from its lines and returned in the response.
+  rpc UpdateRepairOrderLine(UpdateRepairOrderLineRequest) returns (UpdateRepairOrderLineResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/lines/{line_id}"
+      body: "line"
+      response_body: "repair_order"
+    };
+  }
+
+  // Closes the repair order (FR-REP-06): fails FAILED_PRECONDITION
+  // unless every line is completed. Publishes repair_order.closed, which
+  // deducts stock for the part lines (Event Design).
+  rpc CloseRepairOrder(CloseRepairOrderRequest) returns (CloseRepairOrderResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/closing"
+      body: "*"
+      response_body: "repair_order"
+    };
+  }
+}
