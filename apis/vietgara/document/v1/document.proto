@@ -13,6 +13,11 @@ message ExportQuotePdfRequest {
   string quote_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
+message ExportRepairOrderPdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
 message ExportSettlementReceiptPdfRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
@@ -36,6 +41,12 @@ service DocumentService {
   // FR-DOC-01: the quote as a PDF, using the garage's standard layout.
   rpc ExportQuotePdf(ExportQuotePdfRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf"};
+  }
+
+  // FR-DOC-01: the repair order as a PDF, using the garage's standard
+  // layout.
+  rpc ExportRepairOrderPdf(ExportRepairOrderPdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/pdf"};
   }
 
   // FR-DOC-01: the settlement as a receipt PDF.

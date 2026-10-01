@@ -2162,6 +2162,43 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/pdf": {
+      "get": {
+        "summary": "FR-DOC-01: the repair order as a PDF, using the garage's standard\nlayout.",
+        "operationId": "DocumentService_ExportRepairOrderPdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/reports/stock-movements": {
       "get": {
         "summary": "The stock in/out/on-hand movement report (FR-INV-05); Excel export\nof the same data is added with the Document/Print Service (Release\n1.4).",
