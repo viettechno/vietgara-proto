@@ -19,18 +19,23 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ReportingService_GetDashboard_FullMethodName = "/vietgara.reporting.v1.ReportingService/GetDashboard"
+	ReportingService_GetRevenueReport_FullMethodName = "/vietgara.reporting.v1.ReportingService/GetRevenueReport"
 )
 
 // ReportingServiceClient is the client API for ReportingService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// ReportingService reads aggregated data from the other modules' own use
-// cases (HLD Section 2: never another module's tables directly) to serve
-// the owner's Dashboard (FRD 3.15). PERMISSION_REPORT_READ.
+// ReportingService serves the revenue-by-period report (FR-RPT-01) that
+// backs the Web Admin Dashboard's KPI card and revenue chart (UI Design
+// Spec 3.1). It owns no tables of its own -- revenue is aggregated fresh
+// from Billing & Settlement's settlements on every request, the same
+// cross-module decoupling pattern used everywhere else (HLD Section 2).
+// Every other Dashboard KPI (orders in progress, low stock, outstanding
+// receivables) is served by each owning module's existing list endpoint;
+// this is the one figure not already exposed anywhere.
 type ReportingServiceClient interface {
-	GetDashboard(ctx context.Context, in *GetDashboardRequest, opts ...grpc.CallOption) (*GetDashboardResponse, error)
+	GetRevenueReport(ctx context.Context, in *GetRevenueReportRequest, opts ...grpc.CallOption) (*GetRevenueReportResponse, error)
 }
 
 type reportingServiceClient struct {
@@ -41,10 +46,10 @@ func NewReportingServiceClient(cc grpc.ClientConnInterface) ReportingServiceClie
 	return &reportingServiceClient{cc}
 }
 
-func (c *reportingServiceClient) GetDashboard(ctx context.Context, in *GetDashboardRequest, opts ...grpc.CallOption) (*GetDashboardResponse, error) {
+func (c *reportingServiceClient) GetRevenueReport(ctx context.Context, in *GetRevenueReportRequest, opts ...grpc.CallOption) (*GetRevenueReportResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetDashboardResponse)
-	err := c.cc.Invoke(ctx, ReportingService_GetDashboard_FullMethodName, in, out, cOpts...)
+	out := new(GetRevenueReportResponse)
+	err := c.cc.Invoke(ctx, ReportingService_GetRevenueReport_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,11 +60,16 @@ func (c *reportingServiceClient) GetDashboard(ctx context.Context, in *GetDashbo
 // All implementations must embed UnimplementedReportingServiceServer
 // for forward compatibility.
 //
-// ReportingService reads aggregated data from the other modules' own use
-// cases (HLD Section 2: never another module's tables directly) to serve
-// the owner's Dashboard (FRD 3.15). PERMISSION_REPORT_READ.
+// ReportingService serves the revenue-by-period report (FR-RPT-01) that
+// backs the Web Admin Dashboard's KPI card and revenue chart (UI Design
+// Spec 3.1). It owns no tables of its own -- revenue is aggregated fresh
+// from Billing & Settlement's settlements on every request, the same
+// cross-module decoupling pattern used everywhere else (HLD Section 2).
+// Every other Dashboard KPI (orders in progress, low stock, outstanding
+// receivables) is served by each owning module's existing list endpoint;
+// this is the one figure not already exposed anywhere.
 type ReportingServiceServer interface {
-	GetDashboard(context.Context, *GetDashboardRequest) (*GetDashboardResponse, error)
+	GetRevenueReport(context.Context, *GetRevenueReportRequest) (*GetRevenueReportResponse, error)
 	mustEmbedUnimplementedReportingServiceServer()
 }
 
@@ -70,8 +80,8 @@ type ReportingServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedReportingServiceServer struct{}
 
-func (UnimplementedReportingServiceServer) GetDashboard(context.Context, *GetDashboardRequest) (*GetDashboardResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetDashboard not implemented")
+func (UnimplementedReportingServiceServer) GetRevenueReport(context.Context, *GetRevenueReportRequest) (*GetRevenueReportResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRevenueReport not implemented")
 }
 func (UnimplementedReportingServiceServer) mustEmbedUnimplementedReportingServiceServer() {}
 func (UnimplementedReportingServiceServer) testEmbeddedByValue()                          {}
@@ -94,20 +104,20 @@ func RegisterReportingServiceServer(s grpc.ServiceRegistrar, srv ReportingServic
 	s.RegisterService(&ReportingService_ServiceDesc, srv)
 }
 
-func _ReportingService_GetDashboard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetDashboardRequest)
+func _ReportingService_GetRevenueReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRevenueReportRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ReportingServiceServer).GetDashboard(ctx, in)
+		return srv.(ReportingServiceServer).GetRevenueReport(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ReportingService_GetDashboard_FullMethodName,
+		FullMethod: ReportingService_GetRevenueReport_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ReportingServiceServer).GetDashboard(ctx, req.(*GetDashboardRequest))
+		return srv.(ReportingServiceServer).GetRevenueReport(ctx, req.(*GetRevenueReportRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -120,8 +130,8 @@ var ReportingService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ReportingServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetDashboard",
-			Handler:    _ReportingService_GetDashboard_Handler,
+			MethodName: "GetRevenueReport",
+			Handler:    _ReportingService_GetRevenueReport_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -10,7 +10,6 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -23,32 +22,88 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// RevenueDay is one day's collected revenue (FR-RPT-01), the unit the
-// Dashboard's 30-day chart is built from.
-type RevenueDay struct {
+// RevenuePeriod is the bucket granularity of a revenue report (FR-RPT-01).
+type RevenuePeriod int32
+
+const (
+	RevenuePeriod_REVENUE_PERIOD_UNSPECIFIED RevenuePeriod = 0
+	RevenuePeriod_REVENUE_PERIOD_DAY         RevenuePeriod = 1
+	RevenuePeriod_REVENUE_PERIOD_MONTH       RevenuePeriod = 2
+	RevenuePeriod_REVENUE_PERIOD_QUARTER     RevenuePeriod = 3
+	RevenuePeriod_REVENUE_PERIOD_YEAR        RevenuePeriod = 4
+)
+
+// Enum value maps for RevenuePeriod.
+var (
+	RevenuePeriod_name = map[int32]string{
+		0: "REVENUE_PERIOD_UNSPECIFIED",
+		1: "REVENUE_PERIOD_DAY",
+		2: "REVENUE_PERIOD_MONTH",
+		3: "REVENUE_PERIOD_QUARTER",
+		4: "REVENUE_PERIOD_YEAR",
+	}
+	RevenuePeriod_value = map[string]int32{
+		"REVENUE_PERIOD_UNSPECIFIED": 0,
+		"REVENUE_PERIOD_DAY":         1,
+		"REVENUE_PERIOD_MONTH":       2,
+		"REVENUE_PERIOD_QUARTER":     3,
+		"REVENUE_PERIOD_YEAR":        4,
+	}
+)
+
+func (x RevenuePeriod) Enum() *RevenuePeriod {
+	p := new(RevenuePeriod)
+	*p = x
+	return p
+}
+
+func (x RevenuePeriod) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (RevenuePeriod) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_reporting_v1_reporting_proto_enumTypes[0].Descriptor()
+}
+
+func (RevenuePeriod) Type() protoreflect.EnumType {
+	return &file_vietgara_reporting_v1_reporting_proto_enumTypes[0]
+}
+
+func (x RevenuePeriod) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use RevenuePeriod.Descriptor instead.
+func (RevenuePeriod) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{0}
+}
+
+// RevenuePoint is one bucket of a revenue report.
+type RevenuePoint struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// "YYYY-MM-DD", in the garage's timezone (FR-TEN-05).
-	Date string `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
+	// The bucket's start, formatted for its granularity: "2026-09-30" (day),
+	// "2026-09" (month), "2026-Q3" (quarter), "2026" (year).
+	PeriodLabel string `protobuf:"bytes,1,opt,name=period_label,json=periodLabel,proto3" json:"period_label,omitempty"`
 	// Integer VND.
 	Amount        int64 `protobuf:"varint,2,opt,name=amount,proto3" json:"amount,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *RevenueDay) Reset() {
-	*x = RevenueDay{}
+func (x *RevenuePoint) Reset() {
+	*x = RevenuePoint{}
 	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *RevenueDay) String() string {
+func (x *RevenuePoint) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RevenueDay) ProtoMessage() {}
+func (*RevenuePoint) ProtoMessage() {}
 
-func (x *RevenueDay) ProtoReflect() protoreflect.Message {
+func (x *RevenuePoint) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -60,126 +115,52 @@ func (x *RevenueDay) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RevenueDay.ProtoReflect.Descriptor instead.
-func (*RevenueDay) Descriptor() ([]byte, []int) {
+// Deprecated: Use RevenuePoint.ProtoReflect.Descriptor instead.
+func (*RevenuePoint) Descriptor() ([]byte, []int) {
 	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *RevenueDay) GetDate() string {
+func (x *RevenuePoint) GetPeriodLabel() string {
 	if x != nil {
-		return x.Date
+		return x.PeriodLabel
 	}
 	return ""
 }
 
-func (x *RevenueDay) GetAmount() int64 {
+func (x *RevenuePoint) GetAmount() int64 {
 	if x != nil {
 		return x.Amount
 	}
 	return 0
 }
 
-// DashboardRepairOrder is one row of the Dashboard's "repair orders in
-// progress" list (UI Design Spec 3.1) -- the same narrow shape Vehicle
-// History already uses for a cross-module summary row.
-type DashboardRepairOrder struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	Id                  string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Number              string                 `protobuf:"bytes,2,opt,name=number,proto3" json:"number,omitempty"`
-	VehicleLicensePlate string                 `protobuf:"bytes,3,opt,name=vehicle_license_plate,json=vehicleLicensePlate,proto3" json:"vehicle_license_plate,omitempty"`
-	CustomerName        string                 `protobuf:"bytes,4,opt,name=customer_name,json=customerName,proto3" json:"customer_name,omitempty"`
-	UpdatedAt           *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
-}
-
-func (x *DashboardRepairOrder) Reset() {
-	*x = DashboardRepairOrder{}
-	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DashboardRepairOrder) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DashboardRepairOrder) ProtoMessage() {}
-
-func (x *DashboardRepairOrder) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DashboardRepairOrder.ProtoReflect.Descriptor instead.
-func (*DashboardRepairOrder) Descriptor() ([]byte, []int) {
-	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *DashboardRepairOrder) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *DashboardRepairOrder) GetNumber() string {
-	if x != nil {
-		return x.Number
-	}
-	return ""
-}
-
-func (x *DashboardRepairOrder) GetVehicleLicensePlate() string {
-	if x != nil {
-		return x.VehicleLicensePlate
-	}
-	return ""
-}
-
-func (x *DashboardRepairOrder) GetCustomerName() string {
-	if x != nil {
-		return x.CustomerName
-	}
-	return ""
-}
-
-func (x *DashboardRepairOrder) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return nil
-}
-
-type GetDashboardRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+type GetRevenueReportRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	Period   RevenuePeriod          `protobuf:"varint,2,opt,name=period,proto3,enum=vietgara.reporting.v1.RevenuePeriod" json:"period,omitempty"`
+	// Inclusive, "YYYY-MM-DD" in the garage's timezone (FR-TEN-05).
+	From string `protobuf:"bytes,3,opt,name=from,proto3" json:"from,omitempty"`
+	// Exclusive, "YYYY-MM-DD".
+	To            string `protobuf:"bytes,4,opt,name=to,proto3" json:"to,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetDashboardRequest) Reset() {
-	*x = GetDashboardRequest{}
-	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[2]
+func (x *GetRevenueReportRequest) Reset() {
+	*x = GetRevenueReportRequest{}
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetDashboardRequest) String() string {
+func (x *GetRevenueReportRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetDashboardRequest) ProtoMessage() {}
+func (*GetRevenueReportRequest) ProtoMessage() {}
 
-func (x *GetDashboardRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[2]
+func (x *GetRevenueReportRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -190,61 +171,63 @@ func (x *GetDashboardRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetDashboardRequest.ProtoReflect.Descriptor instead.
-func (*GetDashboardRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{2}
+// Deprecated: Use GetRevenueReportRequest.ProtoReflect.Descriptor instead.
+func (*GetRevenueReportRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetDashboardRequest) GetGarageId() string {
+func (x *GetRevenueReportRequest) GetGarageId() string {
 	if x != nil {
 		return x.GarageId
 	}
 	return ""
 }
 
-// GetDashboardResponse is everything the Web Admin Dashboard screen needs
-// in one request (UI Design Spec 3.1): the three KPI cards, the revenue
-// chart's last 30 days, the low-stock alert count, and the repair orders
-// in progress list. FR-RPT-01's day/month/quarter/year revenue report is
-// delivered as its day granularity only, the one the Dashboard actually
-// consumes; month/quarter/year and FR-RPT-02 (technician performance,
-// Phase 2) and FR-RPT-03 (multi-branch consolidated, Phase 4) remain
-// planned.
-type GetDashboardResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Revenue collected so far in the current calendar month (the garage's
-	// timezone), integer VND.
-	MonthlyRevenue int64 `protobuf:"varint,1,opt,name=monthly_revenue,json=monthlyRevenue,proto3" json:"monthly_revenue,omitempty"`
-	// Repair orders currently REPAIR_ORDER_STATUS_IN_PROGRESS.
-	OrdersInProgressCount int32 `protobuf:"varint,2,opt,name=orders_in_progress_count,json=ordersInProgressCount,proto3" json:"orders_in_progress_count,omitempty"`
-	// Sum of every not-yet-fully-paid settlement's remaining amount
-	// (FR-REC-01's same outstanding definition), integer VND.
-	OutstandingReceivablesTotal int64 `protobuf:"varint,3,opt,name=outstanding_receivables_total,json=outstandingReceivablesTotal,proto3" json:"outstanding_receivables_total,omitempty"`
-	// Oldest first, one entry per of the last 30 days (zero-filled).
-	RevenueByDay []*RevenueDay `protobuf:"bytes,4,rep,name=revenue_by_day,json=revenueByDay,proto3" json:"revenue_by_day,omitempty"`
-	// Items at or below their reorder threshold (FR-INV-04's display half).
-	LowStockItemCount int32 `protobuf:"varint,5,opt,name=low_stock_item_count,json=lowStockItemCount,proto3" json:"low_stock_item_count,omitempty"`
-	// Up to 5, newest first.
-	RecentInProgressOrders []*DashboardRepairOrder `protobuf:"bytes,6,rep,name=recent_in_progress_orders,json=recentInProgressOrders,proto3" json:"recent_in_progress_orders,omitempty"`
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
+func (x *GetRevenueReportRequest) GetPeriod() RevenuePeriod {
+	if x != nil {
+		return x.Period
+	}
+	return RevenuePeriod_REVENUE_PERIOD_UNSPECIFIED
 }
 
-func (x *GetDashboardResponse) Reset() {
-	*x = GetDashboardResponse{}
-	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[3]
+func (x *GetRevenueReportRequest) GetFrom() string {
+	if x != nil {
+		return x.From
+	}
+	return ""
+}
+
+func (x *GetRevenueReportRequest) GetTo() string {
+	if x != nil {
+		return x.To
+	}
+	return ""
+}
+
+type GetRevenueReportResponse struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Points []*RevenuePoint        `protobuf:"bytes,1,rep,name=points,proto3" json:"points,omitempty"`
+	// Sum of every point's amount, over the requested range.
+	TotalAmount   int64 `protobuf:"varint,2,opt,name=total_amount,json=totalAmount,proto3" json:"total_amount,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRevenueReportResponse) Reset() {
+	*x = GetRevenueReportResponse{}
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetDashboardResponse) String() string {
+func (x *GetRevenueReportResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetDashboardResponse) ProtoMessage() {}
+func (*GetRevenueReportResponse) ProtoMessage() {}
 
-func (x *GetDashboardResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[3]
+func (x *GetRevenueReportResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -255,80 +238,49 @@ func (x *GetDashboardResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetDashboardResponse.ProtoReflect.Descriptor instead.
-func (*GetDashboardResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{3}
+// Deprecated: Use GetRevenueReportResponse.ProtoReflect.Descriptor instead.
+func (*GetRevenueReportResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetDashboardResponse) GetMonthlyRevenue() int64 {
+func (x *GetRevenueReportResponse) GetPoints() []*RevenuePoint {
 	if x != nil {
-		return x.MonthlyRevenue
-	}
-	return 0
-}
-
-func (x *GetDashboardResponse) GetOrdersInProgressCount() int32 {
-	if x != nil {
-		return x.OrdersInProgressCount
-	}
-	return 0
-}
-
-func (x *GetDashboardResponse) GetOutstandingReceivablesTotal() int64 {
-	if x != nil {
-		return x.OutstandingReceivablesTotal
-	}
-	return 0
-}
-
-func (x *GetDashboardResponse) GetRevenueByDay() []*RevenueDay {
-	if x != nil {
-		return x.RevenueByDay
+		return x.Points
 	}
 	return nil
 }
 
-func (x *GetDashboardResponse) GetLowStockItemCount() int32 {
+func (x *GetRevenueReportResponse) GetTotalAmount() int64 {
 	if x != nil {
-		return x.LowStockItemCount
+		return x.TotalAmount
 	}
 	return 0
-}
-
-func (x *GetDashboardResponse) GetRecentInProgressOrders() []*DashboardRepairOrder {
-	if x != nil {
-		return x.RecentInProgressOrders
-	}
-	return nil
 }
 
 var File_vietgara_reporting_v1_reporting_proto protoreflect.FileDescriptor
 
 const file_vietgara_reporting_v1_reporting_proto_rawDesc = "" +
 	"\n" +
-	"%vietgara/reporting/v1/reporting.proto\x12\x15vietgara.reporting.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"8\n" +
-	"\n" +
-	"RevenueDay\x12\x12\n" +
-	"\x04date\x18\x01 \x01(\tR\x04date\x12\x16\n" +
-	"\x06amount\x18\x02 \x01(\x03R\x06amount\"\xd2\x01\n" +
-	"\x14DashboardRepairOrder\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
-	"\x06number\x18\x02 \x01(\tR\x06number\x122\n" +
-	"\x15vehicle_license_plate\x18\x03 \x01(\tR\x13vehicleLicensePlate\x12#\n" +
-	"\rcustomer_name\x18\x04 \x01(\tR\fcustomerName\x129\n" +
-	"\n" +
-	"updated_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"7\n" +
-	"\x13GetDashboardRequest\x12 \n" +
-	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\"\x9e\x03\n" +
-	"\x14GetDashboardResponse\x12'\n" +
-	"\x0fmonthly_revenue\x18\x01 \x01(\x03R\x0emonthlyRevenue\x127\n" +
-	"\x18orders_in_progress_count\x18\x02 \x01(\x05R\x15ordersInProgressCount\x12B\n" +
-	"\x1doutstanding_receivables_total\x18\x03 \x01(\x03R\x1boutstandingReceivablesTotal\x12G\n" +
-	"\x0erevenue_by_day\x18\x04 \x03(\v2!.vietgara.reporting.v1.RevenueDayR\frevenueByDay\x12/\n" +
-	"\x14low_stock_item_count\x18\x05 \x01(\x05R\x11lowStockItemCount\x12f\n" +
-	"\x19recent_in_progress_orders\x18\x06 \x03(\v2+.vietgara.reporting.v1.DashboardRepairOrderR\x16recentInProgressOrders2\xb3\x01\n" +
-	"\x10ReportingService\x12\x9e\x01\n" +
-	"\fGetDashboard\x12*.vietgara.reporting.v1.GetDashboardRequest\x1a+.vietgara.reporting.v1.GetDashboardResponse\"5\x82\xd3\xe4\x93\x02/\x12-/api/v1/garages/{garage_id}/reports/dashboardBPZNgithub.com/viettechno/vietgara-proto/apis-go/vietgara/reporting/v1;reportingv1b\x06proto3"
+	"%vietgara/reporting/v1/reporting.proto\x12\x15vietgara.reporting.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\"S\n" +
+	"\fRevenuePoint\x12&\n" +
+	"\fperiod_label\x18\x01 \x01(\tB\x03\xe0A\x03R\vperiodLabel\x12\x1b\n" +
+	"\x06amount\x18\x02 \x01(\x03B\x03\xe0A\x03R\x06amount\"\xac\x01\n" +
+	"\x17GetRevenueReportRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12A\n" +
+	"\x06period\x18\x02 \x01(\x0e2$.vietgara.reporting.v1.RevenuePeriodB\x03\xe0A\x02R\x06period\x12\x17\n" +
+	"\x04from\x18\x03 \x01(\tB\x03\xe0A\x02R\x04from\x12\x13\n" +
+	"\x02to\x18\x04 \x01(\tB\x03\xe0A\x02R\x02to\"z\n" +
+	"\x18GetRevenueReportResponse\x12;\n" +
+	"\x06points\x18\x01 \x03(\v2#.vietgara.reporting.v1.RevenuePointR\x06points\x12!\n" +
+	"\ftotal_amount\x18\x02 \x01(\x03R\vtotalAmount*\x96\x01\n" +
+	"\rRevenuePeriod\x12\x1e\n" +
+	"\x1aREVENUE_PERIOD_UNSPECIFIED\x10\x00\x12\x16\n" +
+	"\x12REVENUE_PERIOD_DAY\x10\x01\x12\x18\n" +
+	"\x14REVENUE_PERIOD_MONTH\x10\x02\x12\x1a\n" +
+	"\x16REVENUE_PERIOD_QUARTER\x10\x03\x12\x17\n" +
+	"\x13REVENUE_PERIOD_YEAR\x10\x042\xbd\x01\n" +
+	"\x10ReportingService\x12\xa8\x01\n" +
+	"\x10GetRevenueReport\x12..vietgara.reporting.v1.GetRevenueReportRequest\x1a/.vietgara.reporting.v1.GetRevenueReportResponse\"3\x82\xd3\xe4\x93\x02-\x12+/api/v1/garages/{garage_id}/reports/revenueBPZNgithub.com/viettechno/vietgara-proto/apis-go/vietgara/reporting/v1;reportingv1b\x06proto3"
 
 var (
 	file_vietgara_reporting_v1_reporting_proto_rawDescOnce sync.Once
@@ -342,25 +294,24 @@ func file_vietgara_reporting_v1_reporting_proto_rawDescGZIP() []byte {
 	return file_vietgara_reporting_v1_reporting_proto_rawDescData
 }
 
-var file_vietgara_reporting_v1_reporting_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_vietgara_reporting_v1_reporting_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_vietgara_reporting_v1_reporting_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_vietgara_reporting_v1_reporting_proto_goTypes = []any{
-	(*RevenueDay)(nil),            // 0: vietgara.reporting.v1.RevenueDay
-	(*DashboardRepairOrder)(nil),  // 1: vietgara.reporting.v1.DashboardRepairOrder
-	(*GetDashboardRequest)(nil),   // 2: vietgara.reporting.v1.GetDashboardRequest
-	(*GetDashboardResponse)(nil),  // 3: vietgara.reporting.v1.GetDashboardResponse
-	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
+	(RevenuePeriod)(0),               // 0: vietgara.reporting.v1.RevenuePeriod
+	(*RevenuePoint)(nil),             // 1: vietgara.reporting.v1.RevenuePoint
+	(*GetRevenueReportRequest)(nil),  // 2: vietgara.reporting.v1.GetRevenueReportRequest
+	(*GetRevenueReportResponse)(nil), // 3: vietgara.reporting.v1.GetRevenueReportResponse
 }
 var file_vietgara_reporting_v1_reporting_proto_depIdxs = []int32{
-	4, // 0: vietgara.reporting.v1.DashboardRepairOrder.updated_at:type_name -> google.protobuf.Timestamp
-	0, // 1: vietgara.reporting.v1.GetDashboardResponse.revenue_by_day:type_name -> vietgara.reporting.v1.RevenueDay
-	1, // 2: vietgara.reporting.v1.GetDashboardResponse.recent_in_progress_orders:type_name -> vietgara.reporting.v1.DashboardRepairOrder
-	2, // 3: vietgara.reporting.v1.ReportingService.GetDashboard:input_type -> vietgara.reporting.v1.GetDashboardRequest
-	3, // 4: vietgara.reporting.v1.ReportingService.GetDashboard:output_type -> vietgara.reporting.v1.GetDashboardResponse
-	4, // [4:5] is the sub-list for method output_type
-	3, // [3:4] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	0, // 0: vietgara.reporting.v1.GetRevenueReportRequest.period:type_name -> vietgara.reporting.v1.RevenuePeriod
+	1, // 1: vietgara.reporting.v1.GetRevenueReportResponse.points:type_name -> vietgara.reporting.v1.RevenuePoint
+	2, // 2: vietgara.reporting.v1.ReportingService.GetRevenueReport:input_type -> vietgara.reporting.v1.GetRevenueReportRequest
+	3, // 3: vietgara.reporting.v1.ReportingService.GetRevenueReport:output_type -> vietgara.reporting.v1.GetRevenueReportResponse
+	3, // [3:4] is the sub-list for method output_type
+	2, // [2:3] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_reporting_v1_reporting_proto_init() }
@@ -373,13 +324,14 @@ func file_vietgara_reporting_v1_reporting_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_reporting_v1_reporting_proto_rawDesc), len(file_vietgara_reporting_v1_reporting_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   4,
+			NumEnums:      1,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_vietgara_reporting_v1_reporting_proto_goTypes,
 		DependencyIndexes: file_vietgara_reporting_v1_reporting_proto_depIdxs,
+		EnumInfos:         file_vietgara_reporting_v1_reporting_proto_enumTypes,
 		MessageInfos:      file_vietgara_reporting_v1_reporting_proto_msgTypes,
 	}.Build()
 	File_vietgara_reporting_v1_reporting_proto = out.File
