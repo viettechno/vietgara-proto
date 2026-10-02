@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package vietgara.reporting.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/reporting/v1;reportingv1";
+
+// RevenueDay is one day's collected revenue (FR-RPT-01), the unit the
+// Dashboard's 30-day chart is built from.
+message RevenueDay {
+  // "YYYY-MM-DD", in the garage's timezone (FR-TEN-05).
+  string date = 1;
+  // Integer VND.
+  int64 amount = 2;
+}
+
+// DashboardRepairOrder is one row of the Dashboard's "repair orders in
+// progress" list (UI Design Spec 3.1) -- the same narrow shape Vehicle
+// History already uses for a cross-module summary row.
+message DashboardRepairOrder {
+  string id = 1;
+  string number = 2;
+  string vehicle_license_plate = 3;
+  string customer_name = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+message GetDashboardRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// GetDashboardResponse is everything the Web Admin Dashboard screen needs
+// in one request (UI Design Spec 3.1): the three KPI cards, the revenue
+// chart's last 30 days, the low-stock alert count, and the repair orders
+// in progress list. FR-RPT-01's day/month/quarter/year revenue report is
+// delivered as its day granularity only, the one the Dashboard actually
+// consumes; month/quarter/year and FR-RPT-02 (technician performance,
+// Phase 2) and FR-RPT-03 (multi-branch consolidated, Phase 4) remain
+// planned.
+message GetDashboardResponse {
+  // Revenue collected so far in the current calendar month (the garage's
+  // timezone), integer VND.
+  int64 monthly_revenue = 1;
+  // Repair orders currently REPAIR_ORDER_STATUS_IN_PROGRESS.
+  int32 orders_in_progress_count = 2;
+  // Sum of every not-yet-fully-paid settlement's remaining amount
+  // (FR-REC-01's same outstanding definition), integer VND.
+  int64 outstanding_receivables_total = 3;
+  // Oldest first, one entry per of the last 30 days (zero-filled).
+  repeated RevenueDay revenue_by_day = 4;
+  // Items at or below their reorder threshold (FR-INV-04's display half).
+  int32 low_stock_item_count = 5;
+  // Up to 5, newest first.
+  repeated DashboardRepairOrder recent_in_progress_orders = 6;
+}
+
+// ReportingService reads aggregated data from the other modules' own use
+// cases (HLD Section 2: never another module's tables directly) to serve
+// the owner's Dashboard (FRD 3.15). PERMISSION_REPORT_READ.
+service ReportingService {
+  rpc GetDashboard(GetDashboardRequest) returns (GetDashboardResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/dashboard"};
+  }
+}

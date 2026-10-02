@@ -59,6 +59,10 @@
       "description": "RepairOrderService manages repair orders (FRD 3.6). Reads need\nPERMISSION_REPAIR_ORDER_READ, changes PERMISSION_REPAIR_ORDER_WRITE."
     },
     {
+      "name": "ReportingService",
+      "description": "ReportingService reads aggregated data from the other modules' own use\ncases (HLD Section 2: never another module's tables directly) to serve\nthe owner's Dashboard (FRD 3.15). PERMISSION_REPORT_READ."
+    },
+    {
       "name": "RoleService",
       "description": "RoleService lets a garage owner manage the roles shared by their garages.\nEvery call acts on the signed-in owner's own roles."
     },
@@ -2199,6 +2203,36 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/reports/dashboard": {
+      "get": {
+        "operationId": "ReportingService_GetDashboard",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetDashboardResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ReportingService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/reports/stock-movements": {
       "get": {
         "summary": "The stock in/out/on-hand movement report (FR-INV-05); Excel export\nof the same data is added with the Document/Print Service (Release\n1.4).",
@@ -4195,6 +4229,28 @@
       },
       "description": "DailyHours is the opening time of one weekday (FR-TEN-05)."
     },
+    "v1DashboardRepairOrder": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "number": {
+          "type": "string"
+        },
+        "vehicleLicensePlate": {
+          "type": "string"
+        },
+        "customerName": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "DashboardRepairOrder is one row of the Dashboard's \"repair orders in\nprogress\" list (UI Design Spec 3.1) -- the same narrow shape Vehicle\nHistory already uses for a cross-module summary row."
+    },
     "v1DecidePublicQuoteResponse": {
       "type": "object",
       "properties": {
@@ -4446,6 +4502,48 @@
           "$ref": "#/definitions/v1Customer"
         }
       }
+    },
+    "v1GetDashboardResponse": {
+      "type": "object",
+      "properties": {
+        "monthlyRevenue": {
+          "type": "string",
+          "format": "int64",
+          "description": "Revenue collected so far in the current calendar month (the garage's\ntimezone), integer VND."
+        },
+        "ordersInProgressCount": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Repair orders currently REPAIR_ORDER_STATUS_IN_PROGRESS."
+        },
+        "outstandingReceivablesTotal": {
+          "type": "string",
+          "format": "int64",
+          "description": "Sum of every not-yet-fully-paid settlement's remaining amount\n(FR-REC-01's same outstanding definition), integer VND."
+        },
+        "revenueByDay": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RevenueDay"
+          },
+          "description": "Oldest first, one entry per of the last 30 days (zero-filled)."
+        },
+        "lowStockItemCount": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Items at or below their reorder threshold (FR-INV-04's display half)."
+        },
+        "recentInProgressOrders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1DashboardRepairOrder"
+          },
+          "description": "Up to 5, newest first."
+        }
+      },
+      "description": "GetDashboardResponse is everything the Web Admin Dashboard screen needs\nin one request (UI Design Spec 3.1): the three KPI cards, the revenue\nchart's last 30 days, the low-stock alert count, and the repair orders\nin progress list. FR-RPT-01's day/month/quarter/year revenue report is\ndelivered as its day granularity only, the one the Dashboard actually\nconsumes; month/quarter/year and FR-RPT-02 (technician performance,\nPhase 2) and FR-RPT-03 (multi-branch consolidated, Phase 4) remain\nplanned."
     },
     "v1GetGarageEntitlementsResponse": {
       "type": "object",
@@ -5715,6 +5813,21 @@
     },
     "v1ResetPasswordResponse": {
       "type": "object"
+    },
+    "v1RevenueDay": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "description": "\"YYYY-MM-DD\", in the garage's timezone (FR-TEN-05)."
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Integer VND."
+        }
+      },
+      "description": "RevenueDay is one day's collected revenue (FR-RPT-01), the unit the\nDashboard's 30-day chart is built from."
     },
     "v1RevokeInvitationResponse": {
       "type": "object",
