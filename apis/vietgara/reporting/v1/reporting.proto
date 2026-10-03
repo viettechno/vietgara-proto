@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package vietgara.reporting.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/reporting/v1;reportingv1";
+
+// RevenuePeriod is the bucket granularity of a revenue report (FR-RPT-01).
+enum RevenuePeriod {
+  REVENUE_PERIOD_UNSPECIFIED = 0;
+  REVENUE_PERIOD_DAY = 1;
+  REVENUE_PERIOD_MONTH = 2;
+  REVENUE_PERIOD_QUARTER = 3;
+  REVENUE_PERIOD_YEAR = 4;
+}
+
+// RevenuePoint is one bucket of a revenue report.
+message RevenuePoint {
+  // The bucket's start, formatted for its granularity: "2026-09-30" (day),
+  // "2026-09" (month), "2026-Q3" (quarter), "2026" (year).
+  string period_label = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Integer VND.
+  int64 amount = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message GetRevenueReportRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  RevenuePeriod period = 2 [(google.api.field_behavior) = REQUIRED];
+  // Inclusive, "YYYY-MM-DD" in the garage's timezone (FR-TEN-05).
+  string from = 3 [(google.api.field_behavior) = REQUIRED];
+  // Exclusive, "YYYY-MM-DD".
+  string to = 4 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetRevenueReportResponse {
+  repeated RevenuePoint points = 1;
+  // Sum of every point's amount, over the requested range.
+  int64 total_amount = 2;
+}
+
+// ReportingService serves the revenue-by-period report (FR-RPT-01) that
+// backs the Web Admin Dashboard's KPI card and revenue chart (UI Design
+// Spec 3.1). It owns no tables of its own -- revenue is aggregated fresh
+// from Billing & Settlement's settlements on every request, the same
+// cross-module decoupling pattern used everywhere else (HLD Section 2).
+// Every other Dashboard KPI (orders in progress, low stock, outstanding
+// receivables) is served by each owning module's existing list endpoint;
+// this is the one figure not already exposed anywhere.
+service ReportingService {
+  rpc GetRevenueReport(GetRevenueReportRequest) returns (GetRevenueReportResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/revenue"};
+  }
+}

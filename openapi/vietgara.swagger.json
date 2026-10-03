@@ -59,6 +59,10 @@
       "description": "RepairOrderService manages repair orders (FRD 3.6). Reads need\nPERMISSION_REPAIR_ORDER_READ, changes PERMISSION_REPAIR_ORDER_WRITE."
     },
     {
+      "name": "ReportingService",
+      "description": "ReportingService serves the revenue-by-period report (FR-RPT-01) that\nbacks the Web Admin Dashboard's KPI card and revenue chart (UI Design\nSpec 3.1). It owns no tables of its own -- revenue is aggregated fresh\nfrom Billing \u0026 Settlement's settlements on every request, the same\ncross-module decoupling pattern used everywhere else (HLD Section 2).\nEvery other Dashboard KPI (orders in progress, low stock, outstanding\nreceivables) is served by each owning module's existing list endpoint;\nthis is the one figure not already exposed anywhere."
+    },
+    {
       "name": "RoleService",
       "description": "RoleService lets a garage owner manage the roles shared by their garages.\nEvery call acts on the signed-in owner's own roles."
     },
@@ -2196,6 +2200,62 @@
         ],
         "tags": [
           "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/reports/revenue": {
+      "get": {
+        "operationId": "ReportingService_GetRevenueReport",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetRevenueReportResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "REVENUE_PERIOD_DAY",
+              "REVENUE_PERIOD_MONTH",
+              "REVENUE_PERIOD_QUARTER",
+              "REVENUE_PERIOD_YEAR"
+            ]
+          },
+          {
+            "name": "from",
+            "description": "Inclusive, \"YYYY-MM-DD\" in the garage's timezone (FR-TEN-05).",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "to",
+            "description": "Exclusive, \"YYYY-MM-DD\".",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ReportingService"
         ]
       }
     },
@@ -4527,6 +4587,23 @@
         }
       }
     },
+    "v1GetRevenueReportResponse": {
+      "type": "object",
+      "properties": {
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RevenuePoint"
+          }
+        },
+        "totalAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Sum of every point's amount, over the requested range."
+        }
+      }
+    },
     "v1GetRoleResponse": {
       "type": "object",
       "properties": {
@@ -5715,6 +5792,33 @@
     },
     "v1ResetPasswordResponse": {
       "type": "object"
+    },
+    "v1RevenuePeriod": {
+      "type": "string",
+      "enum": [
+        "REVENUE_PERIOD_DAY",
+        "REVENUE_PERIOD_MONTH",
+        "REVENUE_PERIOD_QUARTER",
+        "REVENUE_PERIOD_YEAR"
+      ],
+      "description": "RevenuePeriod is the bucket granularity of a revenue report (FR-RPT-01)."
+    },
+    "v1RevenuePoint": {
+      "type": "object",
+      "properties": {
+        "periodLabel": {
+          "type": "string",
+          "description": "The bucket's start, formatted for its granularity: \"2026-09-30\" (day),\n\"2026-09\" (month), \"2026-Q3\" (quarter), \"2026\" (year).",
+          "readOnly": true
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Integer VND.",
+          "readOnly": true
+        }
+      },
+      "description": "RevenuePoint is one bucket of a revenue report."
     },
     "v1RevokeInvitationResponse": {
       "type": "object",
