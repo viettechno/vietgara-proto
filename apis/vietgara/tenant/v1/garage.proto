@@ -36,6 +36,8 @@ message DailyHours {
 message NumberingTemplates {
   string quote = 1;
   string repair_order = 2;
+  // Settlement document numbers (Release 1.4).
+  string settlement = 3;
 }
 
 // GarageAccess is what the signed-in account may do in the garage.

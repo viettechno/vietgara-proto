@@ -7,6 +7,10 @@
   },
   "tags": [
     {
+      "name": "SettlementService",
+      "description": "SettlementService manages settlements (FRD 3.8/3.9). Reads need\nPERMISSION_BILLING_READ, changes PERMISSION_BILLING_WRITE."
+    },
+    {
       "name": "CustomerService",
       "description": "CustomerService manages a garage's customers (FRD 3.4). Reads need\nPERMISSION_CUSTOMER_READ, changes PERMISSION_CUSTOMER_WRITE."
     },
@@ -17,6 +21,10 @@
     {
       "name": "VehicleService",
       "description": "VehicleService manages vehicles (FRD 3.4). Filter by customer with\n?customerId=. Reads need PERMISSION_CUSTOMER_READ, changes\nPERMISSION_CUSTOMER_WRITE."
+    },
+    {
+      "name": "DocumentService",
+      "description": "DocumentService renders PDFs and Excel reports on request (FRD 3.13).\nNo templates are stored -- FR-DOC-03 (letting a garage customize the\nlogo and layout) is Phase 4 -- every document is generated fresh from\nthe owning module's own data, read through a narrow interface the same\nway every other cross-module read works (HLD Section 2: a module never\nqueries another module's tables directly). Each RPC needs the same\npermission as the data it renders (quote.read, billing.read,\ninventory.read), not a permission of its own."
     },
     {
       "name": "AccountService",
@@ -1830,6 +1838,43 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/quotes/{quoteId}/pdf": {
+      "get": {
+        "summary": "FR-DOC-01: the quote as a PDF, using the garage's standard layout.",
+        "operationId": "DocumentService_ExportQuotePdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/quotes/{quoteId}/sending": {
       "post": {
         "summary": "Sends the quote for customer approval (FR-QUO-02): generates the\npublic link for LINK mode (e-mailing it when the customer has an\ne-mail on file), or simply marks a MANUAL-mode quote ready for\nRecordQuoteDecision.",
@@ -2117,6 +2162,43 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/pdf": {
+      "get": {
+        "summary": "FR-DOC-01: the repair order as a PDF, using the garage's standard\nlayout.",
+        "operationId": "DocumentService_ExportRepairOrderPdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/reports/stock-movements": {
       "get": {
         "summary": "The stock in/out/on-hand movement report (FR-INV-05); Excel export\nof the same data is added with the Document/Print Service (Release\n1.4).",
@@ -2175,6 +2257,306 @@
         ],
         "tags": [
           "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/reports/stock-movements/excel": {
+      "get": {
+        "summary": "FR-DOC-02: the stock in/out/on-hand movement report (FR-INV-05) as an\nExcel workbook; same filter as the JSON report\n(InventoryService.ListStockTransactions).",
+        "operationId": "DocumentService_ExportStockMovementsExcel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "description": "Same optional filter as InventoryService.ListStockTransactions.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/settlements": {
+      "get": {
+        "summary": "Also FR-REC-01 (receivables) via outstanding_only.",
+        "operationId": "SettlementService_ListSettlements",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListSettlementsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": " - SETTLEMENT_STATUS_PENDING: Nothing collected yet.\n - SETTLEMENT_STATUS_PARTIALLY_PAID: Some, but not all, of the allocated amount collected.\n - SETTLEMENT_STATUS_PAID: The full allocated amount collected from both payers.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "SETTLEMENT_STATUS_PENDING",
+              "SETTLEMENT_STATUS_PARTIALLY_PAID",
+              "SETTLEMENT_STATUS_PAID"
+            ]
+          },
+          {
+            "name": "outstandingOnly",
+            "description": "FR-REC-01: settlements not yet fully paid (PENDING or\nPARTIALLY_PAID), across every customer -- the receivables view.\nMutually exclusive with `status` in practice; `status` wins if both\nare set.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "SettlementService"
+        ]
+      },
+      "post": {
+        "summary": "Creates a settlement from a closed repair order (FR-BIL-01),\naggregating its total; fails FAILED_PRECONDITION unless the repair\norder is closed, and ALREADY_EXISTS if it already has one.",
+        "operationId": "SettlementService_CreateSettlement",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Settlement"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SettlementServiceCreateSettlementBody"
+            }
+          }
+        ],
+        "tags": [
+          "SettlementService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/settlements/{settlementId}": {
+      "get": {
+        "operationId": "SettlementService_GetSettlement",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Settlement"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SettlementService"
+        ]
+      },
+      "patch": {
+        "summary": "Splits the settlement between what the customer pays directly and\nwhat insurance covers (FR-BIL-02); customer_amount + insurer_amount\nmust equal the total.",
+        "operationId": "SettlementService_AllocateSettlement",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Settlement"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SettlementServiceAllocateSettlementBody"
+            }
+          }
+        ],
+        "tags": [
+          "SettlementService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/settlements/{settlementId}/payments": {
+      "post": {
+        "summary": "Records a payment actually collected (FR-BIL-03); a settlement may\nreceive several, from either payer, until each payer's allocated\namount is fully collected.",
+        "operationId": "SettlementService_RecordSettlementPayment",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Settlement"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SettlementServiceRecordSettlementPaymentBody"
+            }
+          }
+        ],
+        "tags": [
+          "SettlementService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/settlements/{settlementId}/receipt-pdf": {
+      "get": {
+        "summary": "FR-DOC-01: the settlement as a receipt PDF.",
+        "operationId": "DocumentService_ExportSettlementReceiptPdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
         ]
       }
     },
@@ -3390,6 +3772,95 @@
     "RepairOrderServiceCloseRepairOrderBody": {
       "type": "object"
     },
+    "SettlementServiceAllocateSettlementBody": {
+      "type": "object",
+      "properties": {
+        "customerAmount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "insurerAmount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "insurerPartnerId": {
+          "type": "string",
+          "description": "Required when insurer_amount \u003e 0."
+        }
+      },
+      "required": [
+        "customerAmount",
+        "insurerAmount"
+      ]
+    },
+    "SettlementServiceCreateSettlementBody": {
+      "type": "object",
+      "properties": {
+        "repairOrderId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "repairOrderId"
+      ]
+    },
+    "SettlementServiceRecordSettlementPaymentBody": {
+      "type": "object",
+      "properties": {
+        "payerType": {
+          "$ref": "#/definitions/v1PayerType"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "method": {
+          "$ref": "#/definitions/v1PaymentMethod"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "payerType",
+        "amount",
+        "method"
+      ]
+    },
+    "apiHttpBody": {
+      "type": "object",
+      "properties": {
+        "contentType": {
+          "type": "string",
+          "description": "The HTTP Content-Type header value specifying the content type of the body."
+        },
+        "data": {
+          "type": "string",
+          "format": "byte",
+          "description": "The HTTP request/response body as raw binary."
+        },
+        "extensions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          },
+          "description": "Application specific response metadata. Must be set in the first response\nfor streaming APIs."
+        }
+      },
+      "description": "Message that represents an arbitrary HTTP body. It should only be used for\npayload formats that can't be represented as JSON, such as raw binary or\nan HTML page.\n\n\nThis message can be used both in streaming and non-streaming API methods in\nthe request as well as the response.\n\nIt can be used as a top-level request field, which is convenient if one\nwants to extract parameters from either the URL or HTTP template into the\nrequest fields and also want access to the raw HTTP body.\n\nExample:\n\n    message GetResourceRequest {\n      // A unique request id.\n      string request_id = 1;\n\n      // The raw HTTP body is bound to this field.\n      google.api.HttpBody http_body = 2;\n\n    }\n\n    service ResourceService {\n      rpc GetResource(GetResourceRequest)\n        returns (google.api.HttpBody);\n      rpc UpdateResource(google.api.HttpBody)\n        returns (google.protobuf.Empty);\n\n    }\n\nExample with streaming methods:\n\n    service CaldavService {\n      rpc GetCalendar(stream google.api.HttpBody)\n        returns (stream google.api.HttpBody);\n      rpc UpdateCalendar(stream google.api.HttpBody)\n        returns (stream google.api.HttpBody);\n\n    }\n\nUse of this type only changes how the request and response bodies are\nhandled, all other features will continue to work unchanged."
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        }
+      },
+      "additionalProperties": {},
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
     "typeDayOfWeek": {
       "type": "string",
       "enum": [
@@ -3470,6 +3941,14 @@
         "ACCOUNT_STATUS_SUSPENDED"
       ],
       "description": "AccountStatus is the lifecycle of a login account (Database Design 2.1)."
+    },
+    "v1AllocateSettlementResponse": {
+      "type": "object",
+      "properties": {
+        "settlement": {
+          "$ref": "#/definitions/v1Settlement"
+        }
+      }
     },
     "v1AuthProvider": {
       "type": "string",
@@ -3603,6 +4082,14 @@
       "properties": {
         "role": {
           "$ref": "#/definitions/v1Role"
+        }
+      }
+    },
+    "v1CreateSettlementResponse": {
+      "type": "object",
+      "properties": {
+        "settlement": {
+          "$ref": "#/definitions/v1Settlement"
         }
       }
     },
@@ -4048,6 +4535,14 @@
         }
       }
     },
+    "v1GetSettlementResponse": {
+      "type": "object",
+      "properties": {
+        "settlement": {
+          "$ref": "#/definitions/v1Settlement"
+        }
+      }
+    },
     "v1GetVehicleHistoryResponse": {
       "type": "object",
       "properties": {
@@ -4346,6 +4841,21 @@
         }
       }
     },
+    "v1ListSettlementsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Settlement"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
     "v1ListStaffGroupsResponse": {
       "type": "object",
       "properties": {
@@ -4476,6 +4986,10 @@
         },
         "repairOrder": {
           "type": "string"
+        },
+        "settlement": {
+          "type": "string",
+          "description": "Settlement document numbers (Release 1.4)."
         }
       },
       "description": "NumberingTemplates configures document numbers (FR-TEN-05). Placeholders:\n{YYYY}, {YY}, {MM}, {DD} and {SEQ:n} (sequence padded to n digits),\ne.g. \"BG-{YYYY}{MM}-{SEQ:4}\"."
@@ -4583,6 +5097,23 @@
         "PARTNER_TYPE_SUPPLIER",
         "PARTNER_TYPE_INSURER"
       ]
+    },
+    "v1PayerType": {
+      "type": "string",
+      "enum": [
+        "PAYER_TYPE_CUSTOMER",
+        "PAYER_TYPE_INSURER"
+      ],
+      "description": "PayerType: who a settlement amount, or a payment against it, is\nattributed to."
+    },
+    "v1PaymentMethod": {
+      "type": "string",
+      "enum": [
+        "PAYMENT_METHOD_CASH",
+        "PAYMENT_METHOD_BANK_TRANSFER",
+        "PAYMENT_METHOD_ONLINE"
+      ],
+      "description": "PaymentMethod: how a payment was actually collected (FR-BIL-03). ONLINE\nis recorded manually in Release 1.4 (staff sees a bank app or gateway\ndashboard confirmation and records it); automatic confirmation via a\npayment gateway webhook is Release 2.0 (FR-PAY-02)."
     },
     "v1Permission": {
       "type": "string",
@@ -4938,6 +5469,14 @@
         }
       }
     },
+    "v1RecordSettlementPaymentResponse": {
+      "type": "object",
+      "properties": {
+        "settlement": {
+          "$ref": "#/definitions/v1Settlement"
+        }
+      }
+    },
     "v1RefreshTokenRequest": {
       "type": "object",
       "properties": {
@@ -5289,6 +5828,139 @@
         }
       },
       "description": "Session is what every successful sign-in returns."
+    },
+    "v1Settlement": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "repairOrderId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "vehicleLicensePlate": {
+          "type": "string",
+          "description": "Denormalized from the repair order at creation, the same pattern as\nthe repair order's own vehicle/customer fields.",
+          "readOnly": true
+        },
+        "customerName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "number": {
+          "type": "string",
+          "description": "Rendered from the garage's settlement_number_template (FR-TEN-05).",
+          "readOnly": true
+        },
+        "totalAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Copied from the repair order's total at creation time. Integer VND.",
+          "readOnly": true
+        },
+        "customerAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "How much of total_amount is allocated to each payer (FR-BIL-02);\nalways sums to total_amount. Starts entirely allocated to the\ncustomer until AllocateSettlement says otherwise.",
+          "readOnly": true
+        },
+        "insurerAmount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "insurerPartnerId": {
+          "type": "string",
+          "description": "Set once insurer_amount \u003e 0; a partner of type INSURER.",
+          "readOnly": true
+        },
+        "insurerPartnerName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "customerPaidAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Running totals from settlement_payments (FR-BIL-03).",
+          "readOnly": true
+        },
+        "insurerPaidAmount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1SettlementStatus",
+          "readOnly": true
+        },
+        "payments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SettlementPayment"
+          },
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Settlement is the final bill of a closed repair order (FR-BIL-01),\nsplit between what the customer pays directly and what insurance\ncovers (FR-BIL-02). FR-REC-01's receivables view is this same list\nfiltered to not yet fully paid (ListSettlementsRequest.outstanding_only)\n-- Release 1.4 has no separate receivables table; one arrives with\nRelease 2.2's reminders and reconciliation, which need their own\npersisted state."
+    },
+    "v1SettlementPayment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "payerType": {
+          "$ref": "#/definitions/v1PayerType",
+          "readOnly": true
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Integer VND.",
+          "readOnly": true
+        },
+        "method": {
+          "$ref": "#/definitions/v1PaymentMethod",
+          "readOnly": true
+        },
+        "note": {
+          "type": "string",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "SettlementPayment is one payment recorded against a settlement\n(FR-BIL-03); a settlement may receive several, from either payer."
+    },
+    "v1SettlementStatus": {
+      "type": "string",
+      "enum": [
+        "SETTLEMENT_STATUS_PENDING",
+        "SETTLEMENT_STATUS_PARTIALLY_PAID",
+        "SETTLEMENT_STATUS_PAID"
+      ],
+      "description": "SettlementStatus is a settlement's collection status, derived from the\namounts actually paid against what was allocated (FR-BIL-01..03).\n\n - SETTLEMENT_STATUS_PENDING: Nothing collected yet.\n - SETTLEMENT_STATUS_PARTIALLY_PAID: Some, but not all, of the allocated amount collected.\n - SETTLEMENT_STATUS_PAID: The full allocated amount collected from both payers."
     },
     "v1Staff": {
       "type": "object",

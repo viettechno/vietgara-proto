@@ -152,9 +152,11 @@ func (x *DailyHours) GetClose() string {
 // {YYYY}, {YY}, {MM}, {DD} and {SEQ:n} (sequence padded to n digits),
 // e.g. "BG-{YYYY}{MM}-{SEQ:4}".
 type NumberingTemplates struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Quote         string                 `protobuf:"bytes,1,opt,name=quote,proto3" json:"quote,omitempty"`
-	RepairOrder   string                 `protobuf:"bytes,2,opt,name=repair_order,json=repairOrder,proto3" json:"repair_order,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Quote       string                 `protobuf:"bytes,1,opt,name=quote,proto3" json:"quote,omitempty"`
+	RepairOrder string                 `protobuf:"bytes,2,opt,name=repair_order,json=repairOrder,proto3" json:"repair_order,omitempty"`
+	// Settlement document numbers (Release 1.4).
+	Settlement    string `protobuf:"bytes,3,opt,name=settlement,proto3" json:"settlement,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -199,6 +201,13 @@ func (x *NumberingTemplates) GetQuote() string {
 func (x *NumberingTemplates) GetRepairOrder() string {
 	if x != nil {
 		return x.RepairOrder
+	}
+	return ""
+}
+
+func (x *NumberingTemplates) GetSettlement() string {
+	if x != nil {
+		return x.Settlement
 	}
 	return ""
 }
@@ -1003,10 +1012,13 @@ const file_vietgara_tenant_v1_garage_proto_rawDesc = "" +
 	"\x03day\x18\x01 \x01(\x0e2\x16.google.type.DayOfWeekR\x03day\x12\x16\n" +
 	"\x06closed\x18\x02 \x01(\bR\x06closed\x12\x12\n" +
 	"\x04open\x18\x03 \x01(\tR\x04open\x12\x14\n" +
-	"\x05close\x18\x04 \x01(\tR\x05close\"M\n" +
+	"\x05close\x18\x04 \x01(\tR\x05close\"m\n" +
 	"\x12NumberingTemplates\x12\x14\n" +
 	"\x05quote\x18\x01 \x01(\tR\x05quote\x12!\n" +
-	"\frepair_order\x18\x02 \x01(\tR\vrepairOrder\"f\n" +
+	"\frepair_order\x18\x02 \x01(\tR\vrepairOrder\x12\x1e\n" +
+	"\n" +
+	"settlement\x18\x03 \x01(\tR\n" +
+	"settlement\"f\n" +
 	"\fGarageAccess\x12\x14\n" +
 	"\x05owner\x18\x01 \x01(\bR\x05owner\x12@\n" +
 	"\vpermissions\x18\x02 \x03(\x0e2\x1e.vietgara.tenant.v1.PermissionR\vpermissions\"\xdf\x06\n" +
