@@ -54,7 +54,7 @@ flowchart LR
   P[".proto sources<br/>apis/vietgara"] -->|buf generate| G["apis-go<br/>messages, gRPC stubs,<br/>gateway handlers"]
   P -->|protoc-gen-openapiv2| O["openapi/vietgara.swagger.json"]
   G --> B["vietgara-backend<br/>gRPC + REST (grpc-gateway)"]
-  O -->|npm run generate:api| W["vietgara-web-admin<br/>src/api/schema.d.ts"]
+  O -->|npm run generate:api| W["vietgara-owner-web<br/>src/api/schema.d.ts"]
 ```
 
 ## Repository Layout
@@ -121,7 +121,7 @@ grpcui `v1.5.3`, grpcurl `v1.8.7`).
 3. `make generate` and commit `apis-go/` and `openapi/` together with the
    `.proto` change (they must never drift).
 4. Regenerate the web admin types (`npm run generate:api` in
-   `vietgara-web-admin`) and bump the module in `vietgara-backend`.
+   `vietgara-owner-web`) and bump the module in `vietgara-backend`.
 5. Run `make breaking`; label the pull request `breaking-change` only when the
    break is intended.
 
