@@ -8,7 +8,9 @@ Protocol Buffers. The same `.proto` files describe:
   `google.api.http` annotation, the backend serves it in-process with
   [grpc-gateway](https://github.com/grpc-ecosystem/grpc-gateway), and the
   OpenAPI document generated here (`openapi/vietgara.swagger.json`) is the
-  source of the web admin's TypeScript types.
+  source of the web admin's TypeScript types. Go code can import it as
+  `openapi.Spec` (package `github.com/viettechno/vietgara-proto/openapi`);
+  the backend serves it with its API reference page.
 
 ## Roles / Purposes
 
@@ -68,7 +70,7 @@ vietgara-proto/
 │   ├── license/v1/           # license.proto
 │   └── customer/v1/          # customer.proto, vehicle.proto, partner.proto
 ├── apis-go/                  # generated Go code (committed)
-├── openapi/                  # generated OpenAPI v2 document (committed)
+├── openapi/                  # generated OpenAPI v2 document (committed) + embed.go (openapi.Spec)
 ├── buf.yaml                  # module, deps (googleapis, grpc-gateway), lint/breaking config
 ├── buf.gen.yaml              # plugins: go, go-grpc, grpc-gateway, openapiv2
 ├── go.mod                    # module github.com/viettechno/vietgara-proto
