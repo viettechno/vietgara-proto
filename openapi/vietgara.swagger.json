@@ -23,6 +23,10 @@
       "description": "VehicleService manages vehicles (FRD 3.4). Filter by customer with\n?customerId=. Reads need PERMISSION_CUSTOMER_READ, changes\nPERMISSION_CUSTOMER_WRITE."
     },
     {
+      "name": "CustomerPortalService",
+      "description": "CustomerPortalService is the Customer BFF (Release 2.4, HLD Section 6).\nThe caller is a VietGara account -- in Release 2.4 created by Google\nsign-in (FR-CAPP-01) -- matched to garages' customer records by its\nverified e-mail. It never reads garage data beyond those records, their\nvehicles and the vehicles' history."
+    },
+    {
       "name": "DocumentService",
       "description": "DocumentService renders PDFs and Excel reports on request (FRD 3.13).\nNo templates are stored -- FR-DOC-03 (letting a garage customize the\nlogo and layout) is Phase 4 -- every document is generated fresh from\nthe owning module's own data, read through a narrow interface the same\nway every other cross-module read works (HLD Section 2: a module never\nqueries another module's tables directly). Each RPC needs the same\npermission as the data it renders (quote.read, billing.read,\ninventory.read), not a permission of its own."
     },
@@ -61,6 +65,10 @@
     {
       "name": "ReportingService",
       "description": "ReportingService serves the revenue-by-period report (FR-RPT-01) that\nbacks the Web Admin Dashboard's KPI card and revenue chart (UI Design\nSpec 3.1). It owns no tables of its own -- revenue is aggregated fresh\nfrom Billing \u0026 Settlement's settlements on every request, the same\ncross-module decoupling pattern used everywhere else (HLD Section 2).\nEvery other Dashboard KPI (orders in progress, low stock, outstanding\nreceivables) is served by each owning module's existing list endpoint;\nthis is the one figure not already exposed anywhere."
+    },
+    {
+      "name": "TechnicianService",
+      "description": "TechnicianService is the Technician BFF (Release 2.2, HLD Section 6): one\nconsolidated call per screen of the Technician App, composed from the\nTenant and Repair Order modules, so the app never calls each garage's\nendpoints one by one."
     },
     {
       "name": "RoleService",
@@ -348,6 +356,39 @@
         ]
       }
     },
+    "/api/v1/auth/google/id-token": {
+      "post": {
+        "summary": "Signs in with a Google ID token obtained natively by a mobile app\n(FR-IAM-01, FR-CAPP-01). The token's signature, issuer, audience (one\nof the configured mobile client IDs) and verified e-mail are checked;\nthe account is found by its Google subject or e-mail, or created --\nthe same rules as the web's Google redirect sign-in.",
+        "operationId": "AuthService_SignInWithGoogleIdToken",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Session"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SignInWithGoogleIdTokenRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "summary": "Signs in with e-mail and password (FR-IAM-02).",
@@ -576,6 +617,66 @@
         ],
         "tags": [
           "AuthService"
+        ]
+      }
+    },
+    "/api/v1/customer/garages/{garageId}/vehicles/{vehicleId}/history": {
+      "get": {
+        "summary": "One of the person's vehicles' repair history (FR-CAPP-02, FR-CUS-03);\nNOT_FOUND unless the vehicle belongs to their customer record there.",
+        "operationId": "CustomerPortalService_GetMyVehicleHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetMyVehicleHistoryResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CustomerPortalService"
+        ]
+      }
+    },
+    "/api/v1/customer/vehicles": {
+      "get": {
+        "summary": "The signed-in person's vehicles, grouped by garage (FR-CAPP-02).",
+        "operationId": "CustomerPortalService_ListMyVehicles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListMyVehiclesResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "CustomerPortalService"
         ]
       }
     },
@@ -3712,6 +3813,29 @@
           "RoleService"
         ]
       }
+    },
+    "/api/v1/technician/work": {
+      "get": {
+        "summary": "The technician's work: the repair-order lines assigned to them that are\nstill open, across their garages (FR-TAPP-01).",
+        "operationId": "TechnicianService_ListMyWork",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListMyWorkResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "TechnicianService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -4555,6 +4679,19 @@
         }
       }
     },
+    "v1GetMyVehicleHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1VehicleHistoryEntry"
+          },
+          "description": "Quotes, repair orders and settlements of the vehicle, newest first."
+        }
+      }
+    },
     "v1GetPartnerResponse": {
       "type": "object",
       "properties": {
@@ -4836,6 +4973,32 @@
         }
       }
     },
+    "v1ListMyVehiclesResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1MyGarage"
+          },
+          "description": "One entry per garage whose customer record carries the account's\nverified e-mail, by garage name."
+        }
+      }
+    },
+    "v1ListMyWorkResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1WorkOrder"
+          },
+          "description": "Open repair orders (not closed) with at least one line assigned to the\ntechnician, across every garage where they are an active member\nallowed to read repair orders; oldest first."
+        }
+      }
+    },
     "v1ListPartnersResponse": {
       "type": "object",
       "properties": {
@@ -5054,6 +5217,46 @@
           "$ref": "#/definitions/v1StaffCandidate"
         }
       }
+    },
+    "v1MyGarage": {
+      "type": "object",
+      "properties": {
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "readOnly": true
+        },
+        "address": {
+          "type": "string",
+          "readOnly": true
+        },
+        "phone": {
+          "type": "string",
+          "readOnly": true
+        },
+        "customerId": {
+          "type": "string",
+          "description": "The garage's customer record matched to the signed-in person.",
+          "readOnly": true
+        },
+        "customerName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "vehicles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Vehicle"
+          },
+          "description": "The vehicles on that customer record.",
+          "readOnly": true
+        }
+      },
+      "description": "MyGarage is a garage where the signed-in person is a customer."
     },
     "v1NumberingTemplates": {
       "type": "object",
@@ -6066,6 +6269,30 @@
       ],
       "description": "SettlementStatus is a settlement's collection status, derived from the\namounts actually paid against what was allocated (FR-BIL-01..03).\n\n - SETTLEMENT_STATUS_PENDING: Nothing collected yet.\n - SETTLEMENT_STATUS_PARTIALLY_PAID: Some, but not all, of the allocated amount collected.\n - SETTLEMENT_STATUS_PAID: The full allocated amount collected from both payers."
     },
+    "v1SignInWithGoogleIdTokenRequest": {
+      "type": "object",
+      "properties": {
+        "idToken": {
+          "type": "string",
+          "description": "The ID token (a JWT) returned by Google Sign-In on the device."
+        },
+        "locale": {
+          "$ref": "#/definitions/v1Locale",
+          "description": "The UI language of a newly created account; defaults to Vietnamese."
+        }
+      },
+      "required": [
+        "idToken"
+      ]
+    },
+    "v1SignInWithGoogleIdTokenResponse": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/v1Session"
+        }
+      }
+    },
     "v1Staff": {
       "type": "object",
       "properties": {
@@ -6610,6 +6837,55 @@
           "format": "date-time"
         }
       }
+    },
+    "v1WorkOrder": {
+      "type": "object",
+      "properties": {
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "repairOrderId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "number": {
+          "type": "string",
+          "description": "The repair order's own document number.",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1RepairOrderStatus",
+          "readOnly": true
+        },
+        "vehicleLicensePlate": {
+          "type": "string",
+          "readOnly": true
+        },
+        "customerName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RepairOrderLine"
+          },
+          "description": "Only the lines assigned to the technician, in the order's line order.",
+          "readOnly": true
+        }
+      },
+      "description": "WorkOrder is a repair order with the lines assigned to the signed-in\ntechnician (FR-TAPP-01)."
     }
   },
   "securityDefinitions": {

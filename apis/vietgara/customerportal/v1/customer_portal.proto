@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package vietgara.customerportal.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "vietgara/customer/v1/vehicle.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/customerportal/v1;customerportalv1";
+
+// MyGarage is a garage where the signed-in person is a customer.
+message MyGarage {
+  string garage_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string name = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string address = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string phone = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The garage's customer record matched to the signed-in person.
+  string customer_id = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string customer_name = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The vehicles on that customer record.
+  repeated vietgara.customer.v1.Vehicle vehicles = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListMyVehiclesRequest {}
+
+message ListMyVehiclesResponse {
+  // One entry per garage whose customer record carries the account's
+  // verified e-mail, by garage name.
+  repeated MyGarage data = 1;
+}
+
+message GetMyVehicleHistoryRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string vehicle_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetMyVehicleHistoryResponse {
+  // Quotes, repair orders and settlements of the vehicle, newest first.
+  repeated vietgara.customer.v1.VehicleHistoryEntry data = 1;
+}
+
+// CustomerPortalService is the Customer BFF (Release 2.4, HLD Section 6).
+// The caller is a VietGara account -- in Release 2.4 created by Google
+// sign-in (FR-CAPP-01) -- matched to garages' customer records by its
+// verified e-mail. It never reads garage data beyond those records, their
+// vehicles and the vehicles' history.
+service CustomerPortalService {
+  // The signed-in person's vehicles, grouped by garage (FR-CAPP-02).
+  rpc ListMyVehicles(ListMyVehiclesRequest) returns (ListMyVehiclesResponse) {
+    option (google.api.http) = {get: "/api/v1/customer/vehicles"};
+  }
+
+  // One of the person's vehicles' repair history (FR-CAPP-02, FR-CUS-03);
+  // NOT_FOUND unless the vehicle belongs to their customer record there.
+  rpc GetMyVehicleHistory(GetMyVehicleHistoryRequest) returns (GetMyVehicleHistoryResponse) {
+    option (google.api.http) = {get: "/api/v1/customer/garages/{garage_id}/vehicles/{vehicle_id}/history"};
+  }
+}

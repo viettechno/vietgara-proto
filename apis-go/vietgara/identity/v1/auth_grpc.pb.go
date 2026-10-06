@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	AuthService_Register_FullMethodName                 = "/vietgara.identity.v1.AuthService/Register"
 	AuthService_Login_FullMethodName                    = "/vietgara.identity.v1.AuthService/Login"
+	AuthService_SignInWithGoogleIdToken_FullMethodName  = "/vietgara.identity.v1.AuthService/SignInWithGoogleIdToken"
 	AuthService_RefreshToken_FullMethodName             = "/vietgara.identity.v1.AuthService/RefreshToken"
 	AuthService_Logout_FullMethodName                   = "/vietgara.identity.v1.AuthService/Logout"
 	AuthService_SendEmailVerificationOtp_FullMethodName = "/vietgara.identity.v1.AuthService/SendEmailVerificationOtp"
@@ -43,6 +44,12 @@ type AuthServiceClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	// Signs in with e-mail and password (FR-IAM-02).
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	// Signs in with a Google ID token obtained natively by a mobile app
+	// (FR-IAM-01, FR-CAPP-01). The token's signature, issuer, audience (one
+	// of the configured mobile client IDs) and verified e-mail are checked;
+	// the account is found by its Google subject or e-mail, or created --
+	// the same rules as the web's Google redirect sign-in.
+	SignInWithGoogleIdToken(ctx context.Context, in *SignInWithGoogleIdTokenRequest, opts ...grpc.CallOption) (*SignInWithGoogleIdTokenResponse, error)
 	// Exchanges a refresh token for a new session; the old token is revoked
 	// (rotation).
 	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*RefreshTokenResponse, error)
@@ -85,6 +92,16 @@ func (c *authServiceClient) Login(ctx context.Context, in *LoginRequest, opts ..
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LoginResponse)
 	err := c.cc.Invoke(ctx, AuthService_Login_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) SignInWithGoogleIdToken(ctx context.Context, in *SignInWithGoogleIdTokenRequest, opts ...grpc.CallOption) (*SignInWithGoogleIdTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SignInWithGoogleIdTokenResponse)
+	err := c.cc.Invoke(ctx, AuthService_SignInWithGoogleIdToken_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -174,6 +191,12 @@ type AuthServiceServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	// Signs in with e-mail and password (FR-IAM-02).
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	// Signs in with a Google ID token obtained natively by a mobile app
+	// (FR-IAM-01, FR-CAPP-01). The token's signature, issuer, audience (one
+	// of the configured mobile client IDs) and verified e-mail are checked;
+	// the account is found by its Google subject or e-mail, or created --
+	// the same rules as the web's Google redirect sign-in.
+	SignInWithGoogleIdToken(context.Context, *SignInWithGoogleIdTokenRequest) (*SignInWithGoogleIdTokenResponse, error)
 	// Exchanges a refresh token for a new session; the old token is revoked
 	// (rotation).
 	RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error)
@@ -207,6 +230,9 @@ func (UnimplementedAuthServiceServer) Register(context.Context, *RegisterRequest
 }
 func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthServiceServer) SignInWithGoogleIdToken(context.Context, *SignInWithGoogleIdTokenRequest) (*SignInWithGoogleIdTokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SignInWithGoogleIdToken not implemented")
 }
 func (UnimplementedAuthServiceServer) RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RefreshToken not implemented")
@@ -282,6 +308,24 @@ func _AuthService_Login_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServiceServer).Login(ctx, req.(*LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_SignInWithGoogleIdToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SignInWithGoogleIdTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).SignInWithGoogleIdToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_SignInWithGoogleIdToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).SignInWithGoogleIdToken(ctx, req.(*SignInWithGoogleIdTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -426,6 +470,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _AuthService_Login_Handler,
+		},
+		{
+			MethodName: "SignInWithGoogleIdToken",
+			Handler:    _AuthService_SignInWithGoogleIdToken_Handler,
 		},
 		{
 			MethodName: "RefreshToken",

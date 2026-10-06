@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package vietgara.technician.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/repairorder/v1/repair_order.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/technician/v1;technicianv1";
+
+// WorkOrder is a repair order with the lines assigned to the signed-in
+// technician (FR-TAPP-01).
+message WorkOrder {
+  string garage_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_name = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string repair_order_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The repair order's own document number.
+  string number = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  vietgara.repairorder.v1.RepairOrderStatus status = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string vehicle_license_plate = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string customer_name = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Only the lines assigned to the technician, in the order's line order.
+  repeated vietgara.repairorder.v1.RepairOrderLine lines = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListMyWorkRequest {}
+
+message ListMyWorkResponse {
+  // Open repair orders (not closed) with at least one line assigned to the
+  // technician, across every garage where they are an active member
+  // allowed to read repair orders; oldest first.
+  repeated WorkOrder data = 1;
+}
+
+// TechnicianService is the Technician BFF (Release 2.2, HLD Section 6): one
+// consolidated call per screen of the Technician App, composed from the
+// Tenant and Repair Order modules, so the app never calls each garage's
+// endpoints one by one.
+service TechnicianService {
+  // The technician's work: the repair-order lines assigned to them that are
+  // still open, across their garages (FR-TAPP-01).
+  rpc ListMyWork(ListMyWorkRequest) returns (ListMyWorkResponse) {
+    option (google.api.http) = {get: "/api/v1/technician/work"};
+  }
+}
