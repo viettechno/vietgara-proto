@@ -1,5 +1,16 @@
 # VietGara Proto
 
+> **Purpose:** This repo is the **source of truth for the VietGara API contracts**: Protocol Buffers definitions plus the generated Go, gateway and OpenAPI code. It contains no running service.
+
+| | |
+| --- | --- |
+| **Type** | Contract library (Protocol Buffers, generated code) |
+| **Used by** | `vietgara-backend` (Go module), the web apps and e2e (TypeScript types from the OpenAPI document), the mobile apps (hand-written clients aligned to it) |
+| **Does** | Defines every gRPC service and REST route, and generates the OpenAPI document and Go stubs |
+| **Built with** | Protocol Buffers, buf, grpc-gateway, protoc-gen-openapiv2 |
+| **Checked by** | Lint, format and breaking-change detection in CI |
+| **Related** | `vietgara-docs` (API Specification) |
+
 Source-of-truth repository for the **VietGara API contracts**, defined with
 Protocol Buffers. The same `.proto` files describe:
 
