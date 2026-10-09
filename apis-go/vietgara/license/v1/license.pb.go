@@ -478,12 +478,12 @@ func (x *Usage) GetTransactionsToday() int32 {
 	return 0
 }
 
-// Subscription is an owner account's license covering all their garages
+// Subscription belongs to an owner user and covers all their garages
 // (FR-LIC-01..04).
 type Subscription struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	Id                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	AccountId          string                 `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	UserId             string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Status             SubscriptionStatus     `protobuf:"varint,3,opt,name=status,proto3,enum=vietgara.license.v1.SubscriptionStatus" json:"status,omitempty"`
 	Plan               *Plan                  `protobuf:"bytes,4,opt,name=plan,proto3" json:"plan,omitempty"`
 	TrialEndAt         *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=trial_end_at,json=trialEndAt,proto3" json:"trial_end_at,omitempty"`
@@ -535,9 +535,9 @@ func (x *Subscription) GetId() string {
 	return ""
 }
 
-func (x *Subscription) GetAccountId() string {
+func (x *Subscription) GetUserId() string {
 	if x != nil {
-		return x.AccountId
+		return x.UserId
 	}
 	return ""
 }
@@ -1047,8 +1047,8 @@ func (x *GetGarageEntitlementsResponse) GetEntitlements() *Entitlements {
 type SubscriptionSummary struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Subscription  *Subscription          `protobuf:"bytes,1,opt,name=subscription,proto3" json:"subscription,omitempty"`
-	AccountEmail  string                 `protobuf:"bytes,2,opt,name=account_email,json=accountEmail,proto3" json:"account_email,omitempty"`
-	AccountName   string                 `protobuf:"bytes,3,opt,name=account_name,json=accountName,proto3" json:"account_name,omitempty"`
+	UserEmail     string                 `protobuf:"bytes,2,opt,name=user_email,json=userEmail,proto3" json:"user_email,omitempty"`
+	UserName      string                 `protobuf:"bytes,3,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1090,16 +1090,16 @@ func (x *SubscriptionSummary) GetSubscription() *Subscription {
 	return nil
 }
 
-func (x *SubscriptionSummary) GetAccountEmail() string {
+func (x *SubscriptionSummary) GetUserEmail() string {
 	if x != nil {
-		return x.AccountEmail
+		return x.UserEmail
 	}
 	return ""
 }
 
-func (x *SubscriptionSummary) GetAccountName() string {
+func (x *SubscriptionSummary) GetUserName() string {
 	if x != nil {
-		return x.AccountName
+		return x.UserName
 	}
 	return ""
 }
@@ -1629,11 +1629,10 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\x05Usage\x12\x18\n" +
 	"\agarages\x18\x01 \x01(\x05R\agarages\x12\x14\n" +
 	"\x05staff\x18\x02 \x01(\x05R\x05staff\x12-\n" +
-	"\x12transactions_today\x18\x03 \x01(\x05R\x11transactionsToday\"\x90\x05\n" +
+	"\x12transactions_today\x18\x03 \x01(\x05R\x11transactionsToday\"\x8a\x05\n" +
 	"\fSubscription\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
-	"\n" +
-	"account_id\x18\x02 \x01(\tR\taccountId\x12?\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12?\n" +
 	"\x06status\x18\x03 \x01(\x0e2'.vietgara.license.v1.SubscriptionStatusR\x06status\x12-\n" +
 	"\x04plan\x18\x04 \x01(\v2\x19.vietgara.license.v1.PlanR\x04plan\x12<\n" +
 	"\ftrial_end_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
@@ -1670,11 +1669,12 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\x1cGetGarageEntitlementsRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\"f\n" +
 	"\x1dGetGarageEntitlementsResponse\x12E\n" +
-	"\fentitlements\x18\x01 \x01(\v2!.vietgara.license.v1.EntitlementsR\fentitlements\"\xa4\x01\n" +
+	"\fentitlements\x18\x01 \x01(\v2!.vietgara.license.v1.EntitlementsR\fentitlements\"\x98\x01\n" +
 	"\x13SubscriptionSummary\x12E\n" +
-	"\fsubscription\x18\x01 \x01(\v2!.vietgara.license.v1.SubscriptionR\fsubscription\x12#\n" +
-	"\raccount_email\x18\x02 \x01(\tR\faccountEmail\x12!\n" +
-	"\faccount_name\x18\x03 \x01(\tR\vaccountName\"\x15\n" +
+	"\fsubscription\x18\x01 \x01(\v2!.vietgara.license.v1.SubscriptionR\fsubscription\x12\x1d\n" +
+	"\n" +
+	"user_email\x18\x02 \x01(\tR\tuserEmail\x12\x1b\n" +
+	"\tuser_name\x18\x03 \x01(\tR\buserName\"\x15\n" +
 	"\x13ListAllPlansRequest\"E\n" +
 	"\x14ListAllPlansResponse\x12-\n" +
 	"\x04data\x18\x01 \x03(\v2\x19.vietgara.license.v1.PlanR\x04data\"G\n" +

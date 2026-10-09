@@ -31,8 +31,8 @@ type Session struct {
 	// Always "Bearer".
 	TokenType string `protobuf:"bytes,3,opt,name=token_type,json=tokenType,proto3" json:"token_type,omitempty"`
 	// Access token lifetime in seconds.
-	ExpiresIn     int64    `protobuf:"varint,4,opt,name=expires_in,json=expiresIn,proto3" json:"expires_in,omitempty"`
-	Account       *Account `protobuf:"bytes,5,opt,name=account,proto3" json:"account,omitempty"`
+	ExpiresIn     int64 `protobuf:"varint,4,opt,name=expires_in,json=expiresIn,proto3" json:"expires_in,omitempty"`
+	User          *User `protobuf:"bytes,5,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -95,9 +95,9 @@ func (x *Session) GetExpiresIn() int64 {
 	return 0
 }
 
-func (x *Session) GetAccount() *Account {
+func (x *Session) GetUser() *User {
 	if x != nil {
-		return x.Account
+		return x.User
 	}
 	return nil
 }
@@ -378,7 +378,7 @@ type SignInWithGoogleIdTokenRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The ID token (a JWT) returned by Google Sign-In on the device.
 	IdToken string `protobuf:"bytes,1,opt,name=id_token,json=idToken,proto3" json:"id_token,omitempty"`
-	// The UI language of a newly created account; defaults to Vietnamese.
+	// The UI language of a newly created user; defaults to Vietnamese.
 	Locale        Locale `protobuf:"varint,2,opt,name=locale,proto3,enum=vietgara.identity.v1.Locale" json:"locale,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1104,15 +1104,15 @@ var File_vietgara_identity_v1_auth_proto protoreflect.FileDescriptor
 
 const file_vietgara_identity_v1_auth_proto_rawDesc = "" +
 	"\n" +
-	"\x1fvietgara/identity/v1/auth.proto\x12\x14vietgara.identity.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\"vietgara/identity/v1/account.proto\"\xc8\x01\n" +
+	"\x1fvietgara/identity/v1/auth.proto\x12\x14vietgara.identity.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fvietgara/identity/v1/user.proto\"\xbf\x01\n" +
 	"\aSession\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
 	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12\x1d\n" +
 	"\n" +
 	"token_type\x18\x03 \x01(\tR\ttokenType\x12\x1d\n" +
 	"\n" +
-	"expires_in\x18\x04 \x01(\x03R\texpiresIn\x127\n" +
-	"\aaccount\x18\x05 \x01(\v2\x1d.vietgara.identity.v1.AccountR\aaccount\"\x95\x01\n" +
+	"expires_in\x18\x04 \x01(\x03R\texpiresIn\x12.\n" +
+	"\x04user\x18\x05 \x01(\v2\x1a.vietgara.identity.v1.UserR\x04user\"\x95\x01\n" +
 	"\fOtpChallenge\x129\n" +
 	"\n" +
 	"expires_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12J\n" +
@@ -1216,12 +1216,12 @@ var file_vietgara_identity_v1_auth_proto_goTypes = []any{
 	(*VerifyPasswordResetOtpResponse)(nil),   // 19: vietgara.identity.v1.VerifyPasswordResetOtpResponse
 	(*ResetPasswordRequest)(nil),             // 20: vietgara.identity.v1.ResetPasswordRequest
 	(*ResetPasswordResponse)(nil),            // 21: vietgara.identity.v1.ResetPasswordResponse
-	(*Account)(nil),                          // 22: vietgara.identity.v1.Account
+	(*User)(nil),                             // 22: vietgara.identity.v1.User
 	(*timestamppb.Timestamp)(nil),            // 23: google.protobuf.Timestamp
 	(Locale)(0),                              // 24: vietgara.identity.v1.Locale
 }
 var file_vietgara_identity_v1_auth_proto_depIdxs = []int32{
-	22, // 0: vietgara.identity.v1.Session.account:type_name -> vietgara.identity.v1.Account
+	22, // 0: vietgara.identity.v1.Session.user:type_name -> vietgara.identity.v1.User
 	23, // 1: vietgara.identity.v1.OtpChallenge.expires_at:type_name -> google.protobuf.Timestamp
 	23, // 2: vietgara.identity.v1.OtpChallenge.resend_available_at:type_name -> google.protobuf.Timestamp
 	24, // 3: vietgara.identity.v1.RegisterRequest.locale:type_name -> vietgara.identity.v1.Locale
@@ -1266,7 +1266,7 @@ func file_vietgara_identity_v1_auth_proto_init() {
 	if File_vietgara_identity_v1_auth_proto != nil {
 		return
 	}
-	file_vietgara_identity_v1_account_proto_init()
+	file_vietgara_identity_v1_user_proto_init()
 	file_vietgara_identity_v1_auth_proto_msgTypes[2].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

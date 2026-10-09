@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        (unknown)
-// source: vietgara/identity/v1/account.proto
+// source: vietgara/identity/v1/user.proto
 
 package identityv1
 
@@ -24,57 +24,57 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// AccountStatus is the lifecycle of a login account (Database Design 2.1).
-type AccountStatus int32
+// UserStatus is the lifecycle of a VietGara user (Database Design 2.1).
+type UserStatus int32
 
 const (
-	AccountStatus_ACCOUNT_STATUS_UNSPECIFIED AccountStatus = 0
-	AccountStatus_ACCOUNT_STATUS_ACTIVE      AccountStatus = 1
-	AccountStatus_ACCOUNT_STATUS_SUSPENDED   AccountStatus = 2
+	UserStatus_USER_STATUS_UNSPECIFIED UserStatus = 0
+	UserStatus_USER_STATUS_ACTIVE      UserStatus = 1
+	UserStatus_USER_STATUS_SUSPENDED   UserStatus = 2
 )
 
-// Enum value maps for AccountStatus.
+// Enum value maps for UserStatus.
 var (
-	AccountStatus_name = map[int32]string{
-		0: "ACCOUNT_STATUS_UNSPECIFIED",
-		1: "ACCOUNT_STATUS_ACTIVE",
-		2: "ACCOUNT_STATUS_SUSPENDED",
+	UserStatus_name = map[int32]string{
+		0: "USER_STATUS_UNSPECIFIED",
+		1: "USER_STATUS_ACTIVE",
+		2: "USER_STATUS_SUSPENDED",
 	}
-	AccountStatus_value = map[string]int32{
-		"ACCOUNT_STATUS_UNSPECIFIED": 0,
-		"ACCOUNT_STATUS_ACTIVE":      1,
-		"ACCOUNT_STATUS_SUSPENDED":   2,
+	UserStatus_value = map[string]int32{
+		"USER_STATUS_UNSPECIFIED": 0,
+		"USER_STATUS_ACTIVE":      1,
+		"USER_STATUS_SUSPENDED":   2,
 	}
 )
 
-func (x AccountStatus) Enum() *AccountStatus {
-	p := new(AccountStatus)
+func (x UserStatus) Enum() *UserStatus {
+	p := new(UserStatus)
 	*p = x
 	return p
 }
 
-func (x AccountStatus) String() string {
+func (x UserStatus) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (AccountStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_vietgara_identity_v1_account_proto_enumTypes[0].Descriptor()
+func (UserStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_identity_v1_user_proto_enumTypes[0].Descriptor()
 }
 
-func (AccountStatus) Type() protoreflect.EnumType {
-	return &file_vietgara_identity_v1_account_proto_enumTypes[0]
+func (UserStatus) Type() protoreflect.EnumType {
+	return &file_vietgara_identity_v1_user_proto_enumTypes[0]
 }
 
-func (x AccountStatus) Number() protoreflect.EnumNumber {
+func (x UserStatus) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use AccountStatus.Descriptor instead.
-func (AccountStatus) EnumDescriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_account_proto_rawDescGZIP(), []int{0}
+// Deprecated: Use UserStatus.Descriptor instead.
+func (UserStatus) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_identity_v1_user_proto_rawDescGZIP(), []int{0}
 }
 
-// AuthProvider is how the account signed up (FR-IAM-01).
+// AuthProvider is how the user signed up (FR-IAM-01).
 type AuthProvider int32
 
 const (
@@ -108,11 +108,11 @@ func (x AuthProvider) String() string {
 }
 
 func (AuthProvider) Descriptor() protoreflect.EnumDescriptor {
-	return file_vietgara_identity_v1_account_proto_enumTypes[1].Descriptor()
+	return file_vietgara_identity_v1_user_proto_enumTypes[1].Descriptor()
 }
 
 func (AuthProvider) Type() protoreflect.EnumType {
-	return &file_vietgara_identity_v1_account_proto_enumTypes[1]
+	return &file_vietgara_identity_v1_user_proto_enumTypes[1]
 }
 
 func (x AuthProvider) Number() protoreflect.EnumNumber {
@@ -121,10 +121,10 @@ func (x AuthProvider) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use AuthProvider.Descriptor instead.
 func (AuthProvider) EnumDescriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_account_proto_rawDescGZIP(), []int{1}
+	return file_vietgara_identity_v1_user_proto_rawDescGZIP(), []int{1}
 }
 
-// Locale is the account's interface and e-mail language. Vietnamese is the
+// Locale is the user's interface and e-mail language. Vietnamese is the
 // default (NFR-US-01).
 type Locale int32
 
@@ -159,11 +159,11 @@ func (x Locale) String() string {
 }
 
 func (Locale) Descriptor() protoreflect.EnumDescriptor {
-	return file_vietgara_identity_v1_account_proto_enumTypes[2].Descriptor()
+	return file_vietgara_identity_v1_user_proto_enumTypes[2].Descriptor()
 }
 
 func (Locale) Type() protoreflect.EnumType {
-	return &file_vietgara_identity_v1_account_proto_enumTypes[2]
+	return &file_vietgara_identity_v1_user_proto_enumTypes[2]
 }
 
 func (x Locale) Number() protoreflect.EnumNumber {
@@ -172,20 +172,20 @@ func (x Locale) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Locale.Descriptor instead.
 func (Locale) EnumDescriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_account_proto_rawDescGZIP(), []int{2}
+	return file_vietgara_identity_v1_user_proto_rawDescGZIP(), []int{2}
 }
 
-// Account is a VietGara login (owner or staff member).
-type Account struct {
+// User is a person who can sign in to VietGara.
+type User struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Email string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	// Optional contact phone, unique across accounts; used to look staff up.
-	Phone        *string       `protobuf:"bytes,3,opt,name=phone,proto3,oneof" json:"phone,omitempty"`
-	AuthProvider AuthProvider  `protobuf:"varint,4,opt,name=auth_provider,json=authProvider,proto3,enum=vietgara.identity.v1.AuthProvider" json:"auth_provider,omitempty"`
-	FullName     string        `protobuf:"bytes,5,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
-	Status       AccountStatus `protobuf:"varint,6,opt,name=status,proto3,enum=vietgara.identity.v1.AccountStatus" json:"status,omitempty"`
-	// False until the e-mail OTP is confirmed; unverified accounts cannot use
+	// Optional contact phone, unique across users; used to look staff up.
+	Phone        *string      `protobuf:"bytes,3,opt,name=phone,proto3,oneof" json:"phone,omitempty"`
+	AuthProvider AuthProvider `protobuf:"varint,4,opt,name=auth_provider,json=authProvider,proto3,enum=vietgara.identity.v1.AuthProvider" json:"auth_provider,omitempty"`
+	FullName     string       `protobuf:"bytes,5,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
+	Status       UserStatus   `protobuf:"varint,6,opt,name=status,proto3,enum=vietgara.identity.v1.UserStatus" json:"status,omitempty"`
+	// False until the e-mail OTP is confirmed; unverified users cannot use
 	// garage, staff or business APIs.
 	EmailVerified bool   `protobuf:"varint,7,opt,name=email_verified,json=emailVerified,proto3" json:"email_verified,omitempty"`
 	Locale        Locale `protobuf:"varint,8,opt,name=locale,proto3,enum=vietgara.identity.v1.Locale" json:"locale,omitempty"`
@@ -197,21 +197,21 @@ type Account struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Account) Reset() {
-	*x = Account{}
-	mi := &file_vietgara_identity_v1_account_proto_msgTypes[0]
+func (x *User) Reset() {
+	*x = User{}
+	mi := &file_vietgara_identity_v1_user_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Account) String() string {
+func (x *User) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Account) ProtoMessage() {}
+func (*User) ProtoMessage() {}
 
-func (x *Account) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_account_proto_msgTypes[0]
+func (x *User) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_identity_v1_user_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -222,82 +222,82 @@ func (x *Account) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Account.ProtoReflect.Descriptor instead.
-func (*Account) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_account_proto_rawDescGZIP(), []int{0}
+// Deprecated: Use User.ProtoReflect.Descriptor instead.
+func (*User) Descriptor() ([]byte, []int) {
+	return file_vietgara_identity_v1_user_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Account) GetId() string {
+func (x *User) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *Account) GetEmail() string {
+func (x *User) GetEmail() string {
 	if x != nil {
 		return x.Email
 	}
 	return ""
 }
 
-func (x *Account) GetPhone() string {
+func (x *User) GetPhone() string {
 	if x != nil && x.Phone != nil {
 		return *x.Phone
 	}
 	return ""
 }
 
-func (x *Account) GetAuthProvider() AuthProvider {
+func (x *User) GetAuthProvider() AuthProvider {
 	if x != nil {
 		return x.AuthProvider
 	}
 	return AuthProvider_AUTH_PROVIDER_UNSPECIFIED
 }
 
-func (x *Account) GetFullName() string {
+func (x *User) GetFullName() string {
 	if x != nil {
 		return x.FullName
 	}
 	return ""
 }
 
-func (x *Account) GetStatus() AccountStatus {
+func (x *User) GetStatus() UserStatus {
 	if x != nil {
 		return x.Status
 	}
-	return AccountStatus_ACCOUNT_STATUS_UNSPECIFIED
+	return UserStatus_USER_STATUS_UNSPECIFIED
 }
 
-func (x *Account) GetEmailVerified() bool {
+func (x *User) GetEmailVerified() bool {
 	if x != nil {
 		return x.EmailVerified
 	}
 	return false
 }
 
-func (x *Account) GetLocale() Locale {
+func (x *User) GetLocale() Locale {
 	if x != nil {
 		return x.Locale
 	}
 	return Locale_LOCALE_UNSPECIFIED
 }
 
-func (x *Account) GetPlatformAdmin() bool {
+func (x *User) GetPlatformAdmin() bool {
 	if x != nil {
 		return x.PlatformAdmin
 	}
 	return false
 }
 
-func (x *Account) GetCreatedAt() *timestamppb.Timestamp {
+func (x *User) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
 	return nil
 }
 
-func (x *Account) GetUpdatedAt() *timestamppb.Timestamp {
+func (x *User) GetUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.UpdatedAt
 	}
@@ -312,7 +312,7 @@ type GetMeRequest struct {
 
 func (x *GetMeRequest) Reset() {
 	*x = GetMeRequest{}
-	mi := &file_vietgara_identity_v1_account_proto_msgTypes[1]
+	mi := &file_vietgara_identity_v1_user_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -324,7 +324,7 @@ func (x *GetMeRequest) String() string {
 func (*GetMeRequest) ProtoMessage() {}
 
 func (x *GetMeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_account_proto_msgTypes[1]
+	mi := &file_vietgara_identity_v1_user_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -337,19 +337,19 @@ func (x *GetMeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMeRequest.ProtoReflect.Descriptor instead.
 func (*GetMeRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_account_proto_rawDescGZIP(), []int{1}
+	return file_vietgara_identity_v1_user_proto_rawDescGZIP(), []int{1}
 }
 
 type GetMeResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Account       *Account               `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
+	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetMeResponse) Reset() {
 	*x = GetMeResponse{}
-	mi := &file_vietgara_identity_v1_account_proto_msgTypes[2]
+	mi := &file_vietgara_identity_v1_user_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -361,7 +361,7 @@ func (x *GetMeResponse) String() string {
 func (*GetMeResponse) ProtoMessage() {}
 
 func (x *GetMeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_account_proto_msgTypes[2]
+	mi := &file_vietgara_identity_v1_user_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -374,12 +374,12 @@ func (x *GetMeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMeResponse.ProtoReflect.Descriptor instead.
 func (*GetMeResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_account_proto_rawDescGZIP(), []int{2}
+	return file_vietgara_identity_v1_user_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetMeResponse) GetAccount() *Account {
+func (x *GetMeResponse) GetUser() *User {
 	if x != nil {
-		return x.Account
+		return x.User
 	}
 	return nil
 }
@@ -387,7 +387,7 @@ func (x *GetMeResponse) GetAccount() *Account {
 type UpdateMeRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Fields to change: full_name, phone, locale.
-	Account *Account `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
+	User *User `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
 	// Filled from the JSON body keys when omitted.
 	UpdateMask    *fieldmaskpb.FieldMask `protobuf:"bytes,2,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -396,7 +396,7 @@ type UpdateMeRequest struct {
 
 func (x *UpdateMeRequest) Reset() {
 	*x = UpdateMeRequest{}
-	mi := &file_vietgara_identity_v1_account_proto_msgTypes[3]
+	mi := &file_vietgara_identity_v1_user_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -408,7 +408,7 @@ func (x *UpdateMeRequest) String() string {
 func (*UpdateMeRequest) ProtoMessage() {}
 
 func (x *UpdateMeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_account_proto_msgTypes[3]
+	mi := &file_vietgara_identity_v1_user_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -421,12 +421,12 @@ func (x *UpdateMeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMeRequest.ProtoReflect.Descriptor instead.
 func (*UpdateMeRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_account_proto_rawDescGZIP(), []int{3}
+	return file_vietgara_identity_v1_user_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *UpdateMeRequest) GetAccount() *Account {
+func (x *UpdateMeRequest) GetUser() *User {
 	if x != nil {
-		return x.Account
+		return x.User
 	}
 	return nil
 }
@@ -440,14 +440,14 @@ func (x *UpdateMeRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
 
 type UpdateMeResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Account       *Account               `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
+	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UpdateMeResponse) Reset() {
 	*x = UpdateMeResponse{}
-	mi := &file_vietgara_identity_v1_account_proto_msgTypes[4]
+	mi := &file_vietgara_identity_v1_user_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -459,7 +459,7 @@ func (x *UpdateMeResponse) String() string {
 func (*UpdateMeResponse) ProtoMessage() {}
 
 func (x *UpdateMeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_account_proto_msgTypes[4]
+	mi := &file_vietgara_identity_v1_user_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -472,28 +472,28 @@ func (x *UpdateMeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMeResponse.ProtoReflect.Descriptor instead.
 func (*UpdateMeResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_account_proto_rawDescGZIP(), []int{4}
+	return file_vietgara_identity_v1_user_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *UpdateMeResponse) GetAccount() *Account {
+func (x *UpdateMeResponse) GetUser() *User {
 	if x != nil {
-		return x.Account
+		return x.User
 	}
 	return nil
 }
 
-var File_vietgara_identity_v1_account_proto protoreflect.FileDescriptor
+var File_vietgara_identity_v1_user_proto protoreflect.FileDescriptor
 
-const file_vietgara_identity_v1_account_proto_rawDesc = "" +
+const file_vietgara_identity_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\"vietgara/identity/v1/account.proto\x12\x14vietgara.identity.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x99\x04\n" +
-	"\aAccount\x12\x13\n" +
+	"\x1fvietgara/identity/v1/user.proto\x12\x14vietgara.identity.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x93\x04\n" +
+	"\x04User\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x19\n" +
 	"\x05email\x18\x02 \x01(\tB\x03\xe0A\x03R\x05email\x12\x19\n" +
 	"\x05phone\x18\x03 \x01(\tH\x00R\x05phone\x88\x01\x01\x12L\n" +
 	"\rauth_provider\x18\x04 \x01(\x0e2\".vietgara.identity.v1.AuthProviderB\x03\xe0A\x03R\fauthProvider\x12\x1b\n" +
-	"\tfull_name\x18\x05 \x01(\tR\bfullName\x12@\n" +
-	"\x06status\x18\x06 \x01(\x0e2#.vietgara.identity.v1.AccountStatusB\x03\xe0A\x03R\x06status\x12*\n" +
+	"\tfull_name\x18\x05 \x01(\tR\bfullName\x12=\n" +
+	"\x06status\x18\x06 \x01(\x0e2 .vietgara.identity.v1.UserStatusB\x03\xe0A\x03R\x06status\x12*\n" +
 	"\x0eemail_verified\x18\a \x01(\bB\x03\xe0A\x03R\remailVerified\x124\n" +
 	"\x06locale\x18\b \x01(\x0e2\x1c.vietgara.identity.v1.LocaleR\x06locale\x12*\n" +
 	"\x0eplatform_admin\x18\t \x01(\bB\x03\xe0A\x03R\rplatformAdmin\x12>\n" +
@@ -503,19 +503,20 @@ const file_vietgara_identity_v1_account_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\b\n" +
 	"\x06_phone\"\x0e\n" +
-	"\fGetMeRequest\"H\n" +
-	"\rGetMeResponse\x127\n" +
-	"\aaccount\x18\x01 \x01(\v2\x1d.vietgara.identity.v1.AccountR\aaccount\"\x8c\x01\n" +
-	"\x0fUpdateMeRequest\x12<\n" +
-	"\aaccount\x18\x01 \x01(\v2\x1d.vietgara.identity.v1.AccountB\x03\xe0A\x02R\aaccount\x12;\n" +
+	"\fGetMeRequest\"?\n" +
+	"\rGetMeResponse\x12.\n" +
+	"\x04user\x18\x01 \x01(\v2\x1a.vietgara.identity.v1.UserR\x04user\"\x83\x01\n" +
+	"\x0fUpdateMeRequest\x123\n" +
+	"\x04user\x18\x01 \x01(\v2\x1a.vietgara.identity.v1.UserB\x03\xe0A\x02R\x04user\x12;\n" +
 	"\vupdate_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
-	"updateMask\"K\n" +
-	"\x10UpdateMeResponse\x127\n" +
-	"\aaccount\x18\x01 \x01(\v2\x1d.vietgara.identity.v1.AccountR\aaccount*h\n" +
-	"\rAccountStatus\x12\x1e\n" +
-	"\x1aACCOUNT_STATUS_UNSPECIFIED\x10\x00\x12\x19\n" +
-	"\x15ACCOUNT_STATUS_ACTIVE\x10\x01\x12\x1c\n" +
-	"\x18ACCOUNT_STATUS_SUSPENDED\x10\x02*`\n" +
+	"updateMask\"B\n" +
+	"\x10UpdateMeResponse\x12.\n" +
+	"\x04user\x18\x01 \x01(\v2\x1a.vietgara.identity.v1.UserR\x04user*\\\n" +
+	"\n" +
+	"UserStatus\x12\x1b\n" +
+	"\x17USER_STATUS_UNSPECIFIED\x10\x00\x12\x16\n" +
+	"\x12USER_STATUS_ACTIVE\x10\x01\x12\x19\n" +
+	"\x15USER_STATUS_SUSPENDED\x10\x02*`\n" +
 	"\fAuthProvider\x12\x1d\n" +
 	"\x19AUTH_PROVIDER_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13AUTH_PROVIDER_EMAIL\x10\x01\x12\x18\n" +
@@ -523,32 +524,32 @@ const file_vietgara_identity_v1_account_proto_rawDesc = "" +
 	"\x06Locale\x12\x16\n" +
 	"\x12LOCALE_UNSPECIFIED\x10\x00\x12\r\n" +
 	"\tLOCALE_VI\x10\x01\x12\r\n" +
-	"\tLOCALE_EN\x10\x022\x80\x02\n" +
-	"\x0eAccountService\x12m\n" +
-	"\x05GetMe\x12\".vietgara.identity.v1.GetMeRequest\x1a#.vietgara.identity.v1.GetMeResponse\"\x1b\x82\xd3\xe4\x93\x02\x15b\aaccount\x12\n" +
-	"/api/v1/me\x12\x7f\n" +
-	"\bUpdateMe\x12%.vietgara.identity.v1.UpdateMeRequest\x1a&.vietgara.identity.v1.UpdateMeResponse\"$\x82\xd3\xe4\x93\x02\x1e:\aaccountb\aaccount2\n" +
+	"\tLOCALE_EN\x10\x022\xf4\x01\n" +
+	"\vUserService\x12j\n" +
+	"\x05GetMe\x12\".vietgara.identity.v1.GetMeRequest\x1a#.vietgara.identity.v1.GetMeResponse\"\x18\x82\xd3\xe4\x93\x02\x12b\x04user\x12\n" +
+	"/api/v1/me\x12y\n" +
+	"\bUpdateMe\x12%.vietgara.identity.v1.UpdateMeRequest\x1a&.vietgara.identity.v1.UpdateMeResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x04userb\x04user2\n" +
 	"/api/v1/meBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/identity/v1;identityv1b\x06proto3"
 
 var (
-	file_vietgara_identity_v1_account_proto_rawDescOnce sync.Once
-	file_vietgara_identity_v1_account_proto_rawDescData []byte
+	file_vietgara_identity_v1_user_proto_rawDescOnce sync.Once
+	file_vietgara_identity_v1_user_proto_rawDescData []byte
 )
 
-func file_vietgara_identity_v1_account_proto_rawDescGZIP() []byte {
-	file_vietgara_identity_v1_account_proto_rawDescOnce.Do(func() {
-		file_vietgara_identity_v1_account_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_vietgara_identity_v1_account_proto_rawDesc), len(file_vietgara_identity_v1_account_proto_rawDesc)))
+func file_vietgara_identity_v1_user_proto_rawDescGZIP() []byte {
+	file_vietgara_identity_v1_user_proto_rawDescOnce.Do(func() {
+		file_vietgara_identity_v1_user_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_vietgara_identity_v1_user_proto_rawDesc), len(file_vietgara_identity_v1_user_proto_rawDesc)))
 	})
-	return file_vietgara_identity_v1_account_proto_rawDescData
+	return file_vietgara_identity_v1_user_proto_rawDescData
 }
 
-var file_vietgara_identity_v1_account_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_vietgara_identity_v1_account_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
-var file_vietgara_identity_v1_account_proto_goTypes = []any{
-	(AccountStatus)(0),            // 0: vietgara.identity.v1.AccountStatus
+var file_vietgara_identity_v1_user_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_vietgara_identity_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_vietgara_identity_v1_user_proto_goTypes = []any{
+	(UserStatus)(0),               // 0: vietgara.identity.v1.UserStatus
 	(AuthProvider)(0),             // 1: vietgara.identity.v1.AuthProvider
 	(Locale)(0),                   // 2: vietgara.identity.v1.Locale
-	(*Account)(nil),               // 3: vietgara.identity.v1.Account
+	(*User)(nil),                  // 3: vietgara.identity.v1.User
 	(*GetMeRequest)(nil),          // 4: vietgara.identity.v1.GetMeRequest
 	(*GetMeResponse)(nil),         // 5: vietgara.identity.v1.GetMeResponse
 	(*UpdateMeRequest)(nil),       // 6: vietgara.identity.v1.UpdateMeRequest
@@ -556,20 +557,20 @@ var file_vietgara_identity_v1_account_proto_goTypes = []any{
 	(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
 	(*fieldmaskpb.FieldMask)(nil), // 9: google.protobuf.FieldMask
 }
-var file_vietgara_identity_v1_account_proto_depIdxs = []int32{
-	1,  // 0: vietgara.identity.v1.Account.auth_provider:type_name -> vietgara.identity.v1.AuthProvider
-	0,  // 1: vietgara.identity.v1.Account.status:type_name -> vietgara.identity.v1.AccountStatus
-	2,  // 2: vietgara.identity.v1.Account.locale:type_name -> vietgara.identity.v1.Locale
-	8,  // 3: vietgara.identity.v1.Account.created_at:type_name -> google.protobuf.Timestamp
-	8,  // 4: vietgara.identity.v1.Account.updated_at:type_name -> google.protobuf.Timestamp
-	3,  // 5: vietgara.identity.v1.GetMeResponse.account:type_name -> vietgara.identity.v1.Account
-	3,  // 6: vietgara.identity.v1.UpdateMeRequest.account:type_name -> vietgara.identity.v1.Account
+var file_vietgara_identity_v1_user_proto_depIdxs = []int32{
+	1,  // 0: vietgara.identity.v1.User.auth_provider:type_name -> vietgara.identity.v1.AuthProvider
+	0,  // 1: vietgara.identity.v1.User.status:type_name -> vietgara.identity.v1.UserStatus
+	2,  // 2: vietgara.identity.v1.User.locale:type_name -> vietgara.identity.v1.Locale
+	8,  // 3: vietgara.identity.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	8,  // 4: vietgara.identity.v1.User.updated_at:type_name -> google.protobuf.Timestamp
+	3,  // 5: vietgara.identity.v1.GetMeResponse.user:type_name -> vietgara.identity.v1.User
+	3,  // 6: vietgara.identity.v1.UpdateMeRequest.user:type_name -> vietgara.identity.v1.User
 	9,  // 7: vietgara.identity.v1.UpdateMeRequest.update_mask:type_name -> google.protobuf.FieldMask
-	3,  // 8: vietgara.identity.v1.UpdateMeResponse.account:type_name -> vietgara.identity.v1.Account
-	4,  // 9: vietgara.identity.v1.AccountService.GetMe:input_type -> vietgara.identity.v1.GetMeRequest
-	6,  // 10: vietgara.identity.v1.AccountService.UpdateMe:input_type -> vietgara.identity.v1.UpdateMeRequest
-	5,  // 11: vietgara.identity.v1.AccountService.GetMe:output_type -> vietgara.identity.v1.GetMeResponse
-	7,  // 12: vietgara.identity.v1.AccountService.UpdateMe:output_type -> vietgara.identity.v1.UpdateMeResponse
+	3,  // 8: vietgara.identity.v1.UpdateMeResponse.user:type_name -> vietgara.identity.v1.User
+	4,  // 9: vietgara.identity.v1.UserService.GetMe:input_type -> vietgara.identity.v1.GetMeRequest
+	6,  // 10: vietgara.identity.v1.UserService.UpdateMe:input_type -> vietgara.identity.v1.UpdateMeRequest
+	5,  // 11: vietgara.identity.v1.UserService.GetMe:output_type -> vietgara.identity.v1.GetMeResponse
+	7,  // 12: vietgara.identity.v1.UserService.UpdateMe:output_type -> vietgara.identity.v1.UpdateMeResponse
 	11, // [11:13] is the sub-list for method output_type
 	9,  // [9:11] is the sub-list for method input_type
 	9,  // [9:9] is the sub-list for extension type_name
@@ -577,28 +578,28 @@ var file_vietgara_identity_v1_account_proto_depIdxs = []int32{
 	0,  // [0:9] is the sub-list for field type_name
 }
 
-func init() { file_vietgara_identity_v1_account_proto_init() }
-func file_vietgara_identity_v1_account_proto_init() {
-	if File_vietgara_identity_v1_account_proto != nil {
+func init() { file_vietgara_identity_v1_user_proto_init() }
+func file_vietgara_identity_v1_user_proto_init() {
+	if File_vietgara_identity_v1_user_proto != nil {
 		return
 	}
-	file_vietgara_identity_v1_account_proto_msgTypes[0].OneofWrappers = []any{}
+	file_vietgara_identity_v1_user_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_identity_v1_account_proto_rawDesc), len(file_vietgara_identity_v1_account_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_identity_v1_user_proto_rawDesc), len(file_vietgara_identity_v1_user_proto_rawDesc)),
 			NumEnums:      3,
 			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_vietgara_identity_v1_account_proto_goTypes,
-		DependencyIndexes: file_vietgara_identity_v1_account_proto_depIdxs,
-		EnumInfos:         file_vietgara_identity_v1_account_proto_enumTypes,
-		MessageInfos:      file_vietgara_identity_v1_account_proto_msgTypes,
+		GoTypes:           file_vietgara_identity_v1_user_proto_goTypes,
+		DependencyIndexes: file_vietgara_identity_v1_user_proto_depIdxs,
+		EnumInfos:         file_vietgara_identity_v1_user_proto_enumTypes,
+		MessageInfos:      file_vietgara_identity_v1_user_proto_msgTypes,
 	}.Build()
-	File_vietgara_identity_v1_account_proto = out.File
-	file_vietgara_identity_v1_account_proto_goTypes = nil
-	file_vietgara_identity_v1_account_proto_depIdxs = nil
+	File_vietgara_identity_v1_user_proto = out.File
+	file_vietgara_identity_v1_user_proto_goTypes = nil
+	file_vietgara_identity_v1_user_proto_depIdxs = nil
 }

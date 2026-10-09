@@ -34,7 +34,7 @@ const (
 // GarageService manages garages (FRD 3.2).
 type GarageServiceClient interface {
 	ListGarages(ctx context.Context, in *ListGaragesRequest, opts ...grpc.CallOption) (*ListGaragesResponse, error)
-	// Creates a garage owned by the signed-in account, within the plan's
+	// Creates a garage owned by the signed-in user, within the plan's
 	// garage limit.
 	CreateGarage(ctx context.Context, in *CreateGarageRequest, opts ...grpc.CallOption) (*CreateGarageResponse, error)
 	GetGarage(ctx context.Context, in *GetGarageRequest, opts ...grpc.CallOption) (*GetGarageResponse, error)
@@ -119,7 +119,7 @@ func (c *garageServiceClient) DeleteGarageLogo(ctx context.Context, in *DeleteGa
 // GarageService manages garages (FRD 3.2).
 type GarageServiceServer interface {
 	ListGarages(context.Context, *ListGaragesRequest) (*ListGaragesResponse, error)
-	// Creates a garage owned by the signed-in account, within the plan's
+	// Creates a garage owned by the signed-in user, within the plan's
 	// garage limit.
 	CreateGarage(context.Context, *CreateGarageRequest) (*CreateGarageResponse, error)
 	GetGarage(context.Context, *GetGarageRequest) (*GetGarageResponse, error)

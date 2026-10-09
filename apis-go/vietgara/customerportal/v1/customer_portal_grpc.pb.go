@@ -28,7 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
 // CustomerPortalService is the Customer BFF (Release 2.4, HLD Section 6).
-// The caller is a VietGara account -- in Release 2.4 created by Google
+// The caller is a VietGara user -- in Release 2.4 created by Google
 // sign-in (FR-CAPP-01) -- matched to garages' customer records by its
 // verified e-mail. It never reads garage data beyond those records, their
 // vehicles and the vehicles' history.
@@ -73,7 +73,7 @@ func (c *customerPortalServiceClient) GetMyVehicleHistory(ctx context.Context, i
 // for forward compatibility.
 //
 // CustomerPortalService is the Customer BFF (Release 2.4, HLD Section 6).
-// The caller is a VietGara account -- in Release 2.4 created by Google
+// The caller is a VietGara user -- in Release 2.4 created by Google
 // sign-in (FR-CAPP-01) -- matched to garages' customer records by its
 // verified e-mail. It never reads garage data beyond those records, their
 // vehicles and the vehicles' history.

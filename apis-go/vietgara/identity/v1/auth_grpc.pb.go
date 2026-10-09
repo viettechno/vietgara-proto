@@ -39,15 +39,15 @@ const (
 // password reset (FRD 3.1). Google sign-in uses the OAuth redirect routes
 // GET /api/v1/auth/google/login and /callback, which are plain HTTP handlers.
 type AuthServiceClient interface {
-	// Registers an owner account with e-mail and password (FR-IAM-01). The
-	// account starts unverified and a verification OTP is e-mailed.
+	// Registers a user as an owner with e-mail and password (FR-IAM-01). The
+	// user starts unverified and a verification OTP is e-mailed.
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	// Signs in with e-mail and password (FR-IAM-02).
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	// Signs in with a Google ID token obtained natively by a mobile app
 	// (FR-IAM-01, FR-CAPP-01). The token's signature, issuer, audience (one
 	// of the configured mobile client IDs) and verified e-mail are checked;
-	// the account is found by its Google subject or e-mail, or created --
+	// the user is found by its Google subject or e-mail, or created --
 	// the same rules as the web's Google redirect sign-in.
 	SignInWithGoogleIdToken(ctx context.Context, in *SignInWithGoogleIdTokenRequest, opts ...grpc.CallOption) (*SignInWithGoogleIdTokenResponse, error)
 	// Exchanges a refresh token for a new session; the old token is revoked
@@ -56,13 +56,13 @@ type AuthServiceClient interface {
 	// Revokes a refresh token.
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
 	// E-mails a new 6-digit verification OTP, valid for 2 minutes, to the
-	// signed-in account.
+	// signed-in user.
 	SendEmailVerificationOtp(ctx context.Context, in *SendEmailVerificationOtpRequest, opts ...grpc.CallOption) (*SendEmailVerificationOtpResponse, error)
-	// Confirms the signed-in account's e-mail with the OTP and returns a
+	// Confirms the signed-in user's e-mail with the OTP and returns a
 	// session whose token is marked verified.
 	VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error)
 	// Starts a password reset (FR-IAM-04): e-mails an OTP valid for 2
-	// minutes. Always succeeds so account existence is not revealed.
+	// minutes. Always succeeds so user existence is not revealed.
 	RequestPasswordReset(ctx context.Context, in *RequestPasswordResetRequest, opts ...grpc.CallOption) (*RequestPasswordResetResponse, error)
 	// Checks the password-reset OTP and returns a short-lived reset token.
 	VerifyPasswordResetOtp(ctx context.Context, in *VerifyPasswordResetOtpRequest, opts ...grpc.CallOption) (*VerifyPasswordResetOtpResponse, error)
@@ -186,15 +186,15 @@ func (c *authServiceClient) ResetPassword(ctx context.Context, in *ResetPassword
 // password reset (FRD 3.1). Google sign-in uses the OAuth redirect routes
 // GET /api/v1/auth/google/login and /callback, which are plain HTTP handlers.
 type AuthServiceServer interface {
-	// Registers an owner account with e-mail and password (FR-IAM-01). The
-	// account starts unverified and a verification OTP is e-mailed.
+	// Registers a user as an owner with e-mail and password (FR-IAM-01). The
+	// user starts unverified and a verification OTP is e-mailed.
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	// Signs in with e-mail and password (FR-IAM-02).
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	// Signs in with a Google ID token obtained natively by a mobile app
 	// (FR-IAM-01, FR-CAPP-01). The token's signature, issuer, audience (one
 	// of the configured mobile client IDs) and verified e-mail are checked;
-	// the account is found by its Google subject or e-mail, or created --
+	// the user is found by its Google subject or e-mail, or created --
 	// the same rules as the web's Google redirect sign-in.
 	SignInWithGoogleIdToken(context.Context, *SignInWithGoogleIdTokenRequest) (*SignInWithGoogleIdTokenResponse, error)
 	// Exchanges a refresh token for a new session; the old token is revoked
@@ -203,13 +203,13 @@ type AuthServiceServer interface {
 	// Revokes a refresh token.
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
 	// E-mails a new 6-digit verification OTP, valid for 2 minutes, to the
-	// signed-in account.
+	// signed-in user.
 	SendEmailVerificationOtp(context.Context, *SendEmailVerificationOtpRequest) (*SendEmailVerificationOtpResponse, error)
-	// Confirms the signed-in account's e-mail with the OTP and returns a
+	// Confirms the signed-in user's e-mail with the OTP and returns a
 	// session whose token is marked verified.
 	VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error)
 	// Starts a password reset (FR-IAM-04): e-mails an OTP valid for 2
-	// minutes. Always succeeds so account existence is not revealed.
+	// minutes. Always succeeds so user existence is not revealed.
 	RequestPasswordReset(context.Context, *RequestPasswordResetRequest) (*RequestPasswordResetResponse, error)
 	// Checks the password-reset OTP and returns a short-lived reset token.
 	VerifyPasswordResetOtp(context.Context, *VerifyPasswordResetOtpRequest) (*VerifyPasswordResetOtpResponse, error)

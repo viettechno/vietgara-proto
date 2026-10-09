@@ -9,21 +9,21 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/identity/v1;identityv1";
 
-// AccountStatus is the lifecycle of a login account (Database Design 2.1).
-enum AccountStatus {
-  ACCOUNT_STATUS_UNSPECIFIED = 0;
-  ACCOUNT_STATUS_ACTIVE = 1;
-  ACCOUNT_STATUS_SUSPENDED = 2;
+// UserStatus is the lifecycle of a VietGara user (Database Design 2.1).
+enum UserStatus {
+  USER_STATUS_UNSPECIFIED = 0;
+  USER_STATUS_ACTIVE = 1;
+  USER_STATUS_SUSPENDED = 2;
 }
 
-// AuthProvider is how the account signed up (FR-IAM-01).
+// AuthProvider is how the user signed up (FR-IAM-01).
 enum AuthProvider {
   AUTH_PROVIDER_UNSPECIFIED = 0;
   AUTH_PROVIDER_EMAIL = 1;
   AUTH_PROVIDER_GOOGLE = 2;
 }
 
-// Locale is the account's interface and e-mail language. Vietnamese is the
+// Locale is the user's interface and e-mail language. Vietnamese is the
 // default (NFR-US-01).
 enum Locale {
   LOCALE_UNSPECIFIED = 0;
@@ -31,16 +31,16 @@ enum Locale {
   LOCALE_EN = 2;
 }
 
-// Account is a VietGara login (owner or staff member).
-message Account {
+// User is a person who can sign in to VietGara.
+message User {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   string email = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Optional contact phone, unique across accounts; used to look staff up.
+  // Optional contact phone, unique across users; used to look staff up.
   optional string phone = 3;
   AuthProvider auth_provider = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
   string full_name = 5;
-  AccountStatus status = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // False until the e-mail OTP is confirmed; unverified accounts cannot use
+  UserStatus status = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // False until the e-mail OTP is confirmed; unverified users cannot use
   // garage, staff or business APIs.
   bool email_verified = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
   Locale locale = 8;
@@ -53,36 +53,36 @@ message Account {
 message GetMeRequest {}
 
 message GetMeResponse {
-  Account account = 1;
+  User user = 1;
 }
 
 message UpdateMeRequest {
   // Fields to change: full_name, phone, locale.
-  Account account = 1 [(google.api.field_behavior) = REQUIRED];
+  User user = 1 [(google.api.field_behavior) = REQUIRED];
   // Filled from the JSON body keys when omitted.
   google.protobuf.FieldMask update_mask = 2;
 }
 
 message UpdateMeResponse {
-  Account account = 1;
+  User user = 1;
 }
 
-// AccountService manages the signed-in account's own profile.
-service AccountService {
-  // Returns the signed-in account.
+// UserService manages the signed-in user's own profile.
+service UserService {
+  // Returns the signed-in user.
   rpc GetMe(GetMeRequest) returns (GetMeResponse) {
     option (google.api.http) = {
       get: "/api/v1/me"
-      response_body: "account"
+      response_body: "user"
     };
   }
 
-  // Updates the signed-in account's profile and language.
+  // Updates the signed-in user's profile and language.
   rpc UpdateMe(UpdateMeRequest) returns (UpdateMeResponse) {
     option (google.api.http) = {
       patch: "/api/v1/me"
-      body: "account"
-      response_body: "account"
+      body: "user"
+      response_body: "user"
     };
   }
 }

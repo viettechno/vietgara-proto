@@ -38,7 +38,7 @@ type StaffServiceClient interface {
 	UpdateStaff(ctx context.Context, in *UpdateStaffRequest, opts ...grpc.CallOption) (*UpdateStaffResponse, error)
 	// Removes a member from the garage.
 	DeleteStaff(ctx context.Context, in *DeleteStaffRequest, opts ...grpc.CallOption) (*DeleteStaffResponse, error)
-	// Finds an existing account by exact e-mail or phone to invite.
+	// Finds an existing user by exact e-mail or phone to invite.
 	LookupStaffCandidate(ctx context.Context, in *LookupStaffCandidateRequest, opts ...grpc.CallOption) (*LookupStaffCandidateResponse, error)
 }
 
@@ -103,7 +103,7 @@ type StaffServiceServer interface {
 	UpdateStaff(context.Context, *UpdateStaffRequest) (*UpdateStaffResponse, error)
 	// Removes a member from the garage.
 	DeleteStaff(context.Context, *DeleteStaffRequest) (*DeleteStaffResponse, error)
-	// Finds an existing account by exact e-mail or phone to invite.
+	// Finds an existing user by exact e-mail or phone to invite.
 	LookupStaffCandidate(context.Context, *LookupStaffCandidateRequest) (*LookupStaffCandidateResponse, error)
 	mustEmbedUnimplementedStaffServiceServer()
 }

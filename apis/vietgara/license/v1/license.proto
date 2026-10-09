@@ -79,11 +79,11 @@ message Usage {
   int32 transactions_today = 3;
 }
 
-// Subscription is an owner account's license covering all their garages
+// Subscription belongs to an owner user and covers all their garages
 // (FR-LIC-01..04).
 message Subscription {
   string id = 1;
-  string account_id = 2;
+  string user_id = 2;
   SubscriptionStatus status = 3;
   Plan plan = 4;
   google.protobuf.Timestamp trial_end_at = 5;
@@ -174,8 +174,8 @@ service LicenseService {
 // SubscriptionSummary is one row of the platform admin's subscription list.
 message SubscriptionSummary {
   Subscription subscription = 1;
-  string account_email = 2;
-  string account_name = 3;
+  string user_email = 2;
+  string user_name = 3;
 }
 
 message ListAllPlansRequest {}

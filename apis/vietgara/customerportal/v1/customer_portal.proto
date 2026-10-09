@@ -24,7 +24,7 @@ message MyGarage {
 message ListMyVehiclesRequest {}
 
 message ListMyVehiclesResponse {
-  // One entry per garage whose customer record carries the account's
+  // One entry per garage whose customer record carries the user's
   // verified e-mail, by garage name.
   repeated MyGarage data = 1;
 }
@@ -40,7 +40,7 @@ message GetMyVehicleHistoryResponse {
 }
 
 // CustomerPortalService is the Customer BFF (Release 2.4, HLD Section 6).
-// The caller is a VietGara account -- in Release 2.4 created by Google
+// The caller is a VietGara user -- in Release 2.4 created by Google
 // sign-in (FR-CAPP-01) -- matched to garages' customer records by its
 // verified e-mail. It never reads garage data beyond those records, their
 // vehicles and the vehicles' history.
