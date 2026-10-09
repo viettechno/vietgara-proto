@@ -17,13 +17,13 @@ enum InvitationStatus {
   INVITATION_STATUS_EXPIRED = 5;
 }
 
-// Invitation asks an existing account to join a garage (FR-TEN-04). It is
-// e-mailed to the account and expires after 7 days.
+// Invitation asks an existing user to join a garage (FR-TEN-04). It is
+// e-mailed to the user and expires after 7 days.
 message Invitation {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   string garage_name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string account_id = 4;
+  string user_id = 4;
   string full_name = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
   string email = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Staff groups the member joins on acceptance.
@@ -38,7 +38,7 @@ message Invitation {
 message CreateInvitationRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   // From LookupStaffCandidate.
-  string account_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string user_id = 2 [(google.api.field_behavior) = REQUIRED];
   repeated string group_ids = 3;
 }
 
@@ -99,9 +99,9 @@ message DeclineInvitationResponse {
 }
 
 // InvitationService handles staff invitations: the garage side needs
-// PERMISSION_STAFF_WRITE; the /me side is the invited account.
+// PERMISSION_STAFF_WRITE; the /me side is the invited user.
 service InvitationService {
-  // Invites an existing account and e-mails them, within the plan's staff
+  // Invites an existing user and e-mails them, within the plan's staff
   // limit.
   rpc CreateInvitation(CreateInvitationRequest) returns (CreateInvitationResponse) {
     option (google.api.http) = {

@@ -156,7 +156,7 @@ func (*ListMyVehiclesRequest) Descriptor() ([]byte, []int) {
 
 type ListMyVehiclesResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// One entry per garage whose customer record carries the account's
+	// One entry per garage whose customer record carries the user's
 	// verified e-mail, by garage name.
 	Data          []*MyGarage `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields

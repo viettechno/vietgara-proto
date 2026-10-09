@@ -57,7 +57,7 @@ message RepairOrderLine {
   int64 unit_price = 6 [(google.api.field_behavior) = REQUIRED];
   int64 line_total = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
   RepairOrderLineStatus status = 8;
-  // Technician account ids assigned to this line (FR-REP-02); a line may
+  // Technician user ids assigned to this line (FR-REP-02); a line may
   // have more than one.
   repeated string assigned_technician_ids = 9;
 }

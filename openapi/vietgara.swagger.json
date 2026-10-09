@@ -24,15 +24,15 @@
     },
     {
       "name": "CustomerPortalService",
-      "description": "CustomerPortalService is the Customer BFF (Release 2.4, HLD Section 6).\nThe caller is a VietGara account -- in Release 2.4 created by Google\nsign-in (FR-CAPP-01) -- matched to garages' customer records by its\nverified e-mail. It never reads garage data beyond those records, their\nvehicles and the vehicles' history."
+      "description": "CustomerPortalService is the Customer BFF (Release 2.4, HLD Section 6).\nThe caller is a VietGara user -- in Release 2.4 created by Google\nsign-in (FR-CAPP-01) -- matched to garages' customer records by its\nverified e-mail. It never reads garage data beyond those records, their\nvehicles and the vehicles' history."
     },
     {
       "name": "DocumentService",
       "description": "DocumentService renders PDFs and Excel reports on request (FRD 3.13).\nNo templates are stored -- FR-DOC-03 (letting a garage customize the\nlogo and layout) is Phase 4 -- every document is generated fresh from\nthe owning module's own data, read through a narrow interface the same\nway every other cross-module read works (HLD Section 2: a module never\nqueries another module's tables directly). Each RPC needs the same\npermission as the data it renders (quote.read, billing.read,\ninventory.read), not a permission of its own."
     },
     {
-      "name": "AccountService",
-      "description": "AccountService manages the signed-in account's own profile."
+      "name": "UserService",
+      "description": "UserService manages the signed-in user's own profile."
     },
     {
       "name": "AuthService",
@@ -84,7 +84,7 @@
     },
     {
       "name": "InvitationService",
-      "description": "InvitationService handles staff invitations: the garage side needs\nPERMISSION_STAFF_WRITE; the /me side is the invited account."
+      "description": "InvitationService handles staff invitations: the garage side needs\nPERMISSION_STAFF_WRITE; the /me side is the invited user."
     },
     {
       "name": "StaffService",
@@ -292,7 +292,7 @@
     },
     "/api/v1/auth/email-verification": {
       "post": {
-        "summary": "Confirms the signed-in account's e-mail with the OTP and returns a\nsession whose token is marked verified.",
+        "summary": "Confirms the signed-in user's e-mail with the OTP and returns a\nsession whose token is marked verified.",
         "operationId": "AuthService_VerifyEmail",
         "responses": {
           "200": {
@@ -325,7 +325,7 @@
     },
     "/api/v1/auth/email-verification/otp": {
       "post": {
-        "summary": "E-mails a new 6-digit verification OTP, valid for 2 minutes, to the\nsigned-in account.",
+        "summary": "E-mails a new 6-digit verification OTP, valid for 2 minutes, to the\nsigned-in user.",
         "operationId": "AuthService_SendEmailVerificationOtp",
         "responses": {
           "200": {
@@ -358,7 +358,7 @@
     },
     "/api/v1/auth/google/id-token": {
       "post": {
-        "summary": "Signs in with a Google ID token obtained natively by a mobile app\n(FR-IAM-01, FR-CAPP-01). The token's signature, issuer, audience (one\nof the configured mobile client IDs) and verified e-mail are checked;\nthe account is found by its Google subject or e-mail, or created --\nthe same rules as the web's Google redirect sign-in.",
+        "summary": "Signs in with a Google ID token obtained natively by a mobile app\n(FR-IAM-01, FR-CAPP-01). The token's signature, issuer, audience (one\nof the configured mobile client IDs) and verified e-mail are checked;\nthe user is found by its Google subject or e-mail, or created --\nthe same rules as the web's Google redirect sign-in.",
         "operationId": "AuthService_SignInWithGoogleIdToken",
         "responses": {
           "200": {
@@ -490,7 +490,7 @@
     },
     "/api/v1/auth/password-reset/otp": {
       "post": {
-        "summary": "Starts a password reset (FR-IAM-04): e-mails an OTP valid for 2\nminutes. Always succeeds so account existence is not revealed.",
+        "summary": "Starts a password reset (FR-IAM-04): e-mails an OTP valid for 2\nminutes. Always succeeds so user existence is not revealed.",
         "operationId": "AuthService_RequestPasswordReset",
         "responses": {
           "200": {
@@ -589,7 +589,7 @@
     },
     "/api/v1/auth/register": {
       "post": {
-        "summary": "Registers an owner account with e-mail and password (FR-IAM-01). The\naccount starts unverified and a verification OTP is e-mailed.",
+        "summary": "Registers a user as an owner with e-mail and password (FR-IAM-01). The\nuser starts unverified and a verification OTP is e-mailed.",
         "operationId": "AuthService_Register",
         "responses": {
           "200": {
@@ -702,7 +702,7 @@
         ]
       },
       "post": {
-        "summary": "Creates a garage owned by the signed-in account, within the plan's\ngarage limit.",
+        "summary": "Creates a garage owned by the signed-in user, within the plan's\ngarage limit.",
         "operationId": "GarageService_CreateGarage",
         "responses": {
           "200": {
@@ -1274,7 +1274,7 @@
         ]
       },
       "post": {
-        "summary": "Invites an existing account and e-mails them, within the plan's staff\nlimit.",
+        "summary": "Invites an existing user and e-mails them, within the plan's staff\nlimit.",
         "operationId": "InvitationService_CreateInvitation",
         "responses": {
           "200": {
@@ -2753,7 +2753,7 @@
     },
     "/api/v1/garages/{garageId}/staff-candidates": {
       "get": {
-        "summary": "Finds an existing account by exact e-mail or phone to invite.",
+        "summary": "Finds an existing user by exact e-mail or phone to invite.",
         "operationId": "StaffService_LookupStaffCandidate",
         "responses": {
           "200": {
@@ -2778,7 +2778,7 @@
           },
           {
             "name": "query",
-            "description": "Exact e-mail address or phone number of an existing account.",
+            "description": "Exact e-mail address or phone number of an existing user.",
             "in": "query",
             "required": true,
             "type": "string"
@@ -3300,13 +3300,13 @@
     },
     "/api/v1/me": {
       "get": {
-        "summary": "Returns the signed-in account.",
-        "operationId": "AccountService_GetMe",
+        "summary": "Returns the signed-in user.",
+        "operationId": "UserService_GetMe",
         "responses": {
           "200": {
             "description": "",
             "schema": {
-              "$ref": "#/definitions/v1Account"
+              "$ref": "#/definitions/v1User"
             }
           },
           "default": {
@@ -3317,17 +3317,17 @@
           }
         },
         "tags": [
-          "AccountService"
+          "UserService"
         ]
       },
       "patch": {
-        "summary": "Updates the signed-in account's profile and language.",
-        "operationId": "AccountService_UpdateMe",
+        "summary": "Updates the signed-in user's profile and language.",
+        "operationId": "UserService_UpdateMe",
         "responses": {
           "200": {
             "description": "",
             "schema": {
-              "$ref": "#/definitions/v1Account"
+              "$ref": "#/definitions/v1User"
             }
           },
           "default": {
@@ -3339,17 +3339,17 @@
         },
         "parameters": [
           {
-            "name": "account",
+            "name": "user",
             "description": "Fields to change: full_name, phone, locale.",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1Account"
+              "$ref": "#/definitions/v1User"
             }
           }
         ],
         "tags": [
-          "AccountService"
+          "UserService"
         ]
       }
     },
@@ -3882,7 +3882,7 @@
     "InvitationServiceCreateInvitationBody": {
       "type": "object",
       "properties": {
-        "accountId": {
+        "userId": {
           "type": "string",
           "description": "From LookupStaffCandidate."
         },
@@ -3894,7 +3894,7 @@
         }
       },
       "required": [
-        "accountId"
+        "userId"
       ]
     },
     "InvitationServiceDeclineInvitationBody": {
@@ -4066,66 +4066,6 @@
         }
       }
     },
-    "v1Account": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "readOnly": true
-        },
-        "email": {
-          "type": "string",
-          "readOnly": true
-        },
-        "phone": {
-          "type": "string",
-          "description": "Optional contact phone, unique across accounts; used to look staff up."
-        },
-        "authProvider": {
-          "$ref": "#/definitions/v1AuthProvider",
-          "readOnly": true
-        },
-        "fullName": {
-          "type": "string"
-        },
-        "status": {
-          "$ref": "#/definitions/v1AccountStatus",
-          "readOnly": true
-        },
-        "emailVerified": {
-          "type": "boolean",
-          "description": "False until the e-mail OTP is confirmed; unverified accounts cannot use\ngarage, staff or business APIs.",
-          "readOnly": true
-        },
-        "locale": {
-          "$ref": "#/definitions/v1Locale"
-        },
-        "platformAdmin": {
-          "type": "boolean",
-          "description": "Platform operators manage subscription plans (FR-LIC-05).",
-          "readOnly": true
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "readOnly": true
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "readOnly": true
-        }
-      },
-      "description": "Account is a VietGara login (owner or staff member)."
-    },
-    "v1AccountStatus": {
-      "type": "string",
-      "enum": [
-        "ACCOUNT_STATUS_ACTIVE",
-        "ACCOUNT_STATUS_SUSPENDED"
-      ],
-      "description": "AccountStatus is the lifecycle of a login account (Database Design 2.1)."
-    },
     "v1AllocateSettlementResponse": {
       "type": "object",
       "properties": {
@@ -4140,7 +4080,7 @@
         "AUTH_PROVIDER_EMAIL",
         "AUTH_PROVIDER_GOOGLE"
       ],
-      "description": "AuthProvider is how the account signed up (FR-IAM-01)."
+      "description": "AuthProvider is how the user signed up (FR-IAM-01)."
     },
     "v1BillingCycle": {
       "type": "string",
@@ -4156,7 +4096,7 @@
         "CANDIDATE_MEMBERSHIP_MEMBER",
         "CANDIDATE_MEMBERSHIP_INVITED"
       ],
-      "description": "CandidateMembership is where a looked-up account stands with the garage."
+      "description": "CandidateMembership is where a looked-up user stands with the garage."
     },
     "v1ChangeMyPlanRequest": {
       "type": "object",
@@ -4531,7 +4471,7 @@
           "type": "string",
           "readOnly": true
         },
-        "ownerAccountId": {
+        "ownerUserId": {
           "type": "string",
           "readOnly": true
         },
@@ -4595,7 +4535,7 @@
           "description": "The approval mode new quotes of this garage start with (FR-TEN-05,\nRelease 1.2); a service advisor may still change it per quote.\nDefault LINK."
         }
       },
-      "description": "Garage is one tenant (branch) of an owner account (FR-TEN-01/02).",
+      "description": "Garage is one tenant (branch) owned by a user (FR-TEN-01/02).",
       "required": [
         "name"
       ]
@@ -4613,7 +4553,7 @@
           }
         }
       },
-      "description": "GarageAccess is what the signed-in account may do in the garage."
+      "description": "GarageAccess is what the signed-in user may do in the garage."
     },
     "v1GarageStatus": {
       "type": "string",
@@ -4658,8 +4598,8 @@
     "v1GetMeResponse": {
       "type": "object",
       "properties": {
-        "account": {
-          "$ref": "#/definitions/v1Account"
+        "user": {
+          "$ref": "#/definitions/v1User"
         }
       }
     },
@@ -4792,7 +4732,7 @@
           "type": "string",
           "readOnly": true
         },
-        "accountId": {
+        "userId": {
           "type": "string"
         },
         "fullName": {
@@ -4834,7 +4774,7 @@
           "readOnly": true
         }
       },
-      "description": "Invitation asks an existing account to join a garage (FR-TEN-04). It is\ne-mailed to the account and expires after 7 days."
+      "description": "Invitation asks an existing user to join a garage (FR-TEN-04). It is\ne-mailed to the user and expires after 7 days."
     },
     "v1InvitationStatus": {
       "type": "string",
@@ -4930,7 +4870,7 @@
             "type": "object",
             "$ref": "#/definitions/v1Garage"
           },
-          "description": "Garages the account owns or is an active member of; staff do not see\ninactive garages."
+          "description": "Garages the user owns or is an active member of; staff do not see\ninactive garages."
         }
       }
     },
@@ -4982,7 +4922,7 @@
             "type": "object",
             "$ref": "#/definitions/v1MyGarage"
           },
-          "description": "One entry per garage whose customer record carries the account's\nverified e-mail, by garage name."
+          "description": "One entry per garage whose customer record carries the user's\nverified e-mail, by garage name."
         }
       }
     },
@@ -5171,7 +5111,7 @@
         "LOCALE_VI",
         "LOCALE_EN"
       ],
-      "description": "Locale is the account's interface and e-mail language. Vietnamese is the\ndefault (NFR-US-01)."
+      "description": "Locale is the user's interface and e-mail language. Vietnamese is the\ndefault (NFR-US-01)."
     },
     "v1LoginRequest": {
       "type": "object",
@@ -5927,7 +5867,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Technician account ids assigned to this line (FR-REP-02); a line may\nhave more than one."
+          "description": "Technician user ids assigned to this line (FR-REP-02); a line may\nhave more than one."
         }
       },
       "description": "RepairOrderLine is one labor or part line of a repair order.",
@@ -6130,8 +6070,8 @@
           "format": "int64",
           "description": "Access token lifetime in seconds."
         },
-        "account": {
-          "$ref": "#/definitions/v1Account"
+        "user": {
+          "$ref": "#/definitions/v1User"
         }
       },
       "description": "Session is what every successful sign-in returns."
@@ -6278,7 +6218,7 @@
         },
         "locale": {
           "$ref": "#/definitions/v1Locale",
-          "description": "The UI language of a newly created account; defaults to Vietnamese."
+          "description": "The UI language of a newly created user; defaults to Vietnamese."
         }
       },
       "required": [
@@ -6304,7 +6244,7 @@
           "type": "string",
           "readOnly": true
         },
-        "accountId": {
+        "userId": {
           "type": "string",
           "readOnly": true
         },
@@ -6354,12 +6294,12 @@
           "readOnly": true
         }
       },
-      "description": "Staff is an account's membership of a garage (FR-TEN-04)."
+      "description": "Staff is a user's membership of a garage (FR-TEN-04)."
     },
     "v1StaffCandidate": {
       "type": "object",
       "properties": {
-        "accountId": {
+        "userId": {
           "type": "string"
         },
         "fullName": {
@@ -6375,7 +6315,7 @@
           "$ref": "#/definitions/v1CandidateMembership"
         }
       },
-      "description": "StaffCandidate is an existing account found by e-mail or phone."
+      "description": "StaffCandidate is an existing user found by e-mail or phone."
     },
     "v1StaffGroup": {
       "type": "object",
@@ -6504,7 +6444,7 @@
         "id": {
           "type": "string"
         },
-        "accountId": {
+        "userId": {
           "type": "string"
         },
         "status": {
@@ -6544,7 +6484,7 @@
           "format": "date-time"
         }
       },
-      "description": "Subscription is an owner account's license covering all their garages\n(FR-LIC-01..04)."
+      "description": "Subscription belongs to an owner user and covers all their garages\n(FR-LIC-01..04)."
     },
     "v1SubscriptionStatus": {
       "type": "string",
@@ -6563,10 +6503,10 @@
         "subscription": {
           "$ref": "#/definitions/v1Subscription"
         },
-        "accountEmail": {
+        "userEmail": {
           "type": "string"
         },
-        "accountName": {
+        "userName": {
           "type": "string"
         }
       },
@@ -6599,8 +6539,8 @@
     "v1UpdateMeResponse": {
       "type": "object",
       "properties": {
-        "account": {
-          "$ref": "#/definitions/v1Account"
+        "user": {
+          "$ref": "#/definitions/v1User"
         }
       }
     },
@@ -6693,6 +6633,66 @@
         }
       },
       "description": "Usage is the owner's current consumption of the plan limits."
+    },
+    "v1User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "email": {
+          "type": "string",
+          "readOnly": true
+        },
+        "phone": {
+          "type": "string",
+          "description": "Optional contact phone, unique across users; used to look staff up."
+        },
+        "authProvider": {
+          "$ref": "#/definitions/v1AuthProvider",
+          "readOnly": true
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1UserStatus",
+          "readOnly": true
+        },
+        "emailVerified": {
+          "type": "boolean",
+          "description": "False until the e-mail OTP is confirmed; unverified users cannot use\ngarage, staff or business APIs.",
+          "readOnly": true
+        },
+        "locale": {
+          "$ref": "#/definitions/v1Locale"
+        },
+        "platformAdmin": {
+          "type": "boolean",
+          "description": "Platform operators manage subscription plans (FR-LIC-05).",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "User is a person who can sign in to VietGara."
+    },
+    "v1UserStatus": {
+      "type": "string",
+      "enum": [
+        "USER_STATUS_ACTIVE",
+        "USER_STATUS_SUSPENDED"
+      ],
+      "description": "UserStatus is the lifecycle of a VietGara user (Database Design 2.1)."
     },
     "v1Vehicle": {
       "type": "object",

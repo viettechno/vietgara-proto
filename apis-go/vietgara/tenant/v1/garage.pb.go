@@ -212,7 +212,7 @@ func (x *NumberingTemplates) GetSettlement() string {
 	return ""
 }
 
-// GarageAccess is what the signed-in account may do in the garage.
+// GarageAccess is what the signed-in user may do in the garage.
 type GarageAccess struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Owner         bool                   `protobuf:"varint,1,opt,name=owner,proto3" json:"owner,omitempty"`
@@ -265,16 +265,16 @@ func (x *GarageAccess) GetPermissions() []Permission {
 	return nil
 }
 
-// Garage is one tenant (branch) of an owner account (FR-TEN-01/02).
+// Garage is one tenant (branch) owned by a user (FR-TEN-01/02).
 type Garage struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	OwnerAccountId string                 `protobuf:"bytes,2,opt,name=owner_account_id,json=ownerAccountId,proto3" json:"owner_account_id,omitempty"`
-	Name           string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	TaxCode        *string                `protobuf:"bytes,4,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
-	Address        *string                `protobuf:"bytes,5,opt,name=address,proto3,oneof" json:"address,omitempty"`
-	Phone          *string                `protobuf:"bytes,6,opt,name=phone,proto3,oneof" json:"phone,omitempty"`
-	Email          *string                `protobuf:"bytes,7,opt,name=email,proto3,oneof" json:"email,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	OwnerUserId string                 `protobuf:"bytes,2,opt,name=owner_user_id,json=ownerUserId,proto3" json:"owner_user_id,omitempty"`
+	Name        string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	TaxCode     *string                `protobuf:"bytes,4,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
+	Address     *string                `protobuf:"bytes,5,opt,name=address,proto3,oneof" json:"address,omitempty"`
+	Phone       *string                `protobuf:"bytes,6,opt,name=phone,proto3,oneof" json:"phone,omitempty"`
+	Email       *string                `protobuf:"bytes,7,opt,name=email,proto3,oneof" json:"email,omitempty"`
 	// Set through UploadGarageLogo.
 	LogoUrl *string `protobuf:"bytes,8,opt,name=logo_url,json=logoUrl,proto3,oneof" json:"logo_url,omitempty"`
 	// IANA timezone, default Asia/Ho_Chi_Minh.
@@ -332,9 +332,9 @@ func (x *Garage) GetId() string {
 	return ""
 }
 
-func (x *Garage) GetOwnerAccountId() string {
+func (x *Garage) GetOwnerUserId() string {
 	if x != nil {
-		return x.OwnerAccountId
+		return x.OwnerUserId
 	}
 	return ""
 }
@@ -482,7 +482,7 @@ func (*ListGaragesRequest) Descriptor() ([]byte, []int) {
 
 type ListGaragesResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Garages the account owns or is an active member of; staff do not see
+	// Garages the user owns or is an active member of; staff do not see
 	// inactive garages.
 	Data          []*Garage `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -1021,10 +1021,10 @@ const file_vietgara_tenant_v1_garage_proto_rawDesc = "" +
 	"settlement\"f\n" +
 	"\fGarageAccess\x12\x14\n" +
 	"\x05owner\x18\x01 \x01(\bR\x05owner\x12@\n" +
-	"\vpermissions\x18\x02 \x03(\x0e2\x1e.vietgara.tenant.v1.PermissionR\vpermissions\"\xdf\x06\n" +
+	"\vpermissions\x18\x02 \x03(\x0e2\x1e.vietgara.tenant.v1.PermissionR\vpermissions\"\xd9\x06\n" +
 	"\x06Garage\x12\x13\n" +
-	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12-\n" +
-	"\x10owner_account_id\x18\x02 \x01(\tB\x03\xe0A\x03R\x0eownerAccountId\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12'\n" +
+	"\rowner_user_id\x18\x02 \x01(\tB\x03\xe0A\x03R\vownerUserId\x12\x17\n" +
 	"\x04name\x18\x03 \x01(\tB\x03\xe0A\x02R\x04name\x12\x1e\n" +
 	"\btax_code\x18\x04 \x01(\tH\x00R\ataxCode\x88\x01\x01\x12\x1d\n" +
 	"\aaddress\x18\x05 \x01(\tH\x01R\aaddress\x88\x01\x01\x12\x19\n" +

@@ -74,7 +74,7 @@ func (StaffStatus) EnumDescriptor() ([]byte, []int) {
 	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{0}
 }
 
-// CandidateMembership is where a looked-up account stands with the garage.
+// CandidateMembership is where a looked-up user stands with the garage.
 type CandidateMembership int32
 
 const (
@@ -127,15 +127,15 @@ func (CandidateMembership) EnumDescriptor() ([]byte, []int) {
 	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{1}
 }
 
-// Staff is an account's membership of a garage (FR-TEN-04).
+// Staff is a user's membership of a garage (FR-TEN-04).
 type Staff struct {
-	state     protoimpl.MessageState `protogen:"open.v1"`
-	Id        string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	GarageId  string                 `protobuf:"bytes,2,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	AccountId string                 `protobuf:"bytes,3,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	FullName  string                 `protobuf:"bytes,4,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
-	Email     string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
-	Phone     *string                `protobuf:"bytes,6,opt,name=phone,proto3,oneof" json:"phone,omitempty"`
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Id       string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	GarageId string                 `protobuf:"bytes,2,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	UserId   string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	FullName string                 `protobuf:"bytes,4,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
+	Email    string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
+	Phone    *string                `protobuf:"bytes,6,opt,name=phone,proto3,oneof" json:"phone,omitempty"`
 	// The garage owner; cannot be deactivated, removed or grouped.
 	Owner  bool        `protobuf:"varint,7,opt,name=owner,proto3" json:"owner,omitempty"`
 	Status StaffStatus `protobuf:"varint,8,opt,name=status,proto3,enum=vietgara.tenant.v1.StaffStatus" json:"status,omitempty"`
@@ -193,9 +193,9 @@ func (x *Staff) GetGarageId() string {
 	return ""
 }
 
-func (x *Staff) GetAccountId() string {
+func (x *Staff) GetUserId() string {
 	if x != nil {
-		return x.AccountId
+		return x.UserId
 	}
 	return ""
 }
@@ -263,10 +263,10 @@ func (x *Staff) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-// StaffCandidate is an existing account found by e-mail or phone.
+// StaffCandidate is an existing user found by e-mail or phone.
 type StaffCandidate struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	FullName      string                 `protobuf:"bytes,2,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
 	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	Phone         *string                `protobuf:"bytes,4,opt,name=phone,proto3,oneof" json:"phone,omitempty"`
@@ -305,9 +305,9 @@ func (*StaffCandidate) Descriptor() ([]byte, []int) {
 	return file_vietgara_tenant_v1_staff_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *StaffCandidate) GetAccountId() string {
+func (x *StaffCandidate) GetUserId() string {
 	if x != nil {
-		return x.AccountId
+		return x.UserId
 	}
 	return ""
 }
@@ -633,7 +633,7 @@ func (*DeleteStaffResponse) Descriptor() ([]byte, []int) {
 type LookupStaffCandidateRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// Exact e-mail address or phone number of an existing account.
+	// Exact e-mail address or phone number of an existing user.
 	Query         string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -731,12 +731,11 @@ var File_vietgara_tenant_v1_staff_proto protoreflect.FileDescriptor
 
 const file_vietgara_tenant_v1_staff_proto_rawDesc = "" +
 	"\n" +
-	"\x1evietgara/tenant/v1/staff.proto\x12\x12vietgara.tenant.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fvietgara/tenant/v1/access.proto\"\x81\x04\n" +
+	"\x1evietgara/tenant/v1/staff.proto\x12\x12vietgara.tenant.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fvietgara/tenant/v1/access.proto\"\xfb\x03\n" +
 	"\x05Staff\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
-	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\"\n" +
-	"\n" +
-	"account_id\x18\x03 \x01(\tB\x03\xe0A\x03R\taccountId\x12 \n" +
+	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\x1c\n" +
+	"\auser_id\x18\x03 \x01(\tB\x03\xe0A\x03R\x06userId\x12 \n" +
 	"\tfull_name\x18\x04 \x01(\tB\x03\xe0A\x03R\bfullName\x12\x19\n" +
 	"\x05email\x18\x05 \x01(\tB\x03\xe0A\x03R\x05email\x12\x1e\n" +
 	"\x05phone\x18\x06 \x01(\tB\x03\xe0A\x03H\x00R\x05phone\x88\x01\x01\x12\x19\n" +
@@ -749,10 +748,9 @@ const file_vietgara_tenant_v1_staff_proto_rawDesc = "" +
 	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
 	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\b\n" +
-	"\x06_phone\"\xd0\x01\n" +
-	"\x0eStaffCandidate\x12\x1d\n" +
-	"\n" +
-	"account_id\x18\x01 \x01(\tR\taccountId\x12\x1b\n" +
+	"\x06_phone\"\xca\x01\n" +
+	"\x0eStaffCandidate\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1b\n" +
 	"\tfull_name\x18\x02 \x01(\tR\bfullName\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x12\x19\n" +
 	"\x05phone\x18\x04 \x01(\tH\x00R\x05phone\x88\x01\x01\x12G\n" +

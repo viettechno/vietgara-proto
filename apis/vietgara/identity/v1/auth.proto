@@ -5,7 +5,7 @@ package vietgara.identity.v1;
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/timestamp.proto";
-import "vietgara/identity/v1/account.proto";
+import "vietgara/identity/v1/user.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/identity/v1;identityv1";
 
@@ -13,8 +13,8 @@ option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/ident
 // password reset (FRD 3.1). Google sign-in uses the OAuth redirect routes
 // GET /api/v1/auth/google/login and /callback, which are plain HTTP handlers.
 service AuthService {
-  // Registers an owner account with e-mail and password (FR-IAM-01). The
-  // account starts unverified and a verification OTP is e-mailed.
+  // Registers a user as an owner with e-mail and password (FR-IAM-01). The
+  // user starts unverified and a verification OTP is e-mailed.
   rpc Register(RegisterRequest) returns (RegisterResponse) {
     option (google.api.http) = {
       post: "/api/v1/auth/register"
@@ -35,7 +35,7 @@ service AuthService {
   // Signs in with a Google ID token obtained natively by a mobile app
   // (FR-IAM-01, FR-CAPP-01). The token's signature, issuer, audience (one
   // of the configured mobile client IDs) and verified e-mail are checked;
-  // the account is found by its Google subject or e-mail, or created --
+  // the user is found by its Google subject or e-mail, or created --
   // the same rules as the web's Google redirect sign-in.
   rpc SignInWithGoogleIdToken(SignInWithGoogleIdTokenRequest) returns (SignInWithGoogleIdTokenResponse) {
     option (google.api.http) = {
@@ -64,7 +64,7 @@ service AuthService {
   }
 
   // E-mails a new 6-digit verification OTP, valid for 2 minutes, to the
-  // signed-in account.
+  // signed-in user.
   rpc SendEmailVerificationOtp(SendEmailVerificationOtpRequest) returns (SendEmailVerificationOtpResponse) {
     option (google.api.http) = {
       post: "/api/v1/auth/email-verification/otp"
@@ -73,7 +73,7 @@ service AuthService {
     };
   }
 
-  // Confirms the signed-in account's e-mail with the OTP and returns a
+  // Confirms the signed-in user's e-mail with the OTP and returns a
   // session whose token is marked verified.
   rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse) {
     option (google.api.http) = {
@@ -84,7 +84,7 @@ service AuthService {
   }
 
   // Starts a password reset (FR-IAM-04): e-mails an OTP valid for 2
-  // minutes. Always succeeds so account existence is not revealed.
+  // minutes. Always succeeds so user existence is not revealed.
   rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse) {
     option (google.api.http) = {
       post: "/api/v1/auth/password-reset/otp"
@@ -118,7 +118,7 @@ message Session {
   string token_type = 3;
   // Access token lifetime in seconds.
   int64 expires_in = 4;
-  Account account = 5;
+  User user = 5;
 }
 
 // OtpChallenge tells the client how long the e-mailed OTP is valid.
@@ -154,7 +154,7 @@ message LoginResponse {
 message SignInWithGoogleIdTokenRequest {
   // The ID token (a JWT) returned by Google Sign-In on the device.
   string id_token = 1 [(google.api.field_behavior) = REQUIRED];
-  // The UI language of a newly created account; defaults to Vietnamese.
+  // The UI language of a newly created user; defaults to Vietnamese.
   Locale locale = 2;
 }
 

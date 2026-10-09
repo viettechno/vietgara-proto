@@ -51,7 +51,7 @@ Protocol Buffers. The same `.proto` files describe:
 | Proto package | Module | Services |
 | --- | --- | --- |
 | `vietgara.identity.v1` | Identity & Access (HLD #1) | `AuthService`: Register, Login, RefreshToken, Logout, SendEmailVerificationOtp, VerifyEmail, RequestPasswordReset, VerifyPasswordResetOtp, ResetPassword |
-| | | `AccountService`: GetMe, UpdateMe |
+| | | `UserService`: GetMe, UpdateMe |
 | `vietgara.tenant.v1` | Tenant/Garage (HLD #2) | `GarageService`: ListGarages, CreateGarage, GetGarage, UpdateGarage, UploadGarageLogo, DeleteGarageLogo |
 | | | `StaffService`: ListStaff, UpdateStaff, DeleteStaff, LookupStaffCandidate |
 | | | `InvitationService`: CreateInvitation, ListInvitations, RevokeInvitation, ListMyInvitations, GetMyInvitation, AcceptInvitation, DeclineInvitation |
@@ -76,7 +76,7 @@ flowchart LR
 vietgara-proto/
 ├── apis/vietgara/           # .proto sources (the contract)
 │   ├── common/v1/            # pagination.proto, error.proto (+ OpenAPI options)
-│   ├── identity/v1/          # account.proto, auth.proto
+│   ├── identity/v1/          # user.proto, auth.proto
 │   ├── tenant/v1/            # garage.proto, staff.proto, invitation.proto, access.proto
 │   ├── license/v1/           # license.proto
 │   └── customer/v1/          # customer.proto, vehicle.proto, partner.proto

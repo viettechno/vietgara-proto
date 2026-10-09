@@ -40,16 +40,16 @@ message NumberingTemplates {
   string settlement = 3;
 }
 
-// GarageAccess is what the signed-in account may do in the garage.
+// GarageAccess is what the signed-in user may do in the garage.
 message GarageAccess {
   bool owner = 1;
   repeated Permission permissions = 2;
 }
 
-// Garage is one tenant (branch) of an owner account (FR-TEN-01/02).
+// Garage is one tenant (branch) owned by a user (FR-TEN-01/02).
 message Garage {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string owner_account_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string owner_user_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   string name = 3 [(google.api.field_behavior) = REQUIRED];
   optional string tax_code = 4;
   optional string address = 5;
@@ -76,7 +76,7 @@ message Garage {
 message ListGaragesRequest {}
 
 message ListGaragesResponse {
-  // Garages the account owns or is an active member of; staff do not see
+  // Garages the user owns or is an active member of; staff do not see
   // inactive garages.
   repeated Garage data = 1;
 }
@@ -135,7 +135,7 @@ service GarageService {
     option (google.api.http) = {get: "/api/v1/garages"};
   }
 
-  // Creates a garage owned by the signed-in account, within the plan's
+  // Creates a garage owned by the signed-in user, within the plan's
   // garage limit.
   rpc CreateGarage(CreateGarageRequest) returns (CreateGarageResponse) {
     option (google.api.http) = {

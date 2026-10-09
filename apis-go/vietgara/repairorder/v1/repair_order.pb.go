@@ -210,7 +210,7 @@ type RepairOrderLine struct {
 	UnitPrice int64                 `protobuf:"varint,6,opt,name=unit_price,json=unitPrice,proto3" json:"unit_price,omitempty"`
 	LineTotal int64                 `protobuf:"varint,7,opt,name=line_total,json=lineTotal,proto3" json:"line_total,omitempty"`
 	Status    RepairOrderLineStatus `protobuf:"varint,8,opt,name=status,proto3,enum=vietgara.repairorder.v1.RepairOrderLineStatus" json:"status,omitempty"`
-	// Technician account ids assigned to this line (FR-REP-02); a line may
+	// Technician user ids assigned to this line (FR-REP-02); a line may
 	// have more than one.
 	AssignedTechnicianIds []string `protobuf:"bytes,9,rep,name=assigned_technician_ids,json=assignedTechnicianIds,proto3" json:"assigned_technician_ids,omitempty"`
 	unknownFields         protoimpl.UnknownFields

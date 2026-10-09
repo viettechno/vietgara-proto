@@ -17,11 +17,11 @@ enum StaffStatus {
   STAFF_STATUS_INACTIVE = 2;
 }
 
-// Staff is an account's membership of a garage (FR-TEN-04).
+// Staff is a user's membership of a garage (FR-TEN-04).
 message Staff {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string account_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string user_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
   string full_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
   string email = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
   optional string phone = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -36,7 +36,7 @@ message Staff {
   google.protobuf.Timestamp updated_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
-// CandidateMembership is where a looked-up account stands with the garage.
+// CandidateMembership is where a looked-up user stands with the garage.
 enum CandidateMembership {
   CANDIDATE_MEMBERSHIP_UNSPECIFIED = 0;
   CANDIDATE_MEMBERSHIP_NONE = 1;
@@ -44,9 +44,9 @@ enum CandidateMembership {
   CANDIDATE_MEMBERSHIP_INVITED = 3;
 }
 
-// StaffCandidate is an existing account found by e-mail or phone.
+// StaffCandidate is an existing user found by e-mail or phone.
 message StaffCandidate {
-  string account_id = 1;
+  string user_id = 1;
   string full_name = 2;
   string email = 3;
   optional string phone = 4;
@@ -83,7 +83,7 @@ message DeleteStaffResponse {}
 
 message LookupStaffCandidateRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
-  // Exact e-mail address or phone number of an existing account.
+  // Exact e-mail address or phone number of an existing user.
   string query = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
@@ -113,7 +113,7 @@ service StaffService {
     option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/staff/{staff_id}"};
   }
 
-  // Finds an existing account by exact e-mail or phone to invite.
+  // Finds an existing user by exact e-mail or phone to invite.
   rpc LookupStaffCandidate(LookupStaffCandidateRequest) returns (LookupStaffCandidateResponse) {
     option (google.api.http) = {
       get: "/api/v1/garages/{garage_id}/staff-candidates"

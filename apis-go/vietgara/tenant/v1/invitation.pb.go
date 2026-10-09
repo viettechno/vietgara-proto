@@ -81,14 +81,14 @@ func (InvitationStatus) EnumDescriptor() ([]byte, []int) {
 	return file_vietgara_tenant_v1_invitation_proto_rawDescGZIP(), []int{0}
 }
 
-// Invitation asks an existing account to join a garage (FR-TEN-04). It is
-// e-mailed to the account and expires after 7 days.
+// Invitation asks an existing user to join a garage (FR-TEN-04). It is
+// e-mailed to the user and expires after 7 days.
 type Invitation struct {
 	state      protoimpl.MessageState `protogen:"open.v1"`
 	Id         string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	GarageId   string                 `protobuf:"bytes,2,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	GarageName string                 `protobuf:"bytes,3,opt,name=garage_name,json=garageName,proto3" json:"garage_name,omitempty"`
-	AccountId  string                 `protobuf:"bytes,4,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	UserId     string                 `protobuf:"bytes,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	FullName   string                 `protobuf:"bytes,5,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
 	Email      string                 `protobuf:"bytes,6,opt,name=email,proto3" json:"email,omitempty"`
 	// Staff groups the member joins on acceptance.
@@ -153,9 +153,9 @@ func (x *Invitation) GetGarageName() string {
 	return ""
 }
 
-func (x *Invitation) GetAccountId() string {
+func (x *Invitation) GetUserId() string {
 	if x != nil {
-		return x.AccountId
+		return x.UserId
 	}
 	return ""
 }
@@ -220,7 +220,7 @@ type CreateInvitationRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	// From LookupStaffCandidate.
-	AccountId     string   `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	UserId        string   `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	GroupIds      []string `protobuf:"bytes,3,rep,name=group_ids,json=groupIds,proto3" json:"group_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -263,9 +263,9 @@ func (x *CreateInvitationRequest) GetGarageId() string {
 	return ""
 }
 
-func (x *CreateInvitationRequest) GetAccountId() string {
+func (x *CreateInvitationRequest) GetUserId() string {
 	if x != nil {
-		return x.AccountId
+		return x.UserId
 	}
 	return ""
 }
@@ -871,15 +871,14 @@ var File_vietgara_tenant_v1_invitation_proto protoreflect.FileDescriptor
 
 const file_vietgara_tenant_v1_invitation_proto_rawDesc = "" +
 	"\n" +
-	"#vietgara/tenant/v1/invitation.proto\x12\x12vietgara.tenant.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x96\x04\n" +
+	"#vietgara/tenant/v1/invitation.proto\x12\x12vietgara.tenant.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x90\x04\n" +
 	"\n" +
 	"Invitation\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
 	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12$\n" +
 	"\vgarage_name\x18\x03 \x01(\tB\x03\xe0A\x03R\n" +
-	"garageName\x12\x1d\n" +
-	"\n" +
-	"account_id\x18\x04 \x01(\tR\taccountId\x12 \n" +
+	"garageName\x12\x17\n" +
+	"\auser_id\x18\x04 \x01(\tR\x06userId\x12 \n" +
 	"\tfull_name\x18\x05 \x01(\tB\x03\xe0A\x03R\bfullName\x12\x19\n" +
 	"\x05email\x18\x06 \x01(\tB\x03\xe0A\x03R\x05email\x12\x1b\n" +
 	"\tgroup_ids\x18\a \x03(\tR\bgroupIds\x12A\n" +
@@ -890,11 +889,10 @@ const file_vietgara_tenant_v1_invitation_proto_rawDesc = "" +
 	" \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\texpiresAt\x12B\n" +
 	"\fresponded_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\vrespondedAt\x12>\n" +
 	"\n" +
-	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\"|\n" +
+	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\"v\n" +
 	"\x17CreateInvitationRequest\x12 \n" +
-	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\"\n" +
-	"\n" +
-	"account_id\x18\x02 \x01(\tB\x03\xe0A\x02R\taccountId\x12\x1b\n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1c\n" +
+	"\auser_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06userId\x12\x1b\n" +
 	"\tgroup_ids\x18\x03 \x03(\tR\bgroupIds\"Z\n" +
 	"\x18CreateInvitationResponse\x12>\n" +
 	"\n" +
