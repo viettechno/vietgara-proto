@@ -19,7 +19,7 @@ Protocol Buffers. The same `.proto` files describe:
   `google.api.http` annotation, the backend serves it in-process with
   [grpc-gateway](https://github.com/grpc-ecosystem/grpc-gateway), and the
   OpenAPI document generated here (`openapi/vietgara.swagger.json`) is the
-  source of the web admin's TypeScript types. Go code can import it as
+  source of the owner web's TypeScript types. Go code can import it as
   `openapi.Spec` (package `github.com/viettechno/vietgara-proto/openapi`);
   the backend serves it with its API reference page.
 
@@ -59,7 +59,7 @@ Protocol Buffers. The same `.proto` files describe:
 | | | `StaffGroupService`: ListStaffGroups, CreateStaffGroup, UpdateStaffGroup, DeleteStaffGroup |
 | `vietgara.license.v1` | License (HLD #3) | `LicenseService`: ListPlans, GetMySubscription, ChangeMyPlan, GetGarageEntitlements |
 | | | `LicenseAdminService`: ListAllPlans, CreatePlan, UpdatePlan, ListSubscriptions, ExtendSubscription |
-| `vietgara.customer.v1` | Customer & Vehicle (HLD #4) | `CustomerService`, `VehicleService`, `PartnerService`: List, Create, Get, Update, Delete |
+| `vietgara.customer.v1` | Customer & Vehicle (HLD #4) | `CustomerService`, `VehicleService`, `PartnerService`: List, Create, Get, Update, Delete (`PartnerService` becomes `SupplierService` in Release 5.0: suppliers only, no insurer type) |
 | `vietgara.common.v1` | Shared messages | `Pagination`, `ErrorResponse` and the OpenAPI document options (no services) |
 
 ```mermaid
@@ -69,6 +69,21 @@ flowchart LR
   G --> B["vietgara-backend<br/>gRPC + REST (grpc-gateway)"]
   O -->|npm run generate:api| W["vietgara-owner-web<br/>src/api/schema.d.ts"]
 ```
+
+## Planned contract changes
+
+Per the [Release Plan](https://github.com/viettechno/vietgara-docs/blob/master/docs/01-Product/Release_Plan/Release_Plan_Phase3.md) in `vietgara-docs` (API Specification, Section 16). Breaking changes are accepted deliberately while the product is in development (no real tenant yet); each one is a single, announced change.
+
+| When | Change |
+| --- | --- |
+| Phase 3 | `Account` becomes `User`; `account_id` becomes `user_id`; the session carries `user`; no dual field and no compatibility window (`buf breaking` is expected to fail once) |
+| Release 5.0 | Insurer fields of settlements and payments are removed and marked `reserved`; `PartnerService` becomes `SupplierService`; payment voucher fields; file registry messages; legal profile fields; `DELETED` / `DEACTIVATED` outcome on deletes |
+| Release 5.1 | Customer user links and tax profiles |
+| Releases 6.0, 6.1 | Units, part categories, MFA challenge and enrolment |
+| Phases 7, 10 | Goods receipts, stock counts, adjustments, barcodes, imports; jobs, print settings |
+| Phase 8 | Platform roles, groups and invitations; support grants |
+| Phases 11-15 | Device tokens and push, sync for the technician BFF; booking; receivables, purchase orders; printers and templates; transfers |
+| Phases 16-17 | Payments and e-invoices; insurers and claims; supplier portal |
 
 ## Repository Layout
 
@@ -133,7 +148,7 @@ grpcui `v1.5.3`, grpcurl `v1.8.7`).
 2. `make format` then `make lint`.
 3. `make generate` and commit `apis-go/` and `openapi/` together with the
    `.proto` change (they must never drift).
-4. Regenerate the web admin types (`npm run generate:api` in
+4. Regenerate the owner web types (`npm run generate:api` in
    `vietgara-owner-web`) and bump the module in `vietgara-backend`.
 5. Run `make breaking`; label the pull request `breaking-change` only when the
    break is intended.
