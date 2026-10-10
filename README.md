@@ -80,8 +80,8 @@ Per the [Release Plan](https://github.com/viettechno/vietgara-docs/blob/master/d
 | Release 5.0 | Insurer fields of settlements and payments are removed and marked `reserved`; `PartnerService` becomes `SupplierService`; payment voucher fields; file registry messages; legal profile fields; `DELETED` / `DEACTIVATED` outcome on deletes |
 | Release 5.1 | Customer user links and tax profiles |
 | Releases 6.0, 6.1 | Units, part categories, MFA challenge and enrolment |
-| Phase 7 | Platform roles, groups and invitations; support grants |
-| Phases 8, 10 | Goods receipts, stock counts, adjustments, barcodes, imports; jobs, print settings |
+| Phases 7, 10 | Goods receipts, stock counts, adjustments, barcodes, imports; jobs, print settings |
+| Phase 8 | Platform roles, groups and invitations; support grants |
 | Phases 11-15 | Device tokens and push, sync for the technician BFF; booking; receivables, purchase orders; printers and templates; transfers |
 | Phases 16-17 | Payments and e-invoices; insurers and claims; supplier portal |
 
