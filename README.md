@@ -19,7 +19,7 @@ Protocol Buffers. The same `.proto` files describe:
   `google.api.http` annotation, the backend serves it in-process with
   [grpc-gateway](https://github.com/grpc-ecosystem/grpc-gateway), and the
   OpenAPI document generated here (`openapi/vietgara.swagger.json`) is the
-  source of the web admin's TypeScript types. Go code can import it as
+  source of the owner web's TypeScript types. Go code can import it as
   `openapi.Spec` (package `github.com/viettechno/vietgara-proto/openapi`);
   the backend serves it with its API reference page.
 
@@ -148,7 +148,7 @@ grpcui `v1.5.3`, grpcurl `v1.8.7`).
 2. `make format` then `make lint`.
 3. `make generate` and commit `apis-go/` and `openapi/` together with the
    `.proto` change (they must never drift).
-4. Regenerate the web admin types (`npm run generate:api` in
+4. Regenerate the owner web types (`npm run generate:api` in
    `vietgara-owner-web`) and bump the module in `vietgara-backend`.
 5. Run `make breaking`; label the pull request `breaking-change` only when the
    break is intended.
