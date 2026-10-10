@@ -59,7 +59,7 @@ Protocol Buffers. The same `.proto` files describe:
 | | | `StaffGroupService`: ListStaffGroups, CreateStaffGroup, UpdateStaffGroup, DeleteStaffGroup |
 | `vietgara.license.v1` | License (HLD #3) | `LicenseService`: ListPlans, GetMySubscription, ChangeMyPlan, GetGarageEntitlements |
 | | | `LicenseAdminService`: ListAllPlans, CreatePlan, UpdatePlan, ListSubscriptions, ExtendSubscription |
-| `vietgara.customer.v1` | Customer & Vehicle (HLD #4) | `CustomerService`, `VehicleService`, `PartnerService`: List, Create, Get, Update, Delete |
+| `vietgara.customer.v1` | Customer & Vehicle (HLD #4) | `CustomerService`, `VehicleService`, `PartnerService`: List, Create, Get, Update, Delete (`PartnerService` becomes `SupplierService` in Release 5.0: suppliers only, no insurer type) |
 | `vietgara.common.v1` | Shared messages | `Pagination`, `ErrorResponse` and the OpenAPI document options (no services) |
 
 ```mermaid
@@ -69,6 +69,21 @@ flowchart LR
   G --> B["vietgara-backend<br/>gRPC + REST (grpc-gateway)"]
   O -->|npm run generate:api| W["vietgara-owner-web<br/>src/api/schema.d.ts"]
 ```
+
+## Planned contract changes
+
+Per the [Release Plan](https://github.com/viettechno/vietgara-docs/blob/master/docs/01-Product/Release_Plan/Release_Plan_Phase3.md) in `vietgara-docs` (API Specification, Section 16). Breaking changes are accepted deliberately while the product is in development (no real tenant yet); each one is a single, announced change.
+
+| When | Change |
+| --- | --- |
+| Phase 3 | `Account` becomes `User`; `account_id` becomes `user_id`; the session carries `user`; no dual field and no compatibility window (`buf breaking` is expected to fail once) |
+| Release 5.0 | Insurer fields of settlements and payments are removed and marked `reserved`; `PartnerService` becomes `SupplierService`; payment voucher fields; file registry messages; legal profile fields; `DELETED` / `DEACTIVATED` outcome on deletes |
+| Release 5.1 | Customer user links and tax profiles |
+| Releases 6.0, 6.1 | Units, part categories, MFA challenge and enrolment |
+| Phase 7 | Platform roles, groups and invitations; support grants |
+| Phases 8, 10 | Goods receipts, stock counts, adjustments, barcodes, imports; jobs, print settings |
+| Phases 11-15 | Device tokens and push, sync for the technician BFF; booking; receivables, purchase orders; printers and templates; transfers |
+| Phases 16-17 | Payments and e-invoices; insurers and claims; supplier portal |
 
 ## Repository Layout
 
