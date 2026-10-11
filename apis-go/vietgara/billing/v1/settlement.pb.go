@@ -25,16 +25,16 @@ const (
 )
 
 // SettlementStatus is a settlement's collection status, derived from the
-// amounts actually paid against what was allocated (FR-BIL-01..03).
+// amounts actually paid against the total (FR-BIL-01..03).
 type SettlementStatus int32
 
 const (
 	SettlementStatus_SETTLEMENT_STATUS_UNSPECIFIED SettlementStatus = 0
 	// Nothing collected yet.
 	SettlementStatus_SETTLEMENT_STATUS_PENDING SettlementStatus = 1
-	// Some, but not all, of the allocated amount collected.
+	// Some, but not all, of the total collected.
 	SettlementStatus_SETTLEMENT_STATUS_PARTIALLY_PAID SettlementStatus = 2
-	// The full allocated amount collected from both payers.
+	// The full total collected.
 	SettlementStatus_SETTLEMENT_STATUS_PAID SettlementStatus = 3
 )
 
@@ -81,57 +81,6 @@ func (SettlementStatus) EnumDescriptor() ([]byte, []int) {
 	return file_vietgara_billing_v1_settlement_proto_rawDescGZIP(), []int{0}
 }
 
-// PayerType: who a settlement amount, or a payment against it, is
-// attributed to.
-type PayerType int32
-
-const (
-	PayerType_PAYER_TYPE_UNSPECIFIED PayerType = 0
-	PayerType_PAYER_TYPE_CUSTOMER    PayerType = 1
-	PayerType_PAYER_TYPE_INSURER     PayerType = 2
-)
-
-// Enum value maps for PayerType.
-var (
-	PayerType_name = map[int32]string{
-		0: "PAYER_TYPE_UNSPECIFIED",
-		1: "PAYER_TYPE_CUSTOMER",
-		2: "PAYER_TYPE_INSURER",
-	}
-	PayerType_value = map[string]int32{
-		"PAYER_TYPE_UNSPECIFIED": 0,
-		"PAYER_TYPE_CUSTOMER":    1,
-		"PAYER_TYPE_INSURER":     2,
-	}
-)
-
-func (x PayerType) Enum() *PayerType {
-	p := new(PayerType)
-	*p = x
-	return p
-}
-
-func (x PayerType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (PayerType) Descriptor() protoreflect.EnumDescriptor {
-	return file_vietgara_billing_v1_settlement_proto_enumTypes[1].Descriptor()
-}
-
-func (PayerType) Type() protoreflect.EnumType {
-	return &file_vietgara_billing_v1_settlement_proto_enumTypes[1]
-}
-
-func (x PayerType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use PayerType.Descriptor instead.
-func (PayerType) EnumDescriptor() ([]byte, []int) {
-	return file_vietgara_billing_v1_settlement_proto_rawDescGZIP(), []int{1}
-}
-
 // PaymentMethod: how a payment was actually collected (FR-BIL-03). ONLINE
 // is recorded manually in Release 1.4 (staff sees a bank app or gateway
 // dashboard confirmation and records it); automatic confirmation via a
@@ -172,11 +121,11 @@ func (x PaymentMethod) String() string {
 }
 
 func (PaymentMethod) Descriptor() protoreflect.EnumDescriptor {
-	return file_vietgara_billing_v1_settlement_proto_enumTypes[2].Descriptor()
+	return file_vietgara_billing_v1_settlement_proto_enumTypes[1].Descriptor()
 }
 
 func (PaymentMethod) Type() protoreflect.EnumType {
-	return &file_vietgara_billing_v1_settlement_proto_enumTypes[2]
+	return &file_vietgara_billing_v1_settlement_proto_enumTypes[1]
 }
 
 func (x PaymentMethod) Number() protoreflect.EnumNumber {
@@ -185,15 +134,15 @@ func (x PaymentMethod) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PaymentMethod.Descriptor instead.
 func (PaymentMethod) EnumDescriptor() ([]byte, []int) {
-	return file_vietgara_billing_v1_settlement_proto_rawDescGZIP(), []int{2}
+	return file_vietgara_billing_v1_settlement_proto_rawDescGZIP(), []int{1}
 }
 
 // SettlementPayment is one payment recorded against a settlement
-// (FR-BIL-03); a settlement may receive several, from either payer.
+// (FR-BIL-03); a settlement may receive several. The customer is the only
+// payer.
 type SettlementPayment struct {
-	state     protoimpl.MessageState `protogen:"open.v1"`
-	Id        string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	PayerType PayerType              `protobuf:"varint,2,opt,name=payer_type,json=payerType,proto3,enum=vietgara.billing.v1.PayerType" json:"payer_type,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Integer VND.
 	Amount        int64                  `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
 	Method        PaymentMethod          `protobuf:"varint,4,opt,name=method,proto3,enum=vietgara.billing.v1.PaymentMethod" json:"method,omitempty"`
@@ -240,13 +189,6 @@ func (x *SettlementPayment) GetId() string {
 	return ""
 }
 
-func (x *SettlementPayment) GetPayerType() PayerType {
-	if x != nil {
-		return x.PayerType
-	}
-	return PayerType_PAYER_TYPE_UNSPECIFIED
-}
-
 func (x *SettlementPayment) GetAmount() int64 {
 	if x != nil {
 		return x.Amount
@@ -276,8 +218,7 @@ func (x *SettlementPayment) GetCreatedAt() *timestamppb.Timestamp {
 }
 
 // Settlement is the final bill of a closed repair order (FR-BIL-01),
-// split between what the customer pays directly and what insurance
-// covers (FR-BIL-02). FR-REC-01's receivables view is this same list
+// paid by the customer. FR-REC-01's receivables view is this same list
 // filtered to not yet fully paid (ListSettlementsRequest.outstanding_only)
 // -- Release 1.4 has no separate receivables table; one arrives with
 // Release 2.2's reminders and reconciliation, which need their own
@@ -295,17 +236,10 @@ type Settlement struct {
 	Number string `protobuf:"bytes,6,opt,name=number,proto3" json:"number,omitempty"`
 	// Copied from the repair order's total at creation time. Integer VND.
 	TotalAmount int64 `protobuf:"varint,7,opt,name=total_amount,json=totalAmount,proto3" json:"total_amount,omitempty"`
-	// How much of total_amount is allocated to each payer (FR-BIL-02);
-	// always sums to total_amount. Starts entirely allocated to the
-	// customer until AllocateSettlement says otherwise.
+	// What the customer owes: always equal to total_amount.
 	CustomerAmount int64 `protobuf:"varint,8,opt,name=customer_amount,json=customerAmount,proto3" json:"customer_amount,omitempty"`
-	InsurerAmount  int64 `protobuf:"varint,9,opt,name=insurer_amount,json=insurerAmount,proto3" json:"insurer_amount,omitempty"`
-	// Set once insurer_amount > 0; a partner of type INSURER.
-	InsurerPartnerId   *string `protobuf:"bytes,10,opt,name=insurer_partner_id,json=insurerPartnerId,proto3,oneof" json:"insurer_partner_id,omitempty"`
-	InsurerPartnerName string  `protobuf:"bytes,11,opt,name=insurer_partner_name,json=insurerPartnerName,proto3" json:"insurer_partner_name,omitempty"`
-	// Running totals from settlement_payments (FR-BIL-03).
+	// Running total from settlement_payments (FR-BIL-03).
 	CustomerPaidAmount int64                  `protobuf:"varint,12,opt,name=customer_paid_amount,json=customerPaidAmount,proto3" json:"customer_paid_amount,omitempty"`
-	InsurerPaidAmount  int64                  `protobuf:"varint,13,opt,name=insurer_paid_amount,json=insurerPaidAmount,proto3" json:"insurer_paid_amount,omitempty"`
 	Status             SettlementStatus       `protobuf:"varint,14,opt,name=status,proto3,enum=vietgara.billing.v1.SettlementStatus" json:"status,omitempty"`
 	Payments           []*SettlementPayment   `protobuf:"bytes,15,rep,name=payments,proto3" json:"payments,omitempty"`
 	CreatedAt          *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
@@ -400,37 +334,9 @@ func (x *Settlement) GetCustomerAmount() int64 {
 	return 0
 }
 
-func (x *Settlement) GetInsurerAmount() int64 {
-	if x != nil {
-		return x.InsurerAmount
-	}
-	return 0
-}
-
-func (x *Settlement) GetInsurerPartnerId() string {
-	if x != nil && x.InsurerPartnerId != nil {
-		return *x.InsurerPartnerId
-	}
-	return ""
-}
-
-func (x *Settlement) GetInsurerPartnerName() string {
-	if x != nil {
-		return x.InsurerPartnerName
-	}
-	return ""
-}
-
 func (x *Settlement) GetCustomerPaidAmount() int64 {
 	if x != nil {
 		return x.CustomerPaidAmount
-	}
-	return 0
-}
-
-func (x *Settlement) GetInsurerPaidAmount() int64 {
-	if x != nil {
-		return x.InsurerPaidAmount
 	}
 	return 0
 }
@@ -787,132 +693,10 @@ func (x *GetSettlementResponse) GetSettlement() *Settlement {
 	return nil
 }
 
-type AllocateSettlementRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	GarageId       string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	SettlementId   string                 `protobuf:"bytes,2,opt,name=settlement_id,json=settlementId,proto3" json:"settlement_id,omitempty"`
-	CustomerAmount int64                  `protobuf:"varint,3,opt,name=customer_amount,json=customerAmount,proto3" json:"customer_amount,omitempty"`
-	InsurerAmount  int64                  `protobuf:"varint,4,opt,name=insurer_amount,json=insurerAmount,proto3" json:"insurer_amount,omitempty"`
-	// Required when insurer_amount > 0.
-	InsurerPartnerId *string `protobuf:"bytes,5,opt,name=insurer_partner_id,json=insurerPartnerId,proto3,oneof" json:"insurer_partner_id,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
-}
-
-func (x *AllocateSettlementRequest) Reset() {
-	*x = AllocateSettlementRequest{}
-	mi := &file_vietgara_billing_v1_settlement_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AllocateSettlementRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AllocateSettlementRequest) ProtoMessage() {}
-
-func (x *AllocateSettlementRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_billing_v1_settlement_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AllocateSettlementRequest.ProtoReflect.Descriptor instead.
-func (*AllocateSettlementRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_billing_v1_settlement_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *AllocateSettlementRequest) GetGarageId() string {
-	if x != nil {
-		return x.GarageId
-	}
-	return ""
-}
-
-func (x *AllocateSettlementRequest) GetSettlementId() string {
-	if x != nil {
-		return x.SettlementId
-	}
-	return ""
-}
-
-func (x *AllocateSettlementRequest) GetCustomerAmount() int64 {
-	if x != nil {
-		return x.CustomerAmount
-	}
-	return 0
-}
-
-func (x *AllocateSettlementRequest) GetInsurerAmount() int64 {
-	if x != nil {
-		return x.InsurerAmount
-	}
-	return 0
-}
-
-func (x *AllocateSettlementRequest) GetInsurerPartnerId() string {
-	if x != nil && x.InsurerPartnerId != nil {
-		return *x.InsurerPartnerId
-	}
-	return ""
-}
-
-type AllocateSettlementResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Settlement    *Settlement            `protobuf:"bytes,1,opt,name=settlement,proto3" json:"settlement,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AllocateSettlementResponse) Reset() {
-	*x = AllocateSettlementResponse{}
-	mi := &file_vietgara_billing_v1_settlement_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AllocateSettlementResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AllocateSettlementResponse) ProtoMessage() {}
-
-func (x *AllocateSettlementResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_billing_v1_settlement_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AllocateSettlementResponse.ProtoReflect.Descriptor instead.
-func (*AllocateSettlementResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_billing_v1_settlement_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *AllocateSettlementResponse) GetSettlement() *Settlement {
-	if x != nil {
-		return x.Settlement
-	}
-	return nil
-}
-
 type RecordSettlementPaymentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	SettlementId  string                 `protobuf:"bytes,2,opt,name=settlement_id,json=settlementId,proto3" json:"settlement_id,omitempty"`
-	PayerType     PayerType              `protobuf:"varint,3,opt,name=payer_type,json=payerType,proto3,enum=vietgara.billing.v1.PayerType" json:"payer_type,omitempty"`
 	Amount        int64                  `protobuf:"varint,4,opt,name=amount,proto3" json:"amount,omitempty"`
 	Method        PaymentMethod          `protobuf:"varint,5,opt,name=method,proto3,enum=vietgara.billing.v1.PaymentMethod" json:"method,omitempty"`
 	Note          string                 `protobuf:"bytes,6,opt,name=note,proto3" json:"note,omitempty"`
@@ -922,7 +706,7 @@ type RecordSettlementPaymentRequest struct {
 
 func (x *RecordSettlementPaymentRequest) Reset() {
 	*x = RecordSettlementPaymentRequest{}
-	mi := &file_vietgara_billing_v1_settlement_proto_msgTypes[10]
+	mi := &file_vietgara_billing_v1_settlement_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -934,7 +718,7 @@ func (x *RecordSettlementPaymentRequest) String() string {
 func (*RecordSettlementPaymentRequest) ProtoMessage() {}
 
 func (x *RecordSettlementPaymentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_billing_v1_settlement_proto_msgTypes[10]
+	mi := &file_vietgara_billing_v1_settlement_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -947,7 +731,7 @@ func (x *RecordSettlementPaymentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordSettlementPaymentRequest.ProtoReflect.Descriptor instead.
 func (*RecordSettlementPaymentRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_billing_v1_settlement_proto_rawDescGZIP(), []int{10}
+	return file_vietgara_billing_v1_settlement_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *RecordSettlementPaymentRequest) GetGarageId() string {
@@ -962,13 +746,6 @@ func (x *RecordSettlementPaymentRequest) GetSettlementId() string {
 		return x.SettlementId
 	}
 	return ""
-}
-
-func (x *RecordSettlementPaymentRequest) GetPayerType() PayerType {
-	if x != nil {
-		return x.PayerType
-	}
-	return PayerType_PAYER_TYPE_UNSPECIFIED
 }
 
 func (x *RecordSettlementPaymentRequest) GetAmount() int64 {
@@ -1001,7 +778,7 @@ type RecordSettlementPaymentResponse struct {
 
 func (x *RecordSettlementPaymentResponse) Reset() {
 	*x = RecordSettlementPaymentResponse{}
-	mi := &file_vietgara_billing_v1_settlement_proto_msgTypes[11]
+	mi := &file_vietgara_billing_v1_settlement_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1013,7 +790,7 @@ func (x *RecordSettlementPaymentResponse) String() string {
 func (*RecordSettlementPaymentResponse) ProtoMessage() {}
 
 func (x *RecordSettlementPaymentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_billing_v1_settlement_proto_msgTypes[11]
+	mi := &file_vietgara_billing_v1_settlement_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1026,7 +803,7 @@ func (x *RecordSettlementPaymentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordSettlementPaymentResponse.ProtoReflect.Descriptor instead.
 func (*RecordSettlementPaymentResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_billing_v1_settlement_proto_rawDescGZIP(), []int{11}
+	return file_vietgara_billing_v1_settlement_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *RecordSettlementPaymentResponse) GetSettlement() *Settlement {
@@ -1040,16 +817,15 @@ var File_vietgara_billing_v1_settlement_proto protoreflect.FileDescriptor
 
 const file_vietgara_billing_v1_settlement_proto_rawDesc = "" +
 	"\n" +
-	"$vietgara/billing/v1/settlement.proto\x12\x13vietgara.billing.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xa3\x02\n" +
+	"$vietgara/billing/v1/settlement.proto\x12\x13vietgara.billing.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xf1\x01\n" +
 	"\x11SettlementPayment\x12\x13\n" +
-	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12B\n" +
-	"\n" +
-	"payer_type\x18\x02 \x01(\x0e2\x1e.vietgara.billing.v1.PayerTypeB\x03\xe0A\x03R\tpayerType\x12\x1b\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x1b\n" +
 	"\x06amount\x18\x03 \x01(\x03B\x03\xe0A\x03R\x06amount\x12?\n" +
 	"\x06method\x18\x04 \x01(\x0e2\".vietgara.billing.v1.PaymentMethodB\x03\xe0A\x03R\x06method\x12\x17\n" +
 	"\x04note\x18\x05 \x01(\tB\x03\xe0A\x03R\x04note\x12>\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\"\xf1\x06\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAtJ\x04\b\x02\x10\x03R\n" +
+	"payer_type\"\xf1\x05\n" +
 	"\n" +
 	"Settlement\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
@@ -1059,20 +835,16 @@ const file_vietgara_billing_v1_settlement_proto_rawDesc = "" +
 	"\rcustomer_name\x18\x05 \x01(\tB\x03\xe0A\x03R\fcustomerName\x12\x1b\n" +
 	"\x06number\x18\x06 \x01(\tB\x03\xe0A\x03R\x06number\x12&\n" +
 	"\ftotal_amount\x18\a \x01(\x03B\x03\xe0A\x03R\vtotalAmount\x12,\n" +
-	"\x0fcustomer_amount\x18\b \x01(\x03B\x03\xe0A\x03R\x0ecustomerAmount\x12*\n" +
-	"\x0einsurer_amount\x18\t \x01(\x03B\x03\xe0A\x03R\rinsurerAmount\x126\n" +
-	"\x12insurer_partner_id\x18\n" +
-	" \x01(\tB\x03\xe0A\x03H\x00R\x10insurerPartnerId\x88\x01\x01\x125\n" +
-	"\x14insurer_partner_name\x18\v \x01(\tB\x03\xe0A\x03R\x12insurerPartnerName\x125\n" +
-	"\x14customer_paid_amount\x18\f \x01(\x03B\x03\xe0A\x03R\x12customerPaidAmount\x123\n" +
-	"\x13insurer_paid_amount\x18\r \x01(\x03B\x03\xe0A\x03R\x11insurerPaidAmount\x12B\n" +
+	"\x0fcustomer_amount\x18\b \x01(\x03B\x03\xe0A\x03R\x0ecustomerAmount\x125\n" +
+	"\x14customer_paid_amount\x18\f \x01(\x03B\x03\xe0A\x03R\x12customerPaidAmount\x12B\n" +
 	"\x06status\x18\x0e \x01(\x0e2%.vietgara.billing.v1.SettlementStatusB\x03\xe0A\x03R\x06status\x12G\n" +
 	"\bpayments\x18\x0f \x03(\v2&.vietgara.billing.v1.SettlementPaymentB\x03\xe0A\x03R\bpayments\x12>\n" +
 	"\n" +
 	"created_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\x15\n" +
-	"\x13_insurer_partner_id\"\xd5\x01\n" +
+	"updated_at\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtJ\x04\b\t\x10\n" +
+	"J\x04\b\n" +
+	"\x10\vJ\x04\b\v\x10\fJ\x04\b\r\x10\x0eR\x0einsurer_amountR\x12insurer_partner_idR\x14insurer_partner_nameR\x13insurer_paid_amount\"\xd5\x01\n" +
 	"\x16ListSettlementsRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12=\n" +
 	"\x06status\x18\x02 \x01(\x0e2%.vietgara.billing.v1.SettlementStatusR\x06status\x12)\n" +
@@ -1097,26 +869,14 @@ const file_vietgara_billing_v1_settlement_proto_rawDesc = "" +
 	"\x15GetSettlementResponse\x12?\n" +
 	"\n" +
 	"settlement\x18\x01 \x01(\v2\x1f.vietgara.billing.v1.SettlementR\n" +
-	"settlement\"\x8b\x02\n" +
-	"\x19AllocateSettlementRequest\x12 \n" +
-	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12(\n" +
-	"\rsettlement_id\x18\x02 \x01(\tB\x03\xe0A\x02R\fsettlementId\x12,\n" +
-	"\x0fcustomer_amount\x18\x03 \x01(\x03B\x03\xe0A\x02R\x0ecustomerAmount\x12*\n" +
-	"\x0einsurer_amount\x18\x04 \x01(\x03B\x03\xe0A\x02R\rinsurerAmount\x121\n" +
-	"\x12insurer_partner_id\x18\x05 \x01(\tH\x00R\x10insurerPartnerId\x88\x01\x01B\x15\n" +
-	"\x13_insurer_partner_id\"]\n" +
-	"\x1aAllocateSettlementResponse\x12?\n" +
-	"\n" +
-	"settlement\x18\x01 \x01(\v2\x1f.vietgara.billing.v1.SettlementR\n" +
-	"settlement\"\xa2\x02\n" +
+	"settlement\"\xf0\x01\n" +
 	"\x1eRecordSettlementPaymentRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12(\n" +
-	"\rsettlement_id\x18\x02 \x01(\tB\x03\xe0A\x02R\fsettlementId\x12B\n" +
-	"\n" +
-	"payer_type\x18\x03 \x01(\x0e2\x1e.vietgara.billing.v1.PayerTypeB\x03\xe0A\x02R\tpayerType\x12\x1b\n" +
+	"\rsettlement_id\x18\x02 \x01(\tB\x03\xe0A\x02R\fsettlementId\x12\x1b\n" +
 	"\x06amount\x18\x04 \x01(\x03B\x03\xe0A\x02R\x06amount\x12?\n" +
 	"\x06method\x18\x05 \x01(\x0e2\".vietgara.billing.v1.PaymentMethodB\x03\xe0A\x02R\x06method\x12\x12\n" +
-	"\x04note\x18\x06 \x01(\tR\x04note\"b\n" +
+	"\x04note\x18\x06 \x01(\tR\x04noteJ\x04\b\x03\x10\x04R\n" +
+	"payer_type\"b\n" +
 	"\x1fRecordSettlementPaymentResponse\x12?\n" +
 	"\n" +
 	"settlement\x18\x01 \x01(\v2\x1f.vietgara.billing.v1.SettlementR\n" +
@@ -1125,24 +885,18 @@ const file_vietgara_billing_v1_settlement_proto_rawDesc = "" +
 	"\x1dSETTLEMENT_STATUS_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19SETTLEMENT_STATUS_PENDING\x10\x01\x12$\n" +
 	" SETTLEMENT_STATUS_PARTIALLY_PAID\x10\x02\x12\x1a\n" +
-	"\x16SETTLEMENT_STATUS_PAID\x10\x03*X\n" +
-	"\tPayerType\x12\x1a\n" +
-	"\x16PAYER_TYPE_UNSPECIFIED\x10\x00\x12\x17\n" +
-	"\x13PAYER_TYPE_CUSTOMER\x10\x01\x12\x16\n" +
-	"\x12PAYER_TYPE_INSURER\x10\x02*\x85\x01\n" +
+	"\x16SETTLEMENT_STATUS_PAID\x10\x03*\x85\x01\n" +
 	"\rPaymentMethod\x12\x1e\n" +
 	"\x1aPAYMENT_METHOD_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13PAYMENT_METHOD_CASH\x10\x01\x12 \n" +
 	"\x1cPAYMENT_METHOD_BANK_TRANSFER\x10\x02\x12\x19\n" +
-	"\x15PAYMENT_METHOD_ONLINE\x10\x032\xc3\a\n" +
+	"\x15PAYMENT_METHOD_ONLINE\x10\x032\xfb\x05\n" +
 	"\x11SettlementService\x12\x9d\x01\n" +
 	"\x0fListSettlements\x12+.vietgara.billing.v1.ListSettlementsRequest\x1a,.vietgara.billing.v1.ListSettlementsResponse\"/\x82\xd3\xe4\x93\x02)\x12'/api/v1/garages/{garage_id}/settlements\x12\xaf\x01\n" +
 	"\x10CreateSettlement\x12,.vietgara.billing.v1.CreateSettlementRequest\x1a-.vietgara.billing.v1.CreateSettlementResponse\">\x82\xd3\xe4\x93\x028:\x01*b\n" +
 	"settlement\"'/api/v1/garages/{garage_id}/settlements\x12\xb3\x01\n" +
 	"\rGetSettlement\x12).vietgara.billing.v1.GetSettlementRequest\x1a*.vietgara.billing.v1.GetSettlementResponse\"K\x82\xd3\xe4\x93\x02Eb\n" +
-	"settlement\x127/api/v1/garages/{garage_id}/settlements/{settlement_id}\x12\xc5\x01\n" +
-	"\x12AllocateSettlement\x12..vietgara.billing.v1.AllocateSettlementRequest\x1a/.vietgara.billing.v1.AllocateSettlementResponse\"N\x82\xd3\xe4\x93\x02H:\x01*b\n" +
-	"settlement27/api/v1/garages/{garage_id}/settlements/{settlement_id}\x12\xdd\x01\n" +
+	"settlement\x127/api/v1/garages/{garage_id}/settlements/{settlement_id}\x12\xdd\x01\n" +
 	"\x17RecordSettlementPayment\x123.vietgara.billing.v1.RecordSettlementPaymentRequest\x1a4.vietgara.billing.v1.RecordSettlementPaymentResponse\"W\x82\xd3\xe4\x93\x02Q:\x01*b\n" +
 	"settlement\"@/api/v1/garages/{garage_id}/settlements/{settlement_id}/paymentsBLZJgithub.com/viettechno/vietgara-proto/apis-go/vietgara/billing/v1;billingv1b\x06proto3"
 
@@ -1158,59 +912,51 @@ func file_vietgara_billing_v1_settlement_proto_rawDescGZIP() []byte {
 	return file_vietgara_billing_v1_settlement_proto_rawDescData
 }
 
-var file_vietgara_billing_v1_settlement_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_vietgara_billing_v1_settlement_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_vietgara_billing_v1_settlement_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_vietgara_billing_v1_settlement_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_vietgara_billing_v1_settlement_proto_goTypes = []any{
 	(SettlementStatus)(0),                   // 0: vietgara.billing.v1.SettlementStatus
-	(PayerType)(0),                          // 1: vietgara.billing.v1.PayerType
-	(PaymentMethod)(0),                      // 2: vietgara.billing.v1.PaymentMethod
-	(*SettlementPayment)(nil),               // 3: vietgara.billing.v1.SettlementPayment
-	(*Settlement)(nil),                      // 4: vietgara.billing.v1.Settlement
-	(*ListSettlementsRequest)(nil),          // 5: vietgara.billing.v1.ListSettlementsRequest
-	(*ListSettlementsResponse)(nil),         // 6: vietgara.billing.v1.ListSettlementsResponse
-	(*CreateSettlementRequest)(nil),         // 7: vietgara.billing.v1.CreateSettlementRequest
-	(*CreateSettlementResponse)(nil),        // 8: vietgara.billing.v1.CreateSettlementResponse
-	(*GetSettlementRequest)(nil),            // 9: vietgara.billing.v1.GetSettlementRequest
-	(*GetSettlementResponse)(nil),           // 10: vietgara.billing.v1.GetSettlementResponse
-	(*AllocateSettlementRequest)(nil),       // 11: vietgara.billing.v1.AllocateSettlementRequest
-	(*AllocateSettlementResponse)(nil),      // 12: vietgara.billing.v1.AllocateSettlementResponse
-	(*RecordSettlementPaymentRequest)(nil),  // 13: vietgara.billing.v1.RecordSettlementPaymentRequest
-	(*RecordSettlementPaymentResponse)(nil), // 14: vietgara.billing.v1.RecordSettlementPaymentResponse
-	(*timestamppb.Timestamp)(nil),           // 15: google.protobuf.Timestamp
-	(*v1.Pagination)(nil),                   // 16: vietgara.common.v1.Pagination
+	(PaymentMethod)(0),                      // 1: vietgara.billing.v1.PaymentMethod
+	(*SettlementPayment)(nil),               // 2: vietgara.billing.v1.SettlementPayment
+	(*Settlement)(nil),                      // 3: vietgara.billing.v1.Settlement
+	(*ListSettlementsRequest)(nil),          // 4: vietgara.billing.v1.ListSettlementsRequest
+	(*ListSettlementsResponse)(nil),         // 5: vietgara.billing.v1.ListSettlementsResponse
+	(*CreateSettlementRequest)(nil),         // 6: vietgara.billing.v1.CreateSettlementRequest
+	(*CreateSettlementResponse)(nil),        // 7: vietgara.billing.v1.CreateSettlementResponse
+	(*GetSettlementRequest)(nil),            // 8: vietgara.billing.v1.GetSettlementRequest
+	(*GetSettlementResponse)(nil),           // 9: vietgara.billing.v1.GetSettlementResponse
+	(*RecordSettlementPaymentRequest)(nil),  // 10: vietgara.billing.v1.RecordSettlementPaymentRequest
+	(*RecordSettlementPaymentResponse)(nil), // 11: vietgara.billing.v1.RecordSettlementPaymentResponse
+	(*timestamppb.Timestamp)(nil),           // 12: google.protobuf.Timestamp
+	(*v1.Pagination)(nil),                   // 13: vietgara.common.v1.Pagination
 }
 var file_vietgara_billing_v1_settlement_proto_depIdxs = []int32{
-	1,  // 0: vietgara.billing.v1.SettlementPayment.payer_type:type_name -> vietgara.billing.v1.PayerType
-	2,  // 1: vietgara.billing.v1.SettlementPayment.method:type_name -> vietgara.billing.v1.PaymentMethod
-	15, // 2: vietgara.billing.v1.SettlementPayment.created_at:type_name -> google.protobuf.Timestamp
-	0,  // 3: vietgara.billing.v1.Settlement.status:type_name -> vietgara.billing.v1.SettlementStatus
-	3,  // 4: vietgara.billing.v1.Settlement.payments:type_name -> vietgara.billing.v1.SettlementPayment
-	15, // 5: vietgara.billing.v1.Settlement.created_at:type_name -> google.protobuf.Timestamp
-	15, // 6: vietgara.billing.v1.Settlement.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 7: vietgara.billing.v1.ListSettlementsRequest.status:type_name -> vietgara.billing.v1.SettlementStatus
-	4,  // 8: vietgara.billing.v1.ListSettlementsResponse.data:type_name -> vietgara.billing.v1.Settlement
-	16, // 9: vietgara.billing.v1.ListSettlementsResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	4,  // 10: vietgara.billing.v1.CreateSettlementResponse.settlement:type_name -> vietgara.billing.v1.Settlement
-	4,  // 11: vietgara.billing.v1.GetSettlementResponse.settlement:type_name -> vietgara.billing.v1.Settlement
-	4,  // 12: vietgara.billing.v1.AllocateSettlementResponse.settlement:type_name -> vietgara.billing.v1.Settlement
-	1,  // 13: vietgara.billing.v1.RecordSettlementPaymentRequest.payer_type:type_name -> vietgara.billing.v1.PayerType
-	2,  // 14: vietgara.billing.v1.RecordSettlementPaymentRequest.method:type_name -> vietgara.billing.v1.PaymentMethod
-	4,  // 15: vietgara.billing.v1.RecordSettlementPaymentResponse.settlement:type_name -> vietgara.billing.v1.Settlement
-	5,  // 16: vietgara.billing.v1.SettlementService.ListSettlements:input_type -> vietgara.billing.v1.ListSettlementsRequest
-	7,  // 17: vietgara.billing.v1.SettlementService.CreateSettlement:input_type -> vietgara.billing.v1.CreateSettlementRequest
-	9,  // 18: vietgara.billing.v1.SettlementService.GetSettlement:input_type -> vietgara.billing.v1.GetSettlementRequest
-	11, // 19: vietgara.billing.v1.SettlementService.AllocateSettlement:input_type -> vietgara.billing.v1.AllocateSettlementRequest
-	13, // 20: vietgara.billing.v1.SettlementService.RecordSettlementPayment:input_type -> vietgara.billing.v1.RecordSettlementPaymentRequest
-	6,  // 21: vietgara.billing.v1.SettlementService.ListSettlements:output_type -> vietgara.billing.v1.ListSettlementsResponse
-	8,  // 22: vietgara.billing.v1.SettlementService.CreateSettlement:output_type -> vietgara.billing.v1.CreateSettlementResponse
-	10, // 23: vietgara.billing.v1.SettlementService.GetSettlement:output_type -> vietgara.billing.v1.GetSettlementResponse
-	12, // 24: vietgara.billing.v1.SettlementService.AllocateSettlement:output_type -> vietgara.billing.v1.AllocateSettlementResponse
-	14, // 25: vietgara.billing.v1.SettlementService.RecordSettlementPayment:output_type -> vietgara.billing.v1.RecordSettlementPaymentResponse
-	21, // [21:26] is the sub-list for method output_type
-	16, // [16:21] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	1,  // 0: vietgara.billing.v1.SettlementPayment.method:type_name -> vietgara.billing.v1.PaymentMethod
+	12, // 1: vietgara.billing.v1.SettlementPayment.created_at:type_name -> google.protobuf.Timestamp
+	0,  // 2: vietgara.billing.v1.Settlement.status:type_name -> vietgara.billing.v1.SettlementStatus
+	2,  // 3: vietgara.billing.v1.Settlement.payments:type_name -> vietgara.billing.v1.SettlementPayment
+	12, // 4: vietgara.billing.v1.Settlement.created_at:type_name -> google.protobuf.Timestamp
+	12, // 5: vietgara.billing.v1.Settlement.updated_at:type_name -> google.protobuf.Timestamp
+	0,  // 6: vietgara.billing.v1.ListSettlementsRequest.status:type_name -> vietgara.billing.v1.SettlementStatus
+	3,  // 7: vietgara.billing.v1.ListSettlementsResponse.data:type_name -> vietgara.billing.v1.Settlement
+	13, // 8: vietgara.billing.v1.ListSettlementsResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	3,  // 9: vietgara.billing.v1.CreateSettlementResponse.settlement:type_name -> vietgara.billing.v1.Settlement
+	3,  // 10: vietgara.billing.v1.GetSettlementResponse.settlement:type_name -> vietgara.billing.v1.Settlement
+	1,  // 11: vietgara.billing.v1.RecordSettlementPaymentRequest.method:type_name -> vietgara.billing.v1.PaymentMethod
+	3,  // 12: vietgara.billing.v1.RecordSettlementPaymentResponse.settlement:type_name -> vietgara.billing.v1.Settlement
+	4,  // 13: vietgara.billing.v1.SettlementService.ListSettlements:input_type -> vietgara.billing.v1.ListSettlementsRequest
+	6,  // 14: vietgara.billing.v1.SettlementService.CreateSettlement:input_type -> vietgara.billing.v1.CreateSettlementRequest
+	8,  // 15: vietgara.billing.v1.SettlementService.GetSettlement:input_type -> vietgara.billing.v1.GetSettlementRequest
+	10, // 16: vietgara.billing.v1.SettlementService.RecordSettlementPayment:input_type -> vietgara.billing.v1.RecordSettlementPaymentRequest
+	5,  // 17: vietgara.billing.v1.SettlementService.ListSettlements:output_type -> vietgara.billing.v1.ListSettlementsResponse
+	7,  // 18: vietgara.billing.v1.SettlementService.CreateSettlement:output_type -> vietgara.billing.v1.CreateSettlementResponse
+	9,  // 19: vietgara.billing.v1.SettlementService.GetSettlement:output_type -> vietgara.billing.v1.GetSettlementResponse
+	11, // 20: vietgara.billing.v1.SettlementService.RecordSettlementPayment:output_type -> vietgara.billing.v1.RecordSettlementPaymentResponse
+	17, // [17:21] is the sub-list for method output_type
+	13, // [13:17] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_billing_v1_settlement_proto_init() }
@@ -1218,15 +964,13 @@ func file_vietgara_billing_v1_settlement_proto_init() {
 	if File_vietgara_billing_v1_settlement_proto != nil {
 		return
 	}
-	file_vietgara_billing_v1_settlement_proto_msgTypes[1].OneofWrappers = []any{}
-	file_vietgara_billing_v1_settlement_proto_msgTypes[8].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_billing_v1_settlement_proto_rawDesc), len(file_vietgara_billing_v1_settlement_proto_rawDesc)),
-			NumEnums:      3,
-			NumMessages:   12,
+			NumEnums:      2,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
