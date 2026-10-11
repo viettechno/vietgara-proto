@@ -1,0 +1,148 @@
+syntax = "proto3";
+
+package vietgara.customer.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/billing_party.proto";
+import "vietgara/common/v1/lifecycle.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1";
+
+// CustomerTaxProfile is a legal identity a customer can be billed under
+// (FR-CUS-07): at most one personal profile and any number of company
+// profiles.
+message CustomerTaxProfile {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string customer_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  vietgara.common.v1.TaxProfileKind kind = 4 [(google.api.field_behavior) = REQUIRED];
+  // The company's legal name, or the person's name.
+  string legal_name = 5 [(google.api.field_behavior) = REQUIRED];
+  // 10 digits, or 13 with the branch suffix.
+  optional string tax_id = 6;
+  optional string address = 7;
+  // Where an e-invoice is sent.
+  optional string invoice_email = 8;
+  // The profile a document is billed to when none is chosen.
+  bool is_default = 9;
+  // False once deactivated instead of deleted (FR-CAT-07).
+  bool is_active = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListCustomerTaxProfilesRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
+  bool include_inactive = 3;
+}
+
+message ListCustomerTaxProfilesResponse {
+  repeated CustomerTaxProfile data = 1;
+}
+
+message CreateCustomerTaxProfileRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
+  CustomerTaxProfile tax_profile = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateCustomerTaxProfileResponse {
+  CustomerTaxProfile tax_profile = 1;
+}
+
+message GetCustomerTaxProfileRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string tax_profile_id = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetCustomerTaxProfileResponse {
+  CustomerTaxProfile tax_profile = 1;
+}
+
+message UpdateCustomerTaxProfileRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string tax_profile_id = 3 [(google.api.field_behavior) = REQUIRED];
+  // The kind cannot change.
+  CustomerTaxProfile tax_profile = 4 [(google.api.field_behavior) = REQUIRED];
+  // Filled from the JSON body keys when omitted.
+  google.protobuf.FieldMask update_mask = 5;
+}
+
+message UpdateCustomerTaxProfileResponse {
+  CustomerTaxProfile tax_profile = 1;
+}
+
+message DeleteCustomerTaxProfileRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string tax_profile_id = 3 [(google.api.field_behavior) = REQUIRED];
+  // Answer the outcome without changing anything (`?dryRun=true`).
+  bool dry_run = 4;
+}
+
+message DeleteCustomerTaxProfileResponse {
+  vietgara.common.v1.DeleteOutcome outcome = 1;
+}
+
+message ActivateCustomerTaxProfileRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string tax_profile_id = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ActivateCustomerTaxProfileResponse {
+  CustomerTaxProfile tax_profile = 1;
+}
+
+// CustomerTaxProfileService manages a customer's tax profiles (FR-CUS-07).
+// Reads need PERMISSION_CUSTOMER_READ, changes PERMISSION_CUSTOMER_WRITE.
+service CustomerTaxProfileService {
+  rpc ListCustomerTaxProfiles(ListCustomerTaxProfilesRequest) returns (ListCustomerTaxProfilesResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/customers/{customer_id}/tax-profiles"};
+  }
+
+  // Fails VALIDATION_ERROR on a malformed tax id, and when the customer
+  // already has a personal profile.
+  rpc CreateCustomerTaxProfile(CreateCustomerTaxProfileRequest) returns (CreateCustomerTaxProfileResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/customers/{customer_id}/tax-profiles"
+      body: "tax_profile"
+      response_body: "tax_profile"
+    };
+  }
+
+  rpc GetCustomerTaxProfile(GetCustomerTaxProfileRequest) returns (GetCustomerTaxProfileResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/garages/{garage_id}/customers/{customer_id}/tax-profiles/{tax_profile_id}"
+      response_body: "tax_profile"
+    };
+  }
+
+  rpc UpdateCustomerTaxProfile(UpdateCustomerTaxProfileRequest) returns (UpdateCustomerTaxProfileResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/customers/{customer_id}/tax-profiles/{tax_profile_id}"
+      body: "tax_profile"
+      response_body: "tax_profile"
+    };
+  }
+
+  // Follows the delete-or-deactivate rule (FR-CAT-07): a profile that a
+  // document was billed to is deactivated.
+  rpc DeleteCustomerTaxProfile(DeleteCustomerTaxProfileRequest) returns (DeleteCustomerTaxProfileResponse) {
+    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/customers/{customer_id}/tax-profiles/{tax_profile_id}"};
+  }
+
+  rpc ActivateCustomerTaxProfile(ActivateCustomerTaxProfileRequest) returns (ActivateCustomerTaxProfileResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/customers/{customer_id}/tax-profiles/{tax_profile_id}:activate"
+      body: "*"
+      response_body: "tax_profile"
+    };
+  }
+}

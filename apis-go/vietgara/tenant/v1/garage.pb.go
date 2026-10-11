@@ -156,9 +156,11 @@ type NumberingTemplates struct {
 	Quote       string                 `protobuf:"bytes,1,opt,name=quote,proto3" json:"quote,omitempty"`
 	RepairOrder string                 `protobuf:"bytes,2,opt,name=repair_order,json=repairOrder,proto3" json:"repair_order,omitempty"`
 	// Settlement document numbers (Release 1.4).
-	Settlement    string `protobuf:"bytes,3,opt,name=settlement,proto3" json:"settlement,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Settlement string `protobuf:"bytes,3,opt,name=settlement,proto3" json:"settlement,omitempty"`
+	// Payment voucher (phiếu thu) numbers (FR-BIL-05, Release 5.0).
+	PaymentVoucher string `protobuf:"bytes,4,opt,name=payment_voucher,json=paymentVoucher,proto3" json:"payment_voucher,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *NumberingTemplates) Reset() {
@@ -208,6 +210,13 @@ func (x *NumberingTemplates) GetRepairOrder() string {
 func (x *NumberingTemplates) GetSettlement() string {
 	if x != nil {
 		return x.Settlement
+	}
+	return ""
+}
+
+func (x *NumberingTemplates) GetPaymentVoucher() string {
+	if x != nil {
+		return x.PaymentVoucher
 	}
 	return ""
 }
@@ -275,7 +284,7 @@ type Garage struct {
 	Address     *string                `protobuf:"bytes,5,opt,name=address,proto3,oneof" json:"address,omitempty"`
 	Phone       *string                `protobuf:"bytes,6,opt,name=phone,proto3,oneof" json:"phone,omitempty"`
 	Email       *string                `protobuf:"bytes,7,opt,name=email,proto3,oneof" json:"email,omitempty"`
-	// Set through UploadGarageLogo.
+	// Set through UploadGarageLogo; the logo is a file of the file registry.
 	LogoUrl *string `protobuf:"bytes,8,opt,name=logo_url,json=logoUrl,proto3,oneof" json:"logo_url,omitempty"`
 	// IANA timezone, default Asia/Ho_Chi_Minh.
 	Timezone string `protobuf:"bytes,9,opt,name=timezone,proto3" json:"timezone,omitempty"`
@@ -291,8 +300,16 @@ type Garage struct {
 	// Release 1.2); a service advisor may still change it per quote.
 	// Default LINK.
 	DefaultQuoteApprovalMode v1.QuoteApprovalMode `protobuf:"varint,17,opt,name=default_quote_approval_mode,json=defaultQuoteApprovalMode,proto3,enum=vietgara.common.v1.QuoteApprovalMode" json:"default_quote_approval_mode,omitempty"`
-	unknownFields            protoimpl.UnknownFields
-	sizeCache                protoimpl.SizeCache
+	// The garage's legal identity, printed in the header of every document
+	// with the logo and tax_code (FR-TEN-06). Changing it never rewrites a
+	// document already issued: each document keeps a snapshot.
+	LegalName    *string `protobuf:"bytes,18,opt,name=legal_name,json=legalName,proto3,oneof" json:"legal_name,omitempty"`
+	LegalAddress *string `protobuf:"bytes,19,opt,name=legal_address,json=legalAddress,proto3,oneof" json:"legal_address,omitempty"`
+	// The legal representative.
+	Representative *string         `protobuf:"bytes,20,opt,name=representative,proto3,oneof" json:"representative,omitempty"`
+	Bank           *v1.BankDetails `protobuf:"bytes,21,opt,name=bank,proto3" json:"bank,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *Garage) Reset() {
@@ -442,6 +459,34 @@ func (x *Garage) GetDefaultQuoteApprovalMode() v1.QuoteApprovalMode {
 		return x.DefaultQuoteApprovalMode
 	}
 	return v1.QuoteApprovalMode(0)
+}
+
+func (x *Garage) GetLegalName() string {
+	if x != nil && x.LegalName != nil {
+		return *x.LegalName
+	}
+	return ""
+}
+
+func (x *Garage) GetLegalAddress() string {
+	if x != nil && x.LegalAddress != nil {
+		return *x.LegalAddress
+	}
+	return ""
+}
+
+func (x *Garage) GetRepresentative() string {
+	if x != nil && x.Representative != nil {
+		return *x.Representative
+	}
+	return ""
+}
+
+func (x *Garage) GetBank() *v1.BankDetails {
+	if x != nil {
+		return x.Bank
+	}
+	return nil
 }
 
 type ListGaragesRequest struct {
@@ -1006,22 +1051,23 @@ var File_vietgara_tenant_v1_garage_proto protoreflect.FileDescriptor
 
 const file_vietgara_tenant_v1_garage_proto_rawDesc = "" +
 	"\n" +
-	"\x1fvietgara/tenant/v1/garage.proto\x12\x12vietgara.tenant.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/type/dayofweek.proto\x1a,vietgara/common/v1/quote_approval_mode.proto\x1a\x1fvietgara/tenant/v1/access.proto\"x\n" +
+	"\x1fvietgara/tenant/v1/garage.proto\x12\x12vietgara.tenant.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/type/dayofweek.proto\x1a%vietgara/common/v1/bank_details.proto\x1a,vietgara/common/v1/quote_approval_mode.proto\x1a\x1fvietgara/tenant/v1/access.proto\"x\n" +
 	"\n" +
 	"DailyHours\x12(\n" +
 	"\x03day\x18\x01 \x01(\x0e2\x16.google.type.DayOfWeekR\x03day\x12\x16\n" +
 	"\x06closed\x18\x02 \x01(\bR\x06closed\x12\x12\n" +
 	"\x04open\x18\x03 \x01(\tR\x04open\x12\x14\n" +
-	"\x05close\x18\x04 \x01(\tR\x05close\"m\n" +
+	"\x05close\x18\x04 \x01(\tR\x05close\"\x96\x01\n" +
 	"\x12NumberingTemplates\x12\x14\n" +
 	"\x05quote\x18\x01 \x01(\tR\x05quote\x12!\n" +
 	"\frepair_order\x18\x02 \x01(\tR\vrepairOrder\x12\x1e\n" +
 	"\n" +
 	"settlement\x18\x03 \x01(\tR\n" +
-	"settlement\"f\n" +
+	"settlement\x12'\n" +
+	"\x0fpayment_voucher\x18\x04 \x01(\tR\x0epaymentVoucher\"f\n" +
 	"\fGarageAccess\x12\x14\n" +
 	"\x05owner\x18\x01 \x01(\bR\x05owner\x12@\n" +
-	"\vpermissions\x18\x02 \x03(\x0e2\x1e.vietgara.tenant.v1.PermissionR\vpermissions\"\xd9\x06\n" +
+	"\vpermissions\x18\x02 \x03(\x0e2\x1e.vietgara.tenant.v1.PermissionR\vpermissions\"\xbd\b\n" +
 	"\x06Garage\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12'\n" +
 	"\rowner_user_id\x18\x02 \x01(\tB\x03\xe0A\x03R\vownerUserId\x12\x17\n" +
@@ -1042,13 +1088,21 @@ const file_vietgara_tenant_v1_garage_proto_rawDesc = "" +
 	"created_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
 	"updated_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12d\n" +
-	"\x1bdefault_quote_approval_mode\x18\x11 \x01(\x0e2%.vietgara.common.v1.QuoteApprovalModeR\x18defaultQuoteApprovalModeB\v\n" +
+	"\x1bdefault_quote_approval_mode\x18\x11 \x01(\x0e2%.vietgara.common.v1.QuoteApprovalModeR\x18defaultQuoteApprovalMode\x12\"\n" +
+	"\n" +
+	"legal_name\x18\x12 \x01(\tH\x05R\tlegalName\x88\x01\x01\x12(\n" +
+	"\rlegal_address\x18\x13 \x01(\tH\x06R\flegalAddress\x88\x01\x01\x12+\n" +
+	"\x0erepresentative\x18\x14 \x01(\tH\aR\x0erepresentative\x88\x01\x01\x123\n" +
+	"\x04bank\x18\x15 \x01(\v2\x1f.vietgara.common.v1.BankDetailsR\x04bankB\v\n" +
 	"\t_tax_codeB\n" +
 	"\n" +
 	"\b_addressB\b\n" +
 	"\x06_phoneB\b\n" +
 	"\x06_emailB\v\n" +
-	"\t_logo_url\"\x14\n" +
+	"\t_logo_urlB\r\n" +
+	"\v_legal_nameB\x10\n" +
+	"\x0e_legal_addressB\x11\n" +
+	"\x0f_representative\"\x14\n" +
 	"\x12ListGaragesRequest\"E\n" +
 	"\x13ListGaragesResponse\x12.\n" +
 	"\x04data\x18\x01 \x03(\v2\x1a.vietgara.tenant.v1.GarageR\x04data\"N\n" +
@@ -1125,7 +1179,8 @@ var file_vietgara_tenant_v1_garage_proto_goTypes = []any{
 	(Permission)(0),                  // 18: vietgara.tenant.v1.Permission
 	(*timestamppb.Timestamp)(nil),    // 19: google.protobuf.Timestamp
 	(v1.QuoteApprovalMode)(0),        // 20: vietgara.common.v1.QuoteApprovalMode
-	(*fieldmaskpb.FieldMask)(nil),    // 21: google.protobuf.FieldMask
+	(*v1.BankDetails)(nil),           // 21: vietgara.common.v1.BankDetails
+	(*fieldmaskpb.FieldMask)(nil),    // 22: google.protobuf.FieldMask
 }
 var file_vietgara_tenant_v1_garage_proto_depIdxs = []int32{
 	17, // 0: vietgara.tenant.v1.DailyHours.day:type_name -> google.type.DayOfWeek
@@ -1137,32 +1192,33 @@ var file_vietgara_tenant_v1_garage_proto_depIdxs = []int32{
 	19, // 6: vietgara.tenant.v1.Garage.created_at:type_name -> google.protobuf.Timestamp
 	19, // 7: vietgara.tenant.v1.Garage.updated_at:type_name -> google.protobuf.Timestamp
 	20, // 8: vietgara.tenant.v1.Garage.default_quote_approval_mode:type_name -> vietgara.common.v1.QuoteApprovalMode
-	4,  // 9: vietgara.tenant.v1.ListGaragesResponse.data:type_name -> vietgara.tenant.v1.Garage
-	4,  // 10: vietgara.tenant.v1.CreateGarageRequest.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 11: vietgara.tenant.v1.CreateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 12: vietgara.tenant.v1.GetGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 13: vietgara.tenant.v1.UpdateGarageRequest.garage:type_name -> vietgara.tenant.v1.Garage
-	21, // 14: vietgara.tenant.v1.UpdateGarageRequest.update_mask:type_name -> google.protobuf.FieldMask
-	4,  // 15: vietgara.tenant.v1.UpdateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 16: vietgara.tenant.v1.UploadGarageLogoResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 17: vietgara.tenant.v1.DeleteGarageLogoResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	5,  // 18: vietgara.tenant.v1.GarageService.ListGarages:input_type -> vietgara.tenant.v1.ListGaragesRequest
-	7,  // 19: vietgara.tenant.v1.GarageService.CreateGarage:input_type -> vietgara.tenant.v1.CreateGarageRequest
-	9,  // 20: vietgara.tenant.v1.GarageService.GetGarage:input_type -> vietgara.tenant.v1.GetGarageRequest
-	11, // 21: vietgara.tenant.v1.GarageService.UpdateGarage:input_type -> vietgara.tenant.v1.UpdateGarageRequest
-	13, // 22: vietgara.tenant.v1.GarageService.UploadGarageLogo:input_type -> vietgara.tenant.v1.UploadGarageLogoRequest
-	15, // 23: vietgara.tenant.v1.GarageService.DeleteGarageLogo:input_type -> vietgara.tenant.v1.DeleteGarageLogoRequest
-	6,  // 24: vietgara.tenant.v1.GarageService.ListGarages:output_type -> vietgara.tenant.v1.ListGaragesResponse
-	8,  // 25: vietgara.tenant.v1.GarageService.CreateGarage:output_type -> vietgara.tenant.v1.CreateGarageResponse
-	10, // 26: vietgara.tenant.v1.GarageService.GetGarage:output_type -> vietgara.tenant.v1.GetGarageResponse
-	12, // 27: vietgara.tenant.v1.GarageService.UpdateGarage:output_type -> vietgara.tenant.v1.UpdateGarageResponse
-	14, // 28: vietgara.tenant.v1.GarageService.UploadGarageLogo:output_type -> vietgara.tenant.v1.UploadGarageLogoResponse
-	16, // 29: vietgara.tenant.v1.GarageService.DeleteGarageLogo:output_type -> vietgara.tenant.v1.DeleteGarageLogoResponse
-	24, // [24:30] is the sub-list for method output_type
-	18, // [18:24] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	21, // 9: vietgara.tenant.v1.Garage.bank:type_name -> vietgara.common.v1.BankDetails
+	4,  // 10: vietgara.tenant.v1.ListGaragesResponse.data:type_name -> vietgara.tenant.v1.Garage
+	4,  // 11: vietgara.tenant.v1.CreateGarageRequest.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 12: vietgara.tenant.v1.CreateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 13: vietgara.tenant.v1.GetGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 14: vietgara.tenant.v1.UpdateGarageRequest.garage:type_name -> vietgara.tenant.v1.Garage
+	22, // 15: vietgara.tenant.v1.UpdateGarageRequest.update_mask:type_name -> google.protobuf.FieldMask
+	4,  // 16: vietgara.tenant.v1.UpdateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 17: vietgara.tenant.v1.UploadGarageLogoResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	4,  // 18: vietgara.tenant.v1.DeleteGarageLogoResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	5,  // 19: vietgara.tenant.v1.GarageService.ListGarages:input_type -> vietgara.tenant.v1.ListGaragesRequest
+	7,  // 20: vietgara.tenant.v1.GarageService.CreateGarage:input_type -> vietgara.tenant.v1.CreateGarageRequest
+	9,  // 21: vietgara.tenant.v1.GarageService.GetGarage:input_type -> vietgara.tenant.v1.GetGarageRequest
+	11, // 22: vietgara.tenant.v1.GarageService.UpdateGarage:input_type -> vietgara.tenant.v1.UpdateGarageRequest
+	13, // 23: vietgara.tenant.v1.GarageService.UploadGarageLogo:input_type -> vietgara.tenant.v1.UploadGarageLogoRequest
+	15, // 24: vietgara.tenant.v1.GarageService.DeleteGarageLogo:input_type -> vietgara.tenant.v1.DeleteGarageLogoRequest
+	6,  // 25: vietgara.tenant.v1.GarageService.ListGarages:output_type -> vietgara.tenant.v1.ListGaragesResponse
+	8,  // 26: vietgara.tenant.v1.GarageService.CreateGarage:output_type -> vietgara.tenant.v1.CreateGarageResponse
+	10, // 27: vietgara.tenant.v1.GarageService.GetGarage:output_type -> vietgara.tenant.v1.GetGarageResponse
+	12, // 28: vietgara.tenant.v1.GarageService.UpdateGarage:output_type -> vietgara.tenant.v1.UpdateGarageResponse
+	14, // 29: vietgara.tenant.v1.GarageService.UploadGarageLogo:output_type -> vietgara.tenant.v1.UploadGarageLogoResponse
+	16, // 30: vietgara.tenant.v1.GarageService.DeleteGarageLogo:output_type -> vietgara.tenant.v1.DeleteGarageLogoResponse
+	25, // [25:31] is the sub-list for method output_type
+	19, // [19:25] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_tenant_v1_garage_proto_init() }

@@ -19,12 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	VehicleService_ListVehicles_FullMethodName      = "/vietgara.customer.v1.VehicleService/ListVehicles"
-	VehicleService_CreateVehicle_FullMethodName     = "/vietgara.customer.v1.VehicleService/CreateVehicle"
-	VehicleService_GetVehicle_FullMethodName        = "/vietgara.customer.v1.VehicleService/GetVehicle"
-	VehicleService_UpdateVehicle_FullMethodName     = "/vietgara.customer.v1.VehicleService/UpdateVehicle"
-	VehicleService_DeleteVehicle_FullMethodName     = "/vietgara.customer.v1.VehicleService/DeleteVehicle"
-	VehicleService_GetVehicleHistory_FullMethodName = "/vietgara.customer.v1.VehicleService/GetVehicleHistory"
+	VehicleService_ListVehicles_FullMethodName       = "/vietgara.customer.v1.VehicleService/ListVehicles"
+	VehicleService_CreateVehicle_FullMethodName      = "/vietgara.customer.v1.VehicleService/CreateVehicle"
+	VehicleService_GetVehicle_FullMethodName         = "/vietgara.customer.v1.VehicleService/GetVehicle"
+	VehicleService_UpdateVehicle_FullMethodName      = "/vietgara.customer.v1.VehicleService/UpdateVehicle"
+	VehicleService_DeleteVehicle_FullMethodName      = "/vietgara.customer.v1.VehicleService/DeleteVehicle"
+	VehicleService_ActivateVehicle_FullMethodName    = "/vietgara.customer.v1.VehicleService/ActivateVehicle"
+	VehicleService_CorrectVehicle_FullMethodName     = "/vietgara.customer.v1.VehicleService/CorrectVehicle"
+	VehicleService_ChangeVehicleOwner_FullMethodName = "/vietgara.customer.v1.VehicleService/ChangeVehicleOwner"
+	VehicleService_GetVehicleHistory_FullMethodName  = "/vietgara.customer.v1.VehicleService/GetVehicleHistory"
 )
 
 // VehicleServiceClient is the client API for VehicleService service.
@@ -39,7 +42,18 @@ type VehicleServiceClient interface {
 	CreateVehicle(ctx context.Context, in *CreateVehicleRequest, opts ...grpc.CallOption) (*CreateVehicleResponse, error)
 	GetVehicle(ctx context.Context, in *GetVehicleRequest, opts ...grpc.CallOption) (*GetVehicleResponse, error)
 	UpdateVehicle(ctx context.Context, in *UpdateVehicleRequest, opts ...grpc.CallOption) (*UpdateVehicleResponse, error)
+	// Follows the delete-or-deactivate rule (FR-CAT-07): a vehicle that
+	// documents refer to is deactivated, otherwise soft-deleted.
 	DeleteVehicle(ctx context.Context, in *DeleteVehicleRequest, opts ...grpc.CallOption) (*DeleteVehicleResponse, error)
+	// Reactivates a deactivated vehicle.
+	ActivateVehicle(ctx context.Context, in *ActivateVehicleRequest, opts ...grpc.CallOption) (*ActivateVehicleResponse, error)
+	// FR-CUS-09: corrects a locked identity field with a mandatory reason.
+	// Audited; documents keep the value they snapshotted. Needs
+	// PERMISSION_CUSTOMER_CORRECT.
+	CorrectVehicle(ctx context.Context, in *CorrectVehicleRequest, opts ...grpc.CallOption) (*CorrectVehicleResponse, error)
+	// FR-CUS-09: moves a sold vehicle to another customer, keeping its
+	// history. Needs PERMISSION_CUSTOMER_CORRECT.
+	ChangeVehicleOwner(ctx context.Context, in *ChangeVehicleOwnerRequest, opts ...grpc.CallOption) (*ChangeVehicleOwnerResponse, error)
 	// Vehicle repair history (FR-CUS-03, Release 1.2).
 	GetVehicleHistory(ctx context.Context, in *GetVehicleHistoryRequest, opts ...grpc.CallOption) (*GetVehicleHistoryResponse, error)
 }
@@ -102,6 +116,36 @@ func (c *vehicleServiceClient) DeleteVehicle(ctx context.Context, in *DeleteVehi
 	return out, nil
 }
 
+func (c *vehicleServiceClient) ActivateVehicle(ctx context.Context, in *ActivateVehicleRequest, opts ...grpc.CallOption) (*ActivateVehicleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ActivateVehicleResponse)
+	err := c.cc.Invoke(ctx, VehicleService_ActivateVehicle_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *vehicleServiceClient) CorrectVehicle(ctx context.Context, in *CorrectVehicleRequest, opts ...grpc.CallOption) (*CorrectVehicleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CorrectVehicleResponse)
+	err := c.cc.Invoke(ctx, VehicleService_CorrectVehicle_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *vehicleServiceClient) ChangeVehicleOwner(ctx context.Context, in *ChangeVehicleOwnerRequest, opts ...grpc.CallOption) (*ChangeVehicleOwnerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ChangeVehicleOwnerResponse)
+	err := c.cc.Invoke(ctx, VehicleService_ChangeVehicleOwner_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *vehicleServiceClient) GetVehicleHistory(ctx context.Context, in *GetVehicleHistoryRequest, opts ...grpc.CallOption) (*GetVehicleHistoryResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetVehicleHistoryResponse)
@@ -124,7 +168,18 @@ type VehicleServiceServer interface {
 	CreateVehicle(context.Context, *CreateVehicleRequest) (*CreateVehicleResponse, error)
 	GetVehicle(context.Context, *GetVehicleRequest) (*GetVehicleResponse, error)
 	UpdateVehicle(context.Context, *UpdateVehicleRequest) (*UpdateVehicleResponse, error)
+	// Follows the delete-or-deactivate rule (FR-CAT-07): a vehicle that
+	// documents refer to is deactivated, otherwise soft-deleted.
 	DeleteVehicle(context.Context, *DeleteVehicleRequest) (*DeleteVehicleResponse, error)
+	// Reactivates a deactivated vehicle.
+	ActivateVehicle(context.Context, *ActivateVehicleRequest) (*ActivateVehicleResponse, error)
+	// FR-CUS-09: corrects a locked identity field with a mandatory reason.
+	// Audited; documents keep the value they snapshotted. Needs
+	// PERMISSION_CUSTOMER_CORRECT.
+	CorrectVehicle(context.Context, *CorrectVehicleRequest) (*CorrectVehicleResponse, error)
+	// FR-CUS-09: moves a sold vehicle to another customer, keeping its
+	// history. Needs PERMISSION_CUSTOMER_CORRECT.
+	ChangeVehicleOwner(context.Context, *ChangeVehicleOwnerRequest) (*ChangeVehicleOwnerResponse, error)
 	// Vehicle repair history (FR-CUS-03, Release 1.2).
 	GetVehicleHistory(context.Context, *GetVehicleHistoryRequest) (*GetVehicleHistoryResponse, error)
 	mustEmbedUnimplementedVehicleServiceServer()
@@ -151,6 +206,15 @@ func (UnimplementedVehicleServiceServer) UpdateVehicle(context.Context, *UpdateV
 }
 func (UnimplementedVehicleServiceServer) DeleteVehicle(context.Context, *DeleteVehicleRequest) (*DeleteVehicleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteVehicle not implemented")
+}
+func (UnimplementedVehicleServiceServer) ActivateVehicle(context.Context, *ActivateVehicleRequest) (*ActivateVehicleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ActivateVehicle not implemented")
+}
+func (UnimplementedVehicleServiceServer) CorrectVehicle(context.Context, *CorrectVehicleRequest) (*CorrectVehicleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CorrectVehicle not implemented")
+}
+func (UnimplementedVehicleServiceServer) ChangeVehicleOwner(context.Context, *ChangeVehicleOwnerRequest) (*ChangeVehicleOwnerResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ChangeVehicleOwner not implemented")
 }
 func (UnimplementedVehicleServiceServer) GetVehicleHistory(context.Context, *GetVehicleHistoryRequest) (*GetVehicleHistoryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetVehicleHistory not implemented")
@@ -266,6 +330,60 @@ func _VehicleService_DeleteVehicle_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _VehicleService_ActivateVehicle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActivateVehicleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VehicleServiceServer).ActivateVehicle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VehicleService_ActivateVehicle_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VehicleServiceServer).ActivateVehicle(ctx, req.(*ActivateVehicleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _VehicleService_CorrectVehicle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CorrectVehicleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VehicleServiceServer).CorrectVehicle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VehicleService_CorrectVehicle_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VehicleServiceServer).CorrectVehicle(ctx, req.(*CorrectVehicleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _VehicleService_ChangeVehicleOwner_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangeVehicleOwnerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VehicleServiceServer).ChangeVehicleOwner(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VehicleService_ChangeVehicleOwner_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VehicleServiceServer).ChangeVehicleOwner(ctx, req.(*ChangeVehicleOwnerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _VehicleService_GetVehicleHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetVehicleHistoryRequest)
 	if err := dec(in); err != nil {
@@ -310,6 +428,18 @@ var VehicleService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteVehicle",
 			Handler:    _VehicleService_DeleteVehicle_Handler,
+		},
+		{
+			MethodName: "ActivateVehicle",
+			Handler:    _VehicleService_ActivateVehicle_Handler,
+		},
+		{
+			MethodName: "CorrectVehicle",
+			Handler:    _VehicleService_CorrectVehicle_Handler,
+		},
+		{
+			MethodName: "ChangeVehicleOwner",
+			Handler:    _VehicleService_ChangeVehicleOwner_Handler,
 		},
 		{
 			MethodName: "GetVehicleHistory",

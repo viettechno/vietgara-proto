@@ -7,6 +7,7 @@ import "google/api/field_behavior.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "google/type/dayofweek.proto";
+import "vietgara/common/v1/bank_details.proto";
 import "vietgara/common/v1/quote_approval_mode.proto";
 import "vietgara/tenant/v1/access.proto";
 
@@ -38,6 +39,8 @@ message NumberingTemplates {
   string repair_order = 2;
   // Settlement document numbers (Release 1.4).
   string settlement = 3;
+  // Payment voucher (phiếu thu) numbers (FR-BIL-05, Release 5.0).
+  string payment_voucher = 4;
 }
 
 // GarageAccess is what the signed-in user may do in the garage.
@@ -55,7 +58,7 @@ message Garage {
   optional string address = 5;
   optional string phone = 6;
   optional string email = 7;
-  // Set through UploadGarageLogo.
+  // Set through UploadGarageLogo; the logo is a file of the file registry.
   optional string logo_url = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
   // IANA timezone, default Asia/Ho_Chi_Minh.
   string timezone = 9;
@@ -71,6 +74,14 @@ message Garage {
   // Release 1.2); a service advisor may still change it per quote.
   // Default LINK.
   vietgara.common.v1.QuoteApprovalMode default_quote_approval_mode = 17;
+  // The garage's legal identity, printed in the header of every document
+  // with the logo and tax_code (FR-TEN-06). Changing it never rewrites a
+  // document already issued: each document keeps a snapshot.
+  optional string legal_name = 18;
+  optional string legal_address = 19;
+  // The legal representative.
+  optional string representative = 20;
+  vietgara.common.v1.BankDetails bank = 21;
 }
 
 message ListGaragesRequest {}

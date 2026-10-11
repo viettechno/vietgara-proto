@@ -7,6 +7,7 @@ import "google/api/field_behavior.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "vietgara/common/v1/bank_details.proto";
+import "vietgara/common/v1/lifecycle.proto";
 import "vietgara/common/v1/pagination.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/supplier/v1;supplierv1";
@@ -32,6 +33,8 @@ message Supplier {
   optional string note = 7;
   google.protobuf.Timestamp created_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp updated_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // False once the supplier was deactivated instead of deleted (FR-CAT-07).
+  bool is_active = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message CreateSupplierRequest {
@@ -71,6 +74,8 @@ message ListSuppliersRequest {
   string query = 2;
   int32 page = 3;
   int32 page_size = 4;
+  // Also list deactivated suppliers (staff screens); pickers leave it off.
+  bool include_inactive = 5;
 }
 
 message ListSuppliersResponse {
@@ -81,9 +86,22 @@ message ListSuppliersResponse {
 message DeleteSupplierRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string supplier_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Answer the outcome without changing anything (`?dryRun=true`).
+  bool dry_run = 3;
 }
 
-message DeleteSupplierResponse {}
+message DeleteSupplierResponse {
+  vietgara.common.v1.DeleteOutcome outcome = 1;
+}
+
+message ActivateSupplierRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string supplier_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ActivateSupplierResponse {
+  Supplier supplier = 1;
+}
 
 // SupplierService manages the garage's suppliers (FR-SUP-01). Reads need
 // PERMISSION_SUPPLIER_READ, changes PERMISSION_SUPPLIER_WRITE.
@@ -115,7 +133,17 @@ service SupplierService {
     };
   }
 
+  // Follows the delete-or-deactivate rule (FR-CAT-07).
   rpc DeleteSupplier(DeleteSupplierRequest) returns (DeleteSupplierResponse) {
     option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/suppliers/{supplier_id}"};
+  }
+
+  // Reactivates a deactivated supplier.
+  rpc ActivateSupplier(ActivateSupplierRequest) returns (ActivateSupplierResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/suppliers/{supplier_id}:activate"
+      body: "*"
+      response_body: "supplier"
+    };
   }
 }

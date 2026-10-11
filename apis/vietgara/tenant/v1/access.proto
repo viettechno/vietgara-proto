@@ -38,6 +38,9 @@ enum Permission {
   PERMISSION_BILLING_READ = 15;
   PERMISSION_BILLING_WRITE = 16;
   PERMISSION_REPORT_READ = 17;
+  // Correct a locked vehicle identity field and move a vehicle to another
+  // customer (FR-CUS-09). Held by the manager role by default.
+  PERMISSION_CUSTOMER_CORRECT = 18;
 }
 
 // PermissionInfo describes one catalog entry.
