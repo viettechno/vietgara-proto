@@ -19,11 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CustomerService_ListCustomers_FullMethodName  = "/vietgara.customer.v1.CustomerService/ListCustomers"
-	CustomerService_CreateCustomer_FullMethodName = "/vietgara.customer.v1.CustomerService/CreateCustomer"
-	CustomerService_GetCustomer_FullMethodName    = "/vietgara.customer.v1.CustomerService/GetCustomer"
-	CustomerService_UpdateCustomer_FullMethodName = "/vietgara.customer.v1.CustomerService/UpdateCustomer"
-	CustomerService_DeleteCustomer_FullMethodName = "/vietgara.customer.v1.CustomerService/DeleteCustomer"
+	CustomerService_ListCustomers_FullMethodName    = "/vietgara.customer.v1.CustomerService/ListCustomers"
+	CustomerService_CreateCustomer_FullMethodName   = "/vietgara.customer.v1.CustomerService/CreateCustomer"
+	CustomerService_GetCustomer_FullMethodName      = "/vietgara.customer.v1.CustomerService/GetCustomer"
+	CustomerService_UpdateCustomer_FullMethodName   = "/vietgara.customer.v1.CustomerService/UpdateCustomer"
+	CustomerService_DeleteCustomer_FullMethodName   = "/vietgara.customer.v1.CustomerService/DeleteCustomer"
+	CustomerService_ActivateCustomer_FullMethodName = "/vietgara.customer.v1.CustomerService/ActivateCustomer"
+	CustomerService_LookupCustomers_FullMethodName  = "/vietgara.customer.v1.CustomerService/LookupCustomers"
 )
 
 // CustomerServiceClient is the client API for CustomerService service.
@@ -37,8 +39,16 @@ type CustomerServiceClient interface {
 	CreateCustomer(ctx context.Context, in *CreateCustomerRequest, opts ...grpc.CallOption) (*CreateCustomerResponse, error)
 	GetCustomer(ctx context.Context, in *GetCustomerRequest, opts ...grpc.CallOption) (*GetCustomerResponse, error)
 	UpdateCustomer(ctx context.Context, in *UpdateCustomerRequest, opts ...grpc.CallOption) (*UpdateCustomerResponse, error)
-	// Soft-deletes the customer and their vehicles; history is kept.
+	// Follows the delete-or-deactivate rule (FR-CAT-07): a customer that
+	// quotes, repair orders or settlements refer to is deactivated, otherwise
+	// the customer and their vehicles are soft-deleted.
 	DeleteCustomer(ctx context.Context, in *DeleteCustomerRequest, opts ...grpc.CallOption) (*DeleteCustomerResponse, error)
+	// Reactivates a deactivated customer.
+	ActivateCustomer(ctx context.Context, in *ActivateCustomerRequest, opts ...grpc.CallOption) (*ActivateCustomerResponse, error)
+	// FR-CUS-06: finds the garage's customers by phone or e-mail while a quote
+	// is being prepared, and tells whether a user exists. Declared last so
+	// that the gateway matches /customers/lookup before /customers/{id}.
+	LookupCustomers(ctx context.Context, in *LookupCustomersRequest, opts ...grpc.CallOption) (*LookupCustomersResponse, error)
 }
 
 type customerServiceClient struct {
@@ -99,6 +109,26 @@ func (c *customerServiceClient) DeleteCustomer(ctx context.Context, in *DeleteCu
 	return out, nil
 }
 
+func (c *customerServiceClient) ActivateCustomer(ctx context.Context, in *ActivateCustomerRequest, opts ...grpc.CallOption) (*ActivateCustomerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ActivateCustomerResponse)
+	err := c.cc.Invoke(ctx, CustomerService_ActivateCustomer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *customerServiceClient) LookupCustomers(ctx context.Context, in *LookupCustomersRequest, opts ...grpc.CallOption) (*LookupCustomersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LookupCustomersResponse)
+	err := c.cc.Invoke(ctx, CustomerService_LookupCustomers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CustomerServiceServer is the server API for CustomerService service.
 // All implementations must embed UnimplementedCustomerServiceServer
 // for forward compatibility.
@@ -110,8 +140,16 @@ type CustomerServiceServer interface {
 	CreateCustomer(context.Context, *CreateCustomerRequest) (*CreateCustomerResponse, error)
 	GetCustomer(context.Context, *GetCustomerRequest) (*GetCustomerResponse, error)
 	UpdateCustomer(context.Context, *UpdateCustomerRequest) (*UpdateCustomerResponse, error)
-	// Soft-deletes the customer and their vehicles; history is kept.
+	// Follows the delete-or-deactivate rule (FR-CAT-07): a customer that
+	// quotes, repair orders or settlements refer to is deactivated, otherwise
+	// the customer and their vehicles are soft-deleted.
 	DeleteCustomer(context.Context, *DeleteCustomerRequest) (*DeleteCustomerResponse, error)
+	// Reactivates a deactivated customer.
+	ActivateCustomer(context.Context, *ActivateCustomerRequest) (*ActivateCustomerResponse, error)
+	// FR-CUS-06: finds the garage's customers by phone or e-mail while a quote
+	// is being prepared, and tells whether a user exists. Declared last so
+	// that the gateway matches /customers/lookup before /customers/{id}.
+	LookupCustomers(context.Context, *LookupCustomersRequest) (*LookupCustomersResponse, error)
 	mustEmbedUnimplementedCustomerServiceServer()
 }
 
@@ -136,6 +174,12 @@ func (UnimplementedCustomerServiceServer) UpdateCustomer(context.Context, *Updat
 }
 func (UnimplementedCustomerServiceServer) DeleteCustomer(context.Context, *DeleteCustomerRequest) (*DeleteCustomerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteCustomer not implemented")
+}
+func (UnimplementedCustomerServiceServer) ActivateCustomer(context.Context, *ActivateCustomerRequest) (*ActivateCustomerResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ActivateCustomer not implemented")
+}
+func (UnimplementedCustomerServiceServer) LookupCustomers(context.Context, *LookupCustomersRequest) (*LookupCustomersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method LookupCustomers not implemented")
 }
 func (UnimplementedCustomerServiceServer) mustEmbedUnimplementedCustomerServiceServer() {}
 func (UnimplementedCustomerServiceServer) testEmbeddedByValue()                         {}
@@ -248,6 +292,42 @@ func _CustomerService_DeleteCustomer_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CustomerService_ActivateCustomer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActivateCustomerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CustomerServiceServer).ActivateCustomer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CustomerService_ActivateCustomer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CustomerServiceServer).ActivateCustomer(ctx, req.(*ActivateCustomerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CustomerService_LookupCustomers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LookupCustomersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CustomerServiceServer).LookupCustomers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CustomerService_LookupCustomers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CustomerServiceServer).LookupCustomers(ctx, req.(*LookupCustomersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CustomerService_ServiceDesc is the grpc.ServiceDesc for CustomerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -274,6 +354,14 @@ var CustomerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteCustomer",
 			Handler:    _CustomerService_DeleteCustomer_Handler,
+		},
+		{
+			MethodName: "ActivateCustomer",
+			Handler:    _CustomerService_ActivateCustomer_Handler,
+		},
+		{
+			MethodName: "LookupCustomers",
+			Handler:    _CustomerService_LookupCustomers_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -23,6 +23,12 @@ message ExportSettlementReceiptPdfRequest {
   string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
+message ExportPaymentVoucherPdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string payment_id = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
 message ExportStockMovementsExcelRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   // Same optional filter as InventoryService.ListStockTransactions.
@@ -52,6 +58,13 @@ service DocumentService {
   // FR-DOC-01: the settlement as a receipt PDF.
   rpc ExportSettlementReceiptPdf(ExportSettlementReceiptPdfRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/settlements/{settlement_id}/receipt-pdf"};
+  }
+
+  // FR-BIL-05: one payment voucher (phiếu thu) as a PDF in the 01-TT
+  // layout: the garage's legal header, amount in figures and words, and
+  // signature blocks.
+  rpc ExportPaymentVoucherPdf(ExportPaymentVoucherPdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/settlements/{settlement_id}/payments/{payment_id}/voucher-pdf"};
   }
 
   // FR-DOC-02: the stock in/out/on-hand movement report (FR-INV-05) as an

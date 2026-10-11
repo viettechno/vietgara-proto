@@ -6,6 +6,7 @@ import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/billing_party.proto";
 import "vietgara/common/v1/pagination.proto";
 import "vietgara/common/v1/quote_approval_mode.proto";
 
@@ -82,6 +83,9 @@ message Quote {
   google.protobuf.Timestamp converted_at = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp created_at = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp updated_at = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Who is billed (FR-CUS-07): send tax_profile_id; the snapshot of the
+  // profile is kept on the quote and printed on its PDF.
+  vietgara.common.v1.BillingParty billing_party = 18;
 }
 
 message ListQuotesRequest {

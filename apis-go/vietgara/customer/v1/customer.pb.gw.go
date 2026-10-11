@@ -285,6 +285,8 @@ func local_request_CustomerService_UpdateCustomer_0(ctx context.Context, marshal
 	return msg, metadata, err
 }
 
+var filter_CustomerService_DeleteCustomer_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0, "customer_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+
 func request_CustomerService_DeleteCustomer_0(ctx context.Context, marshaler runtime.Marshaler, client CustomerServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq DeleteCustomerRequest
@@ -306,6 +308,12 @@ func request_CustomerService_DeleteCustomer_0(ctx context.Context, marshaler run
 	protoReq.CustomerId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "customer_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CustomerService_DeleteCustomer_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
@@ -336,7 +344,127 @@ func local_request_CustomerService_DeleteCustomer_0(ctx context.Context, marshal
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "customer_id", err)
 	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CustomerService_DeleteCustomer_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 	msg, err := server.DeleteCustomer(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_CustomerService_ActivateCustomer_0(ctx context.Context, marshaler runtime.Marshaler, client CustomerServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ActivateCustomerRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["customer_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "customer_id")
+	}
+	protoReq.CustomerId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "customer_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ActivateCustomer(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_CustomerService_ActivateCustomer_0(ctx context.Context, marshaler runtime.Marshaler, server CustomerServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ActivateCustomerRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["customer_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "customer_id")
+	}
+	protoReq.CustomerId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "customer_id", err)
+	}
+	msg, err := server.ActivateCustomer(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+var filter_CustomerService_LookupCustomers_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+
+func request_CustomerService_LookupCustomers_0(ctx context.Context, marshaler runtime.Marshaler, client CustomerServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq LookupCustomersRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CustomerService_LookupCustomers_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.LookupCustomers(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_CustomerService_LookupCustomers_0(ctx context.Context, marshaler runtime.Marshaler, server CustomerServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq LookupCustomersRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CustomerService_LookupCustomers_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.LookupCustomers(ctx, &protoReq)
 	return msg, metadata, err
 }
 
@@ -445,6 +573,46 @@ func RegisterCustomerServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			return
 		}
 		forward_CustomerService_DeleteCustomer_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_CustomerService_ActivateCustomer_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.customer.v1.CustomerService/ActivateCustomer", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/customers/{customer_id}:activate"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_CustomerService_ActivateCustomer_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CustomerService_ActivateCustomer_0(annotatedContext, mux, outboundMarshaler, w, req, response_CustomerService_ActivateCustomer_0{resp.(*ActivateCustomerResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_CustomerService_LookupCustomers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.customer.v1.CustomerService/LookupCustomers", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/customers/lookup"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_CustomerService_LookupCustomers_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CustomerService_LookupCustomers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 
 	return nil
@@ -571,6 +739,40 @@ func RegisterCustomerServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 		}
 		forward_CustomerService_DeleteCustomer_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodPost, pattern_CustomerService_ActivateCustomer_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.customer.v1.CustomerService/ActivateCustomer", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/customers/{customer_id}:activate"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_CustomerService_ActivateCustomer_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CustomerService_ActivateCustomer_0(annotatedContext, mux, outboundMarshaler, w, req, response_CustomerService_ActivateCustomer_0{resp.(*ActivateCustomerResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_CustomerService_LookupCustomers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.customer.v1.CustomerService/LookupCustomers", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/customers/lookup"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_CustomerService_LookupCustomers_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CustomerService_LookupCustomers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
 	return nil
 }
 
@@ -601,18 +803,31 @@ func (m response_CustomerService_UpdateCustomer_0) XXX_ResponseBody() interface{
 	return response.Customer
 }
 
+type response_CustomerService_ActivateCustomer_0 struct {
+	*ActivateCustomerResponse
+}
+
+func (m response_CustomerService_ActivateCustomer_0) XXX_ResponseBody() interface{} {
+	response := m.ActivateCustomerResponse
+	return response.Customer
+}
+
 var (
-	pattern_CustomerService_ListCustomers_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "customers"}, ""))
-	pattern_CustomerService_CreateCustomer_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "customers"}, ""))
-	pattern_CustomerService_GetCustomer_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "customers", "customer_id"}, ""))
-	pattern_CustomerService_UpdateCustomer_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "customers", "customer_id"}, ""))
-	pattern_CustomerService_DeleteCustomer_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "customers", "customer_id"}, ""))
+	pattern_CustomerService_ListCustomers_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "customers"}, ""))
+	pattern_CustomerService_CreateCustomer_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "customers"}, ""))
+	pattern_CustomerService_GetCustomer_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "customers", "customer_id"}, ""))
+	pattern_CustomerService_UpdateCustomer_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "customers", "customer_id"}, ""))
+	pattern_CustomerService_DeleteCustomer_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "customers", "customer_id"}, ""))
+	pattern_CustomerService_ActivateCustomer_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "customers", "customer_id"}, "activate"))
+	pattern_CustomerService_LookupCustomers_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5}, []string{"api", "v1", "garages", "garage_id", "customers", "lookup"}, ""))
 )
 
 var (
-	forward_CustomerService_ListCustomers_0  = runtime.ForwardResponseMessage
-	forward_CustomerService_CreateCustomer_0 = runtime.ForwardResponseMessage
-	forward_CustomerService_GetCustomer_0    = runtime.ForwardResponseMessage
-	forward_CustomerService_UpdateCustomer_0 = runtime.ForwardResponseMessage
-	forward_CustomerService_DeleteCustomer_0 = runtime.ForwardResponseMessage
+	forward_CustomerService_ListCustomers_0    = runtime.ForwardResponseMessage
+	forward_CustomerService_CreateCustomer_0   = runtime.ForwardResponseMessage
+	forward_CustomerService_GetCustomer_0      = runtime.ForwardResponseMessage
+	forward_CustomerService_UpdateCustomer_0   = runtime.ForwardResponseMessage
+	forward_CustomerService_DeleteCustomer_0   = runtime.ForwardResponseMessage
+	forward_CustomerService_ActivateCustomer_0 = runtime.ForwardResponseMessage
+	forward_CustomerService_LookupCustomers_0  = runtime.ForwardResponseMessage
 )

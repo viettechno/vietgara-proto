@@ -15,6 +15,14 @@
       "description": "CustomerService manages a garage's customers (FRD 3.4). Reads need\nPERMISSION_CUSTOMER_READ, changes PERMISSION_CUSTOMER_WRITE."
     },
     {
+      "name": "CustomerLinkService",
+      "description": "CustomerLinkService links a garage's customer profile with a VietGara\nuser, with the user's consent (FR-CUS-06). Suppliers use their own link\nin Phase 17. Needs PERMISSION_CUSTOMER_WRITE."
+    },
+    {
+      "name": "CustomerTaxProfileService",
+      "description": "CustomerTaxProfileService manages a customer's tax profiles (FR-CUS-07).\nReads need PERMISSION_CUSTOMER_READ, changes PERMISSION_CUSTOMER_WRITE."
+    },
+    {
       "name": "VehicleService",
       "description": "VehicleService manages vehicles (FRD 3.4). Filter by customer with\n?customerId=. Reads need PERMISSION_CUSTOMER_READ, changes\nPERMISSION_CUSTOMER_WRITE."
     },
@@ -25,6 +33,10 @@
     {
       "name": "DocumentService",
       "description": "DocumentService renders PDFs and Excel reports on request (FRD 3.13).\nNo templates are stored -- FR-DOC-03 (letting a garage customize the\nlogo and layout) is Phase 4 -- every document is generated fresh from\nthe owning module's own data, read through a narrow interface the same\nway every other cross-module read works (HLD Section 2: a module never\nqueries another module's tables directly). Each RPC needs the same\npermission as the data it renders (quote.read, billing.read,\ninventory.read), not a permission of its own."
+    },
+    {
+      "name": "FileService",
+      "description": "FileService is the garage's file registry. Uploading, reading and\ndeleting a file need the write or read permission of the module that owns\nthe entity the file belongs to (e.g. garage.write for a logo)."
     },
     {
       "name": "UserService",
@@ -843,6 +855,13 @@
             "required": false,
             "type": "integer",
             "format": "int32"
+          },
+          {
+            "name": "includeInactive",
+            "description": "Also list deactivated customers (staff screens); pickers leave it off.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "tags": [
@@ -886,6 +905,50 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/customers/lookup": {
+      "get": {
+        "summary": "FR-CUS-06: finds the garage's customers by phone or e-mail while a quote\nis being prepared, and tells whether a user exists. Declared last so\nthat the gateway matches /customers/lookup before /customers/{id}.",
+        "operationId": "CustomerService_LookupCustomers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1LookupCustomersResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "phone",
+            "description": "Either or both; the garage's customers matching any of them are listed.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CustomerService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/customers/{customerId}": {
       "get": {
         "operationId": "CustomerService_GetCustomer",
@@ -922,7 +985,7 @@
         ]
       },
       "delete": {
-        "summary": "Soft-deletes the customer and their vehicles; history is kept.",
+        "summary": "Follows the delete-or-deactivate rule (FR-CAT-07): a customer that\nquotes, repair orders or settlements refer to is deactivated, otherwise\nthe customer and their vehicles are soft-deleted.",
         "operationId": "CustomerService_DeleteCustomer",
         "responses": {
           "200": {
@@ -950,6 +1013,13 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "dryRun",
+            "description": "Answer the outcome without changing anything (`?dryRun=true`).",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "tags": [
@@ -999,6 +1069,452 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/customers/{customerId}/tax-profiles": {
+      "get": {
+        "operationId": "CustomerTaxProfileService_ListCustomerTaxProfiles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListCustomerTaxProfilesResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "includeInactive",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "CustomerTaxProfileService"
+        ]
+      },
+      "post": {
+        "summary": "Fails VALIDATION_ERROR on a malformed tax id, and when the customer\nalready has a personal profile.",
+        "operationId": "CustomerTaxProfileService_CreateCustomerTaxProfile",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1CustomerTaxProfile"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "taxProfile",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CustomerTaxProfile"
+            }
+          }
+        ],
+        "tags": [
+          "CustomerTaxProfileService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/customers/{customerId}/tax-profiles/{taxProfileId}": {
+      "get": {
+        "operationId": "CustomerTaxProfileService_GetCustomerTaxProfile",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1CustomerTaxProfile"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "taxProfileId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CustomerTaxProfileService"
+        ]
+      },
+      "delete": {
+        "summary": "Follows the delete-or-deactivate rule (FR-CAT-07): a profile that a\ndocument was billed to is deactivated.",
+        "operationId": "CustomerTaxProfileService_DeleteCustomerTaxProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteCustomerTaxProfileResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "taxProfileId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "dryRun",
+            "description": "Answer the outcome without changing anything (`?dryRun=true`).",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "CustomerTaxProfileService"
+        ]
+      },
+      "patch": {
+        "operationId": "CustomerTaxProfileService_UpdateCustomerTaxProfile",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1CustomerTaxProfile"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "taxProfileId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "taxProfile",
+            "description": "The kind cannot change.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CustomerTaxProfile"
+            }
+          }
+        ],
+        "tags": [
+          "CustomerTaxProfileService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/customers/{customerId}/tax-profiles/{taxProfileId}:activate": {
+      "post": {
+        "operationId": "CustomerTaxProfileService_ActivateCustomerTaxProfile",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1CustomerTaxProfile"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "taxProfileId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerTaxProfileServiceActivateCustomerTaxProfileBody"
+            }
+          }
+        ],
+        "tags": [
+          "CustomerTaxProfileService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/customers/{customerId}/user-links": {
+      "post": {
+        "summary": "Asks the user that owns the profile's verified phone or e-mail to\nconfirm; sends them a one-time code and a request in the app. Fails\nFAILED_PRECONDITION when no user matches.",
+        "operationId": "CustomerLinkService_RequestCustomerUserLink",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1CustomerUserLink"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerLinkServiceRequestCustomerUserLinkBody"
+            }
+          }
+        ],
+        "tags": [
+          "CustomerLinkService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/customers/{customerId}/user-links/current": {
+      "delete": {
+        "summary": "Ends the link from the garage's side; the profile stays.",
+        "operationId": "CustomerLinkService_UnlinkCustomerUser",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1CustomerUserLink"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CustomerLinkService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/customers/{customerId}/user-links/current:confirm": {
+      "post": {
+        "summary": "Confirms the pending request with the code the user read out.",
+        "operationId": "CustomerLinkService_ConfirmCustomerUserLink",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1CustomerUserLink"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerLinkServiceConfirmCustomerUserLinkBody"
+            }
+          }
+        ],
+        "tags": [
+          "CustomerLinkService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/customers/{customerId}:activate": {
+      "post": {
+        "summary": "Reactivates a deactivated customer.",
+        "operationId": "CustomerService_ActivateCustomer",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Customer"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerServiceActivateCustomerBody"
+            }
+          }
+        ],
+        "tags": [
+          "CustomerService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/entitlements": {
       "get": {
         "summary": "What the garage may use; any active member may read it.",
@@ -1027,6 +1543,126 @@
         ],
         "tags": [
           "LicenseService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/files": {
+      "post": {
+        "summary": "Registers and stores a file; answers 201.",
+        "operationId": "FileService_UploadFile",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1File"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/FileServiceUploadFileBody"
+            }
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/files/{fileId}": {
+      "delete": {
+        "summary": "Follows the delete-or-deactivate rule (FR-CAT-07).",
+        "operationId": "FileService_DeleteFile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteFileResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "dryRun",
+            "description": "Answer the outcome without changing anything.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/files/{fileId}/url": {
+      "get": {
+        "summary": "A short-lived signed URL for a private file.",
+        "operationId": "FileService_GetFileUrl",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetFileUrlResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "FileService"
         ]
       }
     },
@@ -2385,6 +3021,50 @@
         "tags": [
           "SettlementService"
         ]
+      },
+      "patch": {
+        "summary": "Changes the billing party and the invoice request of a settlement\n(FR-CUS-07). Fails INVOICE_DATA_INCOMPLETE when an invoice is requested\nand the billing party's profile lacks required fields.",
+        "operationId": "SettlementService_UpdateSettlement",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Settlement"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "settlement",
+            "description": "Only billing_party and invoice_requested can change.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Settlement"
+            }
+          }
+        ],
+        "tags": [
+          "SettlementService"
+        ]
       }
     },
     "/api/v1/garages/{garageId}/settlements/{settlementId}/payments": {
@@ -2424,6 +3104,100 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/SettlementServiceRecordSettlementPaymentBody"
+            }
+          }
+        ],
+        "tags": [
+          "SettlementService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/settlements/{settlementId}/payments/{paymentId}/voucher-pdf": {
+      "get": {
+        "summary": "FR-BIL-05: one payment voucher (phiếu thu) as a PDF in the 01-TT\nlayout: the garage's legal header, amount in figures and words, and\nsignature blocks.",
+        "operationId": "DocumentService_ExportPaymentVoucherPdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/settlements/{settlementId}/payments/{paymentId}:void": {
+      "post": {
+        "summary": "FR-BIL-06: voids a payment voucher with a reason. The voucher stays on\nfile marked void, the settlement's paid amount and status are\nrecalculated, and the audit log records who voided it.",
+        "operationId": "SettlementService_VoidSettlementPayment",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Settlement"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SettlementServiceVoidSettlementPaymentBody"
             }
           }
         ],
@@ -2846,6 +3620,13 @@
             "required": false,
             "type": "integer",
             "format": "int32"
+          },
+          {
+            "name": "includeInactive",
+            "description": "Also list deactivated suppliers (staff screens); pickers leave it off.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "tags": [
@@ -2925,6 +3706,7 @@
         ]
       },
       "delete": {
+        "summary": "Follows the delete-or-deactivate rule (FR-CAT-07).",
         "operationId": "SupplierService_DeleteSupplier",
         "responses": {
           "200": {
@@ -2952,6 +3734,13 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "dryRun",
+            "description": "Answer the outcome without changing anything (`?dryRun=true`).",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "tags": [
@@ -2993,6 +3782,51 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/v1Supplier"
+            }
+          }
+        ],
+        "tags": [
+          "SupplierService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/suppliers/{supplierId}:activate": {
+      "post": {
+        "summary": "Reactivates a deactivated supplier.",
+        "operationId": "SupplierService_ActivateSupplier",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Supplier"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supplierId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SupplierServiceActivateSupplierBody"
             }
           }
         ],
@@ -3052,6 +3886,13 @@
             "required": false,
             "type": "integer",
             "format": "int32"
+          },
+          {
+            "name": "includeInactive",
+            "description": "Also list deactivated vehicles (staff screens); pickers leave it off.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "tags": [
@@ -3131,6 +3972,7 @@
         ]
       },
       "delete": {
+        "summary": "Follows the delete-or-deactivate rule (FR-CAT-07): a vehicle that\ndocuments refer to is deactivated, otherwise soft-deleted.",
         "operationId": "VehicleService_DeleteVehicle",
         "responses": {
           "200": {
@@ -3158,6 +4000,13 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "dryRun",
+            "description": "Answer the outcome without changing anything (`?dryRun=true`).",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "tags": [
@@ -3195,7 +4044,7 @@
           },
           {
             "name": "vehicle",
-            "description": "customer_id may move the vehicle to another customer of the garage.",
+            "description": "Changing a locked identity field fails with VEHICLE_FIELD_LOCKED, and\nthe owner (customer_id) is never changed here: use ChangeVehicleOwner.",
             "in": "body",
             "required": true,
             "schema": {
@@ -3238,6 +4087,141 @@
             "in": "path",
             "required": true,
             "type": "string"
+          }
+        ],
+        "tags": [
+          "VehicleService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/vehicles/{vehicleId}:activate": {
+      "post": {
+        "summary": "Reactivates a deactivated vehicle.",
+        "operationId": "VehicleService_ActivateVehicle",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Vehicle"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/VehicleServiceActivateVehicleBody"
+            }
+          }
+        ],
+        "tags": [
+          "VehicleService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/vehicles/{vehicleId}:change-owner": {
+      "post": {
+        "summary": "FR-CUS-09: moves a sold vehicle to another customer, keeping its\nhistory. Needs PERMISSION_CUSTOMER_CORRECT.",
+        "operationId": "VehicleService_ChangeVehicleOwner",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Vehicle"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/VehicleServiceChangeVehicleOwnerBody"
+            }
+          }
+        ],
+        "tags": [
+          "VehicleService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/vehicles/{vehicleId}:correct": {
+      "post": {
+        "summary": "FR-CUS-09: corrects a locked identity field with a mandatory reason.\nAudited; documents keep the value they snapshotted. Needs\nPERMISSION_CUSTOMER_CORRECT.",
+        "operationId": "VehicleService_CorrectVehicle",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Vehicle"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/VehicleServiceCorrectVehicleBody"
+            }
           }
         ],
         "tags": [
@@ -3297,6 +4281,145 @@
         ],
         "tags": [
           "UserService"
+        ]
+      }
+    },
+    "/api/v1/me/garage-links": {
+      "get": {
+        "summary": "FR-CAPP-05: link requests from garages and the garages already linked.",
+        "operationId": "CustomerPortalService_ListMyGarageLinks",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListMyGarageLinksResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "CustomerPortalService"
+        ]
+      }
+    },
+    "/api/v1/me/garage-links/{linkId}:accept": {
+      "post": {
+        "summary": "Accepts a garage's request to link the user with its customer profile.",
+        "operationId": "CustomerPortalService_AcceptGarageLink",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1GarageLink"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "linkId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerPortalServiceAcceptGarageLinkBody"
+            }
+          }
+        ],
+        "tags": [
+          "CustomerPortalService"
+        ]
+      }
+    },
+    "/api/v1/me/garage-links/{linkId}:decline": {
+      "post": {
+        "operationId": "CustomerPortalService_DeclineGarageLink",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1GarageLink"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "linkId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerPortalServiceDeclineGarageLinkBody"
+            }
+          }
+        ],
+        "tags": [
+          "CustomerPortalService"
+        ]
+      }
+    },
+    "/api/v1/me/garage-links/{linkId}:unlink": {
+      "post": {
+        "summary": "Ends a link from the user's side.",
+        "operationId": "CustomerPortalService_UnlinkGarageLink",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1GarageLink"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "linkId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerPortalServiceUnlinkGarageLinkBody"
+            }
+          }
+        ],
+        "tags": [
+          "CustomerPortalService"
         ]
       }
     },
@@ -3470,11 +4593,11 @@
     },
     "/api/v1/me/subscription/plan-changes": {
       "post": {
-        "summary": "Switches the owner to another plan (FR-LIC-02). Takes effect at once\nand starts a new period; online payment arrives in Phase 2. Fails with\nPLAN_LIMIT_REACHED when current usage exceeds the new plan.",
+        "summary": "Chooses another plan (FR-LIC-02). An upgrade and a downgrade both take\neffect when the current period ends (when the trial ends, during the\ntrial); the answer carries pending_change. Choosing again replaces the\npending change. Fails with PLAN_LIMIT_REACHED when current usage already\nexceeds the new plan; the limits are checked again on the effective\ndate, and the switch is postponed if they are still exceeded.",
         "operationId": "LicenseService_ChangeMyPlan",
         "responses": {
           "200": {
-            "description": "",
+            "description": "The current plan with its pending_change.",
             "schema": {
               "$ref": "#/definitions/v1Subscription"
             }
@@ -3496,6 +4619,29 @@
             }
           }
         ],
+        "tags": [
+          "LicenseService"
+        ]
+      }
+    },
+    "/api/v1/me/subscription/plan-changes/pending": {
+      "delete": {
+        "summary": "Cancels the pending plan change (FR-LIC-02); NOT_FOUND when there is\nnone.",
+        "operationId": "LicenseService_CancelMyPendingPlanChange",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Subscription"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
         "tags": [
           "LicenseService"
         ]
@@ -3786,6 +4932,65 @@
     }
   },
   "definitions": {
+    "CustomerLinkServiceConfirmCustomerUserLinkBody": {
+      "type": "object",
+      "properties": {
+        "otp": {
+          "type": "string",
+          "description": "The one-time code the user read out."
+        }
+      },
+      "required": [
+        "otp"
+      ]
+    },
+    "CustomerLinkServiceRequestCustomerUserLinkBody": {
+      "type": "object"
+    },
+    "CustomerPortalServiceAcceptGarageLinkBody": {
+      "type": "object"
+    },
+    "CustomerPortalServiceDeclineGarageLinkBody": {
+      "type": "object"
+    },
+    "CustomerPortalServiceUnlinkGarageLinkBody": {
+      "type": "object"
+    },
+    "CustomerServiceActivateCustomerBody": {
+      "type": "object"
+    },
+    "CustomerTaxProfileServiceActivateCustomerTaxProfileBody": {
+      "type": "object"
+    },
+    "FileServiceUploadFileBody": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/v1FileKind"
+        },
+        "entityType": {
+          "type": "string"
+        },
+        "entityId": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string",
+          "format": "byte",
+          "description": "The file content (base64 in JSON); the size limit depends on the kind."
+        },
+        "contentType": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "entityType",
+        "entityId",
+        "content",
+        "contentType"
+      ]
+    },
     "GarageServiceUploadGarageLogoBody": {
       "type": "object",
       "properties": {
@@ -3908,6 +5113,13 @@
       "properties": {
         "repairOrderId": {
           "type": "string"
+        },
+        "billingParty": {
+          "$ref": "#/definitions/v1BillingParty",
+          "description": "Defaults to the repair order's quote's billing party."
+        },
+        "invoiceRequested": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -3926,11 +5138,74 @@
         },
         "note": {
           "type": "string"
+        },
+        "payerName": {
+          "type": "string",
+          "description": "Voucher details; each defaults to the billing party's (or customer's)\nname and address and to a standard reason naming the settlement."
+        },
+        "payerAddress": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
         }
       },
       "required": [
         "amount",
         "method"
+      ]
+    },
+    "SettlementServiceVoidSettlementPaymentBody": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason"
+      ]
+    },
+    "SupplierServiceActivateSupplierBody": {
+      "type": "object"
+    },
+    "VehicleServiceActivateVehicleBody": {
+      "type": "object"
+    },
+    "VehicleServiceChangeVehicleOwnerBody": {
+      "type": "object",
+      "properties": {
+        "customerId": {
+          "type": "string",
+          "description": "The customer the vehicle moves to; must belong to the same garage."
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "customerId"
+      ]
+    },
+    "VehicleServiceCorrectVehicleBody": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "$ref": "#/definitions/v1VehicleIdentityField"
+        },
+        "value": {
+          "type": "string",
+          "description": "The corrected value (the year as digits)."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Why the correction is needed; kept in the audit log."
+        }
+      },
+      "required": [
+        "field",
+        "value",
+        "reason"
       ]
     },
     "apiHttpBody": {
@@ -3980,11 +5255,51 @@
       ],
       "description": "Represents a day of the week.\n\n - MONDAY: Monday\n - TUESDAY: Tuesday\n - WEDNESDAY: Wednesday\n - THURSDAY: Thursday\n - FRIDAY: Friday\n - SATURDAY: Saturday\n - SUNDAY: Sunday"
     },
+    "v1AcceptGarageLinkResponse": {
+      "type": "object",
+      "properties": {
+        "link": {
+          "$ref": "#/definitions/v1GarageLink"
+        }
+      }
+    },
     "v1AcceptInvitationResponse": {
       "type": "object",
       "properties": {
         "invitation": {
           "$ref": "#/definitions/v1Invitation"
+        }
+      }
+    },
+    "v1ActivateCustomerResponse": {
+      "type": "object",
+      "properties": {
+        "customer": {
+          "$ref": "#/definitions/v1Customer"
+        }
+      }
+    },
+    "v1ActivateCustomerTaxProfileResponse": {
+      "type": "object",
+      "properties": {
+        "taxProfile": {
+          "$ref": "#/definitions/v1CustomerTaxProfile"
+        }
+      }
+    },
+    "v1ActivateSupplierResponse": {
+      "type": "object",
+      "properties": {
+        "supplier": {
+          "$ref": "#/definitions/v1Supplier"
+        }
+      }
+    },
+    "v1ActivateVehicleResponse": {
+      "type": "object",
+      "properties": {
+        "vehicle": {
+          "$ref": "#/definitions/v1Vehicle"
         }
       }
     },
@@ -4019,6 +5334,44 @@
         "BILLING_CYCLE_YEARLY"
       ]
     },
+    "v1BillingParty": {
+      "type": "object",
+      "properties": {
+        "taxProfileId": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/definitions/v1TaxProfileKind",
+          "readOnly": true
+        },
+        "legalName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "taxId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "address": {
+          "type": "string",
+          "readOnly": true
+        },
+        "invoiceEmail": {
+          "type": "string",
+          "description": "Where an e-invoice is sent.",
+          "readOnly": true
+        }
+      },
+      "description": "BillingParty is who a quote or settlement is billed to (FR-CUS-07). A\nclient sends only tax_profile_id; the other fields are the snapshot kept\non the document, so later edits of the profile never change a document\nalready issued. Without a tax_profile_id the customer is billed under\ntheir own name as a retail receipt."
+    },
+    "v1CancelMyPendingPlanChangeResponse": {
+      "type": "object",
+      "properties": {
+        "subscription": {
+          "$ref": "#/definitions/v1Subscription"
+        }
+      }
+    },
     "v1CandidateMembership": {
       "type": "string",
       "enum": [
@@ -4043,7 +5396,16 @@
       "type": "object",
       "properties": {
         "subscription": {
-          "$ref": "#/definitions/v1Subscription"
+          "$ref": "#/definitions/v1Subscription",
+          "description": "The current plan with its pending_change."
+        }
+      }
+    },
+    "v1ChangeVehicleOwnerResponse": {
+      "type": "object",
+      "properties": {
+        "vehicle": {
+          "$ref": "#/definitions/v1Vehicle"
         }
       }
     },
@@ -4052,6 +5414,14 @@
       "properties": {
         "repairOrder": {
           "$ref": "#/definitions/v1RepairOrder"
+        }
+      }
+    },
+    "v1ConfirmCustomerUserLinkResponse": {
+      "type": "object",
+      "properties": {
+        "link": {
+          "$ref": "#/definitions/v1CustomerUserLink"
         }
       }
     },
@@ -4067,11 +5437,27 @@
         }
       }
     },
+    "v1CorrectVehicleResponse": {
+      "type": "object",
+      "properties": {
+        "vehicle": {
+          "$ref": "#/definitions/v1Vehicle"
+        }
+      }
+    },
     "v1CreateCustomerResponse": {
       "type": "object",
       "properties": {
         "customer": {
           "$ref": "#/definitions/v1Customer"
+        }
+      }
+    },
+    "v1CreateCustomerTaxProfileResponse": {
+      "type": "object",
+      "properties": {
+        "taxProfile": {
+          "$ref": "#/definitions/v1CustomerTaxProfile"
         }
       }
     },
@@ -4222,12 +5608,137 @@
           "type": "string",
           "format": "date-time",
           "readOnly": true
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "False once the customer was deactivated instead of deleted (FR-CAT-07);\nan inactive customer is left out of pickers.",
+          "readOnly": true
+        },
+        "linkStatus": {
+          "$ref": "#/definitions/v1CustomerUserLinkStatus",
+          "description": "The state of the link with a user, UNSPECIFIED when never linked.",
+          "readOnly": true
         }
       },
-      "description": "Customer is a vehicle owner served by one garage (FR-CUS-01).",
+      "description": "Customer is a vehicle owner served by one garage (FR-CUS-01). It needs no\nVietGara user: a walk-in customer is just a profile the garage keeps.",
       "required": [
         "fullName"
       ]
+    },
+    "v1CustomerTaxProfile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "customerId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "kind": {
+          "$ref": "#/definitions/v1TaxProfileKind"
+        },
+        "legalName": {
+          "type": "string",
+          "description": "The company's legal name, or the person's name."
+        },
+        "taxId": {
+          "type": "string",
+          "description": "10 digits, or 13 with the branch suffix."
+        },
+        "address": {
+          "type": "string"
+        },
+        "invoiceEmail": {
+          "type": "string",
+          "description": "Where an e-invoice is sent."
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "The profile a document is billed to when none is chosen."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "False once deactivated instead of deleted (FR-CAT-07).",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "CustomerTaxProfile is a legal identity a customer can be billed under\n(FR-CUS-07): at most one personal profile and any number of company\nprofiles.",
+      "required": [
+        "kind",
+        "legalName"
+      ]
+    },
+    "v1CustomerUserLink": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "customerId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1CustomerUserLinkStatus",
+          "readOnly": true
+        },
+        "channel": {
+          "$ref": "#/definitions/v1CustomerUserLinkChannel",
+          "description": "Set once the link is confirmed.",
+          "readOnly": true
+        },
+        "requestedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "linkedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "CustomerUserLink is the link between one customer profile and a user.\nThe garage never sees which user it is, only the state of the link."
+    },
+    "v1CustomerUserLinkChannel": {
+      "type": "string",
+      "enum": [
+        "CUSTOMER_USER_LINK_CHANNEL_OTP",
+        "CUSTOMER_USER_LINK_CHANNEL_APP",
+        "CUSTOMER_USER_LINK_CHANNEL_AUTO_EMAIL"
+      ],
+      "description": "CustomerUserLinkChannel is how a link was confirmed (FR-CUS-06).\n\n - CUSTOMER_USER_LINK_CHANNEL_OTP: The user told the garage a one-time code.\n - CUSTOMER_USER_LINK_CHANNEL_APP: The user accepted in the Customer App.\n - CUSTOMER_USER_LINK_CHANNEL_AUTO_EMAIL: A verified user e-mail matched the profile at sign-in."
+    },
+    "v1CustomerUserLinkStatus": {
+      "type": "string",
+      "enum": [
+        "CUSTOMER_USER_LINK_STATUS_REQUESTED",
+        "CUSTOMER_USER_LINK_STATUS_LINKED",
+        "CUSTOMER_USER_LINK_STATUS_DECLINED",
+        "CUSTOMER_USER_LINK_STATUS_UNLINKED"
+      ],
+      "description": "CustomerUserLinkStatus is the state of the link between a garage's\ncustomer profile and a VietGara user (FR-CUS-06). A customer needs no\nuser; UNSPECIFIED means the profile has never been linked.\n\n - CUSTOMER_USER_LINK_STATUS_REQUESTED: The garage asked; the user has not answered yet.\n - CUSTOMER_USER_LINK_STATUS_UNLINKED: Ended by either side."
     },
     "v1DailyHours": {
       "type": "object",
@@ -4257,6 +5768,14 @@
         }
       }
     },
+    "v1DeclineGarageLinkResponse": {
+      "type": "object",
+      "properties": {
+        "link": {
+          "$ref": "#/definitions/v1GarageLink"
+        }
+      }
+    },
     "v1DeclineInvitationResponse": {
       "type": "object",
       "properties": {
@@ -4266,7 +5785,28 @@
       }
     },
     "v1DeleteCustomerResponse": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "$ref": "#/definitions/v1DeleteOutcome"
+        }
+      }
+    },
+    "v1DeleteCustomerTaxProfileResponse": {
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "$ref": "#/definitions/v1DeleteOutcome"
+        }
+      }
+    },
+    "v1DeleteFileResponse": {
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "$ref": "#/definitions/v1DeleteOutcome"
+        }
+      }
     },
     "v1DeleteGarageLogoResponse": {
       "type": "object",
@@ -4278,6 +5818,14 @@
     },
     "v1DeleteItemResponse": {
       "type": "object"
+    },
+    "v1DeleteOutcome": {
+      "type": "string",
+      "enum": [
+        "DELETE_OUTCOME_DELETED",
+        "DELETE_OUTCOME_DEACTIVATED"
+      ],
+      "description": "DeleteOutcome is what a DELETE did (FR-CAT-07, the delete-or-deactivate\nrule). An object that nothing references is soft-deleted; one that is\nstill in use is only deactivated: it disappears from pickers, stays on\nthe documents that use it, and staff can reactivate it.\n\nEvery deletable resource takes a `dry_run` flag (`?dryRun=true`) that\nanswers with the outcome without changing anything, so a confirmation\ndialog can tell the user which one will happen."
     },
     "v1DeleteQuoteResponse": {
       "type": "object"
@@ -4292,10 +5840,20 @@
       "type": "object"
     },
     "v1DeleteSupplierResponse": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "$ref": "#/definitions/v1DeleteOutcome"
+        }
+      }
     },
     "v1DeleteVehicleResponse": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "$ref": "#/definitions/v1DeleteOutcome"
+        }
+      }
     },
     "v1Entitlements": {
       "type": "object",
@@ -4394,6 +5952,66 @@
       ],
       "description": "Feature is a module a plan may include."
     },
+    "v1File": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "kind": {
+          "$ref": "#/definitions/v1FileKind"
+        },
+        "entityType": {
+          "type": "string",
+          "description": "What the file belongs to, e.g. \"garage\" or \"part\"."
+        },
+        "entityId": {
+          "type": "string"
+        },
+        "contentType": {
+          "type": "string",
+          "readOnly": true
+        },
+        "size": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "sha256": {
+          "type": "string",
+          "description": "Hex-encoded SHA-256 of the content.",
+          "readOnly": true
+        },
+        "url": {
+          "type": "string",
+          "description": "Set for public kinds only; private files use GetFileUrl.",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "File is one uploaded object registered in the garage's file registry.\nBusiness records refer to a file by id, never by URL, so a CDN or bucket\nchange breaks nothing.",
+      "required": [
+        "kind",
+        "entityType",
+        "entityId"
+      ]
+    },
+    "v1FileKind": {
+      "type": "string",
+      "enum": [
+        "FILE_KIND_LOGO"
+      ],
+      "description": "FileKind says what a file is for, and so whether it is public. Every kind\nadded later (repair photo, customer document, claim document, export) is\nprivate and served through short-lived signed URLs.\n\n - FILE_KIND_LOGO: A garage logo (public)."
+    },
     "v1Garage": {
       "type": "object",
       "properties": {
@@ -4422,7 +6040,7 @@
         },
         "logoUrl": {
           "type": "string",
-          "description": "Set through UploadGarageLogo.",
+          "description": "Set through UploadGarageLogo; the logo is a file of the file registry.",
           "readOnly": true
         },
         "timezone": {
@@ -4463,6 +6081,20 @@
         "defaultQuoteApprovalMode": {
           "$ref": "#/definitions/v1QuoteApprovalMode",
           "description": "The approval mode new quotes of this garage start with (FR-TEN-05,\nRelease 1.2); a service advisor may still change it per quote.\nDefault LINK."
+        },
+        "legalName": {
+          "type": "string",
+          "description": "The garage's legal identity, printed in the header of every document\nwith the logo and tax_code (FR-TEN-06). Changing it never rewrites a\ndocument already issued: each document keeps a snapshot."
+        },
+        "legalAddress": {
+          "type": "string"
+        },
+        "representative": {
+          "type": "string",
+          "description": "The legal representative."
+        },
+        "bank": {
+          "$ref": "#/definitions/v1BankDetails"
         }
       },
       "description": "Garage is one tenant (branch) owned by a user (FR-TEN-01/02).",
@@ -4485,6 +6117,54 @@
       },
       "description": "GarageAccess is what the signed-in user may do in the garage."
     },
+    "v1GarageLink": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageAddress": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garagePhone": {
+          "type": "string",
+          "readOnly": true
+        },
+        "customerId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "customerName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1CustomerUserLinkStatus",
+          "readOnly": true
+        },
+        "requestedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "linkedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "GarageLink is a garage's customer profile that is linked, or is waiting to\nbe linked, to the signed-in user (FR-CUS-06, FR-CAPP-05). Suppliers never\nappear here."
+    },
     "v1GarageStatus": {
       "type": "string",
       "enum": [
@@ -4498,6 +6178,27 @@
       "properties": {
         "customer": {
           "$ref": "#/definitions/v1Customer"
+        }
+      }
+    },
+    "v1GetCustomerTaxProfileResponse": {
+      "type": "object",
+      "properties": {
+        "taxProfile": {
+          "$ref": "#/definitions/v1CustomerTaxProfile"
+        }
+      }
+    },
+    "v1GetFileUrlResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "A short-lived signed URL for a private file, or the public URL."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -4776,6 +6477,18 @@
         }
       }
     },
+    "v1ListCustomerTaxProfilesResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1CustomerTaxProfile"
+          }
+        }
+      }
+    },
     "v1ListCustomersResponse": {
       "type": "object",
       "properties": {
@@ -4828,6 +6541,19 @@
         },
         "pagination": {
           "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1ListMyGarageLinksResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1GarageLink"
+          },
+          "description": "Link requests waiting for an answer and the garages already linked."
         }
       }
     },
@@ -5080,6 +6806,23 @@
     "v1LogoutResponse": {
       "type": "object"
     },
+    "v1LookupCustomersResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Customer"
+          },
+          "description": "The garage's own customers matching the contact."
+        },
+        "userExists": {
+          "type": "boolean",
+          "description": "Whether a VietGara user has this verified phone or e-mail. Nothing else\nabout the user is ever returned."
+        }
+      }
+    },
     "v1LookupStaffCandidateResponse": {
       "type": "object",
       "properties": {
@@ -5140,6 +6883,10 @@
         "settlement": {
           "type": "string",
           "description": "Settlement document numbers (Release 1.4)."
+        },
+        "paymentVoucher": {
+          "type": "string",
+          "description": "Payment voucher (phiếu thu) numbers (FR-BIL-05, Release 5.0)."
         }
       },
       "description": "NumberingTemplates configures document numbers (FR-TEN-05). Placeholders:\n{YYYY}, {YY}, {MM}, {DD} and {SEQ:n} (sequence padded to n digits),\ne.g. \"BG-{YYYY}{MM}-{SEQ:4}\"."
@@ -5189,6 +6936,27 @@
       ],
       "description": "PaymentMethod: how a payment was actually collected (FR-BIL-03). ONLINE\nis recorded manually in Release 1.4 (staff sees a bank app or gateway\ndashboard confirmation and records it); automatic confirmation via a\npayment gateway webhook is Release 2.0 (FR-PAY-02)."
     },
+    "v1PendingPlanChange": {
+      "type": "object",
+      "properties": {
+        "plan": {
+          "$ref": "#/definitions/v1Plan"
+        },
+        "effectiveAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When it applies: the end of the current period (the end of the trial,\nduring a trial)."
+        },
+        "status": {
+          "$ref": "#/definitions/v1PlanChangeStatus"
+        },
+        "requestedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "PendingPlanChange is a plan the owner chose that has not taken effect yet.\nThe owner can cancel it or replace it by choosing another plan."
+    },
     "v1Permission": {
       "type": "string",
       "enum": [
@@ -5208,9 +6976,10 @@
         "PERMISSION_INVENTORY_WRITE",
         "PERMISSION_BILLING_READ",
         "PERMISSION_BILLING_WRITE",
-        "PERMISSION_REPORT_READ"
+        "PERMISSION_REPORT_READ",
+        "PERMISSION_CUSTOMER_CORRECT"
       ],
-      "description": "Permission is one action a staff member may perform in a garage\n(FR-IAM-03). The catalog is fixed by the platform and grouped by module,\neach module offering a read and/or a write action; garage owners combine\npermissions into roles. A write permission includes the read permission\nof its module. Owners always hold every permission; every active member\nmay read the garage profile.\n\n - PERMISSION_GARAGE_WRITE: Edit the garage profile, configuration and logo.\n - PERMISSION_STAFF_WRITE: Invite, activate/deactivate and remove staff, and change their groups.\n - PERMISSION_CUSTOMER_READ: Customers and their vehicles.\n - PERMISSION_SUPPLIER_READ: The garage's suppliers (FR-SUP-01)."
+      "description": "Permission is one action a staff member may perform in a garage\n(FR-IAM-03). The catalog is fixed by the platform and grouped by module,\neach module offering a read and/or a write action; garage owners combine\npermissions into roles. A write permission includes the read permission\nof its module. Owners always hold every permission; every active member\nmay read the garage profile.\n\n - PERMISSION_GARAGE_WRITE: Edit the garage profile, configuration and logo.\n - PERMISSION_STAFF_WRITE: Invite, activate/deactivate and remove staff, and change their groups.\n - PERMISSION_CUSTOMER_READ: Customers and their vehicles.\n - PERMISSION_SUPPLIER_READ: The garage's suppliers (FR-SUP-01).\n - PERMISSION_CUSTOMER_CORRECT: Correct a locked vehicle identity field and move a vehicle to another\ncustomer (FR-CUS-09). Held by the manager role by default."
     },
     "v1PermissionInfo": {
       "type": "object",
@@ -5295,6 +7064,16 @@
         "name",
         "limits"
       ]
+    },
+    "v1PlanChangeStatus": {
+      "type": "string",
+      "enum": [
+        "PLAN_CHANGE_STATUS_SCHEDULED",
+        "PLAN_CHANGE_STATUS_POSTPONED",
+        "PLAN_CHANGE_STATUS_APPLIED",
+        "PLAN_CHANGE_STATUS_CANCELLED"
+      ],
+      "description": "PlanChangeStatus is the state of a plan change (FR-LIC-02).\n\n - PLAN_CHANGE_STATUS_SCHEDULED: Takes effect when the current period ends.\n - PLAN_CHANGE_STATUS_POSTPONED: Due, but the new plan's limits are exceeded: it stays pending and the\nowner is told."
     },
     "v1PlanLimits": {
       "type": "object",
@@ -5433,6 +7212,10 @@
           "type": "string",
           "format": "date-time",
           "readOnly": true
+        },
+        "billingParty": {
+          "$ref": "#/definitions/v1BillingParty",
+          "description": "Who is billed (FR-CUS-07): send tax_profile_id; the snapshot of the\nprofile is kept on the quote and printed on its PDF."
         }
       },
       "description": "Quote is a price estimate awaiting the customer's approval (FR-QUO-01).",
@@ -5752,6 +7535,14 @@
       ],
       "description": "RepairOrderStatus is the lifecycle of a repair order (FR-REP-01..06),\nshown as the Kanban board's columns (UI Design Spec Section 3.3).\n\n - REPAIR_ORDER_STATUS_OPEN: \"To Do\": not yet started.\n - REPAIR_ORDER_STATUS_WAITING_ON_PARTS: Blocked on a part not currently in stock.\n - REPAIR_ORDER_STATUS_COMPLETED: Every line is done; ready for the advisor to close it.\n - REPAIR_ORDER_STATUS_CLOSED: Closed (FR-REP-06): no further edits; ready for settlement (Release\n1.4) and triggers stock deduction (Event Design, repair_order.closed)."
     },
+    "v1RequestCustomerUserLinkResponse": {
+      "type": "object",
+      "properties": {
+        "link": {
+          "$ref": "#/definitions/v1CustomerUserLink"
+        }
+      }
+    },
     "v1RequestPasswordResetRequest": {
       "type": "object",
       "properties": {
@@ -5968,7 +7759,7 @@
         "paidAmount": {
           "type": "string",
           "format": "int64",
-          "description": "Running total from settlement_payments (FR-BIL-03). Integer VND.",
+          "description": "Running total of the payments that are not voided (FR-BIL-03). Integer\nVND.",
           "readOnly": true
         },
         "status": {
@@ -5992,6 +7783,14 @@
           "type": "string",
           "format": "date-time",
           "readOnly": true
+        },
+        "billingParty": {
+          "$ref": "#/definitions/v1BillingParty",
+          "description": "Who is billed, kept as a snapshot (FR-CUS-07)."
+        },
+        "invoiceRequested": {
+          "type": "boolean",
+          "description": "The customer asked for a VAT invoice; only possible while the billing\nparty's profile is complete, otherwise INVOICE_DATA_INCOMPLETE. When\nfalse the document is a retail receipt."
         }
       },
       "description": "Settlement is the final bill of a closed repair order (FR-BIL-01),\npaid by the customer. FR-REC-01's receivables view is this same list\nfiltered to not yet fully paid (ListSettlementsRequest.outstanding_only)\n-- Release 1.4 has no separate receivables table; one arrives with\nRelease 2.2's reminders and reconciliation, which need their own\npersisted state."
@@ -6021,9 +7820,47 @@
           "type": "string",
           "format": "date-time",
           "readOnly": true
+        },
+        "voucherNumber": {
+          "type": "string",
+          "description": "Numbered from the garage's payment voucher template (FR-BIL-05).",
+          "readOnly": true
+        },
+        "payerName": {
+          "type": "string",
+          "description": "Who paid: the billing party's name, or the customer's.",
+          "readOnly": true
+        },
+        "payerAddress": {
+          "type": "string",
+          "readOnly": true
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for payment printed on the voucher.",
+          "readOnly": true
+        },
+        "collectorName": {
+          "type": "string",
+          "description": "The staff member who collected the money.",
+          "readOnly": true
+        },
+        "voided": {
+          "type": "boolean",
+          "description": "A voided voucher stays on file and no longer counts towards paid_amount\n(FR-BIL-06).",
+          "readOnly": true
+        },
+        "voidReason": {
+          "type": "string",
+          "readOnly": true
+        },
+        "voidedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
         }
       },
-      "description": "SettlementPayment is one payment recorded against a settlement\n(FR-BIL-03); a settlement may receive several. The customer is the only\npayer."
+      "description": "SettlementPayment is one payment recorded against a settlement\n(FR-BIL-03); a settlement may receive several. The customer is the only\npayer. Every payment is a payment voucher (phiếu thu, FR-BIL-05)."
     },
     "v1SettlementStatus": {
       "type": "string",
@@ -6307,6 +8144,10 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "pendingChange": {
+          "$ref": "#/definitions/v1PendingPlanChange",
+          "description": "Set while a plan change is scheduled or postponed (FR-LIC-02)."
         }
       },
       "description": "Subscription belongs to an owner user and covers all their garages\n(FR-LIC-01..04)."
@@ -6373,6 +8214,11 @@
           "type": "string",
           "format": "date-time",
           "readOnly": true
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "False once the supplier was deactivated instead of deleted (FR-CAT-07).",
+          "readOnly": true
         }
       },
       "description": "Supplier is a business that sells parts to the garage, kept in the\ngarage's directory (FR-SUP-01). It is not a customer; insurers are not\nsuppliers either and come back in their own record in Phase 17.",
@@ -6397,11 +8243,43 @@
         }
       }
     },
+    "v1TaxProfileKind": {
+      "type": "string",
+      "enum": [
+        "TAX_PROFILE_KIND_PERSONAL",
+        "TAX_PROFILE_KIND_COMPANY"
+      ],
+      "description": "TaxProfileKind: a customer has at most one personal tax profile and any\nnumber of company tax profiles (FR-CUS-07)."
+    },
+    "v1UnlinkCustomerUserResponse": {
+      "type": "object",
+      "properties": {
+        "link": {
+          "$ref": "#/definitions/v1CustomerUserLink"
+        }
+      }
+    },
+    "v1UnlinkGarageLinkResponse": {
+      "type": "object",
+      "properties": {
+        "link": {
+          "$ref": "#/definitions/v1GarageLink"
+        }
+      }
+    },
     "v1UpdateCustomerResponse": {
       "type": "object",
       "properties": {
         "customer": {
           "$ref": "#/definitions/v1Customer"
+        }
+      }
+    },
+    "v1UpdateCustomerTaxProfileResponse": {
+      "type": "object",
+      "properties": {
+        "taxProfile": {
+          "$ref": "#/definitions/v1CustomerTaxProfile"
         }
       }
     },
@@ -6461,6 +8339,14 @@
         }
       }
     },
+    "v1UpdateSettlementResponse": {
+      "type": "object",
+      "properties": {
+        "settlement": {
+          "$ref": "#/definitions/v1Settlement"
+        }
+      }
+    },
     "v1UpdateStaffGroupResponse": {
       "type": "object",
       "properties": {
@@ -6490,6 +8376,14 @@
       "properties": {
         "vehicle": {
           "$ref": "#/definitions/v1Vehicle"
+        }
+      }
+    },
+    "v1UploadFileResponse": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "$ref": "#/definitions/v1File"
         }
       }
     },
@@ -6626,6 +8520,24 @@
           "type": "string",
           "format": "date-time",
           "readOnly": true
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "False once the vehicle was deactivated instead of deleted (FR-CAT-07).",
+          "readOnly": true
+        },
+        "editable": {
+          "type": "boolean",
+          "description": "False while a live quote, repair order, settlement, booking or claim\nrefers to the vehicle: its identity fields are then locked.",
+          "readOnly": true
+        },
+        "lockedFields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1VehicleIdentityField"
+          },
+          "description": "The identity fields that cannot be edited now (empty when editable).\nColour, notes and odometer are never locked.",
+          "readOnly": true
         }
       },
       "description": "Vehicle belongs to one customer of the garage (FR-CUS-02).",
@@ -6670,6 +8582,18 @@
         "VEHICLE_HISTORY_ENTRY_TYPE_SETTLEMENT"
       ],
       "description": "VehicleHistoryEntryType names which module produced a history entry\n(FR-CUS-03). Repair order and settlement entries appear once those\nmodules ship (Releases 1.3, 1.4); only QUOTE is produced today."
+    },
+    "v1VehicleIdentityField": {
+      "type": "string",
+      "enum": [
+        "VEHICLE_IDENTITY_FIELD_LICENSE_PLATE",
+        "VEHICLE_IDENTITY_FIELD_VIN",
+        "VEHICLE_IDENTITY_FIELD_ENGINE_NUMBER",
+        "VEHICLE_IDENTITY_FIELD_MAKE",
+        "VEHICLE_IDENTITY_FIELD_MODEL",
+        "VEHICLE_IDENTITY_FIELD_YEAR"
+      ],
+      "description": "VehicleIdentityField names a field that identifies a vehicle (FR-CUS-02).\nThese fields are locked while a live document refers to the vehicle; a\nlocked field is changed by a correction (FR-CUS-09).\n\n - VEHICLE_IDENTITY_FIELD_VIN: The chassis number."
     },
     "v1VerifyEmailRequest": {
       "type": "object",
@@ -6720,6 +8644,14 @@
         "expiresAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "v1VoidSettlementPaymentResponse": {
+      "type": "object",
+      "properties": {
+        "settlement": {
+          "$ref": "#/definitions/v1Settlement"
         }
       }
     },

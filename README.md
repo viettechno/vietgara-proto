@@ -59,9 +59,10 @@ Protocol Buffers. The same `.proto` files describe:
 | | | `StaffGroupService`: ListStaffGroups, CreateStaffGroup, UpdateStaffGroup, DeleteStaffGroup |
 | `vietgara.license.v1` | License (HLD #3) | `LicenseService`: ListPlans, GetMySubscription, ChangeMyPlan, GetGarageEntitlements |
 | | | `LicenseAdminService`: ListAllPlans, CreatePlan, UpdatePlan, ListSubscriptions, ExtendSubscription |
-| `vietgara.customer.v1` | Customer & Vehicle (HLD #4) | `CustomerService`, `VehicleService`: List, Create, Get, Update, Delete |
-| `vietgara.supplier.v1` | Supplier (FR-SUP-01) | `SupplierService`: List, Create, Get, Update, Delete (replaces `PartnerService`, Release 5.0) |
-| `vietgara.common.v1` | Shared messages | `Pagination`, `BankDetails`, `ErrorResponse` and the OpenAPI document options (no services) |
+| `vietgara.customer.v1` | Customer & Vehicle (HLD #4) | `CustomerService` (+ Activate, Lookup), `VehicleService` (+ Activate, Correct, ChangeOwner), `CustomerLinkService` (RequestCustomerUserLink, ConfirmCustomerUserLink, UnlinkCustomerUser), `CustomerTaxProfileService` |
+| `vietgara.supplier.v1` | Supplier (FR-SUP-01) | `SupplierService`: List, Create, Get, Update, Delete, Activate (replaces `PartnerService`, Release 5.0) |
+| `vietgara.file.v1` | File registry (Release 5.0) | `FileService`: UploadFile, GetFileUrl, DeleteFile |
+| `vietgara.common.v1` | Shared messages | `Pagination`, `BankDetails`, `DeleteOutcome`, `BillingParty` and `TaxProfileKind`, `ErrorResponse` and the OpenAPI document options (no services) |
 
 ```mermaid
 flowchart LR
@@ -78,8 +79,9 @@ Per the [Release Plan](https://github.com/viettechno/vietgara-docs/blob/master/d
 | When | Change |
 | --- | --- |
 | Phase 3 | `Account` becomes `User`; `account_id` becomes `user_id`; the session carries `user`; no dual field and no compatibility window (`buf breaking` is expected to fail once) |
-| Release 5.0 | **Done:** insurer fields of settlements and payments, the `PayerType` enum and `AllocateSettlement` are removed (no `reserved` fields, numbers are renumbered); `Settlement.customer_amount` / `customer_paid_amount` become `paid_amount`; `PartnerService` becomes `SupplierService` in the new `vietgara.supplier.v1` package with `PERMISSION_SUPPLIER_*` and a shared `vietgara.common.v1.BankDetails`. **Planned:** payment voucher fields; file registry messages; legal profile fields; `DELETED` / `DEACTIVATED` outcome on deletes |
-| Release 5.1 | Customer user links and tax profiles |
+| Release 5.0 | **Done:** insurer fields of settlements and payments, the `PayerType` enum and `AllocateSettlement` are removed (no `reserved` fields, numbers are renumbered); `Settlement.customer_amount` / `customer_paid_amount` become `paid_amount`; `PartnerService` becomes `SupplierService` in the new `vietgara.supplier.v1` package with `PERMISSION_SUPPLIER_*` and a shared `vietgara.common.v1.BankDetails`. payment vouchers (voucher number, payer, reason, void, voucher PDF), the file registry (`vietgara.file.v1`), the garage legal profile and voucher numbering template, and the `DELETED` / `DEACTIVATED` outcome with `dryRun`, `isActive`, `includeInactive` and `:activate` on customers, vehicles, suppliers and tax profiles |
+| Release 5.1 | **Done:** customer lookup and user links (`CustomerLinkService`, `/me/garage-links` in the Customer BFF), customer tax profiles, billing party on quotes and settlements, `invoiceRequested` and `UpdateSettlement`, vehicle `editable` / `lockedFields`, `:correct` and `:change-owner`, `PERMISSION_CUSTOMER_CORRECT` |
+| Release 5.2 | **Done:** `Subscription.pendingChange` and `CancelMyPendingPlanChange` (plan changes take effect at the period end) |
 | Releases 6.0, 6.1 | Units, part categories, MFA challenge and enrolment |
 | Phases 7, 10 | Goods receipts, stock counts, adjustments, barcodes, imports; jobs, print settings; the public contact request (Release 10.2, `POST /api/v1/public/contact-requests`) |
 | Phase 8 | Platform roles, groups and invitations; support grants |
@@ -95,8 +97,9 @@ vietgara-proto/
 │   ├── identity/v1/          # user.proto, auth.proto
 │   ├── tenant/v1/            # garage.proto, staff.proto, invitation.proto, access.proto
 │   ├── license/v1/           # license.proto
-│   ├── customer/v1/          # customer.proto, vehicle.proto
-│   └── supplier/v1/          # supplier.proto
+│   ├── customer/v1/          # customer.proto, vehicle.proto, customer_link.proto, tax_profile.proto
+│   ├── supplier/v1/          # supplier.proto
+│   └── file/v1/              # file.proto
 ├── apis-go/                  # generated Go code (committed)
 ├── openapi/                  # generated OpenAPI v2 document (committed) + embed.go (openapi.Spec)
 ├── buf.yaml                  # module, deps (googleapis, grpc-gateway), lint/breaking config

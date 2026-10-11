@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package vietgara.customer.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/customer/v1/customer.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1";
+
+// CustomerUserLinkChannel is how a link was confirmed (FR-CUS-06).
+enum CustomerUserLinkChannel {
+  CUSTOMER_USER_LINK_CHANNEL_UNSPECIFIED = 0;
+  // The user told the garage a one-time code.
+  CUSTOMER_USER_LINK_CHANNEL_OTP = 1;
+  // The user accepted in the Customer App.
+  CUSTOMER_USER_LINK_CHANNEL_APP = 2;
+  // A verified user e-mail matched the profile at sign-in.
+  CUSTOMER_USER_LINK_CHANNEL_AUTO_EMAIL = 3;
+}
+
+// CustomerUserLink is the link between one customer profile and a user.
+// The garage never sees which user it is, only the state of the link.
+message CustomerUserLink {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string customer_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  CustomerUserLinkStatus status = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Set once the link is confirmed.
+  CustomerUserLinkChannel channel = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp requested_at = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp linked_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message RequestCustomerUserLinkRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message RequestCustomerUserLinkResponse {
+  CustomerUserLink link = 1;
+}
+
+message ConfirmCustomerUserLinkRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // The one-time code the user read out.
+  string otp = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ConfirmCustomerUserLinkResponse {
+  CustomerUserLink link = 1;
+}
+
+message UnlinkCustomerUserRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message UnlinkCustomerUserResponse {
+  CustomerUserLink link = 1;
+}
+
+// CustomerLinkService links a garage's customer profile with a VietGara
+// user, with the user's consent (FR-CUS-06). Suppliers use their own link
+// in Phase 17. Needs PERMISSION_CUSTOMER_WRITE.
+service CustomerLinkService {
+  // Asks the user that owns the profile's verified phone or e-mail to
+  // confirm; sends them a one-time code and a request in the app. Fails
+  // FAILED_PRECONDITION when no user matches.
+  rpc RequestCustomerUserLink(RequestCustomerUserLinkRequest) returns (RequestCustomerUserLinkResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/customers/{customer_id}/user-links"
+      body: "*"
+      response_body: "link"
+    };
+  }
+
+  // Confirms the pending request with the code the user read out.
+  rpc ConfirmCustomerUserLink(ConfirmCustomerUserLinkRequest) returns (ConfirmCustomerUserLinkResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/customers/{customer_id}/user-links/current:confirm"
+      body: "*"
+      response_body: "link"
+    };
+  }
+
+  // Ends the link from the garage's side; the profile stays.
+  rpc UnlinkCustomerUser(UnlinkCustomerUserRequest) returns (UnlinkCustomerUserResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/garages/{garage_id}/customers/{customer_id}/user-links/current"
+      response_body: "link"
+    };
+  }
+}

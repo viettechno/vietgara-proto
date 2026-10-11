@@ -23,6 +23,7 @@ const (
 	DocumentService_ExportQuotePdf_FullMethodName             = "/vietgara.document.v1.DocumentService/ExportQuotePdf"
 	DocumentService_ExportRepairOrderPdf_FullMethodName       = "/vietgara.document.v1.DocumentService/ExportRepairOrderPdf"
 	DocumentService_ExportSettlementReceiptPdf_FullMethodName = "/vietgara.document.v1.DocumentService/ExportSettlementReceiptPdf"
+	DocumentService_ExportPaymentVoucherPdf_FullMethodName    = "/vietgara.document.v1.DocumentService/ExportPaymentVoucherPdf"
 	DocumentService_ExportStockMovementsExcel_FullMethodName  = "/vietgara.document.v1.DocumentService/ExportStockMovementsExcel"
 )
 
@@ -46,6 +47,10 @@ type DocumentServiceClient interface {
 	ExportRepairOrderPdf(ctx context.Context, in *ExportRepairOrderPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	// FR-DOC-01: the settlement as a receipt PDF.
 	ExportSettlementReceiptPdf(ctx context.Context, in *ExportSettlementReceiptPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	// FR-BIL-05: one payment voucher (phiếu thu) as a PDF in the 01-TT
+	// layout: the garage's legal header, amount in figures and words, and
+	// signature blocks.
+	ExportPaymentVoucherPdf(ctx context.Context, in *ExportPaymentVoucherPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	// FR-DOC-02: the stock in/out/on-hand movement report (FR-INV-05) as an
 	// Excel workbook; same filter as the JSON report
 	// (InventoryService.ListStockTransactions).
@@ -90,6 +95,16 @@ func (c *documentServiceClient) ExportSettlementReceiptPdf(ctx context.Context, 
 	return out, nil
 }
 
+func (c *documentServiceClient) ExportPaymentVoucherPdf(ctx context.Context, in *ExportPaymentVoucherPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_ExportPaymentVoucherPdf_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *documentServiceClient) ExportStockMovementsExcel(ctx context.Context, in *ExportStockMovementsExcelRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(httpbody.HttpBody)
@@ -120,6 +135,10 @@ type DocumentServiceServer interface {
 	ExportRepairOrderPdf(context.Context, *ExportRepairOrderPdfRequest) (*httpbody.HttpBody, error)
 	// FR-DOC-01: the settlement as a receipt PDF.
 	ExportSettlementReceiptPdf(context.Context, *ExportSettlementReceiptPdfRequest) (*httpbody.HttpBody, error)
+	// FR-BIL-05: one payment voucher (phiếu thu) as a PDF in the 01-TT
+	// layout: the garage's legal header, amount in figures and words, and
+	// signature blocks.
+	ExportPaymentVoucherPdf(context.Context, *ExportPaymentVoucherPdfRequest) (*httpbody.HttpBody, error)
 	// FR-DOC-02: the stock in/out/on-hand movement report (FR-INV-05) as an
 	// Excel workbook; same filter as the JSON report
 	// (InventoryService.ListStockTransactions).
@@ -142,6 +161,9 @@ func (UnimplementedDocumentServiceServer) ExportRepairOrderPdf(context.Context, 
 }
 func (UnimplementedDocumentServiceServer) ExportSettlementReceiptPdf(context.Context, *ExportSettlementReceiptPdfRequest) (*httpbody.HttpBody, error) {
 	return nil, status.Error(codes.Unimplemented, "method ExportSettlementReceiptPdf not implemented")
+}
+func (UnimplementedDocumentServiceServer) ExportPaymentVoucherPdf(context.Context, *ExportPaymentVoucherPdfRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method ExportPaymentVoucherPdf not implemented")
 }
 func (UnimplementedDocumentServiceServer) ExportStockMovementsExcel(context.Context, *ExportStockMovementsExcelRequest) (*httpbody.HttpBody, error) {
 	return nil, status.Error(codes.Unimplemented, "method ExportStockMovementsExcel not implemented")
@@ -221,6 +243,24 @@ func _DocumentService_ExportSettlementReceiptPdf_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DocumentService_ExportPaymentVoucherPdf_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportPaymentVoucherPdfRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).ExportPaymentVoucherPdf(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_ExportPaymentVoucherPdf_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).ExportPaymentVoucherPdf(ctx, req.(*ExportPaymentVoucherPdfRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _DocumentService_ExportStockMovementsExcel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ExportStockMovementsExcelRequest)
 	if err := dec(in); err != nil {
@@ -257,6 +297,10 @@ var DocumentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ExportSettlementReceiptPdf",
 			Handler:    _DocumentService_ExportSettlementReceiptPdf_Handler,
+		},
+		{
+			MethodName: "ExportPaymentVoucherPdf",
+			Handler:    _DocumentService_ExportPaymentVoucherPdf_Handler,
 		},
 		{
 			MethodName: "ExportStockMovementsExcel",

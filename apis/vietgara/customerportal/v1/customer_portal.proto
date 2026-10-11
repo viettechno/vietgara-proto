@@ -4,6 +4,8 @@ package vietgara.customerportal.v1;
 
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/customer/v1/customer.proto";
 import "vietgara/customer/v1/vehicle.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/customerportal/v1;customerportalv1";
@@ -19,6 +21,53 @@ message MyGarage {
   string customer_name = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The vehicles on that customer record.
   repeated vietgara.customer.v1.Vehicle vehicles = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// GarageLink is a garage's customer profile that is linked, or is waiting to
+// be linked, to the signed-in user (FR-CUS-06, FR-CAPP-05). Suppliers never
+// appear here.
+message GarageLink {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_address = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_phone = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string customer_id = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string customer_name = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  vietgara.customer.v1.CustomerUserLinkStatus status = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp requested_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp linked_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListMyGarageLinksRequest {}
+
+message ListMyGarageLinksResponse {
+  // Link requests waiting for an answer and the garages already linked.
+  repeated GarageLink data = 1;
+}
+
+message AcceptGarageLinkRequest {
+  string link_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message AcceptGarageLinkResponse {
+  GarageLink link = 1;
+}
+
+message DeclineGarageLinkRequest {
+  string link_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeclineGarageLinkResponse {
+  GarageLink link = 1;
+}
+
+message UnlinkGarageLinkRequest {
+  string link_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message UnlinkGarageLinkResponse {
+  GarageLink link = 1;
 }
 
 message ListMyVehiclesRequest {}
@@ -48,6 +97,37 @@ service CustomerPortalService {
   // The signed-in person's vehicles, grouped by garage (FR-CAPP-02).
   rpc ListMyVehicles(ListMyVehiclesRequest) returns (ListMyVehiclesResponse) {
     option (google.api.http) = {get: "/api/v1/customer/vehicles"};
+  }
+
+  // FR-CAPP-05: link requests from garages and the garages already linked.
+  rpc ListMyGarageLinks(ListMyGarageLinksRequest) returns (ListMyGarageLinksResponse) {
+    option (google.api.http) = {get: "/api/v1/me/garage-links"};
+  }
+
+  // Accepts a garage's request to link the user with its customer profile.
+  rpc AcceptGarageLink(AcceptGarageLinkRequest) returns (AcceptGarageLinkResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/garage-links/{link_id}:accept"
+      body: "*"
+      response_body: "link"
+    };
+  }
+
+  rpc DeclineGarageLink(DeclineGarageLinkRequest) returns (DeclineGarageLinkResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/garage-links/{link_id}:decline"
+      body: "*"
+      response_body: "link"
+    };
+  }
+
+  // Ends a link from the user's side.
+  rpc UnlinkGarageLink(UnlinkGarageLinkRequest) returns (UnlinkGarageLinkResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/garage-links/{link_id}:unlink"
+      body: "*"
+      response_body: "link"
+    };
   }
 
   // One of the person's vehicles' repair history (FR-CAPP-02, FR-CUS-03);

@@ -6,11 +6,26 @@ import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/lifecycle.proto";
 import "vietgara/common/v1/pagination.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1";
 
-// Customer is a vehicle owner served by one garage (FR-CUS-01).
+// CustomerUserLinkStatus is the state of the link between a garage's
+// customer profile and a VietGara user (FR-CUS-06). A customer needs no
+// user; UNSPECIFIED means the profile has never been linked.
+enum CustomerUserLinkStatus {
+  CUSTOMER_USER_LINK_STATUS_UNSPECIFIED = 0;
+  // The garage asked; the user has not answered yet.
+  CUSTOMER_USER_LINK_STATUS_REQUESTED = 1;
+  CUSTOMER_USER_LINK_STATUS_LINKED = 2;
+  CUSTOMER_USER_LINK_STATUS_DECLINED = 3;
+  // Ended by either side.
+  CUSTOMER_USER_LINK_STATUS_UNLINKED = 4;
+}
+
+// Customer is a vehicle owner served by one garage (FR-CUS-01). It needs no
+// VietGara user: a walk-in customer is just a profile the garage keeps.
 message Customer {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -25,6 +40,11 @@ message Customer {
   int32 vehicle_count = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp created_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp updated_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // False once the customer was deactivated instead of deleted (FR-CAT-07);
+  // an inactive customer is left out of pickers.
+  bool is_active = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The state of the link with a user, UNSPECIFIED when never linked.
+  CustomerUserLinkStatus link_status = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message CreateCustomerRequest {
@@ -63,6 +83,8 @@ message ListCustomersRequest {
   string query = 2;
   int32 page = 3;
   int32 page_size = 4;
+  // Also list deactivated customers (staff screens); pickers leave it off.
+  bool include_inactive = 5;
 }
 
 message ListCustomersResponse {
@@ -73,9 +95,37 @@ message ListCustomersResponse {
 message DeleteCustomerRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Answer the outcome without changing anything (`?dryRun=true`).
+  bool dry_run = 3;
 }
 
-message DeleteCustomerResponse {}
+message DeleteCustomerResponse {
+  vietgara.common.v1.DeleteOutcome outcome = 1;
+}
+
+message ActivateCustomerRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ActivateCustomerResponse {
+  Customer customer = 1;
+}
+
+message LookupCustomersRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Either or both; the garage's customers matching any of them are listed.
+  string phone = 2;
+  string email = 3;
+}
+
+message LookupCustomersResponse {
+  // The garage's own customers matching the contact.
+  repeated Customer data = 1;
+  // Whether a VietGara user has this verified phone or e-mail. Nothing else
+  // about the user is ever returned.
+  bool user_exists = 2;
+}
 
 // CustomerService manages a garage's customers (FRD 3.4). Reads need
 // PERMISSION_CUSTOMER_READ, changes PERMISSION_CUSTOMER_WRITE.
@@ -107,8 +157,26 @@ service CustomerService {
     };
   }
 
-  // Soft-deletes the customer and their vehicles; history is kept.
+  // Follows the delete-or-deactivate rule (FR-CAT-07): a customer that
+  // quotes, repair orders or settlements refer to is deactivated, otherwise
+  // the customer and their vehicles are soft-deleted.
   rpc DeleteCustomer(DeleteCustomerRequest) returns (DeleteCustomerResponse) {
     option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/customers/{customer_id}"};
+  }
+
+  // Reactivates a deactivated customer.
+  rpc ActivateCustomer(ActivateCustomerRequest) returns (ActivateCustomerResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/customers/{customer_id}:activate"
+      body: "*"
+      response_body: "customer"
+    };
+  }
+
+  // FR-CUS-06: finds the garage's customers by phone or e-mail while a quote
+  // is being prepared, and tells whether a user exists. Declared last so
+  // that the gateway matches /customers/lookup before /customers/{id}.
+  rpc LookupCustomers(LookupCustomersRequest) returns (LookupCustomersResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/customers/lookup"};
   }
 }

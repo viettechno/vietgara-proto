@@ -19,11 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SupplierService_ListSuppliers_FullMethodName  = "/vietgara.supplier.v1.SupplierService/ListSuppliers"
-	SupplierService_CreateSupplier_FullMethodName = "/vietgara.supplier.v1.SupplierService/CreateSupplier"
-	SupplierService_GetSupplier_FullMethodName    = "/vietgara.supplier.v1.SupplierService/GetSupplier"
-	SupplierService_UpdateSupplier_FullMethodName = "/vietgara.supplier.v1.SupplierService/UpdateSupplier"
-	SupplierService_DeleteSupplier_FullMethodName = "/vietgara.supplier.v1.SupplierService/DeleteSupplier"
+	SupplierService_ListSuppliers_FullMethodName    = "/vietgara.supplier.v1.SupplierService/ListSuppliers"
+	SupplierService_CreateSupplier_FullMethodName   = "/vietgara.supplier.v1.SupplierService/CreateSupplier"
+	SupplierService_GetSupplier_FullMethodName      = "/vietgara.supplier.v1.SupplierService/GetSupplier"
+	SupplierService_UpdateSupplier_FullMethodName   = "/vietgara.supplier.v1.SupplierService/UpdateSupplier"
+	SupplierService_DeleteSupplier_FullMethodName   = "/vietgara.supplier.v1.SupplierService/DeleteSupplier"
+	SupplierService_ActivateSupplier_FullMethodName = "/vietgara.supplier.v1.SupplierService/ActivateSupplier"
 )
 
 // SupplierServiceClient is the client API for SupplierService service.
@@ -37,7 +38,10 @@ type SupplierServiceClient interface {
 	CreateSupplier(ctx context.Context, in *CreateSupplierRequest, opts ...grpc.CallOption) (*CreateSupplierResponse, error)
 	GetSupplier(ctx context.Context, in *GetSupplierRequest, opts ...grpc.CallOption) (*GetSupplierResponse, error)
 	UpdateSupplier(ctx context.Context, in *UpdateSupplierRequest, opts ...grpc.CallOption) (*UpdateSupplierResponse, error)
+	// Follows the delete-or-deactivate rule (FR-CAT-07).
 	DeleteSupplier(ctx context.Context, in *DeleteSupplierRequest, opts ...grpc.CallOption) (*DeleteSupplierResponse, error)
+	// Reactivates a deactivated supplier.
+	ActivateSupplier(ctx context.Context, in *ActivateSupplierRequest, opts ...grpc.CallOption) (*ActivateSupplierResponse, error)
 }
 
 type supplierServiceClient struct {
@@ -98,6 +102,16 @@ func (c *supplierServiceClient) DeleteSupplier(ctx context.Context, in *DeleteSu
 	return out, nil
 }
 
+func (c *supplierServiceClient) ActivateSupplier(ctx context.Context, in *ActivateSupplierRequest, opts ...grpc.CallOption) (*ActivateSupplierResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ActivateSupplierResponse)
+	err := c.cc.Invoke(ctx, SupplierService_ActivateSupplier_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SupplierServiceServer is the server API for SupplierService service.
 // All implementations must embed UnimplementedSupplierServiceServer
 // for forward compatibility.
@@ -109,7 +123,10 @@ type SupplierServiceServer interface {
 	CreateSupplier(context.Context, *CreateSupplierRequest) (*CreateSupplierResponse, error)
 	GetSupplier(context.Context, *GetSupplierRequest) (*GetSupplierResponse, error)
 	UpdateSupplier(context.Context, *UpdateSupplierRequest) (*UpdateSupplierResponse, error)
+	// Follows the delete-or-deactivate rule (FR-CAT-07).
 	DeleteSupplier(context.Context, *DeleteSupplierRequest) (*DeleteSupplierResponse, error)
+	// Reactivates a deactivated supplier.
+	ActivateSupplier(context.Context, *ActivateSupplierRequest) (*ActivateSupplierResponse, error)
 	mustEmbedUnimplementedSupplierServiceServer()
 }
 
@@ -134,6 +151,9 @@ func (UnimplementedSupplierServiceServer) UpdateSupplier(context.Context, *Updat
 }
 func (UnimplementedSupplierServiceServer) DeleteSupplier(context.Context, *DeleteSupplierRequest) (*DeleteSupplierResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteSupplier not implemented")
+}
+func (UnimplementedSupplierServiceServer) ActivateSupplier(context.Context, *ActivateSupplierRequest) (*ActivateSupplierResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ActivateSupplier not implemented")
 }
 func (UnimplementedSupplierServiceServer) mustEmbedUnimplementedSupplierServiceServer() {}
 func (UnimplementedSupplierServiceServer) testEmbeddedByValue()                         {}
@@ -246,6 +266,24 @@ func _SupplierService_DeleteSupplier_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SupplierService_ActivateSupplier_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActivateSupplierRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SupplierServiceServer).ActivateSupplier(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SupplierService_ActivateSupplier_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SupplierServiceServer).ActivateSupplier(ctx, req.(*ActivateSupplierRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SupplierService_ServiceDesc is the grpc.ServiceDesc for SupplierService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -272,6 +310,10 @@ var SupplierService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteSupplier",
 			Handler:    _SupplierService_DeleteSupplier_Handler,
+		},
+		{
+			MethodName: "ActivateSupplier",
+			Handler:    _SupplierService_ActivateSupplier_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

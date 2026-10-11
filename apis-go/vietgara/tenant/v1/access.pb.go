@@ -55,6 +55,9 @@ const (
 	Permission_PERMISSION_BILLING_READ       Permission = 15
 	Permission_PERMISSION_BILLING_WRITE      Permission = 16
 	Permission_PERMISSION_REPORT_READ        Permission = 17
+	// Correct a locked vehicle identity field and move a vehicle to another
+	// customer (FR-CUS-09). Held by the manager role by default.
+	Permission_PERMISSION_CUSTOMER_CORRECT Permission = 18
 )
 
 // Enum value maps for Permission.
@@ -78,6 +81,7 @@ var (
 		15: "PERMISSION_BILLING_READ",
 		16: "PERMISSION_BILLING_WRITE",
 		17: "PERMISSION_REPORT_READ",
+		18: "PERMISSION_CUSTOMER_CORRECT",
 	}
 	Permission_value = map[string]int32{
 		"PERMISSION_UNSPECIFIED":        0,
@@ -98,6 +102,7 @@ var (
 		"PERMISSION_BILLING_READ":       15,
 		"PERMISSION_BILLING_WRITE":      16,
 		"PERMISSION_REPORT_READ":        17,
+		"PERMISSION_CUSTOMER_CORRECT":   18,
 	}
 )
 
@@ -1405,7 +1410,7 @@ const file_vietgara_tenant_v1_access_proto_rawDesc = "" +
 	"\x17DeleteStaffGroupRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1e\n" +
 	"\bgroup_id\x18\x02 \x01(\tB\x03\xe0A\x02R\agroupId\"\x1a\n" +
-	"\x18DeleteStaffGroupResponse*\xaa\x04\n" +
+	"\x18DeleteStaffGroupResponse*\xcb\x04\n" +
 	"\n" +
 	"Permission\x12\x1a\n" +
 	"\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x1b\n" +
@@ -1426,7 +1431,8 @@ const file_vietgara_tenant_v1_access_proto_rawDesc = "" +
 	"\x1aPERMISSION_INVENTORY_WRITE\x10\x0e\x12\x1b\n" +
 	"\x17PERMISSION_BILLING_READ\x10\x0f\x12\x1c\n" +
 	"\x18PERMISSION_BILLING_WRITE\x10\x10\x12\x1a\n" +
-	"\x16PERMISSION_REPORT_READ\x10\x112\x8c\x06\n" +
+	"\x16PERMISSION_REPORT_READ\x10\x11\x12\x1f\n" +
+	"\x1bPERMISSION_CUSTOMER_CORRECT\x10\x122\x8c\x06\n" +
 	"\vRoleService\x12\x87\x01\n" +
 	"\x0fListPermissions\x12*.vietgara.tenant.v1.ListPermissionsRequest\x1a+.vietgara.tenant.v1.ListPermissionsResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/permissions\x12o\n" +
 	"\tListRoles\x12$.vietgara.tenant.v1.ListRolesRequest\x1a%.vietgara.tenant.v1.ListRolesResponse\"\x15\x82\xd3\xe4\x93\x02\x0f\x12\r/api/v1/roles\x12y\n" +

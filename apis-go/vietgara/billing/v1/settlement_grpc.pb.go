@@ -22,7 +22,9 @@ const (
 	SettlementService_ListSettlements_FullMethodName         = "/vietgara.billing.v1.SettlementService/ListSettlements"
 	SettlementService_CreateSettlement_FullMethodName        = "/vietgara.billing.v1.SettlementService/CreateSettlement"
 	SettlementService_GetSettlement_FullMethodName           = "/vietgara.billing.v1.SettlementService/GetSettlement"
+	SettlementService_UpdateSettlement_FullMethodName        = "/vietgara.billing.v1.SettlementService/UpdateSettlement"
 	SettlementService_RecordSettlementPayment_FullMethodName = "/vietgara.billing.v1.SettlementService/RecordSettlementPayment"
+	SettlementService_VoidSettlementPayment_FullMethodName   = "/vietgara.billing.v1.SettlementService/VoidSettlementPayment"
 )
 
 // SettlementServiceClient is the client API for SettlementService service.
@@ -39,9 +41,17 @@ type SettlementServiceClient interface {
 	// order is closed, and ALREADY_EXISTS if it already has one.
 	CreateSettlement(ctx context.Context, in *CreateSettlementRequest, opts ...grpc.CallOption) (*CreateSettlementResponse, error)
 	GetSettlement(ctx context.Context, in *GetSettlementRequest, opts ...grpc.CallOption) (*GetSettlementResponse, error)
+	// Changes the billing party and the invoice request of a settlement
+	// (FR-CUS-07). Fails INVOICE_DATA_INCOMPLETE when an invoice is requested
+	// and the billing party's profile lacks required fields.
+	UpdateSettlement(ctx context.Context, in *UpdateSettlementRequest, opts ...grpc.CallOption) (*UpdateSettlementResponse, error)
 	// Records a payment actually collected (FR-BIL-03); a settlement may
 	// receive several until the total is fully collected.
 	RecordSettlementPayment(ctx context.Context, in *RecordSettlementPaymentRequest, opts ...grpc.CallOption) (*RecordSettlementPaymentResponse, error)
+	// FR-BIL-06: voids a payment voucher with a reason. The voucher stays on
+	// file marked void, the settlement's paid amount and status are
+	// recalculated, and the audit log records who voided it.
+	VoidSettlementPayment(ctx context.Context, in *VoidSettlementPaymentRequest, opts ...grpc.CallOption) (*VoidSettlementPaymentResponse, error)
 }
 
 type settlementServiceClient struct {
@@ -82,10 +92,30 @@ func (c *settlementServiceClient) GetSettlement(ctx context.Context, in *GetSett
 	return out, nil
 }
 
+func (c *settlementServiceClient) UpdateSettlement(ctx context.Context, in *UpdateSettlementRequest, opts ...grpc.CallOption) (*UpdateSettlementResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateSettlementResponse)
+	err := c.cc.Invoke(ctx, SettlementService_UpdateSettlement_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *settlementServiceClient) RecordSettlementPayment(ctx context.Context, in *RecordSettlementPaymentRequest, opts ...grpc.CallOption) (*RecordSettlementPaymentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RecordSettlementPaymentResponse)
 	err := c.cc.Invoke(ctx, SettlementService_RecordSettlementPayment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *settlementServiceClient) VoidSettlementPayment(ctx context.Context, in *VoidSettlementPaymentRequest, opts ...grpc.CallOption) (*VoidSettlementPaymentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(VoidSettlementPaymentResponse)
+	err := c.cc.Invoke(ctx, SettlementService_VoidSettlementPayment_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -106,9 +136,17 @@ type SettlementServiceServer interface {
 	// order is closed, and ALREADY_EXISTS if it already has one.
 	CreateSettlement(context.Context, *CreateSettlementRequest) (*CreateSettlementResponse, error)
 	GetSettlement(context.Context, *GetSettlementRequest) (*GetSettlementResponse, error)
+	// Changes the billing party and the invoice request of a settlement
+	// (FR-CUS-07). Fails INVOICE_DATA_INCOMPLETE when an invoice is requested
+	// and the billing party's profile lacks required fields.
+	UpdateSettlement(context.Context, *UpdateSettlementRequest) (*UpdateSettlementResponse, error)
 	// Records a payment actually collected (FR-BIL-03); a settlement may
 	// receive several until the total is fully collected.
 	RecordSettlementPayment(context.Context, *RecordSettlementPaymentRequest) (*RecordSettlementPaymentResponse, error)
+	// FR-BIL-06: voids a payment voucher with a reason. The voucher stays on
+	// file marked void, the settlement's paid amount and status are
+	// recalculated, and the audit log records who voided it.
+	VoidSettlementPayment(context.Context, *VoidSettlementPaymentRequest) (*VoidSettlementPaymentResponse, error)
 	mustEmbedUnimplementedSettlementServiceServer()
 }
 
@@ -128,8 +166,14 @@ func (UnimplementedSettlementServiceServer) CreateSettlement(context.Context, *C
 func (UnimplementedSettlementServiceServer) GetSettlement(context.Context, *GetSettlementRequest) (*GetSettlementResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSettlement not implemented")
 }
+func (UnimplementedSettlementServiceServer) UpdateSettlement(context.Context, *UpdateSettlementRequest) (*UpdateSettlementResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateSettlement not implemented")
+}
 func (UnimplementedSettlementServiceServer) RecordSettlementPayment(context.Context, *RecordSettlementPaymentRequest) (*RecordSettlementPaymentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RecordSettlementPayment not implemented")
+}
+func (UnimplementedSettlementServiceServer) VoidSettlementPayment(context.Context, *VoidSettlementPaymentRequest) (*VoidSettlementPaymentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method VoidSettlementPayment not implemented")
 }
 func (UnimplementedSettlementServiceServer) mustEmbedUnimplementedSettlementServiceServer() {}
 func (UnimplementedSettlementServiceServer) testEmbeddedByValue()                           {}
@@ -206,6 +250,24 @@ func _SettlementService_GetSettlement_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SettlementService_UpdateSettlement_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateSettlementRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SettlementServiceServer).UpdateSettlement(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SettlementService_UpdateSettlement_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SettlementServiceServer).UpdateSettlement(ctx, req.(*UpdateSettlementRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _SettlementService_RecordSettlementPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RecordSettlementPaymentRequest)
 	if err := dec(in); err != nil {
@@ -220,6 +282,24 @@ func _SettlementService_RecordSettlementPayment_Handler(srv interface{}, ctx con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SettlementServiceServer).RecordSettlementPayment(ctx, req.(*RecordSettlementPaymentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SettlementService_VoidSettlementPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VoidSettlementPaymentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SettlementServiceServer).VoidSettlementPayment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SettlementService_VoidSettlementPayment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SettlementServiceServer).VoidSettlementPayment(ctx, req.(*VoidSettlementPaymentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -244,8 +324,16 @@ var SettlementService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _SettlementService_GetSettlement_Handler,
 		},
 		{
+			MethodName: "UpdateSettlement",
+			Handler:    _SettlementService_UpdateSettlement_Handler,
+		},
+		{
 			MethodName: "RecordSettlementPayment",
 			Handler:    _SettlementService_RecordSettlementPayment_Handler,
+		},
+		{
+			MethodName: "VoidSettlementPayment",
+			Handler:    _SettlementService_VoidSettlementPayment_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

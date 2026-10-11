@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package vietgara.common.v1;
+
+import "google/api/field_behavior.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/common/v1;commonv1";
+
+// TaxProfileKind: a customer has at most one personal tax profile and any
+// number of company tax profiles (FR-CUS-07).
+enum TaxProfileKind {
+  TAX_PROFILE_KIND_UNSPECIFIED = 0;
+  TAX_PROFILE_KIND_PERSONAL = 1;
+  TAX_PROFILE_KIND_COMPANY = 2;
+}
+
+// BillingParty is who a quote or settlement is billed to (FR-CUS-07). A
+// client sends only tax_profile_id; the other fields are the snapshot kept
+// on the document, so later edits of the profile never change a document
+// already issued. Without a tax_profile_id the customer is billed under
+// their own name as a retail receipt.
+message BillingParty {
+  string tax_profile_id = 1;
+  TaxProfileKind kind = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string legal_name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string tax_id = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string address = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Where an e-invoice is sent.
+  string invoice_email = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}

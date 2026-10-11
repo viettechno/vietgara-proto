@@ -11,6 +11,7 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -118,6 +119,470 @@ func (x *MyGarage) GetVehicles() []*v1.Vehicle {
 	return nil
 }
 
+// GarageLink is a garage's customer profile that is linked, or is waiting to
+// be linked, to the signed-in user (FR-CUS-06, FR-CAPP-05). Suppliers never
+// appear here.
+type GarageLink struct {
+	state         protoimpl.MessageState    `protogen:"open.v1"`
+	Id            string                    `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	GarageId      string                    `protobuf:"bytes,2,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	GarageName    string                    `protobuf:"bytes,3,opt,name=garage_name,json=garageName,proto3" json:"garage_name,omitempty"`
+	GarageAddress string                    `protobuf:"bytes,4,opt,name=garage_address,json=garageAddress,proto3" json:"garage_address,omitempty"`
+	GaragePhone   string                    `protobuf:"bytes,5,opt,name=garage_phone,json=garagePhone,proto3" json:"garage_phone,omitempty"`
+	CustomerId    string                    `protobuf:"bytes,6,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	CustomerName  string                    `protobuf:"bytes,7,opt,name=customer_name,json=customerName,proto3" json:"customer_name,omitempty"`
+	Status        v1.CustomerUserLinkStatus `protobuf:"varint,8,opt,name=status,proto3,enum=vietgara.customer.v1.CustomerUserLinkStatus" json:"status,omitempty"`
+	RequestedAt   *timestamppb.Timestamp    `protobuf:"bytes,9,opt,name=requested_at,json=requestedAt,proto3" json:"requested_at,omitempty"`
+	LinkedAt      *timestamppb.Timestamp    `protobuf:"bytes,10,opt,name=linked_at,json=linkedAt,proto3" json:"linked_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GarageLink) Reset() {
+	*x = GarageLink{}
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GarageLink) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GarageLink) ProtoMessage() {}
+
+func (x *GarageLink) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GarageLink.ProtoReflect.Descriptor instead.
+func (*GarageLink) Descriptor() ([]byte, []int) {
+	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *GarageLink) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *GarageLink) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *GarageLink) GetGarageName() string {
+	if x != nil {
+		return x.GarageName
+	}
+	return ""
+}
+
+func (x *GarageLink) GetGarageAddress() string {
+	if x != nil {
+		return x.GarageAddress
+	}
+	return ""
+}
+
+func (x *GarageLink) GetGaragePhone() string {
+	if x != nil {
+		return x.GaragePhone
+	}
+	return ""
+}
+
+func (x *GarageLink) GetCustomerId() string {
+	if x != nil {
+		return x.CustomerId
+	}
+	return ""
+}
+
+func (x *GarageLink) GetCustomerName() string {
+	if x != nil {
+		return x.CustomerName
+	}
+	return ""
+}
+
+func (x *GarageLink) GetStatus() v1.CustomerUserLinkStatus {
+	if x != nil {
+		return x.Status
+	}
+	return v1.CustomerUserLinkStatus(0)
+}
+
+func (x *GarageLink) GetRequestedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.RequestedAt
+	}
+	return nil
+}
+
+func (x *GarageLink) GetLinkedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LinkedAt
+	}
+	return nil
+}
+
+type ListMyGarageLinksRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMyGarageLinksRequest) Reset() {
+	*x = ListMyGarageLinksRequest{}
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMyGarageLinksRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMyGarageLinksRequest) ProtoMessage() {}
+
+func (x *ListMyGarageLinksRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMyGarageLinksRequest.ProtoReflect.Descriptor instead.
+func (*ListMyGarageLinksRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{2}
+}
+
+type ListMyGarageLinksResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Link requests waiting for an answer and the garages already linked.
+	Data          []*GarageLink `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMyGarageLinksResponse) Reset() {
+	*x = ListMyGarageLinksResponse{}
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMyGarageLinksResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMyGarageLinksResponse) ProtoMessage() {}
+
+func (x *ListMyGarageLinksResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMyGarageLinksResponse.ProtoReflect.Descriptor instead.
+func (*ListMyGarageLinksResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ListMyGarageLinksResponse) GetData() []*GarageLink {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type AcceptGarageLinkRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LinkId        string                 `protobuf:"bytes,1,opt,name=link_id,json=linkId,proto3" json:"link_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AcceptGarageLinkRequest) Reset() {
+	*x = AcceptGarageLinkRequest{}
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AcceptGarageLinkRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AcceptGarageLinkRequest) ProtoMessage() {}
+
+func (x *AcceptGarageLinkRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AcceptGarageLinkRequest.ProtoReflect.Descriptor instead.
+func (*AcceptGarageLinkRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *AcceptGarageLinkRequest) GetLinkId() string {
+	if x != nil {
+		return x.LinkId
+	}
+	return ""
+}
+
+type AcceptGarageLinkResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Link          *GarageLink            `protobuf:"bytes,1,opt,name=link,proto3" json:"link,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AcceptGarageLinkResponse) Reset() {
+	*x = AcceptGarageLinkResponse{}
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AcceptGarageLinkResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AcceptGarageLinkResponse) ProtoMessage() {}
+
+func (x *AcceptGarageLinkResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AcceptGarageLinkResponse.ProtoReflect.Descriptor instead.
+func (*AcceptGarageLinkResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *AcceptGarageLinkResponse) GetLink() *GarageLink {
+	if x != nil {
+		return x.Link
+	}
+	return nil
+}
+
+type DeclineGarageLinkRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LinkId        string                 `protobuf:"bytes,1,opt,name=link_id,json=linkId,proto3" json:"link_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeclineGarageLinkRequest) Reset() {
+	*x = DeclineGarageLinkRequest{}
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeclineGarageLinkRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeclineGarageLinkRequest) ProtoMessage() {}
+
+func (x *DeclineGarageLinkRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeclineGarageLinkRequest.ProtoReflect.Descriptor instead.
+func (*DeclineGarageLinkRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *DeclineGarageLinkRequest) GetLinkId() string {
+	if x != nil {
+		return x.LinkId
+	}
+	return ""
+}
+
+type DeclineGarageLinkResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Link          *GarageLink            `protobuf:"bytes,1,opt,name=link,proto3" json:"link,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeclineGarageLinkResponse) Reset() {
+	*x = DeclineGarageLinkResponse{}
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeclineGarageLinkResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeclineGarageLinkResponse) ProtoMessage() {}
+
+func (x *DeclineGarageLinkResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeclineGarageLinkResponse.ProtoReflect.Descriptor instead.
+func (*DeclineGarageLinkResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *DeclineGarageLinkResponse) GetLink() *GarageLink {
+	if x != nil {
+		return x.Link
+	}
+	return nil
+}
+
+type UnlinkGarageLinkRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LinkId        string                 `protobuf:"bytes,1,opt,name=link_id,json=linkId,proto3" json:"link_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UnlinkGarageLinkRequest) Reset() {
+	*x = UnlinkGarageLinkRequest{}
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnlinkGarageLinkRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnlinkGarageLinkRequest) ProtoMessage() {}
+
+func (x *UnlinkGarageLinkRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnlinkGarageLinkRequest.ProtoReflect.Descriptor instead.
+func (*UnlinkGarageLinkRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *UnlinkGarageLinkRequest) GetLinkId() string {
+	if x != nil {
+		return x.LinkId
+	}
+	return ""
+}
+
+type UnlinkGarageLinkResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Link          *GarageLink            `protobuf:"bytes,1,opt,name=link,proto3" json:"link,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UnlinkGarageLinkResponse) Reset() {
+	*x = UnlinkGarageLinkResponse{}
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnlinkGarageLinkResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnlinkGarageLinkResponse) ProtoMessage() {}
+
+func (x *UnlinkGarageLinkResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnlinkGarageLinkResponse.ProtoReflect.Descriptor instead.
+func (*UnlinkGarageLinkResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *UnlinkGarageLinkResponse) GetLink() *GarageLink {
+	if x != nil {
+		return x.Link
+	}
+	return nil
+}
+
 type ListMyVehiclesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -126,7 +591,7 @@ type ListMyVehiclesRequest struct {
 
 func (x *ListMyVehiclesRequest) Reset() {
 	*x = ListMyVehiclesRequest{}
-	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[1]
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -138,7 +603,7 @@ func (x *ListMyVehiclesRequest) String() string {
 func (*ListMyVehiclesRequest) ProtoMessage() {}
 
 func (x *ListMyVehiclesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[1]
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -151,7 +616,7 @@ func (x *ListMyVehiclesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMyVehiclesRequest.ProtoReflect.Descriptor instead.
 func (*ListMyVehiclesRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{1}
+	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{10}
 }
 
 type ListMyVehiclesResponse struct {
@@ -165,7 +630,7 @@ type ListMyVehiclesResponse struct {
 
 func (x *ListMyVehiclesResponse) Reset() {
 	*x = ListMyVehiclesResponse{}
-	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[2]
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -177,7 +642,7 @@ func (x *ListMyVehiclesResponse) String() string {
 func (*ListMyVehiclesResponse) ProtoMessage() {}
 
 func (x *ListMyVehiclesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[2]
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -190,7 +655,7 @@ func (x *ListMyVehiclesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMyVehiclesResponse.ProtoReflect.Descriptor instead.
 func (*ListMyVehiclesResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{2}
+	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ListMyVehiclesResponse) GetData() []*MyGarage {
@@ -210,7 +675,7 @@ type GetMyVehicleHistoryRequest struct {
 
 func (x *GetMyVehicleHistoryRequest) Reset() {
 	*x = GetMyVehicleHistoryRequest{}
-	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[3]
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -222,7 +687,7 @@ func (x *GetMyVehicleHistoryRequest) String() string {
 func (*GetMyVehicleHistoryRequest) ProtoMessage() {}
 
 func (x *GetMyVehicleHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[3]
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -235,7 +700,7 @@ func (x *GetMyVehicleHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyVehicleHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetMyVehicleHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{3}
+	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetMyVehicleHistoryRequest) GetGarageId() string {
@@ -262,7 +727,7 @@ type GetMyVehicleHistoryResponse struct {
 
 func (x *GetMyVehicleHistoryResponse) Reset() {
 	*x = GetMyVehicleHistoryResponse{}
-	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[4]
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -274,7 +739,7 @@ func (x *GetMyVehicleHistoryResponse) String() string {
 func (*GetMyVehicleHistoryResponse) ProtoMessage() {}
 
 func (x *GetMyVehicleHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[4]
+	mi := &file_vietgara_customerportal_v1_customer_portal_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -287,7 +752,7 @@ func (x *GetMyVehicleHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyVehicleHistoryResponse.ProtoReflect.Descriptor instead.
 func (*GetMyVehicleHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{4}
+	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *GetMyVehicleHistoryResponse) GetData() []*v1.VehicleHistoryEntry {
@@ -301,7 +766,7 @@ var File_vietgara_customerportal_v1_customer_portal_proto protoreflect.FileDescr
 
 const file_vietgara_customerportal_v1_customer_portal_proto_rawDesc = "" +
 	"\n" +
-	"0vietgara/customerportal/v1/customer_portal.proto\x12\x1avietgara.customerportal.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\"vietgara/customer/v1/vehicle.proto\"\x8f\x02\n" +
+	"0vietgara/customerportal/v1/customer_portal.proto\x12\x1avietgara.customerportal.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/customer/v1/customer.proto\x1a\"vietgara/customer/v1/vehicle.proto\"\x8f\x02\n" +
 	"\bMyGarage\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\x17\n" +
 	"\x04name\x18\x02 \x01(\tB\x03\xe0A\x03R\x04name\x12\x1d\n" +
@@ -310,7 +775,37 @@ const file_vietgara_customerportal_v1_customer_portal_proto_rawDesc = "" +
 	"\vcustomer_id\x18\x05 \x01(\tB\x03\xe0A\x03R\n" +
 	"customerId\x12(\n" +
 	"\rcustomer_name\x18\x06 \x01(\tB\x03\xe0A\x03R\fcustomerName\x12>\n" +
-	"\bvehicles\x18\a \x03(\v2\x1d.vietgara.customer.v1.VehicleB\x03\xe0A\x03R\bvehicles\"\x17\n" +
+	"\bvehicles\x18\a \x03(\v2\x1d.vietgara.customer.v1.VehicleB\x03\xe0A\x03R\bvehicles\"\xda\x03\n" +
+	"\n" +
+	"GarageLink\x12\x13\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
+	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12$\n" +
+	"\vgarage_name\x18\x03 \x01(\tB\x03\xe0A\x03R\n" +
+	"garageName\x12*\n" +
+	"\x0egarage_address\x18\x04 \x01(\tB\x03\xe0A\x03R\rgarageAddress\x12&\n" +
+	"\fgarage_phone\x18\x05 \x01(\tB\x03\xe0A\x03R\vgaragePhone\x12$\n" +
+	"\vcustomer_id\x18\x06 \x01(\tB\x03\xe0A\x03R\n" +
+	"customerId\x12(\n" +
+	"\rcustomer_name\x18\a \x01(\tB\x03\xe0A\x03R\fcustomerName\x12I\n" +
+	"\x06status\x18\b \x01(\x0e2,.vietgara.customer.v1.CustomerUserLinkStatusB\x03\xe0A\x03R\x06status\x12B\n" +
+	"\frequested_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\vrequestedAt\x12<\n" +
+	"\tlinked_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\blinkedAt\"\x1a\n" +
+	"\x18ListMyGarageLinksRequest\"W\n" +
+	"\x19ListMyGarageLinksResponse\x12:\n" +
+	"\x04data\x18\x01 \x03(\v2&.vietgara.customerportal.v1.GarageLinkR\x04data\"7\n" +
+	"\x17AcceptGarageLinkRequest\x12\x1c\n" +
+	"\alink_id\x18\x01 \x01(\tB\x03\xe0A\x02R\x06linkId\"V\n" +
+	"\x18AcceptGarageLinkResponse\x12:\n" +
+	"\x04link\x18\x01 \x01(\v2&.vietgara.customerportal.v1.GarageLinkR\x04link\"8\n" +
+	"\x18DeclineGarageLinkRequest\x12\x1c\n" +
+	"\alink_id\x18\x01 \x01(\tB\x03\xe0A\x02R\x06linkId\"W\n" +
+	"\x19DeclineGarageLinkResponse\x12:\n" +
+	"\x04link\x18\x01 \x01(\v2&.vietgara.customerportal.v1.GarageLinkR\x04link\"7\n" +
+	"\x17UnlinkGarageLinkRequest\x12\x1c\n" +
+	"\alink_id\x18\x01 \x01(\tB\x03\xe0A\x02R\x06linkId\"V\n" +
+	"\x18UnlinkGarageLinkResponse\x12:\n" +
+	"\x04link\x18\x01 \x01(\v2&.vietgara.customerportal.v1.GarageLinkR\x04link\"\x17\n" +
 	"\x15ListMyVehiclesRequest\"R\n" +
 	"\x16ListMyVehiclesResponse\x128\n" +
 	"\x04data\x18\x01 \x03(\v2$.vietgara.customerportal.v1.MyGarageR\x04data\"b\n" +
@@ -319,9 +814,13 @@ const file_vietgara_customerportal_v1_customer_portal_proto_rawDesc = "" +
 	"\n" +
 	"vehicle_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tvehicleId\"\\\n" +
 	"\x1bGetMyVehicleHistoryResponse\x12=\n" +
-	"\x04data\x18\x01 \x03(\v2).vietgara.customer.v1.VehicleHistoryEntryR\x04data2\x89\x03\n" +
+	"\x04data\x18\x01 \x03(\v2).vietgara.customer.v1.VehicleHistoryEntryR\x04data2\xe2\b\n" +
 	"\x15CustomerPortalService\x12\x9a\x01\n" +
-	"\x0eListMyVehicles\x121.vietgara.customerportal.v1.ListMyVehiclesRequest\x1a2.vietgara.customerportal.v1.ListMyVehiclesResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/api/v1/customer/vehicles\x12\xd2\x01\n" +
+	"\x0eListMyVehicles\x121.vietgara.customerportal.v1.ListMyVehiclesRequest\x1a2.vietgara.customerportal.v1.ListMyVehiclesResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/api/v1/customer/vehicles\x12\xa1\x01\n" +
+	"\x11ListMyGarageLinks\x124.vietgara.customerportal.v1.ListMyGarageLinksRequest\x1a5.vietgara.customerportal.v1.ListMyGarageLinksResponse\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/api/v1/me/garage-links\x12\xb8\x01\n" +
+	"\x10AcceptGarageLink\x123.vietgara.customerportal.v1.AcceptGarageLinkRequest\x1a4.vietgara.customerportal.v1.AcceptGarageLinkResponse\"9\x82\xd3\xe4\x93\x023:\x01*b\x04link\"(/api/v1/me/garage-links/{link_id}:accept\x12\xbc\x01\n" +
+	"\x11DeclineGarageLink\x124.vietgara.customerportal.v1.DeclineGarageLinkRequest\x1a5.vietgara.customerportal.v1.DeclineGarageLinkResponse\":\x82\xd3\xe4\x93\x024:\x01*b\x04link\")/api/v1/me/garage-links/{link_id}:decline\x12\xb8\x01\n" +
+	"\x10UnlinkGarageLink\x123.vietgara.customerportal.v1.UnlinkGarageLinkRequest\x1a4.vietgara.customerportal.v1.UnlinkGarageLinkResponse\"9\x82\xd3\xe4\x93\x023:\x01*b\x04link\"(/api/v1/me/garage-links/{link_id}:unlink\x12\xd2\x01\n" +
 	"\x13GetMyVehicleHistory\x126.vietgara.customerportal.v1.GetMyVehicleHistoryRequest\x1a7.vietgara.customerportal.v1.GetMyVehicleHistoryResponse\"J\x82\xd3\xe4\x93\x02D\x12B/api/v1/customer/garages/{garage_id}/vehicles/{vehicle_id}/historyBZZXgithub.com/viettechno/vietgara-proto/apis-go/vietgara/customerportal/v1;customerportalv1b\x06proto3"
 
 var (
@@ -336,29 +835,55 @@ func file_vietgara_customerportal_v1_customer_portal_proto_rawDescGZIP() []byte 
 	return file_vietgara_customerportal_v1_customer_portal_proto_rawDescData
 }
 
-var file_vietgara_customerportal_v1_customer_portal_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_vietgara_customerportal_v1_customer_portal_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_vietgara_customerportal_v1_customer_portal_proto_goTypes = []any{
 	(*MyGarage)(nil),                    // 0: vietgara.customerportal.v1.MyGarage
-	(*ListMyVehiclesRequest)(nil),       // 1: vietgara.customerportal.v1.ListMyVehiclesRequest
-	(*ListMyVehiclesResponse)(nil),      // 2: vietgara.customerportal.v1.ListMyVehiclesResponse
-	(*GetMyVehicleHistoryRequest)(nil),  // 3: vietgara.customerportal.v1.GetMyVehicleHistoryRequest
-	(*GetMyVehicleHistoryResponse)(nil), // 4: vietgara.customerportal.v1.GetMyVehicleHistoryResponse
-	(*v1.Vehicle)(nil),                  // 5: vietgara.customer.v1.Vehicle
-	(*v1.VehicleHistoryEntry)(nil),      // 6: vietgara.customer.v1.VehicleHistoryEntry
+	(*GarageLink)(nil),                  // 1: vietgara.customerportal.v1.GarageLink
+	(*ListMyGarageLinksRequest)(nil),    // 2: vietgara.customerportal.v1.ListMyGarageLinksRequest
+	(*ListMyGarageLinksResponse)(nil),   // 3: vietgara.customerportal.v1.ListMyGarageLinksResponse
+	(*AcceptGarageLinkRequest)(nil),     // 4: vietgara.customerportal.v1.AcceptGarageLinkRequest
+	(*AcceptGarageLinkResponse)(nil),    // 5: vietgara.customerportal.v1.AcceptGarageLinkResponse
+	(*DeclineGarageLinkRequest)(nil),    // 6: vietgara.customerportal.v1.DeclineGarageLinkRequest
+	(*DeclineGarageLinkResponse)(nil),   // 7: vietgara.customerportal.v1.DeclineGarageLinkResponse
+	(*UnlinkGarageLinkRequest)(nil),     // 8: vietgara.customerportal.v1.UnlinkGarageLinkRequest
+	(*UnlinkGarageLinkResponse)(nil),    // 9: vietgara.customerportal.v1.UnlinkGarageLinkResponse
+	(*ListMyVehiclesRequest)(nil),       // 10: vietgara.customerportal.v1.ListMyVehiclesRequest
+	(*ListMyVehiclesResponse)(nil),      // 11: vietgara.customerportal.v1.ListMyVehiclesResponse
+	(*GetMyVehicleHistoryRequest)(nil),  // 12: vietgara.customerportal.v1.GetMyVehicleHistoryRequest
+	(*GetMyVehicleHistoryResponse)(nil), // 13: vietgara.customerportal.v1.GetMyVehicleHistoryResponse
+	(*v1.Vehicle)(nil),                  // 14: vietgara.customer.v1.Vehicle
+	(v1.CustomerUserLinkStatus)(0),      // 15: vietgara.customer.v1.CustomerUserLinkStatus
+	(*timestamppb.Timestamp)(nil),       // 16: google.protobuf.Timestamp
+	(*v1.VehicleHistoryEntry)(nil),      // 17: vietgara.customer.v1.VehicleHistoryEntry
 }
 var file_vietgara_customerportal_v1_customer_portal_proto_depIdxs = []int32{
-	5, // 0: vietgara.customerportal.v1.MyGarage.vehicles:type_name -> vietgara.customer.v1.Vehicle
-	0, // 1: vietgara.customerportal.v1.ListMyVehiclesResponse.data:type_name -> vietgara.customerportal.v1.MyGarage
-	6, // 2: vietgara.customerportal.v1.GetMyVehicleHistoryResponse.data:type_name -> vietgara.customer.v1.VehicleHistoryEntry
-	1, // 3: vietgara.customerportal.v1.CustomerPortalService.ListMyVehicles:input_type -> vietgara.customerportal.v1.ListMyVehiclesRequest
-	3, // 4: vietgara.customerportal.v1.CustomerPortalService.GetMyVehicleHistory:input_type -> vietgara.customerportal.v1.GetMyVehicleHistoryRequest
-	2, // 5: vietgara.customerportal.v1.CustomerPortalService.ListMyVehicles:output_type -> vietgara.customerportal.v1.ListMyVehiclesResponse
-	4, // 6: vietgara.customerportal.v1.CustomerPortalService.GetMyVehicleHistory:output_type -> vietgara.customerportal.v1.GetMyVehicleHistoryResponse
-	5, // [5:7] is the sub-list for method output_type
-	3, // [3:5] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	14, // 0: vietgara.customerportal.v1.MyGarage.vehicles:type_name -> vietgara.customer.v1.Vehicle
+	15, // 1: vietgara.customerportal.v1.GarageLink.status:type_name -> vietgara.customer.v1.CustomerUserLinkStatus
+	16, // 2: vietgara.customerportal.v1.GarageLink.requested_at:type_name -> google.protobuf.Timestamp
+	16, // 3: vietgara.customerportal.v1.GarageLink.linked_at:type_name -> google.protobuf.Timestamp
+	1,  // 4: vietgara.customerportal.v1.ListMyGarageLinksResponse.data:type_name -> vietgara.customerportal.v1.GarageLink
+	1,  // 5: vietgara.customerportal.v1.AcceptGarageLinkResponse.link:type_name -> vietgara.customerportal.v1.GarageLink
+	1,  // 6: vietgara.customerportal.v1.DeclineGarageLinkResponse.link:type_name -> vietgara.customerportal.v1.GarageLink
+	1,  // 7: vietgara.customerportal.v1.UnlinkGarageLinkResponse.link:type_name -> vietgara.customerportal.v1.GarageLink
+	0,  // 8: vietgara.customerportal.v1.ListMyVehiclesResponse.data:type_name -> vietgara.customerportal.v1.MyGarage
+	17, // 9: vietgara.customerportal.v1.GetMyVehicleHistoryResponse.data:type_name -> vietgara.customer.v1.VehicleHistoryEntry
+	10, // 10: vietgara.customerportal.v1.CustomerPortalService.ListMyVehicles:input_type -> vietgara.customerportal.v1.ListMyVehiclesRequest
+	2,  // 11: vietgara.customerportal.v1.CustomerPortalService.ListMyGarageLinks:input_type -> vietgara.customerportal.v1.ListMyGarageLinksRequest
+	4,  // 12: vietgara.customerportal.v1.CustomerPortalService.AcceptGarageLink:input_type -> vietgara.customerportal.v1.AcceptGarageLinkRequest
+	6,  // 13: vietgara.customerportal.v1.CustomerPortalService.DeclineGarageLink:input_type -> vietgara.customerportal.v1.DeclineGarageLinkRequest
+	8,  // 14: vietgara.customerportal.v1.CustomerPortalService.UnlinkGarageLink:input_type -> vietgara.customerportal.v1.UnlinkGarageLinkRequest
+	12, // 15: vietgara.customerportal.v1.CustomerPortalService.GetMyVehicleHistory:input_type -> vietgara.customerportal.v1.GetMyVehicleHistoryRequest
+	11, // 16: vietgara.customerportal.v1.CustomerPortalService.ListMyVehicles:output_type -> vietgara.customerportal.v1.ListMyVehiclesResponse
+	3,  // 17: vietgara.customerportal.v1.CustomerPortalService.ListMyGarageLinks:output_type -> vietgara.customerportal.v1.ListMyGarageLinksResponse
+	5,  // 18: vietgara.customerportal.v1.CustomerPortalService.AcceptGarageLink:output_type -> vietgara.customerportal.v1.AcceptGarageLinkResponse
+	7,  // 19: vietgara.customerportal.v1.CustomerPortalService.DeclineGarageLink:output_type -> vietgara.customerportal.v1.DeclineGarageLinkResponse
+	9,  // 20: vietgara.customerportal.v1.CustomerPortalService.UnlinkGarageLink:output_type -> vietgara.customerportal.v1.UnlinkGarageLinkResponse
+	13, // 21: vietgara.customerportal.v1.CustomerPortalService.GetMyVehicleHistory:output_type -> vietgara.customerportal.v1.GetMyVehicleHistoryResponse
+	16, // [16:22] is the sub-list for method output_type
+	10, // [10:16] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_customerportal_v1_customer_portal_proto_init() }
@@ -372,7 +897,7 @@ func file_vietgara_customerportal_v1_customer_portal_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_customerportal_v1_customer_portal_proto_rawDesc), len(file_vietgara_customerportal_v1_customer_portal_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

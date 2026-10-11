@@ -72,6 +72,29 @@ message Plan {
   google.protobuf.Timestamp updated_at = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
+// PlanChangeStatus is the state of a plan change (FR-LIC-02).
+enum PlanChangeStatus {
+  PLAN_CHANGE_STATUS_UNSPECIFIED = 0;
+  // Takes effect when the current period ends.
+  PLAN_CHANGE_STATUS_SCHEDULED = 1;
+  // Due, but the new plan's limits are exceeded: it stays pending and the
+  // owner is told.
+  PLAN_CHANGE_STATUS_POSTPONED = 2;
+  PLAN_CHANGE_STATUS_APPLIED = 3;
+  PLAN_CHANGE_STATUS_CANCELLED = 4;
+}
+
+// PendingPlanChange is a plan the owner chose that has not taken effect yet.
+// The owner can cancel it or replace it by choosing another plan.
+message PendingPlanChange {
+  Plan plan = 1;
+  // When it applies: the end of the current period (the end of the trial,
+  // during a trial).
+  google.protobuf.Timestamp effective_at = 2;
+  PlanChangeStatus status = 3;
+  google.protobuf.Timestamp requested_at = 4;
+}
+
 // Usage is the owner's current consumption of the plan limits.
 message Usage {
   int32 garages = 1;
@@ -94,6 +117,8 @@ message Subscription {
   Usage usage = 10;
   google.protobuf.Timestamp created_at = 11;
   google.protobuf.Timestamp updated_at = 12;
+  // Set while a plan change is scheduled or postponed (FR-LIC-02).
+  PendingPlanChange pending_change = 13;
 }
 
 // Entitlements is what a garage may currently use, derived from its
@@ -126,6 +151,13 @@ message ChangeMyPlanRequest {
 }
 
 message ChangeMyPlanResponse {
+  // The current plan with its pending_change.
+  Subscription subscription = 1;
+}
+
+message CancelMyPendingPlanChangeRequest {}
+
+message CancelMyPendingPlanChangeResponse {
   Subscription subscription = 1;
 }
 
@@ -151,13 +183,25 @@ service LicenseService {
     };
   }
 
-  // Switches the owner to another plan (FR-LIC-02). Takes effect at once
-  // and starts a new period; online payment arrives in Phase 2. Fails with
-  // PLAN_LIMIT_REACHED when current usage exceeds the new plan.
+  // Chooses another plan (FR-LIC-02). An upgrade and a downgrade both take
+  // effect when the current period ends (when the trial ends, during the
+  // trial); the answer carries pending_change. Choosing again replaces the
+  // pending change. Fails with PLAN_LIMIT_REACHED when current usage already
+  // exceeds the new plan; the limits are checked again on the effective
+  // date, and the switch is postponed if they are still exceeded.
   rpc ChangeMyPlan(ChangeMyPlanRequest) returns (ChangeMyPlanResponse) {
     option (google.api.http) = {
       post: "/api/v1/me/subscription/plan-changes"
       body: "*"
+      response_body: "subscription"
+    };
+  }
+
+  // Cancels the pending plan change (FR-LIC-02); NOT_FOUND when there is
+  // none.
+  rpc CancelMyPendingPlanChange(CancelMyPendingPlanChangeRequest) returns (CancelMyPendingPlanChangeResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/me/subscription/plan-changes/pending"
       response_body: "subscription"
     };
   }

@@ -4,7 +4,9 @@ package vietgara.billing.v1;
 
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/billing_party.proto";
 import "vietgara/common/v1/pagination.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/billing/v1;billingv1";
@@ -34,7 +36,7 @@ enum PaymentMethod {
 
 // SettlementPayment is one payment recorded against a settlement
 // (FR-BIL-03); a settlement may receive several. The customer is the only
-// payer.
+// payer. Every payment is a payment voucher (phiếu thu, FR-BIL-05).
 message SettlementPayment {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Integer VND.
@@ -42,6 +44,20 @@ message SettlementPayment {
   PaymentMethod method = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
   string note = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp created_at = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Numbered from the garage's payment voucher template (FR-BIL-05).
+  string voucher_number = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Who paid: the billing party's name, or the customer's.
+  string payer_name = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string payer_address = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Reason for payment printed on the voucher.
+  string reason = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The staff member who collected the money.
+  string collector_name = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // A voided voucher stays on file and no longer counts towards paid_amount
+  // (FR-BIL-06).
+  bool voided = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string void_reason = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp voided_at = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // Settlement is the final bill of a closed repair order (FR-BIL-01),
@@ -62,12 +78,19 @@ message Settlement {
   string number = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Copied from the repair order's total at creation time. Integer VND.
   int64 total_amount = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Running total from settlement_payments (FR-BIL-03). Integer VND.
+  // Running total of the payments that are not voided (FR-BIL-03). Integer
+  // VND.
   int64 paid_amount = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
   SettlementStatus status = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
   repeated SettlementPayment payments = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp created_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp updated_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Who is billed, kept as a snapshot (FR-CUS-07).
+  vietgara.common.v1.BillingParty billing_party = 13;
+  // The customer asked for a VAT invoice; only possible while the billing
+  // party's profile is complete, otherwise INVOICE_DATA_INCOMPLETE. When
+  // false the document is a retail receipt.
+  bool invoice_requested = 14;
 }
 
 message ListSettlementsRequest {
@@ -90,6 +113,9 @@ message ListSettlementsResponse {
 message CreateSettlementRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Defaults to the repair order's quote's billing party.
+  vietgara.common.v1.BillingParty billing_party = 3;
+  bool invoice_requested = 4;
 }
 
 message CreateSettlementResponse {
@@ -105,15 +131,44 @@ message GetSettlementResponse {
   Settlement settlement = 1;
 }
 
+message UpdateSettlementRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Only billing_party and invoice_requested can change.
+  Settlement settlement = 3 [(google.api.field_behavior) = REQUIRED];
+  // Filled from the JSON body keys when omitted.
+  google.protobuf.FieldMask update_mask = 4;
+}
+
+message UpdateSettlementResponse {
+  Settlement settlement = 1;
+}
+
 message RecordSettlementPaymentRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
   int64 amount = 3 [(google.api.field_behavior) = REQUIRED];
   PaymentMethod method = 4 [(google.api.field_behavior) = REQUIRED];
   string note = 5;
+  // Voucher details; each defaults to the billing party's (or customer's)
+  // name and address and to a standard reason naming the settlement.
+  string payer_name = 6;
+  string payer_address = 7;
+  string reason = 8;
 }
 
 message RecordSettlementPaymentResponse {
+  Settlement settlement = 1;
+}
+
+message VoidSettlementPaymentRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string payment_id = 3 [(google.api.field_behavior) = REQUIRED];
+  string reason = 4 [(google.api.field_behavior) = REQUIRED];
+}
+
+message VoidSettlementPaymentResponse {
   Settlement settlement = 1;
 }
 
@@ -143,11 +198,33 @@ service SettlementService {
     };
   }
 
+  // Changes the billing party and the invoice request of a settlement
+  // (FR-CUS-07). Fails INVOICE_DATA_INCOMPLETE when an invoice is requested
+  // and the billing party's profile lacks required fields.
+  rpc UpdateSettlement(UpdateSettlementRequest) returns (UpdateSettlementResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/settlements/{settlement_id}"
+      body: "settlement"
+      response_body: "settlement"
+    };
+  }
+
   // Records a payment actually collected (FR-BIL-03); a settlement may
   // receive several until the total is fully collected.
   rpc RecordSettlementPayment(RecordSettlementPaymentRequest) returns (RecordSettlementPaymentResponse) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/settlements/{settlement_id}/payments"
+      body: "*"
+      response_body: "settlement"
+    };
+  }
+
+  // FR-BIL-06: voids a payment voucher with a reason. The voucher stays on
+  // file marked void, the settlement's paid amount and status are
+  // recalculated, and the audit log records who voided it.
+  rpc VoidSettlementPayment(VoidSettlementPaymentRequest) returns (VoidSettlementPaymentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/settlements/{settlement_id}/payments/{payment_id}:void"
       body: "*"
       response_body: "settlement"
     };

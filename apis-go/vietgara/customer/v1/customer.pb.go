@@ -25,7 +25,68 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Customer is a vehicle owner served by one garage (FR-CUS-01).
+// CustomerUserLinkStatus is the state of the link between a garage's
+// customer profile and a VietGara user (FR-CUS-06). A customer needs no
+// user; UNSPECIFIED means the profile has never been linked.
+type CustomerUserLinkStatus int32
+
+const (
+	CustomerUserLinkStatus_CUSTOMER_USER_LINK_STATUS_UNSPECIFIED CustomerUserLinkStatus = 0
+	// The garage asked; the user has not answered yet.
+	CustomerUserLinkStatus_CUSTOMER_USER_LINK_STATUS_REQUESTED CustomerUserLinkStatus = 1
+	CustomerUserLinkStatus_CUSTOMER_USER_LINK_STATUS_LINKED    CustomerUserLinkStatus = 2
+	CustomerUserLinkStatus_CUSTOMER_USER_LINK_STATUS_DECLINED  CustomerUserLinkStatus = 3
+	// Ended by either side.
+	CustomerUserLinkStatus_CUSTOMER_USER_LINK_STATUS_UNLINKED CustomerUserLinkStatus = 4
+)
+
+// Enum value maps for CustomerUserLinkStatus.
+var (
+	CustomerUserLinkStatus_name = map[int32]string{
+		0: "CUSTOMER_USER_LINK_STATUS_UNSPECIFIED",
+		1: "CUSTOMER_USER_LINK_STATUS_REQUESTED",
+		2: "CUSTOMER_USER_LINK_STATUS_LINKED",
+		3: "CUSTOMER_USER_LINK_STATUS_DECLINED",
+		4: "CUSTOMER_USER_LINK_STATUS_UNLINKED",
+	}
+	CustomerUserLinkStatus_value = map[string]int32{
+		"CUSTOMER_USER_LINK_STATUS_UNSPECIFIED": 0,
+		"CUSTOMER_USER_LINK_STATUS_REQUESTED":   1,
+		"CUSTOMER_USER_LINK_STATUS_LINKED":      2,
+		"CUSTOMER_USER_LINK_STATUS_DECLINED":    3,
+		"CUSTOMER_USER_LINK_STATUS_UNLINKED":    4,
+	}
+)
+
+func (x CustomerUserLinkStatus) Enum() *CustomerUserLinkStatus {
+	p := new(CustomerUserLinkStatus)
+	*p = x
+	return p
+}
+
+func (x CustomerUserLinkStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (CustomerUserLinkStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_customer_v1_customer_proto_enumTypes[0].Descriptor()
+}
+
+func (CustomerUserLinkStatus) Type() protoreflect.EnumType {
+	return &file_vietgara_customer_v1_customer_proto_enumTypes[0]
+}
+
+func (x CustomerUserLinkStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use CustomerUserLinkStatus.Descriptor instead.
+func (CustomerUserLinkStatus) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_customer_v1_customer_proto_rawDescGZIP(), []int{0}
+}
+
+// Customer is a vehicle owner served by one garage (FR-CUS-01). It needs no
+// VietGara user: a walk-in customer is just a profile the garage keeps.
 type Customer struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	Id       string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -41,8 +102,13 @@ type Customer struct {
 	VehicleCount          int32                  `protobuf:"varint,9,opt,name=vehicle_count,json=vehicleCount,proto3" json:"vehicle_count,omitempty"`
 	CreatedAt             *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt             *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	// False once the customer was deactivated instead of deleted (FR-CAT-07);
+	// an inactive customer is left out of pickers.
+	IsActive bool `protobuf:"varint,12,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	// The state of the link with a user, UNSPECIFIED when never linked.
+	LinkStatus    CustomerUserLinkStatus `protobuf:"varint,13,opt,name=link_status,json=linkStatus,proto3,enum=vietgara.customer.v1.CustomerUserLinkStatus" json:"link_status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Customer) Reset() {
@@ -150,6 +216,20 @@ func (x *Customer) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *Customer) GetIsActive() bool {
+	if x != nil {
+		return x.IsActive
+	}
+	return false
+}
+
+func (x *Customer) GetLinkStatus() CustomerUserLinkStatus {
+	if x != nil {
+		return x.LinkStatus
+	}
+	return CustomerUserLinkStatus_CUSTOMER_USER_LINK_STATUS_UNSPECIFIED
 }
 
 type CreateCustomerRequest struct {
@@ -461,11 +541,13 @@ type ListCustomersRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	// Fuzzy match on name, phone or e-mail.
-	Query         string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
-	Page          int32  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Query    string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
+	Page     int32  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize int32  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	// Also list deactivated customers (staff screens); pickers leave it off.
+	IncludeInactive bool `protobuf:"varint,5,opt,name=include_inactive,json=includeInactive,proto3" json:"include_inactive,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *ListCustomersRequest) Reset() {
@@ -526,6 +608,13 @@ func (x *ListCustomersRequest) GetPageSize() int32 {
 	return 0
 }
 
+func (x *ListCustomersRequest) GetIncludeInactive() bool {
+	if x != nil {
+		return x.IncludeInactive
+	}
+	return false
+}
+
 type ListCustomersResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Data          []*Customer            `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
@@ -579,9 +668,11 @@ func (x *ListCustomersResponse) GetPagination() *v1.Pagination {
 }
 
 type DeleteCustomerRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	CustomerId    string                 `protobuf:"bytes,2,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	GarageId   string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	CustomerId string                 `protobuf:"bytes,2,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	// Answer the outcome without changing anything (`?dryRun=true`).
+	DryRun        bool `protobuf:"varint,3,opt,name=dry_run,json=dryRun,proto3" json:"dry_run,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -630,8 +721,16 @@ func (x *DeleteCustomerRequest) GetCustomerId() string {
 	return ""
 }
 
+func (x *DeleteCustomerRequest) GetDryRun() bool {
+	if x != nil {
+		return x.DryRun
+	}
+	return false
+}
+
 type DeleteCustomerResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Outcome       v1.DeleteOutcome       `protobuf:"varint,1,opt,name=outcome,proto3,enum=vietgara.common.v1.DeleteOutcome" json:"outcome,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -666,11 +765,230 @@ func (*DeleteCustomerResponse) Descriptor() ([]byte, []int) {
 	return file_vietgara_customer_v1_customer_proto_rawDescGZIP(), []int{10}
 }
 
+func (x *DeleteCustomerResponse) GetOutcome() v1.DeleteOutcome {
+	if x != nil {
+		return x.Outcome
+	}
+	return v1.DeleteOutcome(0)
+}
+
+type ActivateCustomerRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	CustomerId    string                 `protobuf:"bytes,2,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActivateCustomerRequest) Reset() {
+	*x = ActivateCustomerRequest{}
+	mi := &file_vietgara_customer_v1_customer_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActivateCustomerRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActivateCustomerRequest) ProtoMessage() {}
+
+func (x *ActivateCustomerRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customer_v1_customer_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActivateCustomerRequest.ProtoReflect.Descriptor instead.
+func (*ActivateCustomerRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_customer_v1_customer_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ActivateCustomerRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *ActivateCustomerRequest) GetCustomerId() string {
+	if x != nil {
+		return x.CustomerId
+	}
+	return ""
+}
+
+type ActivateCustomerResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Customer      *Customer              `protobuf:"bytes,1,opt,name=customer,proto3" json:"customer,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActivateCustomerResponse) Reset() {
+	*x = ActivateCustomerResponse{}
+	mi := &file_vietgara_customer_v1_customer_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActivateCustomerResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActivateCustomerResponse) ProtoMessage() {}
+
+func (x *ActivateCustomerResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customer_v1_customer_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActivateCustomerResponse.ProtoReflect.Descriptor instead.
+func (*ActivateCustomerResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_customer_v1_customer_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ActivateCustomerResponse) GetCustomer() *Customer {
+	if x != nil {
+		return x.Customer
+	}
+	return nil
+}
+
+type LookupCustomersRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	// Either or both; the garage's customers matching any of them are listed.
+	Phone         string `protobuf:"bytes,2,opt,name=phone,proto3" json:"phone,omitempty"`
+	Email         string `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LookupCustomersRequest) Reset() {
+	*x = LookupCustomersRequest{}
+	mi := &file_vietgara_customer_v1_customer_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LookupCustomersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LookupCustomersRequest) ProtoMessage() {}
+
+func (x *LookupCustomersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customer_v1_customer_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LookupCustomersRequest.ProtoReflect.Descriptor instead.
+func (*LookupCustomersRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_customer_v1_customer_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *LookupCustomersRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *LookupCustomersRequest) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *LookupCustomersRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+type LookupCustomersResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The garage's own customers matching the contact.
+	Data []*Customer `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	// Whether a VietGara user has this verified phone or e-mail. Nothing else
+	// about the user is ever returned.
+	UserExists    bool `protobuf:"varint,2,opt,name=user_exists,json=userExists,proto3" json:"user_exists,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LookupCustomersResponse) Reset() {
+	*x = LookupCustomersResponse{}
+	mi := &file_vietgara_customer_v1_customer_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LookupCustomersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LookupCustomersResponse) ProtoMessage() {}
+
+func (x *LookupCustomersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_customer_v1_customer_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LookupCustomersResponse.ProtoReflect.Descriptor instead.
+func (*LookupCustomersResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_customer_v1_customer_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *LookupCustomersResponse) GetData() []*Customer {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *LookupCustomersResponse) GetUserExists() bool {
+	if x != nil {
+		return x.UserExists
+	}
+	return false
+}
+
 var File_vietgara_customer_v1_customer_proto protoreflect.FileDescriptor
 
 const file_vietgara_customer_v1_customer_proto_rawDesc = "" +
 	"\n" +
-	"#vietgara/customer/v1/customer.proto\x12\x14vietgara.customer.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\x90\x04\n" +
+	"#vietgara/customer/v1/customer.proto\x12\x14vietgara.customer.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\"vietgara/common/v1/lifecycle.proto\x1a#vietgara/common/v1/pagination.proto\"\x86\x05\n" +
 	"\bCustomer\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
 	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12 \n" +
@@ -685,7 +1003,10 @@ const file_vietgara_customer_v1_customer_proto_rawDesc = "" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\b\n" +
+	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12 \n" +
+	"\tis_active\x18\f \x01(\bB\x03\xe0A\x03R\bisActive\x12R\n" +
+	"\vlink_status\x18\r \x01(\x0e2,.vietgara.customer.v1.CustomerUserLinkStatusB\x03\xe0A\x03R\n" +
+	"linkStatusB\b\n" +
 	"\x06_phoneB\b\n" +
 	"\x06_emailB\n" +
 	"\n" +
@@ -709,28 +1030,53 @@ const file_vietgara_customer_v1_customer_proto_rawDesc = "" +
 	"\vupdate_mask\x18\x04 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
 	"updateMask\"T\n" +
 	"\x16UpdateCustomerResponse\x12:\n" +
-	"\bcustomer\x18\x01 \x01(\v2\x1e.vietgara.customer.v1.CustomerR\bcustomer\"\x7f\n" +
+	"\bcustomer\x18\x01 \x01(\v2\x1e.vietgara.customer.v1.CustomerR\bcustomer\"\xaa\x01\n" +
 	"\x14ListCustomersRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x14\n" +
 	"\x05query\x18\x02 \x01(\tR\x05query\x12\x12\n" +
 	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"\x8b\x01\n" +
+	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12)\n" +
+	"\x10include_inactive\x18\x05 \x01(\bR\x0fincludeInactive\"\x8b\x01\n" +
 	"\x15ListCustomersResponse\x122\n" +
 	"\x04data\x18\x01 \x03(\v2\x1e.vietgara.customer.v1.CustomerR\x04data\x12>\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1e.vietgara.common.v1.PaginationR\n" +
-	"pagination\"_\n" +
+	"pagination\"x\n" +
 	"\x15DeleteCustomerRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12$\n" +
 	"\vcustomer_id\x18\x02 \x01(\tB\x03\xe0A\x02R\n" +
-	"customerId\"\x18\n" +
-	"\x16DeleteCustomerResponse2\xf2\x06\n" +
+	"customerId\x12\x17\n" +
+	"\adry_run\x18\x03 \x01(\bR\x06dryRun\"U\n" +
+	"\x16DeleteCustomerResponse\x12;\n" +
+	"\aoutcome\x18\x01 \x01(\x0e2!.vietgara.common.v1.DeleteOutcomeR\aoutcome\"a\n" +
+	"\x17ActivateCustomerRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12$\n" +
+	"\vcustomer_id\x18\x02 \x01(\tB\x03\xe0A\x02R\n" +
+	"customerId\"V\n" +
+	"\x18ActivateCustomerResponse\x12:\n" +
+	"\bcustomer\x18\x01 \x01(\v2\x1e.vietgara.customer.v1.CustomerR\bcustomer\"f\n" +
+	"\x16LookupCustomersRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x14\n" +
+	"\x05phone\x18\x02 \x01(\tR\x05phone\x12\x14\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email\"n\n" +
+	"\x17LookupCustomersResponse\x122\n" +
+	"\x04data\x18\x01 \x03(\v2\x1e.vietgara.customer.v1.CustomerR\x04data\x12\x1f\n" +
+	"\vuser_exists\x18\x02 \x01(\bR\n" +
+	"userExists*\xe2\x01\n" +
+	"\x16CustomerUserLinkStatus\x12)\n" +
+	"%CUSTOMER_USER_LINK_STATUS_UNSPECIFIED\x10\x00\x12'\n" +
+	"#CUSTOMER_USER_LINK_STATUS_REQUESTED\x10\x01\x12$\n" +
+	" CUSTOMER_USER_LINK_STATUS_LINKED\x10\x02\x12&\n" +
+	"\"CUSTOMER_USER_LINK_STATUS_DECLINED\x10\x03\x12&\n" +
+	"\"CUSTOMER_USER_LINK_STATUS_UNLINKED\x10\x042\xe0\t\n" +
 	"\x0fCustomerService\x12\x97\x01\n" +
 	"\rListCustomers\x12*.vietgara.customer.v1.ListCustomersRequest\x1a+.vietgara.customer.v1.ListCustomersResponse\"-\x82\xd3\xe4\x93\x02'\x12%/api/v1/garages/{garage_id}/customers\x12\xae\x01\n" +
 	"\x0eCreateCustomer\x12+.vietgara.customer.v1.CreateCustomerRequest\x1a,.vietgara.customer.v1.CreateCustomerResponse\"A\x82\xd3\xe4\x93\x02;:\bcustomerb\bcustomer\"%/api/v1/garages/{garage_id}/customers\x12\xa9\x01\n" +
 	"\vGetCustomer\x12(.vietgara.customer.v1.GetCustomerRequest\x1a).vietgara.customer.v1.GetCustomerResponse\"E\x82\xd3\xe4\x93\x02?b\bcustomer\x123/api/v1/garages/{garage_id}/customers/{customer_id}\x12\xbc\x01\n" +
 	"\x0eUpdateCustomer\x12+.vietgara.customer.v1.UpdateCustomerRequest\x1a,.vietgara.customer.v1.UpdateCustomerResponse\"O\x82\xd3\xe4\x93\x02I:\bcustomerb\bcustomer23/api/v1/garages/{garage_id}/customers/{customer_id}\x12\xa8\x01\n" +
-	"\x0eDeleteCustomer\x12+.vietgara.customer.v1.DeleteCustomerRequest\x1a,.vietgara.customer.v1.DeleteCustomerResponse\";\x82\xd3\xe4\x93\x025*3/api/v1/garages/{garage_id}/customers/{customer_id}BNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1b\x06proto3"
+	"\x0eDeleteCustomer\x12+.vietgara.customer.v1.DeleteCustomerRequest\x1a,.vietgara.customer.v1.DeleteCustomerResponse\";\x82\xd3\xe4\x93\x025*3/api/v1/garages/{garage_id}/customers/{customer_id}\x12\xc4\x01\n" +
+	"\x10ActivateCustomer\x12-.vietgara.customer.v1.ActivateCustomerRequest\x1a..vietgara.customer.v1.ActivateCustomerResponse\"Q\x82\xd3\xe4\x93\x02K:\x01*b\bcustomer\"</api/v1/garages/{garage_id}/customers/{customer_id}:activate\x12\xa4\x01\n" +
+	"\x0fLookupCustomers\x12,.vietgara.customer.v1.LookupCustomersRequest\x1a-.vietgara.customer.v1.LookupCustomersResponse\"4\x82\xd3\xe4\x93\x02.\x12,/api/v1/garages/{garage_id}/customers/lookupBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1b\x06proto3"
 
 var (
 	file_vietgara_customer_v1_customer_proto_rawDescOnce sync.Once
@@ -744,50 +1090,65 @@ func file_vietgara_customer_v1_customer_proto_rawDescGZIP() []byte {
 	return file_vietgara_customer_v1_customer_proto_rawDescData
 }
 
-var file_vietgara_customer_v1_customer_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_vietgara_customer_v1_customer_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_vietgara_customer_v1_customer_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_vietgara_customer_v1_customer_proto_goTypes = []any{
-	(*Customer)(nil),               // 0: vietgara.customer.v1.Customer
-	(*CreateCustomerRequest)(nil),  // 1: vietgara.customer.v1.CreateCustomerRequest
-	(*CreateCustomerResponse)(nil), // 2: vietgara.customer.v1.CreateCustomerResponse
-	(*GetCustomerRequest)(nil),     // 3: vietgara.customer.v1.GetCustomerRequest
-	(*GetCustomerResponse)(nil),    // 4: vietgara.customer.v1.GetCustomerResponse
-	(*UpdateCustomerRequest)(nil),  // 5: vietgara.customer.v1.UpdateCustomerRequest
-	(*UpdateCustomerResponse)(nil), // 6: vietgara.customer.v1.UpdateCustomerResponse
-	(*ListCustomersRequest)(nil),   // 7: vietgara.customer.v1.ListCustomersRequest
-	(*ListCustomersResponse)(nil),  // 8: vietgara.customer.v1.ListCustomersResponse
-	(*DeleteCustomerRequest)(nil),  // 9: vietgara.customer.v1.DeleteCustomerRequest
-	(*DeleteCustomerResponse)(nil), // 10: vietgara.customer.v1.DeleteCustomerResponse
-	(*timestamppb.Timestamp)(nil),  // 11: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),  // 12: google.protobuf.FieldMask
-	(*v1.Pagination)(nil),          // 13: vietgara.common.v1.Pagination
+	(CustomerUserLinkStatus)(0),      // 0: vietgara.customer.v1.CustomerUserLinkStatus
+	(*Customer)(nil),                 // 1: vietgara.customer.v1.Customer
+	(*CreateCustomerRequest)(nil),    // 2: vietgara.customer.v1.CreateCustomerRequest
+	(*CreateCustomerResponse)(nil),   // 3: vietgara.customer.v1.CreateCustomerResponse
+	(*GetCustomerRequest)(nil),       // 4: vietgara.customer.v1.GetCustomerRequest
+	(*GetCustomerResponse)(nil),      // 5: vietgara.customer.v1.GetCustomerResponse
+	(*UpdateCustomerRequest)(nil),    // 6: vietgara.customer.v1.UpdateCustomerRequest
+	(*UpdateCustomerResponse)(nil),   // 7: vietgara.customer.v1.UpdateCustomerResponse
+	(*ListCustomersRequest)(nil),     // 8: vietgara.customer.v1.ListCustomersRequest
+	(*ListCustomersResponse)(nil),    // 9: vietgara.customer.v1.ListCustomersResponse
+	(*DeleteCustomerRequest)(nil),    // 10: vietgara.customer.v1.DeleteCustomerRequest
+	(*DeleteCustomerResponse)(nil),   // 11: vietgara.customer.v1.DeleteCustomerResponse
+	(*ActivateCustomerRequest)(nil),  // 12: vietgara.customer.v1.ActivateCustomerRequest
+	(*ActivateCustomerResponse)(nil), // 13: vietgara.customer.v1.ActivateCustomerResponse
+	(*LookupCustomersRequest)(nil),   // 14: vietgara.customer.v1.LookupCustomersRequest
+	(*LookupCustomersResponse)(nil),  // 15: vietgara.customer.v1.LookupCustomersResponse
+	(*timestamppb.Timestamp)(nil),    // 16: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),    // 17: google.protobuf.FieldMask
+	(*v1.Pagination)(nil),            // 18: vietgara.common.v1.Pagination
+	(v1.DeleteOutcome)(0),            // 19: vietgara.common.v1.DeleteOutcome
 }
 var file_vietgara_customer_v1_customer_proto_depIdxs = []int32{
-	11, // 0: vietgara.customer.v1.Customer.personal_data_consent_at:type_name -> google.protobuf.Timestamp
-	11, // 1: vietgara.customer.v1.Customer.created_at:type_name -> google.protobuf.Timestamp
-	11, // 2: vietgara.customer.v1.Customer.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 3: vietgara.customer.v1.CreateCustomerRequest.customer:type_name -> vietgara.customer.v1.Customer
-	0,  // 4: vietgara.customer.v1.CreateCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
-	0,  // 5: vietgara.customer.v1.GetCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
-	0,  // 6: vietgara.customer.v1.UpdateCustomerRequest.customer:type_name -> vietgara.customer.v1.Customer
-	12, // 7: vietgara.customer.v1.UpdateCustomerRequest.update_mask:type_name -> google.protobuf.FieldMask
-	0,  // 8: vietgara.customer.v1.UpdateCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
-	0,  // 9: vietgara.customer.v1.ListCustomersResponse.data:type_name -> vietgara.customer.v1.Customer
-	13, // 10: vietgara.customer.v1.ListCustomersResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	7,  // 11: vietgara.customer.v1.CustomerService.ListCustomers:input_type -> vietgara.customer.v1.ListCustomersRequest
-	1,  // 12: vietgara.customer.v1.CustomerService.CreateCustomer:input_type -> vietgara.customer.v1.CreateCustomerRequest
-	3,  // 13: vietgara.customer.v1.CustomerService.GetCustomer:input_type -> vietgara.customer.v1.GetCustomerRequest
-	5,  // 14: vietgara.customer.v1.CustomerService.UpdateCustomer:input_type -> vietgara.customer.v1.UpdateCustomerRequest
-	9,  // 15: vietgara.customer.v1.CustomerService.DeleteCustomer:input_type -> vietgara.customer.v1.DeleteCustomerRequest
-	8,  // 16: vietgara.customer.v1.CustomerService.ListCustomers:output_type -> vietgara.customer.v1.ListCustomersResponse
-	2,  // 17: vietgara.customer.v1.CustomerService.CreateCustomer:output_type -> vietgara.customer.v1.CreateCustomerResponse
-	4,  // 18: vietgara.customer.v1.CustomerService.GetCustomer:output_type -> vietgara.customer.v1.GetCustomerResponse
-	6,  // 19: vietgara.customer.v1.CustomerService.UpdateCustomer:output_type -> vietgara.customer.v1.UpdateCustomerResponse
-	10, // 20: vietgara.customer.v1.CustomerService.DeleteCustomer:output_type -> vietgara.customer.v1.DeleteCustomerResponse
-	16, // [16:21] is the sub-list for method output_type
-	11, // [11:16] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	16, // 0: vietgara.customer.v1.Customer.personal_data_consent_at:type_name -> google.protobuf.Timestamp
+	16, // 1: vietgara.customer.v1.Customer.created_at:type_name -> google.protobuf.Timestamp
+	16, // 2: vietgara.customer.v1.Customer.updated_at:type_name -> google.protobuf.Timestamp
+	0,  // 3: vietgara.customer.v1.Customer.link_status:type_name -> vietgara.customer.v1.CustomerUserLinkStatus
+	1,  // 4: vietgara.customer.v1.CreateCustomerRequest.customer:type_name -> vietgara.customer.v1.Customer
+	1,  // 5: vietgara.customer.v1.CreateCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
+	1,  // 6: vietgara.customer.v1.GetCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
+	1,  // 7: vietgara.customer.v1.UpdateCustomerRequest.customer:type_name -> vietgara.customer.v1.Customer
+	17, // 8: vietgara.customer.v1.UpdateCustomerRequest.update_mask:type_name -> google.protobuf.FieldMask
+	1,  // 9: vietgara.customer.v1.UpdateCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
+	1,  // 10: vietgara.customer.v1.ListCustomersResponse.data:type_name -> vietgara.customer.v1.Customer
+	18, // 11: vietgara.customer.v1.ListCustomersResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	19, // 12: vietgara.customer.v1.DeleteCustomerResponse.outcome:type_name -> vietgara.common.v1.DeleteOutcome
+	1,  // 13: vietgara.customer.v1.ActivateCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
+	1,  // 14: vietgara.customer.v1.LookupCustomersResponse.data:type_name -> vietgara.customer.v1.Customer
+	8,  // 15: vietgara.customer.v1.CustomerService.ListCustomers:input_type -> vietgara.customer.v1.ListCustomersRequest
+	2,  // 16: vietgara.customer.v1.CustomerService.CreateCustomer:input_type -> vietgara.customer.v1.CreateCustomerRequest
+	4,  // 17: vietgara.customer.v1.CustomerService.GetCustomer:input_type -> vietgara.customer.v1.GetCustomerRequest
+	6,  // 18: vietgara.customer.v1.CustomerService.UpdateCustomer:input_type -> vietgara.customer.v1.UpdateCustomerRequest
+	10, // 19: vietgara.customer.v1.CustomerService.DeleteCustomer:input_type -> vietgara.customer.v1.DeleteCustomerRequest
+	12, // 20: vietgara.customer.v1.CustomerService.ActivateCustomer:input_type -> vietgara.customer.v1.ActivateCustomerRequest
+	14, // 21: vietgara.customer.v1.CustomerService.LookupCustomers:input_type -> vietgara.customer.v1.LookupCustomersRequest
+	9,  // 22: vietgara.customer.v1.CustomerService.ListCustomers:output_type -> vietgara.customer.v1.ListCustomersResponse
+	3,  // 23: vietgara.customer.v1.CustomerService.CreateCustomer:output_type -> vietgara.customer.v1.CreateCustomerResponse
+	5,  // 24: vietgara.customer.v1.CustomerService.GetCustomer:output_type -> vietgara.customer.v1.GetCustomerResponse
+	7,  // 25: vietgara.customer.v1.CustomerService.UpdateCustomer:output_type -> vietgara.customer.v1.UpdateCustomerResponse
+	11, // 26: vietgara.customer.v1.CustomerService.DeleteCustomer:output_type -> vietgara.customer.v1.DeleteCustomerResponse
+	13, // 27: vietgara.customer.v1.CustomerService.ActivateCustomer:output_type -> vietgara.customer.v1.ActivateCustomerResponse
+	15, // 28: vietgara.customer.v1.CustomerService.LookupCustomers:output_type -> vietgara.customer.v1.LookupCustomersResponse
+	22, // [22:29] is the sub-list for method output_type
+	15, // [15:22] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_customer_v1_customer_proto_init() }
@@ -801,13 +1162,14 @@ func file_vietgara_customer_v1_customer_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_customer_v1_customer_proto_rawDesc), len(file_vietgara_customer_v1_customer_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   11,
+			NumEnums:      1,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_vietgara_customer_v1_customer_proto_goTypes,
 		DependencyIndexes: file_vietgara_customer_v1_customer_proto_depIdxs,
+		EnumInfos:         file_vietgara_customer_v1_customer_proto_enumTypes,
 		MessageInfos:      file_vietgara_customer_v1_customer_proto_msgTypes,
 	}.Build()
 	File_vietgara_customer_v1_customer_proto = out.File

@@ -101,13 +101,15 @@ type Supplier struct {
 	Id       string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	GarageId string                 `protobuf:"bytes,2,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	// Unique per garage (case-insensitive).
-	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	TaxCode       *string                `protobuf:"bytes,4,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
-	Contact       *SupplierContact       `protobuf:"bytes,5,opt,name=contact,proto3" json:"contact,omitempty"`
-	Bank          *v1.BankDetails        `protobuf:"bytes,6,opt,name=bank,proto3" json:"bank,omitempty"`
-	Note          *string                `protobuf:"bytes,7,opt,name=note,proto3,oneof" json:"note,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Name      string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	TaxCode   *string                `protobuf:"bytes,4,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
+	Contact   *SupplierContact       `protobuf:"bytes,5,opt,name=contact,proto3" json:"contact,omitempty"`
+	Bank      *v1.BankDetails        `protobuf:"bytes,6,opt,name=bank,proto3" json:"bank,omitempty"`
+	Note      *string                `protobuf:"bytes,7,opt,name=note,proto3,oneof" json:"note,omitempty"`
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	// False once the supplier was deactivated instead of deleted (FR-CAT-07).
+	IsActive      bool `protobuf:"varint,10,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -203,6 +205,13 @@ func (x *Supplier) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *Supplier) GetIsActive() bool {
+	if x != nil {
+		return x.IsActive
+	}
+	return false
 }
 
 type CreateSupplierRequest struct {
@@ -515,11 +524,13 @@ type ListSuppliersRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	// Matches name, tax code or contact.
-	Query         string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
-	Page          int32  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Query    string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
+	Page     int32  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize int32  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	// Also list deactivated suppliers (staff screens); pickers leave it off.
+	IncludeInactive bool `protobuf:"varint,5,opt,name=include_inactive,json=includeInactive,proto3" json:"include_inactive,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *ListSuppliersRequest) Reset() {
@@ -580,6 +591,13 @@ func (x *ListSuppliersRequest) GetPageSize() int32 {
 	return 0
 }
 
+func (x *ListSuppliersRequest) GetIncludeInactive() bool {
+	if x != nil {
+		return x.IncludeInactive
+	}
+	return false
+}
+
 type ListSuppliersResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Data          []*Supplier            `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
@@ -633,9 +651,11 @@ func (x *ListSuppliersResponse) GetPagination() *v1.Pagination {
 }
 
 type DeleteSupplierRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	SupplierId    string                 `protobuf:"bytes,2,opt,name=supplier_id,json=supplierId,proto3" json:"supplier_id,omitempty"`
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	GarageId   string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	SupplierId string                 `protobuf:"bytes,2,opt,name=supplier_id,json=supplierId,proto3" json:"supplier_id,omitempty"`
+	// Answer the outcome without changing anything (`?dryRun=true`).
+	DryRun        bool `protobuf:"varint,3,opt,name=dry_run,json=dryRun,proto3" json:"dry_run,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -684,8 +704,16 @@ func (x *DeleteSupplierRequest) GetSupplierId() string {
 	return ""
 }
 
+func (x *DeleteSupplierRequest) GetDryRun() bool {
+	if x != nil {
+		return x.DryRun
+	}
+	return false
+}
+
 type DeleteSupplierResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Outcome       v1.DeleteOutcome       `protobuf:"varint,1,opt,name=outcome,proto3,enum=vietgara.common.v1.DeleteOutcome" json:"outcome,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -720,11 +748,114 @@ func (*DeleteSupplierResponse) Descriptor() ([]byte, []int) {
 	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{11}
 }
 
+func (x *DeleteSupplierResponse) GetOutcome() v1.DeleteOutcome {
+	if x != nil {
+		return x.Outcome
+	}
+	return v1.DeleteOutcome(0)
+}
+
+type ActivateSupplierRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	SupplierId    string                 `protobuf:"bytes,2,opt,name=supplier_id,json=supplierId,proto3" json:"supplier_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActivateSupplierRequest) Reset() {
+	*x = ActivateSupplierRequest{}
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActivateSupplierRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActivateSupplierRequest) ProtoMessage() {}
+
+func (x *ActivateSupplierRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActivateSupplierRequest.ProtoReflect.Descriptor instead.
+func (*ActivateSupplierRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ActivateSupplierRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *ActivateSupplierRequest) GetSupplierId() string {
+	if x != nil {
+		return x.SupplierId
+	}
+	return ""
+}
+
+type ActivateSupplierResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Supplier      *Supplier              `protobuf:"bytes,1,opt,name=supplier,proto3" json:"supplier,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActivateSupplierResponse) Reset() {
+	*x = ActivateSupplierResponse{}
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActivateSupplierResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActivateSupplierResponse) ProtoMessage() {}
+
+func (x *ActivateSupplierResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActivateSupplierResponse.ProtoReflect.Descriptor instead.
+func (*ActivateSupplierResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ActivateSupplierResponse) GetSupplier() *Supplier {
+	if x != nil {
+		return x.Supplier
+	}
+	return nil
+}
+
 var File_vietgara_supplier_v1_supplier_proto protoreflect.FileDescriptor
 
 const file_vietgara_supplier_v1_supplier_proto_rawDesc = "" +
 	"\n" +
-	"#vietgara/supplier/v1/supplier.proto\x12\x14vietgara.supplier.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a%vietgara/common/v1/bank_details.proto\x1a#vietgara/common/v1/pagination.proto\"\xc5\x01\n" +
+	"#vietgara/supplier/v1/supplier.proto\x12\x14vietgara.supplier.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a%vietgara/common/v1/bank_details.proto\x1a\"vietgara/common/v1/lifecycle.proto\x1a#vietgara/common/v1/pagination.proto\"\xc5\x01\n" +
 	"\x0fSupplierContact\x12*\n" +
 	"\x0econtact_person\x18\x01 \x01(\tH\x00R\rcontactPerson\x88\x01\x01\x12\x19\n" +
 	"\x05phone\x18\x02 \x01(\tH\x01R\x05phone\x88\x01\x01\x12\x19\n" +
@@ -734,7 +865,7 @@ const file_vietgara_supplier_v1_supplier_proto_rawDesc = "" +
 	"\x06_phoneB\b\n" +
 	"\x06_emailB\n" +
 	"\n" +
-	"\b_address\"\x9f\x03\n" +
+	"\b_address\"\xc1\x03\n" +
 	"\bSupplier\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
 	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\x17\n" +
@@ -746,7 +877,9 @@ const file_vietgara_supplier_v1_supplier_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\v\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12 \n" +
+	"\tis_active\x18\n" +
+	" \x01(\bB\x03\xe0A\x03R\bisActiveB\v\n" +
 	"\t_tax_codeB\a\n" +
 	"\x05_note\"z\n" +
 	"\x15CreateSupplierRequest\x12 \n" +
@@ -768,28 +901,38 @@ const file_vietgara_supplier_v1_supplier_proto_rawDesc = "" +
 	"\vupdate_mask\x18\x04 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
 	"updateMask\"T\n" +
 	"\x16UpdateSupplierResponse\x12:\n" +
-	"\bsupplier\x18\x01 \x01(\v2\x1e.vietgara.supplier.v1.SupplierR\bsupplier\"\x7f\n" +
+	"\bsupplier\x18\x01 \x01(\v2\x1e.vietgara.supplier.v1.SupplierR\bsupplier\"\xaa\x01\n" +
 	"\x14ListSuppliersRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x14\n" +
 	"\x05query\x18\x02 \x01(\tR\x05query\x12\x12\n" +
 	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"\x8b\x01\n" +
+	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12)\n" +
+	"\x10include_inactive\x18\x05 \x01(\bR\x0fincludeInactive\"\x8b\x01\n" +
 	"\x15ListSuppliersResponse\x122\n" +
 	"\x04data\x18\x01 \x03(\v2\x1e.vietgara.supplier.v1.SupplierR\x04data\x12>\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1e.vietgara.common.v1.PaginationR\n" +
-	"pagination\"_\n" +
+	"pagination\"x\n" +
 	"\x15DeleteSupplierRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12$\n" +
 	"\vsupplier_id\x18\x02 \x01(\tB\x03\xe0A\x02R\n" +
-	"supplierId\"\x18\n" +
-	"\x16DeleteSupplierResponse2\xf2\x06\n" +
+	"supplierId\x12\x17\n" +
+	"\adry_run\x18\x03 \x01(\bR\x06dryRun\"U\n" +
+	"\x16DeleteSupplierResponse\x12;\n" +
+	"\aoutcome\x18\x01 \x01(\x0e2!.vietgara.common.v1.DeleteOutcomeR\aoutcome\"a\n" +
+	"\x17ActivateSupplierRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12$\n" +
+	"\vsupplier_id\x18\x02 \x01(\tB\x03\xe0A\x02R\n" +
+	"supplierId\"V\n" +
+	"\x18ActivateSupplierResponse\x12:\n" +
+	"\bsupplier\x18\x01 \x01(\v2\x1e.vietgara.supplier.v1.SupplierR\bsupplier2\xb9\b\n" +
 	"\x0fSupplierService\x12\x97\x01\n" +
 	"\rListSuppliers\x12*.vietgara.supplier.v1.ListSuppliersRequest\x1a+.vietgara.supplier.v1.ListSuppliersResponse\"-\x82\xd3\xe4\x93\x02'\x12%/api/v1/garages/{garage_id}/suppliers\x12\xae\x01\n" +
 	"\x0eCreateSupplier\x12+.vietgara.supplier.v1.CreateSupplierRequest\x1a,.vietgara.supplier.v1.CreateSupplierResponse\"A\x82\xd3\xe4\x93\x02;:\bsupplierb\bsupplier\"%/api/v1/garages/{garage_id}/suppliers\x12\xa9\x01\n" +
 	"\vGetSupplier\x12(.vietgara.supplier.v1.GetSupplierRequest\x1a).vietgara.supplier.v1.GetSupplierResponse\"E\x82\xd3\xe4\x93\x02?b\bsupplier\x123/api/v1/garages/{garage_id}/suppliers/{supplier_id}\x12\xbc\x01\n" +
 	"\x0eUpdateSupplier\x12+.vietgara.supplier.v1.UpdateSupplierRequest\x1a,.vietgara.supplier.v1.UpdateSupplierResponse\"O\x82\xd3\xe4\x93\x02I:\bsupplierb\bsupplier23/api/v1/garages/{garage_id}/suppliers/{supplier_id}\x12\xa8\x01\n" +
-	"\x0eDeleteSupplier\x12+.vietgara.supplier.v1.DeleteSupplierRequest\x1a,.vietgara.supplier.v1.DeleteSupplierResponse\";\x82\xd3\xe4\x93\x025*3/api/v1/garages/{garage_id}/suppliers/{supplier_id}BNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/supplier/v1;supplierv1b\x06proto3"
+	"\x0eDeleteSupplier\x12+.vietgara.supplier.v1.DeleteSupplierRequest\x1a,.vietgara.supplier.v1.DeleteSupplierResponse\";\x82\xd3\xe4\x93\x025*3/api/v1/garages/{garage_id}/suppliers/{supplier_id}\x12\xc4\x01\n" +
+	"\x10ActivateSupplier\x12-.vietgara.supplier.v1.ActivateSupplierRequest\x1a..vietgara.supplier.v1.ActivateSupplierResponse\"Q\x82\xd3\xe4\x93\x02K:\x01*b\bsupplier\"</api/v1/garages/{garage_id}/suppliers/{supplier_id}:activateBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/supplier/v1;supplierv1b\x06proto3"
 
 var (
 	file_vietgara_supplier_v1_supplier_proto_rawDescOnce sync.Once
@@ -803,53 +946,60 @@ func file_vietgara_supplier_v1_supplier_proto_rawDescGZIP() []byte {
 	return file_vietgara_supplier_v1_supplier_proto_rawDescData
 }
 
-var file_vietgara_supplier_v1_supplier_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_vietgara_supplier_v1_supplier_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_vietgara_supplier_v1_supplier_proto_goTypes = []any{
-	(*SupplierContact)(nil),        // 0: vietgara.supplier.v1.SupplierContact
-	(*Supplier)(nil),               // 1: vietgara.supplier.v1.Supplier
-	(*CreateSupplierRequest)(nil),  // 2: vietgara.supplier.v1.CreateSupplierRequest
-	(*CreateSupplierResponse)(nil), // 3: vietgara.supplier.v1.CreateSupplierResponse
-	(*GetSupplierRequest)(nil),     // 4: vietgara.supplier.v1.GetSupplierRequest
-	(*GetSupplierResponse)(nil),    // 5: vietgara.supplier.v1.GetSupplierResponse
-	(*UpdateSupplierRequest)(nil),  // 6: vietgara.supplier.v1.UpdateSupplierRequest
-	(*UpdateSupplierResponse)(nil), // 7: vietgara.supplier.v1.UpdateSupplierResponse
-	(*ListSuppliersRequest)(nil),   // 8: vietgara.supplier.v1.ListSuppliersRequest
-	(*ListSuppliersResponse)(nil),  // 9: vietgara.supplier.v1.ListSuppliersResponse
-	(*DeleteSupplierRequest)(nil),  // 10: vietgara.supplier.v1.DeleteSupplierRequest
-	(*DeleteSupplierResponse)(nil), // 11: vietgara.supplier.v1.DeleteSupplierResponse
-	(*v1.BankDetails)(nil),         // 12: vietgara.common.v1.BankDetails
-	(*timestamppb.Timestamp)(nil),  // 13: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),  // 14: google.protobuf.FieldMask
-	(*v1.Pagination)(nil),          // 15: vietgara.common.v1.Pagination
+	(*SupplierContact)(nil),          // 0: vietgara.supplier.v1.SupplierContact
+	(*Supplier)(nil),                 // 1: vietgara.supplier.v1.Supplier
+	(*CreateSupplierRequest)(nil),    // 2: vietgara.supplier.v1.CreateSupplierRequest
+	(*CreateSupplierResponse)(nil),   // 3: vietgara.supplier.v1.CreateSupplierResponse
+	(*GetSupplierRequest)(nil),       // 4: vietgara.supplier.v1.GetSupplierRequest
+	(*GetSupplierResponse)(nil),      // 5: vietgara.supplier.v1.GetSupplierResponse
+	(*UpdateSupplierRequest)(nil),    // 6: vietgara.supplier.v1.UpdateSupplierRequest
+	(*UpdateSupplierResponse)(nil),   // 7: vietgara.supplier.v1.UpdateSupplierResponse
+	(*ListSuppliersRequest)(nil),     // 8: vietgara.supplier.v1.ListSuppliersRequest
+	(*ListSuppliersResponse)(nil),    // 9: vietgara.supplier.v1.ListSuppliersResponse
+	(*DeleteSupplierRequest)(nil),    // 10: vietgara.supplier.v1.DeleteSupplierRequest
+	(*DeleteSupplierResponse)(nil),   // 11: vietgara.supplier.v1.DeleteSupplierResponse
+	(*ActivateSupplierRequest)(nil),  // 12: vietgara.supplier.v1.ActivateSupplierRequest
+	(*ActivateSupplierResponse)(nil), // 13: vietgara.supplier.v1.ActivateSupplierResponse
+	(*v1.BankDetails)(nil),           // 14: vietgara.common.v1.BankDetails
+	(*timestamppb.Timestamp)(nil),    // 15: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),    // 16: google.protobuf.FieldMask
+	(*v1.Pagination)(nil),            // 17: vietgara.common.v1.Pagination
+	(v1.DeleteOutcome)(0),            // 18: vietgara.common.v1.DeleteOutcome
 }
 var file_vietgara_supplier_v1_supplier_proto_depIdxs = []int32{
 	0,  // 0: vietgara.supplier.v1.Supplier.contact:type_name -> vietgara.supplier.v1.SupplierContact
-	12, // 1: vietgara.supplier.v1.Supplier.bank:type_name -> vietgara.common.v1.BankDetails
-	13, // 2: vietgara.supplier.v1.Supplier.created_at:type_name -> google.protobuf.Timestamp
-	13, // 3: vietgara.supplier.v1.Supplier.updated_at:type_name -> google.protobuf.Timestamp
+	14, // 1: vietgara.supplier.v1.Supplier.bank:type_name -> vietgara.common.v1.BankDetails
+	15, // 2: vietgara.supplier.v1.Supplier.created_at:type_name -> google.protobuf.Timestamp
+	15, // 3: vietgara.supplier.v1.Supplier.updated_at:type_name -> google.protobuf.Timestamp
 	1,  // 4: vietgara.supplier.v1.CreateSupplierRequest.supplier:type_name -> vietgara.supplier.v1.Supplier
 	1,  // 5: vietgara.supplier.v1.CreateSupplierResponse.supplier:type_name -> vietgara.supplier.v1.Supplier
 	1,  // 6: vietgara.supplier.v1.GetSupplierResponse.supplier:type_name -> vietgara.supplier.v1.Supplier
 	1,  // 7: vietgara.supplier.v1.UpdateSupplierRequest.supplier:type_name -> vietgara.supplier.v1.Supplier
-	14, // 8: vietgara.supplier.v1.UpdateSupplierRequest.update_mask:type_name -> google.protobuf.FieldMask
+	16, // 8: vietgara.supplier.v1.UpdateSupplierRequest.update_mask:type_name -> google.protobuf.FieldMask
 	1,  // 9: vietgara.supplier.v1.UpdateSupplierResponse.supplier:type_name -> vietgara.supplier.v1.Supplier
 	1,  // 10: vietgara.supplier.v1.ListSuppliersResponse.data:type_name -> vietgara.supplier.v1.Supplier
-	15, // 11: vietgara.supplier.v1.ListSuppliersResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	8,  // 12: vietgara.supplier.v1.SupplierService.ListSuppliers:input_type -> vietgara.supplier.v1.ListSuppliersRequest
-	2,  // 13: vietgara.supplier.v1.SupplierService.CreateSupplier:input_type -> vietgara.supplier.v1.CreateSupplierRequest
-	4,  // 14: vietgara.supplier.v1.SupplierService.GetSupplier:input_type -> vietgara.supplier.v1.GetSupplierRequest
-	6,  // 15: vietgara.supplier.v1.SupplierService.UpdateSupplier:input_type -> vietgara.supplier.v1.UpdateSupplierRequest
-	10, // 16: vietgara.supplier.v1.SupplierService.DeleteSupplier:input_type -> vietgara.supplier.v1.DeleteSupplierRequest
-	9,  // 17: vietgara.supplier.v1.SupplierService.ListSuppliers:output_type -> vietgara.supplier.v1.ListSuppliersResponse
-	3,  // 18: vietgara.supplier.v1.SupplierService.CreateSupplier:output_type -> vietgara.supplier.v1.CreateSupplierResponse
-	5,  // 19: vietgara.supplier.v1.SupplierService.GetSupplier:output_type -> vietgara.supplier.v1.GetSupplierResponse
-	7,  // 20: vietgara.supplier.v1.SupplierService.UpdateSupplier:output_type -> vietgara.supplier.v1.UpdateSupplierResponse
-	11, // 21: vietgara.supplier.v1.SupplierService.DeleteSupplier:output_type -> vietgara.supplier.v1.DeleteSupplierResponse
-	17, // [17:22] is the sub-list for method output_type
-	12, // [12:17] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	17, // 11: vietgara.supplier.v1.ListSuppliersResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	18, // 12: vietgara.supplier.v1.DeleteSupplierResponse.outcome:type_name -> vietgara.common.v1.DeleteOutcome
+	1,  // 13: vietgara.supplier.v1.ActivateSupplierResponse.supplier:type_name -> vietgara.supplier.v1.Supplier
+	8,  // 14: vietgara.supplier.v1.SupplierService.ListSuppliers:input_type -> vietgara.supplier.v1.ListSuppliersRequest
+	2,  // 15: vietgara.supplier.v1.SupplierService.CreateSupplier:input_type -> vietgara.supplier.v1.CreateSupplierRequest
+	4,  // 16: vietgara.supplier.v1.SupplierService.GetSupplier:input_type -> vietgara.supplier.v1.GetSupplierRequest
+	6,  // 17: vietgara.supplier.v1.SupplierService.UpdateSupplier:input_type -> vietgara.supplier.v1.UpdateSupplierRequest
+	10, // 18: vietgara.supplier.v1.SupplierService.DeleteSupplier:input_type -> vietgara.supplier.v1.DeleteSupplierRequest
+	12, // 19: vietgara.supplier.v1.SupplierService.ActivateSupplier:input_type -> vietgara.supplier.v1.ActivateSupplierRequest
+	9,  // 20: vietgara.supplier.v1.SupplierService.ListSuppliers:output_type -> vietgara.supplier.v1.ListSuppliersResponse
+	3,  // 21: vietgara.supplier.v1.SupplierService.CreateSupplier:output_type -> vietgara.supplier.v1.CreateSupplierResponse
+	5,  // 22: vietgara.supplier.v1.SupplierService.GetSupplier:output_type -> vietgara.supplier.v1.GetSupplierResponse
+	7,  // 23: vietgara.supplier.v1.SupplierService.UpdateSupplier:output_type -> vietgara.supplier.v1.UpdateSupplierResponse
+	11, // 24: vietgara.supplier.v1.SupplierService.DeleteSupplier:output_type -> vietgara.supplier.v1.DeleteSupplierResponse
+	13, // 25: vietgara.supplier.v1.SupplierService.ActivateSupplier:output_type -> vietgara.supplier.v1.ActivateSupplierResponse
+	20, // [20:26] is the sub-list for method output_type
+	14, // [14:20] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_supplier_v1_supplier_proto_init() }
@@ -865,7 +1015,7 @@ func file_vietgara_supplier_v1_supplier_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_supplier_v1_supplier_proto_rawDesc), len(file_vietgara_supplier_v1_supplier_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
