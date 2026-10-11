@@ -93,68 +93,6 @@ func (x *SupplierContact) GetAddress() string {
 	return ""
 }
 
-// SupplierBankDetails is the account a garage pays the supplier into.
-type SupplierBankDetails struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	BankName      *string                `protobuf:"bytes,1,opt,name=bank_name,json=bankName,proto3,oneof" json:"bank_name,omitempty"`
-	AccountNumber *string                `protobuf:"bytes,2,opt,name=account_number,json=accountNumber,proto3,oneof" json:"account_number,omitempty"`
-	// Name the account is registered under.
-	AccountHolder *string `protobuf:"bytes,3,opt,name=account_holder,json=accountHolder,proto3,oneof" json:"account_holder,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SupplierBankDetails) Reset() {
-	*x = SupplierBankDetails{}
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SupplierBankDetails) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SupplierBankDetails) ProtoMessage() {}
-
-func (x *SupplierBankDetails) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SupplierBankDetails.ProtoReflect.Descriptor instead.
-func (*SupplierBankDetails) Descriptor() ([]byte, []int) {
-	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *SupplierBankDetails) GetBankName() string {
-	if x != nil && x.BankName != nil {
-		return *x.BankName
-	}
-	return ""
-}
-
-func (x *SupplierBankDetails) GetAccountNumber() string {
-	if x != nil && x.AccountNumber != nil {
-		return *x.AccountNumber
-	}
-	return ""
-}
-
-func (x *SupplierBankDetails) GetAccountHolder() string {
-	if x != nil && x.AccountHolder != nil {
-		return *x.AccountHolder
-	}
-	return ""
-}
-
 // Supplier is a business that sells parts to the garage, kept in the
 // garage's directory (FR-SUP-01). It is not a customer; insurers are not
 // suppliers either and come back in their own record in Phase 17.
@@ -166,7 +104,7 @@ type Supplier struct {
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	TaxCode       *string                `protobuf:"bytes,4,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
 	Contact       *SupplierContact       `protobuf:"bytes,5,opt,name=contact,proto3" json:"contact,omitempty"`
-	Bank          *SupplierBankDetails   `protobuf:"bytes,6,opt,name=bank,proto3" json:"bank,omitempty"`
+	Bank          *v1.BankDetails        `protobuf:"bytes,6,opt,name=bank,proto3" json:"bank,omitempty"`
 	Note          *string                `protobuf:"bytes,7,opt,name=note,proto3,oneof" json:"note,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
@@ -176,7 +114,7 @@ type Supplier struct {
 
 func (x *Supplier) Reset() {
 	*x = Supplier{}
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[2]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -188,7 +126,7 @@ func (x *Supplier) String() string {
 func (*Supplier) ProtoMessage() {}
 
 func (x *Supplier) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[2]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -201,7 +139,7 @@ func (x *Supplier) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Supplier.ProtoReflect.Descriptor instead.
 func (*Supplier) Descriptor() ([]byte, []int) {
-	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{2}
+	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Supplier) GetId() string {
@@ -239,7 +177,7 @@ func (x *Supplier) GetContact() *SupplierContact {
 	return nil
 }
 
-func (x *Supplier) GetBank() *SupplierBankDetails {
+func (x *Supplier) GetBank() *v1.BankDetails {
 	if x != nil {
 		return x.Bank
 	}
@@ -277,7 +215,7 @@ type CreateSupplierRequest struct {
 
 func (x *CreateSupplierRequest) Reset() {
 	*x = CreateSupplierRequest{}
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[3]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -289,7 +227,7 @@ func (x *CreateSupplierRequest) String() string {
 func (*CreateSupplierRequest) ProtoMessage() {}
 
 func (x *CreateSupplierRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[3]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -302,7 +240,7 @@ func (x *CreateSupplierRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSupplierRequest.ProtoReflect.Descriptor instead.
 func (*CreateSupplierRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{3}
+	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *CreateSupplierRequest) GetGarageId() string {
@@ -328,7 +266,7 @@ type CreateSupplierResponse struct {
 
 func (x *CreateSupplierResponse) Reset() {
 	*x = CreateSupplierResponse{}
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[4]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -340,7 +278,7 @@ func (x *CreateSupplierResponse) String() string {
 func (*CreateSupplierResponse) ProtoMessage() {}
 
 func (x *CreateSupplierResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[4]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -353,7 +291,7 @@ func (x *CreateSupplierResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSupplierResponse.ProtoReflect.Descriptor instead.
 func (*CreateSupplierResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{4}
+	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *CreateSupplierResponse) GetSupplier() *Supplier {
@@ -373,7 +311,7 @@ type GetSupplierRequest struct {
 
 func (x *GetSupplierRequest) Reset() {
 	*x = GetSupplierRequest{}
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[5]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -385,7 +323,7 @@ func (x *GetSupplierRequest) String() string {
 func (*GetSupplierRequest) ProtoMessage() {}
 
 func (x *GetSupplierRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[5]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -398,7 +336,7 @@ func (x *GetSupplierRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSupplierRequest.ProtoReflect.Descriptor instead.
 func (*GetSupplierRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{5}
+	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetSupplierRequest) GetGarageId() string {
@@ -424,7 +362,7 @@ type GetSupplierResponse struct {
 
 func (x *GetSupplierResponse) Reset() {
 	*x = GetSupplierResponse{}
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[6]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -436,7 +374,7 @@ func (x *GetSupplierResponse) String() string {
 func (*GetSupplierResponse) ProtoMessage() {}
 
 func (x *GetSupplierResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[6]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -449,7 +387,7 @@ func (x *GetSupplierResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSupplierResponse.ProtoReflect.Descriptor instead.
 func (*GetSupplierResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{6}
+	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetSupplierResponse) GetSupplier() *Supplier {
@@ -473,7 +411,7 @@ type UpdateSupplierRequest struct {
 
 func (x *UpdateSupplierRequest) Reset() {
 	*x = UpdateSupplierRequest{}
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[7]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -485,7 +423,7 @@ func (x *UpdateSupplierRequest) String() string {
 func (*UpdateSupplierRequest) ProtoMessage() {}
 
 func (x *UpdateSupplierRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[7]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -498,7 +436,7 @@ func (x *UpdateSupplierRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSupplierRequest.ProtoReflect.Descriptor instead.
 func (*UpdateSupplierRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{7}
+	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *UpdateSupplierRequest) GetGarageId() string {
@@ -538,7 +476,7 @@ type UpdateSupplierResponse struct {
 
 func (x *UpdateSupplierResponse) Reset() {
 	*x = UpdateSupplierResponse{}
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[8]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -550,7 +488,7 @@ func (x *UpdateSupplierResponse) String() string {
 func (*UpdateSupplierResponse) ProtoMessage() {}
 
 func (x *UpdateSupplierResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[8]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -563,7 +501,7 @@ func (x *UpdateSupplierResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSupplierResponse.ProtoReflect.Descriptor instead.
 func (*UpdateSupplierResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{8}
+	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpdateSupplierResponse) GetSupplier() *Supplier {
@@ -586,7 +524,7 @@ type ListSuppliersRequest struct {
 
 func (x *ListSuppliersRequest) Reset() {
 	*x = ListSuppliersRequest{}
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[9]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -598,7 +536,7 @@ func (x *ListSuppliersRequest) String() string {
 func (*ListSuppliersRequest) ProtoMessage() {}
 
 func (x *ListSuppliersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[9]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -611,7 +549,7 @@ func (x *ListSuppliersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSuppliersRequest.ProtoReflect.Descriptor instead.
 func (*ListSuppliersRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{9}
+	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ListSuppliersRequest) GetGarageId() string {
@@ -652,7 +590,7 @@ type ListSuppliersResponse struct {
 
 func (x *ListSuppliersResponse) Reset() {
 	*x = ListSuppliersResponse{}
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[10]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -664,7 +602,7 @@ func (x *ListSuppliersResponse) String() string {
 func (*ListSuppliersResponse) ProtoMessage() {}
 
 func (x *ListSuppliersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[10]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -677,7 +615,7 @@ func (x *ListSuppliersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSuppliersResponse.ProtoReflect.Descriptor instead.
 func (*ListSuppliersResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{10}
+	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ListSuppliersResponse) GetData() []*Supplier {
@@ -704,7 +642,7 @@ type DeleteSupplierRequest struct {
 
 func (x *DeleteSupplierRequest) Reset() {
 	*x = DeleteSupplierRequest{}
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[11]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -716,7 +654,7 @@ func (x *DeleteSupplierRequest) String() string {
 func (*DeleteSupplierRequest) ProtoMessage() {}
 
 func (x *DeleteSupplierRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[11]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -729,7 +667,7 @@ func (x *DeleteSupplierRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSupplierRequest.ProtoReflect.Descriptor instead.
 func (*DeleteSupplierRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{11}
+	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *DeleteSupplierRequest) GetGarageId() string {
@@ -754,7 +692,7 @@ type DeleteSupplierResponse struct {
 
 func (x *DeleteSupplierResponse) Reset() {
 	*x = DeleteSupplierResponse{}
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[12]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -766,7 +704,7 @@ func (x *DeleteSupplierResponse) String() string {
 func (*DeleteSupplierResponse) ProtoMessage() {}
 
 func (x *DeleteSupplierResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[12]
+	mi := &file_vietgara_supplier_v1_supplier_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -779,14 +717,14 @@ func (x *DeleteSupplierResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSupplierResponse.ProtoReflect.Descriptor instead.
 func (*DeleteSupplierResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{12}
+	return file_vietgara_supplier_v1_supplier_proto_rawDescGZIP(), []int{11}
 }
 
 var File_vietgara_supplier_v1_supplier_proto protoreflect.FileDescriptor
 
 const file_vietgara_supplier_v1_supplier_proto_rawDesc = "" +
 	"\n" +
-	"#vietgara/supplier/v1/supplier.proto\x12\x14vietgara.supplier.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xc5\x01\n" +
+	"#vietgara/supplier/v1/supplier.proto\x12\x14vietgara.supplier.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a%vietgara/common/v1/bank_details.proto\x1a#vietgara/common/v1/pagination.proto\"\xc5\x01\n" +
 	"\x0fSupplierContact\x12*\n" +
 	"\x0econtact_person\x18\x01 \x01(\tH\x00R\rcontactPerson\x88\x01\x01\x12\x19\n" +
 	"\x05phone\x18\x02 \x01(\tH\x01R\x05phone\x88\x01\x01\x12\x19\n" +
@@ -796,22 +734,14 @@ const file_vietgara_supplier_v1_supplier_proto_rawDesc = "" +
 	"\x06_phoneB\b\n" +
 	"\x06_emailB\n" +
 	"\n" +
-	"\b_address\"\xc3\x01\n" +
-	"\x13SupplierBankDetails\x12 \n" +
-	"\tbank_name\x18\x01 \x01(\tH\x00R\bbankName\x88\x01\x01\x12*\n" +
-	"\x0eaccount_number\x18\x02 \x01(\tH\x01R\raccountNumber\x88\x01\x01\x12*\n" +
-	"\x0eaccount_holder\x18\x03 \x01(\tH\x02R\raccountHolder\x88\x01\x01B\f\n" +
-	"\n" +
-	"_bank_nameB\x11\n" +
-	"\x0f_account_numberB\x11\n" +
-	"\x0f_account_holder\"\xa9\x03\n" +
+	"\b_address\"\x9f\x03\n" +
 	"\bSupplier\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
 	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\x17\n" +
 	"\x04name\x18\x03 \x01(\tB\x03\xe0A\x02R\x04name\x12\x1e\n" +
 	"\btax_code\x18\x04 \x01(\tH\x00R\ataxCode\x88\x01\x01\x12?\n" +
-	"\acontact\x18\x05 \x01(\v2%.vietgara.supplier.v1.SupplierContactR\acontact\x12=\n" +
-	"\x04bank\x18\x06 \x01(\v2).vietgara.supplier.v1.SupplierBankDetailsR\x04bank\x12\x17\n" +
+	"\acontact\x18\x05 \x01(\v2%.vietgara.supplier.v1.SupplierContactR\acontact\x123\n" +
+	"\x04bank\x18\x06 \x01(\v2\x1f.vietgara.common.v1.BankDetailsR\x04bank\x12\x17\n" +
 	"\x04note\x18\a \x01(\tH\x01R\x04note\x88\x01\x01\x12>\n" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
@@ -873,48 +803,48 @@ func file_vietgara_supplier_v1_supplier_proto_rawDescGZIP() []byte {
 	return file_vietgara_supplier_v1_supplier_proto_rawDescData
 }
 
-var file_vietgara_supplier_v1_supplier_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_vietgara_supplier_v1_supplier_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_vietgara_supplier_v1_supplier_proto_goTypes = []any{
 	(*SupplierContact)(nil),        // 0: vietgara.supplier.v1.SupplierContact
-	(*SupplierBankDetails)(nil),    // 1: vietgara.supplier.v1.SupplierBankDetails
-	(*Supplier)(nil),               // 2: vietgara.supplier.v1.Supplier
-	(*CreateSupplierRequest)(nil),  // 3: vietgara.supplier.v1.CreateSupplierRequest
-	(*CreateSupplierResponse)(nil), // 4: vietgara.supplier.v1.CreateSupplierResponse
-	(*GetSupplierRequest)(nil),     // 5: vietgara.supplier.v1.GetSupplierRequest
-	(*GetSupplierResponse)(nil),    // 6: vietgara.supplier.v1.GetSupplierResponse
-	(*UpdateSupplierRequest)(nil),  // 7: vietgara.supplier.v1.UpdateSupplierRequest
-	(*UpdateSupplierResponse)(nil), // 8: vietgara.supplier.v1.UpdateSupplierResponse
-	(*ListSuppliersRequest)(nil),   // 9: vietgara.supplier.v1.ListSuppliersRequest
-	(*ListSuppliersResponse)(nil),  // 10: vietgara.supplier.v1.ListSuppliersResponse
-	(*DeleteSupplierRequest)(nil),  // 11: vietgara.supplier.v1.DeleteSupplierRequest
-	(*DeleteSupplierResponse)(nil), // 12: vietgara.supplier.v1.DeleteSupplierResponse
+	(*Supplier)(nil),               // 1: vietgara.supplier.v1.Supplier
+	(*CreateSupplierRequest)(nil),  // 2: vietgara.supplier.v1.CreateSupplierRequest
+	(*CreateSupplierResponse)(nil), // 3: vietgara.supplier.v1.CreateSupplierResponse
+	(*GetSupplierRequest)(nil),     // 4: vietgara.supplier.v1.GetSupplierRequest
+	(*GetSupplierResponse)(nil),    // 5: vietgara.supplier.v1.GetSupplierResponse
+	(*UpdateSupplierRequest)(nil),  // 6: vietgara.supplier.v1.UpdateSupplierRequest
+	(*UpdateSupplierResponse)(nil), // 7: vietgara.supplier.v1.UpdateSupplierResponse
+	(*ListSuppliersRequest)(nil),   // 8: vietgara.supplier.v1.ListSuppliersRequest
+	(*ListSuppliersResponse)(nil),  // 9: vietgara.supplier.v1.ListSuppliersResponse
+	(*DeleteSupplierRequest)(nil),  // 10: vietgara.supplier.v1.DeleteSupplierRequest
+	(*DeleteSupplierResponse)(nil), // 11: vietgara.supplier.v1.DeleteSupplierResponse
+	(*v1.BankDetails)(nil),         // 12: vietgara.common.v1.BankDetails
 	(*timestamppb.Timestamp)(nil),  // 13: google.protobuf.Timestamp
 	(*fieldmaskpb.FieldMask)(nil),  // 14: google.protobuf.FieldMask
 	(*v1.Pagination)(nil),          // 15: vietgara.common.v1.Pagination
 }
 var file_vietgara_supplier_v1_supplier_proto_depIdxs = []int32{
 	0,  // 0: vietgara.supplier.v1.Supplier.contact:type_name -> vietgara.supplier.v1.SupplierContact
-	1,  // 1: vietgara.supplier.v1.Supplier.bank:type_name -> vietgara.supplier.v1.SupplierBankDetails
+	12, // 1: vietgara.supplier.v1.Supplier.bank:type_name -> vietgara.common.v1.BankDetails
 	13, // 2: vietgara.supplier.v1.Supplier.created_at:type_name -> google.protobuf.Timestamp
 	13, // 3: vietgara.supplier.v1.Supplier.updated_at:type_name -> google.protobuf.Timestamp
-	2,  // 4: vietgara.supplier.v1.CreateSupplierRequest.supplier:type_name -> vietgara.supplier.v1.Supplier
-	2,  // 5: vietgara.supplier.v1.CreateSupplierResponse.supplier:type_name -> vietgara.supplier.v1.Supplier
-	2,  // 6: vietgara.supplier.v1.GetSupplierResponse.supplier:type_name -> vietgara.supplier.v1.Supplier
-	2,  // 7: vietgara.supplier.v1.UpdateSupplierRequest.supplier:type_name -> vietgara.supplier.v1.Supplier
+	1,  // 4: vietgara.supplier.v1.CreateSupplierRequest.supplier:type_name -> vietgara.supplier.v1.Supplier
+	1,  // 5: vietgara.supplier.v1.CreateSupplierResponse.supplier:type_name -> vietgara.supplier.v1.Supplier
+	1,  // 6: vietgara.supplier.v1.GetSupplierResponse.supplier:type_name -> vietgara.supplier.v1.Supplier
+	1,  // 7: vietgara.supplier.v1.UpdateSupplierRequest.supplier:type_name -> vietgara.supplier.v1.Supplier
 	14, // 8: vietgara.supplier.v1.UpdateSupplierRequest.update_mask:type_name -> google.protobuf.FieldMask
-	2,  // 9: vietgara.supplier.v1.UpdateSupplierResponse.supplier:type_name -> vietgara.supplier.v1.Supplier
-	2,  // 10: vietgara.supplier.v1.ListSuppliersResponse.data:type_name -> vietgara.supplier.v1.Supplier
+	1,  // 9: vietgara.supplier.v1.UpdateSupplierResponse.supplier:type_name -> vietgara.supplier.v1.Supplier
+	1,  // 10: vietgara.supplier.v1.ListSuppliersResponse.data:type_name -> vietgara.supplier.v1.Supplier
 	15, // 11: vietgara.supplier.v1.ListSuppliersResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	9,  // 12: vietgara.supplier.v1.SupplierService.ListSuppliers:input_type -> vietgara.supplier.v1.ListSuppliersRequest
-	3,  // 13: vietgara.supplier.v1.SupplierService.CreateSupplier:input_type -> vietgara.supplier.v1.CreateSupplierRequest
-	5,  // 14: vietgara.supplier.v1.SupplierService.GetSupplier:input_type -> vietgara.supplier.v1.GetSupplierRequest
-	7,  // 15: vietgara.supplier.v1.SupplierService.UpdateSupplier:input_type -> vietgara.supplier.v1.UpdateSupplierRequest
-	11, // 16: vietgara.supplier.v1.SupplierService.DeleteSupplier:input_type -> vietgara.supplier.v1.DeleteSupplierRequest
-	10, // 17: vietgara.supplier.v1.SupplierService.ListSuppliers:output_type -> vietgara.supplier.v1.ListSuppliersResponse
-	4,  // 18: vietgara.supplier.v1.SupplierService.CreateSupplier:output_type -> vietgara.supplier.v1.CreateSupplierResponse
-	6,  // 19: vietgara.supplier.v1.SupplierService.GetSupplier:output_type -> vietgara.supplier.v1.GetSupplierResponse
-	8,  // 20: vietgara.supplier.v1.SupplierService.UpdateSupplier:output_type -> vietgara.supplier.v1.UpdateSupplierResponse
-	12, // 21: vietgara.supplier.v1.SupplierService.DeleteSupplier:output_type -> vietgara.supplier.v1.DeleteSupplierResponse
+	8,  // 12: vietgara.supplier.v1.SupplierService.ListSuppliers:input_type -> vietgara.supplier.v1.ListSuppliersRequest
+	2,  // 13: vietgara.supplier.v1.SupplierService.CreateSupplier:input_type -> vietgara.supplier.v1.CreateSupplierRequest
+	4,  // 14: vietgara.supplier.v1.SupplierService.GetSupplier:input_type -> vietgara.supplier.v1.GetSupplierRequest
+	6,  // 15: vietgara.supplier.v1.SupplierService.UpdateSupplier:input_type -> vietgara.supplier.v1.UpdateSupplierRequest
+	10, // 16: vietgara.supplier.v1.SupplierService.DeleteSupplier:input_type -> vietgara.supplier.v1.DeleteSupplierRequest
+	9,  // 17: vietgara.supplier.v1.SupplierService.ListSuppliers:output_type -> vietgara.supplier.v1.ListSuppliersResponse
+	3,  // 18: vietgara.supplier.v1.SupplierService.CreateSupplier:output_type -> vietgara.supplier.v1.CreateSupplierResponse
+	5,  // 19: vietgara.supplier.v1.SupplierService.GetSupplier:output_type -> vietgara.supplier.v1.GetSupplierResponse
+	7,  // 20: vietgara.supplier.v1.SupplierService.UpdateSupplier:output_type -> vietgara.supplier.v1.UpdateSupplierResponse
+	11, // 21: vietgara.supplier.v1.SupplierService.DeleteSupplier:output_type -> vietgara.supplier.v1.DeleteSupplierResponse
 	17, // [17:22] is the sub-list for method output_type
 	12, // [12:17] is the sub-list for method input_type
 	12, // [12:12] is the sub-list for extension type_name
@@ -929,14 +859,13 @@ func file_vietgara_supplier_v1_supplier_proto_init() {
 	}
 	file_vietgara_supplier_v1_supplier_proto_msgTypes[0].OneofWrappers = []any{}
 	file_vietgara_supplier_v1_supplier_proto_msgTypes[1].OneofWrappers = []any{}
-	file_vietgara_supplier_v1_supplier_proto_msgTypes[2].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_supplier_v1_supplier_proto_rawDesc), len(file_vietgara_supplier_v1_supplier_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

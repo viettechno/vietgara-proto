@@ -144,10 +144,10 @@ type SettlementPayment struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Integer VND.
-	Amount        int64                  `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
-	Method        PaymentMethod          `protobuf:"varint,4,opt,name=method,proto3,enum=vietgara.billing.v1.PaymentMethod" json:"method,omitempty"`
-	Note          string                 `protobuf:"bytes,5,opt,name=note,proto3" json:"note,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Amount        int64                  `protobuf:"varint,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	Method        PaymentMethod          `protobuf:"varint,3,opt,name=method,proto3,enum=vietgara.billing.v1.PaymentMethod" json:"method,omitempty"`
+	Note          string                 `protobuf:"bytes,4,opt,name=note,proto3" json:"note,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -236,16 +236,14 @@ type Settlement struct {
 	Number string `protobuf:"bytes,6,opt,name=number,proto3" json:"number,omitempty"`
 	// Copied from the repair order's total at creation time. Integer VND.
 	TotalAmount int64 `protobuf:"varint,7,opt,name=total_amount,json=totalAmount,proto3" json:"total_amount,omitempty"`
-	// What the customer owes: always equal to total_amount.
-	CustomerAmount int64 `protobuf:"varint,8,opt,name=customer_amount,json=customerAmount,proto3" json:"customer_amount,omitempty"`
-	// Running total from settlement_payments (FR-BIL-03).
-	CustomerPaidAmount int64                  `protobuf:"varint,12,opt,name=customer_paid_amount,json=customerPaidAmount,proto3" json:"customer_paid_amount,omitempty"`
-	Status             SettlementStatus       `protobuf:"varint,14,opt,name=status,proto3,enum=vietgara.billing.v1.SettlementStatus" json:"status,omitempty"`
-	Payments           []*SettlementPayment   `protobuf:"bytes,15,rep,name=payments,proto3" json:"payments,omitempty"`
-	CreatedAt          *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt          *timestamppb.Timestamp `protobuf:"bytes,17,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	// Running total from settlement_payments (FR-BIL-03). Integer VND.
+	PaidAmount    int64                  `protobuf:"varint,8,opt,name=paid_amount,json=paidAmount,proto3" json:"paid_amount,omitempty"`
+	Status        SettlementStatus       `protobuf:"varint,9,opt,name=status,proto3,enum=vietgara.billing.v1.SettlementStatus" json:"status,omitempty"`
+	Payments      []*SettlementPayment   `protobuf:"bytes,10,rep,name=payments,proto3" json:"payments,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Settlement) Reset() {
@@ -327,16 +325,9 @@ func (x *Settlement) GetTotalAmount() int64 {
 	return 0
 }
 
-func (x *Settlement) GetCustomerAmount() int64 {
+func (x *Settlement) GetPaidAmount() int64 {
 	if x != nil {
-		return x.CustomerAmount
-	}
-	return 0
-}
-
-func (x *Settlement) GetCustomerPaidAmount() int64 {
-	if x != nil {
-		return x.CustomerPaidAmount
+		return x.PaidAmount
 	}
 	return 0
 }
@@ -697,9 +688,9 @@ type RecordSettlementPaymentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	SettlementId  string                 `protobuf:"bytes,2,opt,name=settlement_id,json=settlementId,proto3" json:"settlement_id,omitempty"`
-	Amount        int64                  `protobuf:"varint,4,opt,name=amount,proto3" json:"amount,omitempty"`
-	Method        PaymentMethod          `protobuf:"varint,5,opt,name=method,proto3,enum=vietgara.billing.v1.PaymentMethod" json:"method,omitempty"`
-	Note          string                 `protobuf:"bytes,6,opt,name=note,proto3" json:"note,omitempty"`
+	Amount        int64                  `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
+	Method        PaymentMethod          `protobuf:"varint,4,opt,name=method,proto3,enum=vietgara.billing.v1.PaymentMethod" json:"method,omitempty"`
+	Note          string                 `protobuf:"bytes,5,opt,name=note,proto3" json:"note,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -817,15 +808,14 @@ var File_vietgara_billing_v1_settlement_proto protoreflect.FileDescriptor
 
 const file_vietgara_billing_v1_settlement_proto_rawDesc = "" +
 	"\n" +
-	"$vietgara/billing/v1/settlement.proto\x12\x13vietgara.billing.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xf1\x01\n" +
+	"$vietgara/billing/v1/settlement.proto\x12\x13vietgara.billing.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xdf\x01\n" +
 	"\x11SettlementPayment\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x1b\n" +
-	"\x06amount\x18\x03 \x01(\x03B\x03\xe0A\x03R\x06amount\x12?\n" +
-	"\x06method\x18\x04 \x01(\x0e2\".vietgara.billing.v1.PaymentMethodB\x03\xe0A\x03R\x06method\x12\x17\n" +
-	"\x04note\x18\x05 \x01(\tB\x03\xe0A\x03R\x04note\x12>\n" +
+	"\x06amount\x18\x02 \x01(\x03B\x03\xe0A\x03R\x06amount\x12?\n" +
+	"\x06method\x18\x03 \x01(\x0e2\".vietgara.billing.v1.PaymentMethodB\x03\xe0A\x03R\x06method\x12\x17\n" +
+	"\x04note\x18\x04 \x01(\tB\x03\xe0A\x03R\x04note\x12>\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAtJ\x04\b\x02\x10\x03R\n" +
-	"payer_type\"\xf1\x05\n" +
+	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\"\xcb\x04\n" +
 	"\n" +
 	"Settlement\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
@@ -834,17 +824,16 @@ const file_vietgara_billing_v1_settlement_proto_rawDesc = "" +
 	"\x15vehicle_license_plate\x18\x04 \x01(\tB\x03\xe0A\x03R\x13vehicleLicensePlate\x12(\n" +
 	"\rcustomer_name\x18\x05 \x01(\tB\x03\xe0A\x03R\fcustomerName\x12\x1b\n" +
 	"\x06number\x18\x06 \x01(\tB\x03\xe0A\x03R\x06number\x12&\n" +
-	"\ftotal_amount\x18\a \x01(\x03B\x03\xe0A\x03R\vtotalAmount\x12,\n" +
-	"\x0fcustomer_amount\x18\b \x01(\x03B\x03\xe0A\x03R\x0ecustomerAmount\x125\n" +
-	"\x14customer_paid_amount\x18\f \x01(\x03B\x03\xe0A\x03R\x12customerPaidAmount\x12B\n" +
-	"\x06status\x18\x0e \x01(\x0e2%.vietgara.billing.v1.SettlementStatusB\x03\xe0A\x03R\x06status\x12G\n" +
-	"\bpayments\x18\x0f \x03(\v2&.vietgara.billing.v1.SettlementPaymentB\x03\xe0A\x03R\bpayments\x12>\n" +
+	"\ftotal_amount\x18\a \x01(\x03B\x03\xe0A\x03R\vtotalAmount\x12$\n" +
+	"\vpaid_amount\x18\b \x01(\x03B\x03\xe0A\x03R\n" +
+	"paidAmount\x12B\n" +
+	"\x06status\x18\t \x01(\x0e2%.vietgara.billing.v1.SettlementStatusB\x03\xe0A\x03R\x06status\x12G\n" +
+	"\bpayments\x18\n" +
+	" \x03(\v2&.vietgara.billing.v1.SettlementPaymentB\x03\xe0A\x03R\bpayments\x12>\n" +
 	"\n" +
-	"created_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
+	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtJ\x04\b\t\x10\n" +
-	"J\x04\b\n" +
-	"\x10\vJ\x04\b\v\x10\fJ\x04\b\r\x10\x0eR\x0einsurer_amountR\x12insurer_partner_idR\x14insurer_partner_nameR\x13insurer_paid_amount\"\xd5\x01\n" +
+	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\"\xd5\x01\n" +
 	"\x16ListSettlementsRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12=\n" +
 	"\x06status\x18\x02 \x01(\x0e2%.vietgara.billing.v1.SettlementStatusR\x06status\x12)\n" +
@@ -869,14 +858,13 @@ const file_vietgara_billing_v1_settlement_proto_rawDesc = "" +
 	"\x15GetSettlementResponse\x12?\n" +
 	"\n" +
 	"settlement\x18\x01 \x01(\v2\x1f.vietgara.billing.v1.SettlementR\n" +
-	"settlement\"\xf0\x01\n" +
+	"settlement\"\xde\x01\n" +
 	"\x1eRecordSettlementPaymentRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12(\n" +
 	"\rsettlement_id\x18\x02 \x01(\tB\x03\xe0A\x02R\fsettlementId\x12\x1b\n" +
-	"\x06amount\x18\x04 \x01(\x03B\x03\xe0A\x02R\x06amount\x12?\n" +
-	"\x06method\x18\x05 \x01(\x0e2\".vietgara.billing.v1.PaymentMethodB\x03\xe0A\x02R\x06method\x12\x12\n" +
-	"\x04note\x18\x06 \x01(\tR\x04noteJ\x04\b\x03\x10\x04R\n" +
-	"payer_type\"b\n" +
+	"\x06amount\x18\x03 \x01(\x03B\x03\xe0A\x02R\x06amount\x12?\n" +
+	"\x06method\x18\x04 \x01(\x0e2\".vietgara.billing.v1.PaymentMethodB\x03\xe0A\x02R\x06method\x12\x12\n" +
+	"\x04note\x18\x05 \x01(\tR\x04note\"b\n" +
 	"\x1fRecordSettlementPaymentResponse\x12?\n" +
 	"\n" +
 	"settlement\x18\x01 \x01(\v2\x1f.vietgara.billing.v1.SettlementR\n" +

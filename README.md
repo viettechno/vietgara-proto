@@ -61,7 +61,7 @@ Protocol Buffers. The same `.proto` files describe:
 | | | `LicenseAdminService`: ListAllPlans, CreatePlan, UpdatePlan, ListSubscriptions, ExtendSubscription |
 | `vietgara.customer.v1` | Customer & Vehicle (HLD #4) | `CustomerService`, `VehicleService`: List, Create, Get, Update, Delete |
 | `vietgara.supplier.v1` | Supplier (FR-SUP-01) | `SupplierService`: List, Create, Get, Update, Delete (replaces `PartnerService`, Release 5.0) |
-| `vietgara.common.v1` | Shared messages | `Pagination`, `ErrorResponse` and the OpenAPI document options (no services) |
+| `vietgara.common.v1` | Shared messages | `Pagination`, `BankDetails`, `ErrorResponse` and the OpenAPI document options (no services) |
 
 ```mermaid
 flowchart LR
@@ -78,7 +78,7 @@ Per the [Release Plan](https://github.com/viettechno/vietgara-docs/blob/master/d
 | When | Change |
 | --- | --- |
 | Phase 3 | `Account` becomes `User`; `account_id` becomes `user_id`; the session carries `user`; no dual field and no compatibility window (`buf breaking` is expected to fail once) |
-| Release 5.0 | **Done:** insurer fields of settlements and payments are removed and marked `reserved`, `AllocateSettlement` is removed; `PartnerService` becomes `SupplierService` in the new `vietgara.supplier.v1` package with `PERMISSION_SUPPLIER_*`. **Planned:** payment voucher fields; file registry messages; legal profile fields; `DELETED` / `DEACTIVATED` outcome on deletes |
+| Release 5.0 | **Done:** insurer fields of settlements and payments, the `PayerType` enum and `AllocateSettlement` are removed (no `reserved` fields, numbers are renumbered); `Settlement.customer_amount` / `customer_paid_amount` become `paid_amount`; `PartnerService` becomes `SupplierService` in the new `vietgara.supplier.v1` package with `PERMISSION_SUPPLIER_*` and a shared `vietgara.common.v1.BankDetails`. **Planned:** payment voucher fields; file registry messages; legal profile fields; `DELETED` / `DEACTIVATED` outcome on deletes |
 | Release 5.1 | Customer user links and tax profiles |
 | Releases 6.0, 6.1 | Units, part categories, MFA challenge and enrolment |
 | Phases 7, 10 | Goods receipts, stock counts, adjustments, barcodes, imports; jobs, print settings |
@@ -91,7 +91,7 @@ Per the [Release Plan](https://github.com/viettechno/vietgara-docs/blob/master/d
 ```
 vietgara-proto/
 ├── apis/vietgara/           # .proto sources (the contract)
-│   ├── common/v1/            # pagination.proto, error.proto (+ OpenAPI options)
+│   ├── common/v1/            # pagination.proto, bank_details.proto, error.proto (+ OpenAPI options)
 │   ├── identity/v1/          # user.proto, auth.proto
 │   ├── tenant/v1/            # garage.proto, staff.proto, invitation.proto, access.proto
 │   ├── license/v1/           # license.proto

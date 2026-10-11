@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package vietgara.common.v1;
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/common/v1;commonv1";
+
+// BankDetails is a bank account that money is paid into. Shared by every
+// record that carries one (suppliers today; the garage's legal profile and
+// customers' tax profiles later).
+message BankDetails {
+  optional string bank_name = 1;
+  optional string account_number = 2;
+  // Name the account is registered under.
+  optional string account_holder = 3;
+}

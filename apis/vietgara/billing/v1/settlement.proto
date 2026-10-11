@@ -36,15 +36,12 @@ enum PaymentMethod {
 // (FR-BIL-03); a settlement may receive several. The customer is the only
 // payer.
 message SettlementPayment {
-  reserved 2;
-  reserved "payer_type";
-
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Integer VND.
-  int64 amount = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
-  PaymentMethod method = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string note = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
-  google.protobuf.Timestamp created_at = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 amount = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  PaymentMethod method = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string note = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // Settlement is the final bill of a closed repair order (FR-BIL-01),
@@ -54,9 +51,6 @@ message SettlementPayment {
 // Release 2.2's reminders and reconciliation, which need their own
 // persisted state.
 message Settlement {
-  reserved 9, 10, 11, 13;
-  reserved "insurer_amount", "insurer_partner_id", "insurer_partner_name", "insurer_paid_amount";
-
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   string repair_order_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -68,14 +62,12 @@ message Settlement {
   string number = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Copied from the repair order's total at creation time. Integer VND.
   int64 total_amount = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // What the customer owes: always equal to total_amount.
-  int64 customer_amount = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Running total from settlement_payments (FR-BIL-03).
-  int64 customer_paid_amount = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
-  SettlementStatus status = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
-  repeated SettlementPayment payments = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
-  google.protobuf.Timestamp created_at = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
-  google.protobuf.Timestamp updated_at = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Running total from settlement_payments (FR-BIL-03). Integer VND.
+  int64 paid_amount = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  SettlementStatus status = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated SettlementPayment payments = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message ListSettlementsRequest {
@@ -114,14 +106,11 @@ message GetSettlementResponse {
 }
 
 message RecordSettlementPaymentRequest {
-  reserved 3;
-  reserved "payer_type";
-
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
-  int64 amount = 4 [(google.api.field_behavior) = REQUIRED];
-  PaymentMethod method = 5 [(google.api.field_behavior) = REQUIRED];
-  string note = 6;
+  int64 amount = 3 [(google.api.field_behavior) = REQUIRED];
+  PaymentMethod method = 4 [(google.api.field_behavior) = REQUIRED];
+  string note = 5;
 }
 
 message RecordSettlementPaymentResponse {

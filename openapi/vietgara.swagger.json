@@ -3996,6 +3996,22 @@
       ],
       "description": "AuthProvider is how the user signed up (FR-IAM-01)."
     },
+    "v1BankDetails": {
+      "type": "object",
+      "properties": {
+        "bankName": {
+          "type": "string"
+        },
+        "accountNumber": {
+          "type": "string"
+        },
+        "accountHolder": {
+          "type": "string",
+          "description": "Name the account is registered under."
+        }
+      },
+      "description": "BankDetails is a bank account that money is paid into. Shared by every\nrecord that carries one (suppliers today; the garage's legal profile and\ncustomers' tax profiles later)."
+    },
     "v1BillingCycle": {
       "type": "string",
       "enum": [
@@ -5949,16 +5965,10 @@
           "description": "Copied from the repair order's total at creation time. Integer VND.",
           "readOnly": true
         },
-        "customerAmount": {
+        "paidAmount": {
           "type": "string",
           "format": "int64",
-          "description": "What the customer owes: always equal to total_amount.",
-          "readOnly": true
-        },
-        "customerPaidAmount": {
-          "type": "string",
-          "format": "int64",
-          "description": "Running total from settlement_payments (FR-BIL-03).",
+          "description": "Running total from settlement_payments (FR-BIL-03). Integer VND.",
           "readOnly": true
         },
         "status": {
@@ -6349,7 +6359,7 @@
           "$ref": "#/definitions/v1SupplierContact"
         },
         "bank": {
-          "$ref": "#/definitions/v1SupplierBankDetails"
+          "$ref": "#/definitions/v1BankDetails"
         },
         "note": {
           "type": "string"
@@ -6369,22 +6379,6 @@
       "required": [
         "name"
       ]
-    },
-    "v1SupplierBankDetails": {
-      "type": "object",
-      "properties": {
-        "bankName": {
-          "type": "string"
-        },
-        "accountNumber": {
-          "type": "string"
-        },
-        "accountHolder": {
-          "type": "string",
-          "description": "Name the account is registered under."
-        }
-      },
-      "description": "SupplierBankDetails is the account a garage pays the supplier into."
     },
     "v1SupplierContact": {
       "type": "object",
