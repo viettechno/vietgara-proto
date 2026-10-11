@@ -199,6 +199,65 @@ func (Feature) EnumDescriptor() ([]byte, []int) {
 	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{2}
 }
 
+// PlanChangeStatus is the state of a plan change (FR-LIC-02).
+type PlanChangeStatus int32
+
+const (
+	PlanChangeStatus_PLAN_CHANGE_STATUS_UNSPECIFIED PlanChangeStatus = 0
+	// Takes effect when the current period ends.
+	PlanChangeStatus_PLAN_CHANGE_STATUS_SCHEDULED PlanChangeStatus = 1
+	// Due, but the new plan's limits are exceeded: it stays pending and the
+	// owner is told.
+	PlanChangeStatus_PLAN_CHANGE_STATUS_POSTPONED PlanChangeStatus = 2
+	PlanChangeStatus_PLAN_CHANGE_STATUS_APPLIED   PlanChangeStatus = 3
+	PlanChangeStatus_PLAN_CHANGE_STATUS_CANCELLED PlanChangeStatus = 4
+)
+
+// Enum value maps for PlanChangeStatus.
+var (
+	PlanChangeStatus_name = map[int32]string{
+		0: "PLAN_CHANGE_STATUS_UNSPECIFIED",
+		1: "PLAN_CHANGE_STATUS_SCHEDULED",
+		2: "PLAN_CHANGE_STATUS_POSTPONED",
+		3: "PLAN_CHANGE_STATUS_APPLIED",
+		4: "PLAN_CHANGE_STATUS_CANCELLED",
+	}
+	PlanChangeStatus_value = map[string]int32{
+		"PLAN_CHANGE_STATUS_UNSPECIFIED": 0,
+		"PLAN_CHANGE_STATUS_SCHEDULED":   1,
+		"PLAN_CHANGE_STATUS_POSTPONED":   2,
+		"PLAN_CHANGE_STATUS_APPLIED":     3,
+		"PLAN_CHANGE_STATUS_CANCELLED":   4,
+	}
+)
+
+func (x PlanChangeStatus) Enum() *PlanChangeStatus {
+	p := new(PlanChangeStatus)
+	*p = x
+	return p
+}
+
+func (x PlanChangeStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PlanChangeStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_license_v1_license_proto_enumTypes[3].Descriptor()
+}
+
+func (PlanChangeStatus) Type() protoreflect.EnumType {
+	return &file_vietgara_license_v1_license_proto_enumTypes[3]
+}
+
+func (x PlanChangeStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PlanChangeStatus.Descriptor instead.
+func (PlanChangeStatus) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{3}
+}
+
 // PlanLimits caps usage across all garages of the subscribing owner.
 type PlanLimits struct {
 	state      protoimpl.MessageState `protogen:"open.v1"`
@@ -417,6 +476,78 @@ func (x *Plan) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+// PendingPlanChange is a plan the owner chose that has not taken effect yet.
+// The owner can cancel it or replace it by choosing another plan.
+type PendingPlanChange struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Plan  *Plan                  `protobuf:"bytes,1,opt,name=plan,proto3" json:"plan,omitempty"`
+	// When it applies: the end of the current period (the end of the trial,
+	// during a trial).
+	EffectiveAt   *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=effective_at,json=effectiveAt,proto3" json:"effective_at,omitempty"`
+	Status        PlanChangeStatus       `protobuf:"varint,3,opt,name=status,proto3,enum=vietgara.license.v1.PlanChangeStatus" json:"status,omitempty"`
+	RequestedAt   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=requested_at,json=requestedAt,proto3" json:"requested_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PendingPlanChange) Reset() {
+	*x = PendingPlanChange{}
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PendingPlanChange) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PendingPlanChange) ProtoMessage() {}
+
+func (x *PendingPlanChange) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PendingPlanChange.ProtoReflect.Descriptor instead.
+func (*PendingPlanChange) Descriptor() ([]byte, []int) {
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *PendingPlanChange) GetPlan() *Plan {
+	if x != nil {
+		return x.Plan
+	}
+	return nil
+}
+
+func (x *PendingPlanChange) GetEffectiveAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.EffectiveAt
+	}
+	return nil
+}
+
+func (x *PendingPlanChange) GetStatus() PlanChangeStatus {
+	if x != nil {
+		return x.Status
+	}
+	return PlanChangeStatus_PLAN_CHANGE_STATUS_UNSPECIFIED
+}
+
+func (x *PendingPlanChange) GetRequestedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.RequestedAt
+	}
+	return nil
+}
+
 // Usage is the owner's current consumption of the plan limits.
 type Usage struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
@@ -429,7 +560,7 @@ type Usage struct {
 
 func (x *Usage) Reset() {
 	*x = Usage{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[2]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -441,7 +572,7 @@ func (x *Usage) String() string {
 func (*Usage) ProtoMessage() {}
 
 func (x *Usage) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[2]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -454,7 +585,7 @@ func (x *Usage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Usage.ProtoReflect.Descriptor instead.
 func (*Usage) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{2}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Usage) GetGarages() int32 {
@@ -494,13 +625,15 @@ type Subscription struct {
 	Usage              *Usage                 `protobuf:"bytes,10,opt,name=usage,proto3" json:"usage,omitempty"`
 	CreatedAt          *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt          *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	// Set while a plan change is scheduled or postponed (FR-LIC-02).
+	PendingChange *PendingPlanChange `protobuf:"bytes,13,opt,name=pending_change,json=pendingChange,proto3" json:"pending_change,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Subscription) Reset() {
 	*x = Subscription{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[3]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -512,7 +645,7 @@ func (x *Subscription) String() string {
 func (*Subscription) ProtoMessage() {}
 
 func (x *Subscription) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[3]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -525,7 +658,7 @@ func (x *Subscription) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Subscription.ProtoReflect.Descriptor instead.
 func (*Subscription) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{3}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Subscription) GetId() string {
@@ -612,6 +745,13 @@ func (x *Subscription) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Subscription) GetPendingChange() *PendingPlanChange {
+	if x != nil {
+		return x.PendingChange
+	}
+	return nil
+}
+
 // Entitlements is what a garage may currently use, derived from its
 // owner's subscription; the web admin uses it to lock UI.
 type Entitlements struct {
@@ -629,7 +769,7 @@ type Entitlements struct {
 
 func (x *Entitlements) Reset() {
 	*x = Entitlements{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[4]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -641,7 +781,7 @@ func (x *Entitlements) String() string {
 func (*Entitlements) ProtoMessage() {}
 
 func (x *Entitlements) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[4]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -654,7 +794,7 @@ func (x *Entitlements) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Entitlements.ProtoReflect.Descriptor instead.
 func (*Entitlements) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{4}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Entitlements) GetGarageId() string {
@@ -714,7 +854,7 @@ type ListPlansRequest struct {
 
 func (x *ListPlansRequest) Reset() {
 	*x = ListPlansRequest{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[5]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -726,7 +866,7 @@ func (x *ListPlansRequest) String() string {
 func (*ListPlansRequest) ProtoMessage() {}
 
 func (x *ListPlansRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[5]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -739,7 +879,7 @@ func (x *ListPlansRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPlansRequest.ProtoReflect.Descriptor instead.
 func (*ListPlansRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{5}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{6}
 }
 
 type ListPlansResponse struct {
@@ -752,7 +892,7 @@ type ListPlansResponse struct {
 
 func (x *ListPlansResponse) Reset() {
 	*x = ListPlansResponse{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[6]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -764,7 +904,7 @@ func (x *ListPlansResponse) String() string {
 func (*ListPlansResponse) ProtoMessage() {}
 
 func (x *ListPlansResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[6]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -777,7 +917,7 @@ func (x *ListPlansResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPlansResponse.ProtoReflect.Descriptor instead.
 func (*ListPlansResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{6}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListPlansResponse) GetData() []*Plan {
@@ -795,7 +935,7 @@ type GetMySubscriptionRequest struct {
 
 func (x *GetMySubscriptionRequest) Reset() {
 	*x = GetMySubscriptionRequest{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[7]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -807,7 +947,7 @@ func (x *GetMySubscriptionRequest) String() string {
 func (*GetMySubscriptionRequest) ProtoMessage() {}
 
 func (x *GetMySubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[7]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -820,7 +960,7 @@ func (x *GetMySubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMySubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*GetMySubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{7}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{8}
 }
 
 type GetMySubscriptionResponse struct {
@@ -832,7 +972,7 @@ type GetMySubscriptionResponse struct {
 
 func (x *GetMySubscriptionResponse) Reset() {
 	*x = GetMySubscriptionResponse{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[8]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -844,7 +984,7 @@ func (x *GetMySubscriptionResponse) String() string {
 func (*GetMySubscriptionResponse) ProtoMessage() {}
 
 func (x *GetMySubscriptionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[8]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -857,7 +997,7 @@ func (x *GetMySubscriptionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMySubscriptionResponse.ProtoReflect.Descriptor instead.
 func (*GetMySubscriptionResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{8}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetMySubscriptionResponse) GetSubscription() *Subscription {
@@ -876,7 +1016,7 @@ type ChangeMyPlanRequest struct {
 
 func (x *ChangeMyPlanRequest) Reset() {
 	*x = ChangeMyPlanRequest{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[9]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -888,7 +1028,7 @@ func (x *ChangeMyPlanRequest) String() string {
 func (*ChangeMyPlanRequest) ProtoMessage() {}
 
 func (x *ChangeMyPlanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[9]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -901,7 +1041,7 @@ func (x *ChangeMyPlanRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChangeMyPlanRequest.ProtoReflect.Descriptor instead.
 func (*ChangeMyPlanRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{9}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ChangeMyPlanRequest) GetPlanId() string {
@@ -912,15 +1052,16 @@ func (x *ChangeMyPlanRequest) GetPlanId() string {
 }
 
 type ChangeMyPlanResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Subscription  *Subscription          `protobuf:"bytes,1,opt,name=subscription,proto3" json:"subscription,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The current plan with its pending_change.
+	Subscription  *Subscription `protobuf:"bytes,1,opt,name=subscription,proto3" json:"subscription,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ChangeMyPlanResponse) Reset() {
 	*x = ChangeMyPlanResponse{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[10]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -932,7 +1073,7 @@ func (x *ChangeMyPlanResponse) String() string {
 func (*ChangeMyPlanResponse) ProtoMessage() {}
 
 func (x *ChangeMyPlanResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[10]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -945,10 +1086,90 @@ func (x *ChangeMyPlanResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChangeMyPlanResponse.ProtoReflect.Descriptor instead.
 func (*ChangeMyPlanResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{10}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ChangeMyPlanResponse) GetSubscription() *Subscription {
+	if x != nil {
+		return x.Subscription
+	}
+	return nil
+}
+
+type CancelMyPendingPlanChangeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelMyPendingPlanChangeRequest) Reset() {
+	*x = CancelMyPendingPlanChangeRequest{}
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelMyPendingPlanChangeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelMyPendingPlanChangeRequest) ProtoMessage() {}
+
+func (x *CancelMyPendingPlanChangeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelMyPendingPlanChangeRequest.ProtoReflect.Descriptor instead.
+func (*CancelMyPendingPlanChangeRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{12}
+}
+
+type CancelMyPendingPlanChangeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Subscription  *Subscription          `protobuf:"bytes,1,opt,name=subscription,proto3" json:"subscription,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelMyPendingPlanChangeResponse) Reset() {
+	*x = CancelMyPendingPlanChangeResponse{}
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelMyPendingPlanChangeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelMyPendingPlanChangeResponse) ProtoMessage() {}
+
+func (x *CancelMyPendingPlanChangeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelMyPendingPlanChangeResponse.ProtoReflect.Descriptor instead.
+func (*CancelMyPendingPlanChangeResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *CancelMyPendingPlanChangeResponse) GetSubscription() *Subscription {
 	if x != nil {
 		return x.Subscription
 	}
@@ -964,7 +1185,7 @@ type GetGarageEntitlementsRequest struct {
 
 func (x *GetGarageEntitlementsRequest) Reset() {
 	*x = GetGarageEntitlementsRequest{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[11]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -976,7 +1197,7 @@ func (x *GetGarageEntitlementsRequest) String() string {
 func (*GetGarageEntitlementsRequest) ProtoMessage() {}
 
 func (x *GetGarageEntitlementsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[11]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -989,7 +1210,7 @@ func (x *GetGarageEntitlementsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGarageEntitlementsRequest.ProtoReflect.Descriptor instead.
 func (*GetGarageEntitlementsRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{11}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *GetGarageEntitlementsRequest) GetGarageId() string {
@@ -1008,7 +1229,7 @@ type GetGarageEntitlementsResponse struct {
 
 func (x *GetGarageEntitlementsResponse) Reset() {
 	*x = GetGarageEntitlementsResponse{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[12]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1020,7 +1241,7 @@ func (x *GetGarageEntitlementsResponse) String() string {
 func (*GetGarageEntitlementsResponse) ProtoMessage() {}
 
 func (x *GetGarageEntitlementsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[12]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1033,7 +1254,7 @@ func (x *GetGarageEntitlementsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGarageEntitlementsResponse.ProtoReflect.Descriptor instead.
 func (*GetGarageEntitlementsResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{12}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *GetGarageEntitlementsResponse) GetEntitlements() *Entitlements {
@@ -1055,7 +1276,7 @@ type SubscriptionSummary struct {
 
 func (x *SubscriptionSummary) Reset() {
 	*x = SubscriptionSummary{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[13]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1067,7 +1288,7 @@ func (x *SubscriptionSummary) String() string {
 func (*SubscriptionSummary) ProtoMessage() {}
 
 func (x *SubscriptionSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[13]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1080,7 +1301,7 @@ func (x *SubscriptionSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscriptionSummary.ProtoReflect.Descriptor instead.
 func (*SubscriptionSummary) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{13}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *SubscriptionSummary) GetSubscription() *Subscription {
@@ -1112,7 +1333,7 @@ type ListAllPlansRequest struct {
 
 func (x *ListAllPlansRequest) Reset() {
 	*x = ListAllPlansRequest{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[14]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1124,7 +1345,7 @@ func (x *ListAllPlansRequest) String() string {
 func (*ListAllPlansRequest) ProtoMessage() {}
 
 func (x *ListAllPlansRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[14]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1137,7 +1358,7 @@ func (x *ListAllPlansRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAllPlansRequest.ProtoReflect.Descriptor instead.
 func (*ListAllPlansRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{14}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{17}
 }
 
 type ListAllPlansResponse struct {
@@ -1149,7 +1370,7 @@ type ListAllPlansResponse struct {
 
 func (x *ListAllPlansResponse) Reset() {
 	*x = ListAllPlansResponse{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[15]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1161,7 +1382,7 @@ func (x *ListAllPlansResponse) String() string {
 func (*ListAllPlansResponse) ProtoMessage() {}
 
 func (x *ListAllPlansResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[15]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1174,7 +1395,7 @@ func (x *ListAllPlansResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAllPlansResponse.ProtoReflect.Descriptor instead.
 func (*ListAllPlansResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{15}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ListAllPlansResponse) GetData() []*Plan {
@@ -1193,7 +1414,7 @@ type CreatePlanRequest struct {
 
 func (x *CreatePlanRequest) Reset() {
 	*x = CreatePlanRequest{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[16]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1205,7 +1426,7 @@ func (x *CreatePlanRequest) String() string {
 func (*CreatePlanRequest) ProtoMessage() {}
 
 func (x *CreatePlanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[16]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1218,7 +1439,7 @@ func (x *CreatePlanRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePlanRequest.ProtoReflect.Descriptor instead.
 func (*CreatePlanRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{16}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *CreatePlanRequest) GetPlan() *Plan {
@@ -1237,7 +1458,7 @@ type CreatePlanResponse struct {
 
 func (x *CreatePlanResponse) Reset() {
 	*x = CreatePlanResponse{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[17]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1249,7 +1470,7 @@ func (x *CreatePlanResponse) String() string {
 func (*CreatePlanResponse) ProtoMessage() {}
 
 func (x *CreatePlanResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[17]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1262,7 +1483,7 @@ func (x *CreatePlanResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePlanResponse.ProtoReflect.Descriptor instead.
 func (*CreatePlanResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{17}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *CreatePlanResponse) GetPlan() *Plan {
@@ -1284,7 +1505,7 @@ type UpdatePlanRequest struct {
 
 func (x *UpdatePlanRequest) Reset() {
 	*x = UpdatePlanRequest{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[18]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1296,7 +1517,7 @@ func (x *UpdatePlanRequest) String() string {
 func (*UpdatePlanRequest) ProtoMessage() {}
 
 func (x *UpdatePlanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[18]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1309,7 +1530,7 @@ func (x *UpdatePlanRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePlanRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePlanRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{18}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *UpdatePlanRequest) GetPlanId() string {
@@ -1342,7 +1563,7 @@ type UpdatePlanResponse struct {
 
 func (x *UpdatePlanResponse) Reset() {
 	*x = UpdatePlanResponse{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[19]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1354,7 +1575,7 @@ func (x *UpdatePlanResponse) String() string {
 func (*UpdatePlanResponse) ProtoMessage() {}
 
 func (x *UpdatePlanResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[19]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1367,7 +1588,7 @@ func (x *UpdatePlanResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePlanResponse.ProtoReflect.Descriptor instead.
 func (*UpdatePlanResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{19}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *UpdatePlanResponse) GetPlan() *Plan {
@@ -1390,7 +1611,7 @@ type ListSubscriptionsRequest struct {
 
 func (x *ListSubscriptionsRequest) Reset() {
 	*x = ListSubscriptionsRequest{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[20]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1402,7 +1623,7 @@ func (x *ListSubscriptionsRequest) String() string {
 func (*ListSubscriptionsRequest) ProtoMessage() {}
 
 func (x *ListSubscriptionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[20]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1415,7 +1636,7 @@ func (x *ListSubscriptionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSubscriptionsRequest.ProtoReflect.Descriptor instead.
 func (*ListSubscriptionsRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{20}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *ListSubscriptionsRequest) GetQuery() string {
@@ -1456,7 +1677,7 @@ type ListSubscriptionsResponse struct {
 
 func (x *ListSubscriptionsResponse) Reset() {
 	*x = ListSubscriptionsResponse{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[21]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1468,7 +1689,7 @@ func (x *ListSubscriptionsResponse) String() string {
 func (*ListSubscriptionsResponse) ProtoMessage() {}
 
 func (x *ListSubscriptionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[21]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1481,7 +1702,7 @@ func (x *ListSubscriptionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSubscriptionsResponse.ProtoReflect.Descriptor instead.
 func (*ListSubscriptionsResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{21}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *ListSubscriptionsResponse) GetData() []*SubscriptionSummary {
@@ -1510,7 +1731,7 @@ type ExtendSubscriptionRequest struct {
 
 func (x *ExtendSubscriptionRequest) Reset() {
 	*x = ExtendSubscriptionRequest{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[22]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1522,7 +1743,7 @@ func (x *ExtendSubscriptionRequest) String() string {
 func (*ExtendSubscriptionRequest) ProtoMessage() {}
 
 func (x *ExtendSubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[22]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1535,7 +1756,7 @@ func (x *ExtendSubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExtendSubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*ExtendSubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{22}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *ExtendSubscriptionRequest) GetSubscriptionId() string {
@@ -1561,7 +1782,7 @@ type ExtendSubscriptionResponse struct {
 
 func (x *ExtendSubscriptionResponse) Reset() {
 	*x = ExtendSubscriptionResponse{}
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[23]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1573,7 +1794,7 @@ func (x *ExtendSubscriptionResponse) String() string {
 func (*ExtendSubscriptionResponse) ProtoMessage() {}
 
 func (x *ExtendSubscriptionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_license_v1_license_proto_msgTypes[23]
+	mi := &file_vietgara_license_v1_license_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1586,7 +1807,7 @@ func (x *ExtendSubscriptionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExtendSubscriptionResponse.ProtoReflect.Descriptor instead.
 func (*ExtendSubscriptionResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{23}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *ExtendSubscriptionResponse) GetSubscription() *Subscription {
@@ -1625,11 +1846,16 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\"f\n" +
+	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\"\xff\x01\n" +
+	"\x11PendingPlanChange\x12-\n" +
+	"\x04plan\x18\x01 \x01(\v2\x19.vietgara.license.v1.PlanR\x04plan\x12=\n" +
+	"\feffective_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\veffectiveAt\x12=\n" +
+	"\x06status\x18\x03 \x01(\x0e2%.vietgara.license.v1.PlanChangeStatusR\x06status\x12=\n" +
+	"\frequested_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vrequestedAt\"f\n" +
 	"\x05Usage\x12\x18\n" +
 	"\agarages\x18\x01 \x01(\x05R\agarages\x12\x14\n" +
 	"\x05staff\x18\x02 \x01(\x05R\x05staff\x12-\n" +
-	"\x12transactions_today\x18\x03 \x01(\x05R\x11transactionsToday\"\x8a\x05\n" +
+	"\x12transactions_today\x18\x03 \x01(\x05R\x11transactionsToday\"\xd9\x05\n" +
 	"\fSubscription\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12?\n" +
@@ -1647,7 +1873,8 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xe3\x02\n" +
+	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12M\n" +
+	"\x0epending_change\x18\r \x01(\v2&.vietgara.license.v1.PendingPlanChangeR\rpendingChange\"\xe3\x02\n" +
 	"\fEntitlements\x12\x1b\n" +
 	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12?\n" +
 	"\x06status\x18\x02 \x01(\x0e2'.vietgara.license.v1.SubscriptionStatusR\x06status\x12\x1b\n" +
@@ -1665,6 +1892,9 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\x13ChangeMyPlanRequest\x12\x1c\n" +
 	"\aplan_id\x18\x01 \x01(\tB\x03\xe0A\x02R\x06planId\"]\n" +
 	"\x14ChangeMyPlanResponse\x12E\n" +
+	"\fsubscription\x18\x01 \x01(\v2!.vietgara.license.v1.SubscriptionR\fsubscription\"\"\n" +
+	" CancelMyPendingPlanChangeRequest\"j\n" +
+	"!CancelMyPendingPlanChangeResponse\x12E\n" +
 	"\fsubscription\x18\x01 \x01(\v2!.vietgara.license.v1.SubscriptionR\fsubscription\"@\n" +
 	"\x1cGetGarageEntitlementsRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\"f\n" +
@@ -1723,11 +1953,18 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\x11FEATURE_INVENTORY\x10\x04\x12\x13\n" +
 	"\x0fFEATURE_BILLING\x10\x05\x12\x15\n" +
 	"\x11FEATURE_DOCUMENTS\x10\x06\x12\x13\n" +
-	"\x0fFEATURE_REPORTS\x10\a2\x8d\x05\n" +
+	"\x0fFEATURE_REPORTS\x10\a*\xbc\x01\n" +
+	"\x10PlanChangeStatus\x12\"\n" +
+	"\x1ePLAN_CHANGE_STATUS_UNSPECIFIED\x10\x00\x12 \n" +
+	"\x1cPLAN_CHANGE_STATUS_SCHEDULED\x10\x01\x12 \n" +
+	"\x1cPLAN_CHANGE_STATUS_POSTPONED\x10\x02\x12\x1e\n" +
+	"\x1aPLAN_CHANGE_STATUS_APPLIED\x10\x03\x12 \n" +
+	"\x1cPLAN_CHANGE_STATUS_CANCELLED\x10\x042\xde\x06\n" +
 	"\x0eLicenseService\x12q\n" +
 	"\tListPlans\x12%.vietgara.license.v1.ListPlansRequest\x1a&.vietgara.license.v1.ListPlansResponse\"\x15\x82\xd3\xe4\x93\x02\x0f\x12\r/api/v1/plans\x12\xa1\x01\n" +
 	"\x11GetMySubscription\x12-.vietgara.license.v1.GetMySubscriptionRequest\x1a..vietgara.license.v1.GetMySubscriptionResponse\"-\x82\xd3\xe4\x93\x02'b\fsubscription\x12\x17/api/v1/me/subscription\x12\xa2\x01\n" +
-	"\fChangeMyPlan\x12(.vietgara.license.v1.ChangeMyPlanRequest\x1a).vietgara.license.v1.ChangeMyPlanResponse\"=\x82\xd3\xe4\x93\x027:\x01*b\fsubscription\"$/api/v1/me/subscription/plan-changes\x12\xbe\x01\n" +
+	"\fChangeMyPlan\x12(.vietgara.license.v1.ChangeMyPlanRequest\x1a).vietgara.license.v1.ChangeMyPlanResponse\"=\x82\xd3\xe4\x93\x027:\x01*b\fsubscription\"$/api/v1/me/subscription/plan-changes\x12\xce\x01\n" +
+	"\x19CancelMyPendingPlanChange\x125.vietgara.license.v1.CancelMyPendingPlanChangeRequest\x1a6.vietgara.license.v1.CancelMyPendingPlanChangeResponse\"B\x82\xd3\xe4\x93\x02<b\fsubscription*,/api/v1/me/subscription/plan-changes/pending\x12\xbe\x01\n" +
 	"\x15GetGarageEntitlements\x121.vietgara.license.v1.GetGarageEntitlementsRequest\x1a2.vietgara.license.v1.GetGarageEntitlementsResponse\">\x82\xd3\xe4\x93\x028b\fentitlements\x12(/api/v1/garages/{garage_id}/entitlements2\x99\x06\n" +
 	"\x13LicenseAdminService\x12\x80\x01\n" +
 	"\fListAllPlans\x12(.vietgara.license.v1.ListAllPlansRequest\x1a).vietgara.license.v1.ListAllPlansResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/admin/plans\x12\x86\x01\n" +
@@ -1750,97 +1987,109 @@ func file_vietgara_license_v1_license_proto_rawDescGZIP() []byte {
 	return file_vietgara_license_v1_license_proto_rawDescData
 }
 
-var file_vietgara_license_v1_license_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_vietgara_license_v1_license_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_vietgara_license_v1_license_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_vietgara_license_v1_license_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
 var file_vietgara_license_v1_license_proto_goTypes = []any{
-	(BillingCycle)(0),                     // 0: vietgara.license.v1.BillingCycle
-	(SubscriptionStatus)(0),               // 1: vietgara.license.v1.SubscriptionStatus
-	(Feature)(0),                          // 2: vietgara.license.v1.Feature
-	(*PlanLimits)(nil),                    // 3: vietgara.license.v1.PlanLimits
-	(*Plan)(nil),                          // 4: vietgara.license.v1.Plan
-	(*Usage)(nil),                         // 5: vietgara.license.v1.Usage
-	(*Subscription)(nil),                  // 6: vietgara.license.v1.Subscription
-	(*Entitlements)(nil),                  // 7: vietgara.license.v1.Entitlements
-	(*ListPlansRequest)(nil),              // 8: vietgara.license.v1.ListPlansRequest
-	(*ListPlansResponse)(nil),             // 9: vietgara.license.v1.ListPlansResponse
-	(*GetMySubscriptionRequest)(nil),      // 10: vietgara.license.v1.GetMySubscriptionRequest
-	(*GetMySubscriptionResponse)(nil),     // 11: vietgara.license.v1.GetMySubscriptionResponse
-	(*ChangeMyPlanRequest)(nil),           // 12: vietgara.license.v1.ChangeMyPlanRequest
-	(*ChangeMyPlanResponse)(nil),          // 13: vietgara.license.v1.ChangeMyPlanResponse
-	(*GetGarageEntitlementsRequest)(nil),  // 14: vietgara.license.v1.GetGarageEntitlementsRequest
-	(*GetGarageEntitlementsResponse)(nil), // 15: vietgara.license.v1.GetGarageEntitlementsResponse
-	(*SubscriptionSummary)(nil),           // 16: vietgara.license.v1.SubscriptionSummary
-	(*ListAllPlansRequest)(nil),           // 17: vietgara.license.v1.ListAllPlansRequest
-	(*ListAllPlansResponse)(nil),          // 18: vietgara.license.v1.ListAllPlansResponse
-	(*CreatePlanRequest)(nil),             // 19: vietgara.license.v1.CreatePlanRequest
-	(*CreatePlanResponse)(nil),            // 20: vietgara.license.v1.CreatePlanResponse
-	(*UpdatePlanRequest)(nil),             // 21: vietgara.license.v1.UpdatePlanRequest
-	(*UpdatePlanResponse)(nil),            // 22: vietgara.license.v1.UpdatePlanResponse
-	(*ListSubscriptionsRequest)(nil),      // 23: vietgara.license.v1.ListSubscriptionsRequest
-	(*ListSubscriptionsResponse)(nil),     // 24: vietgara.license.v1.ListSubscriptionsResponse
-	(*ExtendSubscriptionRequest)(nil),     // 25: vietgara.license.v1.ExtendSubscriptionRequest
-	(*ExtendSubscriptionResponse)(nil),    // 26: vietgara.license.v1.ExtendSubscriptionResponse
-	(*timestamppb.Timestamp)(nil),         // 27: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),         // 28: google.protobuf.FieldMask
-	(*v1.Pagination)(nil),                 // 29: vietgara.common.v1.Pagination
+	(BillingCycle)(0),                         // 0: vietgara.license.v1.BillingCycle
+	(SubscriptionStatus)(0),                   // 1: vietgara.license.v1.SubscriptionStatus
+	(Feature)(0),                              // 2: vietgara.license.v1.Feature
+	(PlanChangeStatus)(0),                     // 3: vietgara.license.v1.PlanChangeStatus
+	(*PlanLimits)(nil),                        // 4: vietgara.license.v1.PlanLimits
+	(*Plan)(nil),                              // 5: vietgara.license.v1.Plan
+	(*PendingPlanChange)(nil),                 // 6: vietgara.license.v1.PendingPlanChange
+	(*Usage)(nil),                             // 7: vietgara.license.v1.Usage
+	(*Subscription)(nil),                      // 8: vietgara.license.v1.Subscription
+	(*Entitlements)(nil),                      // 9: vietgara.license.v1.Entitlements
+	(*ListPlansRequest)(nil),                  // 10: vietgara.license.v1.ListPlansRequest
+	(*ListPlansResponse)(nil),                 // 11: vietgara.license.v1.ListPlansResponse
+	(*GetMySubscriptionRequest)(nil),          // 12: vietgara.license.v1.GetMySubscriptionRequest
+	(*GetMySubscriptionResponse)(nil),         // 13: vietgara.license.v1.GetMySubscriptionResponse
+	(*ChangeMyPlanRequest)(nil),               // 14: vietgara.license.v1.ChangeMyPlanRequest
+	(*ChangeMyPlanResponse)(nil),              // 15: vietgara.license.v1.ChangeMyPlanResponse
+	(*CancelMyPendingPlanChangeRequest)(nil),  // 16: vietgara.license.v1.CancelMyPendingPlanChangeRequest
+	(*CancelMyPendingPlanChangeResponse)(nil), // 17: vietgara.license.v1.CancelMyPendingPlanChangeResponse
+	(*GetGarageEntitlementsRequest)(nil),      // 18: vietgara.license.v1.GetGarageEntitlementsRequest
+	(*GetGarageEntitlementsResponse)(nil),     // 19: vietgara.license.v1.GetGarageEntitlementsResponse
+	(*SubscriptionSummary)(nil),               // 20: vietgara.license.v1.SubscriptionSummary
+	(*ListAllPlansRequest)(nil),               // 21: vietgara.license.v1.ListAllPlansRequest
+	(*ListAllPlansResponse)(nil),              // 22: vietgara.license.v1.ListAllPlansResponse
+	(*CreatePlanRequest)(nil),                 // 23: vietgara.license.v1.CreatePlanRequest
+	(*CreatePlanResponse)(nil),                // 24: vietgara.license.v1.CreatePlanResponse
+	(*UpdatePlanRequest)(nil),                 // 25: vietgara.license.v1.UpdatePlanRequest
+	(*UpdatePlanResponse)(nil),                // 26: vietgara.license.v1.UpdatePlanResponse
+	(*ListSubscriptionsRequest)(nil),          // 27: vietgara.license.v1.ListSubscriptionsRequest
+	(*ListSubscriptionsResponse)(nil),         // 28: vietgara.license.v1.ListSubscriptionsResponse
+	(*ExtendSubscriptionRequest)(nil),         // 29: vietgara.license.v1.ExtendSubscriptionRequest
+	(*ExtendSubscriptionResponse)(nil),        // 30: vietgara.license.v1.ExtendSubscriptionResponse
+	(*timestamppb.Timestamp)(nil),             // 31: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),             // 32: google.protobuf.FieldMask
+	(*v1.Pagination)(nil),                     // 33: vietgara.common.v1.Pagination
 }
 var file_vietgara_license_v1_license_proto_depIdxs = []int32{
 	0,  // 0: vietgara.license.v1.Plan.billing_cycle:type_name -> vietgara.license.v1.BillingCycle
-	3,  // 1: vietgara.license.v1.Plan.limits:type_name -> vietgara.license.v1.PlanLimits
+	4,  // 1: vietgara.license.v1.Plan.limits:type_name -> vietgara.license.v1.PlanLimits
 	2,  // 2: vietgara.license.v1.Plan.features:type_name -> vietgara.license.v1.Feature
-	27, // 3: vietgara.license.v1.Plan.created_at:type_name -> google.protobuf.Timestamp
-	27, // 4: vietgara.license.v1.Plan.updated_at:type_name -> google.protobuf.Timestamp
-	1,  // 5: vietgara.license.v1.Subscription.status:type_name -> vietgara.license.v1.SubscriptionStatus
-	4,  // 6: vietgara.license.v1.Subscription.plan:type_name -> vietgara.license.v1.Plan
-	27, // 7: vietgara.license.v1.Subscription.trial_end_at:type_name -> google.protobuf.Timestamp
-	27, // 8: vietgara.license.v1.Subscription.current_period_start:type_name -> google.protobuf.Timestamp
-	27, // 9: vietgara.license.v1.Subscription.current_period_end:type_name -> google.protobuf.Timestamp
-	27, // 10: vietgara.license.v1.Subscription.grace_period_end:type_name -> google.protobuf.Timestamp
-	5,  // 11: vietgara.license.v1.Subscription.usage:type_name -> vietgara.license.v1.Usage
-	27, // 12: vietgara.license.v1.Subscription.created_at:type_name -> google.protobuf.Timestamp
-	27, // 13: vietgara.license.v1.Subscription.updated_at:type_name -> google.protobuf.Timestamp
-	1,  // 14: vietgara.license.v1.Entitlements.status:type_name -> vietgara.license.v1.SubscriptionStatus
-	2,  // 15: vietgara.license.v1.Entitlements.features:type_name -> vietgara.license.v1.Feature
-	3,  // 16: vietgara.license.v1.Entitlements.limits:type_name -> vietgara.license.v1.PlanLimits
-	27, // 17: vietgara.license.v1.Entitlements.current_period_end:type_name -> google.protobuf.Timestamp
-	4,  // 18: vietgara.license.v1.ListPlansResponse.data:type_name -> vietgara.license.v1.Plan
-	6,  // 19: vietgara.license.v1.GetMySubscriptionResponse.subscription:type_name -> vietgara.license.v1.Subscription
-	6,  // 20: vietgara.license.v1.ChangeMyPlanResponse.subscription:type_name -> vietgara.license.v1.Subscription
-	7,  // 21: vietgara.license.v1.GetGarageEntitlementsResponse.entitlements:type_name -> vietgara.license.v1.Entitlements
-	6,  // 22: vietgara.license.v1.SubscriptionSummary.subscription:type_name -> vietgara.license.v1.Subscription
-	4,  // 23: vietgara.license.v1.ListAllPlansResponse.data:type_name -> vietgara.license.v1.Plan
-	4,  // 24: vietgara.license.v1.CreatePlanRequest.plan:type_name -> vietgara.license.v1.Plan
-	4,  // 25: vietgara.license.v1.CreatePlanResponse.plan:type_name -> vietgara.license.v1.Plan
-	4,  // 26: vietgara.license.v1.UpdatePlanRequest.plan:type_name -> vietgara.license.v1.Plan
-	28, // 27: vietgara.license.v1.UpdatePlanRequest.update_mask:type_name -> google.protobuf.FieldMask
-	4,  // 28: vietgara.license.v1.UpdatePlanResponse.plan:type_name -> vietgara.license.v1.Plan
-	1,  // 29: vietgara.license.v1.ListSubscriptionsRequest.status:type_name -> vietgara.license.v1.SubscriptionStatus
-	16, // 30: vietgara.license.v1.ListSubscriptionsResponse.data:type_name -> vietgara.license.v1.SubscriptionSummary
-	29, // 31: vietgara.license.v1.ListSubscriptionsResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	6,  // 32: vietgara.license.v1.ExtendSubscriptionResponse.subscription:type_name -> vietgara.license.v1.Subscription
-	8,  // 33: vietgara.license.v1.LicenseService.ListPlans:input_type -> vietgara.license.v1.ListPlansRequest
-	10, // 34: vietgara.license.v1.LicenseService.GetMySubscription:input_type -> vietgara.license.v1.GetMySubscriptionRequest
-	12, // 35: vietgara.license.v1.LicenseService.ChangeMyPlan:input_type -> vietgara.license.v1.ChangeMyPlanRequest
-	14, // 36: vietgara.license.v1.LicenseService.GetGarageEntitlements:input_type -> vietgara.license.v1.GetGarageEntitlementsRequest
-	17, // 37: vietgara.license.v1.LicenseAdminService.ListAllPlans:input_type -> vietgara.license.v1.ListAllPlansRequest
-	19, // 38: vietgara.license.v1.LicenseAdminService.CreatePlan:input_type -> vietgara.license.v1.CreatePlanRequest
-	21, // 39: vietgara.license.v1.LicenseAdminService.UpdatePlan:input_type -> vietgara.license.v1.UpdatePlanRequest
-	23, // 40: vietgara.license.v1.LicenseAdminService.ListSubscriptions:input_type -> vietgara.license.v1.ListSubscriptionsRequest
-	25, // 41: vietgara.license.v1.LicenseAdminService.ExtendSubscription:input_type -> vietgara.license.v1.ExtendSubscriptionRequest
-	9,  // 42: vietgara.license.v1.LicenseService.ListPlans:output_type -> vietgara.license.v1.ListPlansResponse
-	11, // 43: vietgara.license.v1.LicenseService.GetMySubscription:output_type -> vietgara.license.v1.GetMySubscriptionResponse
-	13, // 44: vietgara.license.v1.LicenseService.ChangeMyPlan:output_type -> vietgara.license.v1.ChangeMyPlanResponse
-	15, // 45: vietgara.license.v1.LicenseService.GetGarageEntitlements:output_type -> vietgara.license.v1.GetGarageEntitlementsResponse
-	18, // 46: vietgara.license.v1.LicenseAdminService.ListAllPlans:output_type -> vietgara.license.v1.ListAllPlansResponse
-	20, // 47: vietgara.license.v1.LicenseAdminService.CreatePlan:output_type -> vietgara.license.v1.CreatePlanResponse
-	22, // 48: vietgara.license.v1.LicenseAdminService.UpdatePlan:output_type -> vietgara.license.v1.UpdatePlanResponse
-	24, // 49: vietgara.license.v1.LicenseAdminService.ListSubscriptions:output_type -> vietgara.license.v1.ListSubscriptionsResponse
-	26, // 50: vietgara.license.v1.LicenseAdminService.ExtendSubscription:output_type -> vietgara.license.v1.ExtendSubscriptionResponse
-	42, // [42:51] is the sub-list for method output_type
-	33, // [33:42] is the sub-list for method input_type
-	33, // [33:33] is the sub-list for extension type_name
-	33, // [33:33] is the sub-list for extension extendee
-	0,  // [0:33] is the sub-list for field type_name
+	31, // 3: vietgara.license.v1.Plan.created_at:type_name -> google.protobuf.Timestamp
+	31, // 4: vietgara.license.v1.Plan.updated_at:type_name -> google.protobuf.Timestamp
+	5,  // 5: vietgara.license.v1.PendingPlanChange.plan:type_name -> vietgara.license.v1.Plan
+	31, // 6: vietgara.license.v1.PendingPlanChange.effective_at:type_name -> google.protobuf.Timestamp
+	3,  // 7: vietgara.license.v1.PendingPlanChange.status:type_name -> vietgara.license.v1.PlanChangeStatus
+	31, // 8: vietgara.license.v1.PendingPlanChange.requested_at:type_name -> google.protobuf.Timestamp
+	1,  // 9: vietgara.license.v1.Subscription.status:type_name -> vietgara.license.v1.SubscriptionStatus
+	5,  // 10: vietgara.license.v1.Subscription.plan:type_name -> vietgara.license.v1.Plan
+	31, // 11: vietgara.license.v1.Subscription.trial_end_at:type_name -> google.protobuf.Timestamp
+	31, // 12: vietgara.license.v1.Subscription.current_period_start:type_name -> google.protobuf.Timestamp
+	31, // 13: vietgara.license.v1.Subscription.current_period_end:type_name -> google.protobuf.Timestamp
+	31, // 14: vietgara.license.v1.Subscription.grace_period_end:type_name -> google.protobuf.Timestamp
+	7,  // 15: vietgara.license.v1.Subscription.usage:type_name -> vietgara.license.v1.Usage
+	31, // 16: vietgara.license.v1.Subscription.created_at:type_name -> google.protobuf.Timestamp
+	31, // 17: vietgara.license.v1.Subscription.updated_at:type_name -> google.protobuf.Timestamp
+	6,  // 18: vietgara.license.v1.Subscription.pending_change:type_name -> vietgara.license.v1.PendingPlanChange
+	1,  // 19: vietgara.license.v1.Entitlements.status:type_name -> vietgara.license.v1.SubscriptionStatus
+	2,  // 20: vietgara.license.v1.Entitlements.features:type_name -> vietgara.license.v1.Feature
+	4,  // 21: vietgara.license.v1.Entitlements.limits:type_name -> vietgara.license.v1.PlanLimits
+	31, // 22: vietgara.license.v1.Entitlements.current_period_end:type_name -> google.protobuf.Timestamp
+	5,  // 23: vietgara.license.v1.ListPlansResponse.data:type_name -> vietgara.license.v1.Plan
+	8,  // 24: vietgara.license.v1.GetMySubscriptionResponse.subscription:type_name -> vietgara.license.v1.Subscription
+	8,  // 25: vietgara.license.v1.ChangeMyPlanResponse.subscription:type_name -> vietgara.license.v1.Subscription
+	8,  // 26: vietgara.license.v1.CancelMyPendingPlanChangeResponse.subscription:type_name -> vietgara.license.v1.Subscription
+	9,  // 27: vietgara.license.v1.GetGarageEntitlementsResponse.entitlements:type_name -> vietgara.license.v1.Entitlements
+	8,  // 28: vietgara.license.v1.SubscriptionSummary.subscription:type_name -> vietgara.license.v1.Subscription
+	5,  // 29: vietgara.license.v1.ListAllPlansResponse.data:type_name -> vietgara.license.v1.Plan
+	5,  // 30: vietgara.license.v1.CreatePlanRequest.plan:type_name -> vietgara.license.v1.Plan
+	5,  // 31: vietgara.license.v1.CreatePlanResponse.plan:type_name -> vietgara.license.v1.Plan
+	5,  // 32: vietgara.license.v1.UpdatePlanRequest.plan:type_name -> vietgara.license.v1.Plan
+	32, // 33: vietgara.license.v1.UpdatePlanRequest.update_mask:type_name -> google.protobuf.FieldMask
+	5,  // 34: vietgara.license.v1.UpdatePlanResponse.plan:type_name -> vietgara.license.v1.Plan
+	1,  // 35: vietgara.license.v1.ListSubscriptionsRequest.status:type_name -> vietgara.license.v1.SubscriptionStatus
+	20, // 36: vietgara.license.v1.ListSubscriptionsResponse.data:type_name -> vietgara.license.v1.SubscriptionSummary
+	33, // 37: vietgara.license.v1.ListSubscriptionsResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	8,  // 38: vietgara.license.v1.ExtendSubscriptionResponse.subscription:type_name -> vietgara.license.v1.Subscription
+	10, // 39: vietgara.license.v1.LicenseService.ListPlans:input_type -> vietgara.license.v1.ListPlansRequest
+	12, // 40: vietgara.license.v1.LicenseService.GetMySubscription:input_type -> vietgara.license.v1.GetMySubscriptionRequest
+	14, // 41: vietgara.license.v1.LicenseService.ChangeMyPlan:input_type -> vietgara.license.v1.ChangeMyPlanRequest
+	16, // 42: vietgara.license.v1.LicenseService.CancelMyPendingPlanChange:input_type -> vietgara.license.v1.CancelMyPendingPlanChangeRequest
+	18, // 43: vietgara.license.v1.LicenseService.GetGarageEntitlements:input_type -> vietgara.license.v1.GetGarageEntitlementsRequest
+	21, // 44: vietgara.license.v1.LicenseAdminService.ListAllPlans:input_type -> vietgara.license.v1.ListAllPlansRequest
+	23, // 45: vietgara.license.v1.LicenseAdminService.CreatePlan:input_type -> vietgara.license.v1.CreatePlanRequest
+	25, // 46: vietgara.license.v1.LicenseAdminService.UpdatePlan:input_type -> vietgara.license.v1.UpdatePlanRequest
+	27, // 47: vietgara.license.v1.LicenseAdminService.ListSubscriptions:input_type -> vietgara.license.v1.ListSubscriptionsRequest
+	29, // 48: vietgara.license.v1.LicenseAdminService.ExtendSubscription:input_type -> vietgara.license.v1.ExtendSubscriptionRequest
+	11, // 49: vietgara.license.v1.LicenseService.ListPlans:output_type -> vietgara.license.v1.ListPlansResponse
+	13, // 50: vietgara.license.v1.LicenseService.GetMySubscription:output_type -> vietgara.license.v1.GetMySubscriptionResponse
+	15, // 51: vietgara.license.v1.LicenseService.ChangeMyPlan:output_type -> vietgara.license.v1.ChangeMyPlanResponse
+	17, // 52: vietgara.license.v1.LicenseService.CancelMyPendingPlanChange:output_type -> vietgara.license.v1.CancelMyPendingPlanChangeResponse
+	19, // 53: vietgara.license.v1.LicenseService.GetGarageEntitlements:output_type -> vietgara.license.v1.GetGarageEntitlementsResponse
+	22, // 54: vietgara.license.v1.LicenseAdminService.ListAllPlans:output_type -> vietgara.license.v1.ListAllPlansResponse
+	24, // 55: vietgara.license.v1.LicenseAdminService.CreatePlan:output_type -> vietgara.license.v1.CreatePlanResponse
+	26, // 56: vietgara.license.v1.LicenseAdminService.UpdatePlan:output_type -> vietgara.license.v1.UpdatePlanResponse
+	28, // 57: vietgara.license.v1.LicenseAdminService.ListSubscriptions:output_type -> vietgara.license.v1.ListSubscriptionsResponse
+	30, // 58: vietgara.license.v1.LicenseAdminService.ExtendSubscription:output_type -> vietgara.license.v1.ExtendSubscriptionResponse
+	49, // [49:59] is the sub-list for method output_type
+	39, // [39:49] is the sub-list for method input_type
+	39, // [39:39] is the sub-list for extension type_name
+	39, // [39:39] is the sub-list for extension extendee
+	0,  // [0:39] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_license_v1_license_proto_init() }
@@ -1853,8 +2102,8 @@ func file_vietgara_license_v1_license_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_license_v1_license_proto_rawDesc), len(file_vietgara_license_v1_license_proto_rawDesc)),
-			NumEnums:      3,
-			NumMessages:   24,
+			NumEnums:      4,
+			NumMessages:   27,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

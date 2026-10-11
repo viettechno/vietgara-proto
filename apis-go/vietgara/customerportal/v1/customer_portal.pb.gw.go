@@ -56,6 +56,162 @@ func local_request_CustomerPortalService_ListMyVehicles_0(ctx context.Context, m
 	return msg, metadata, err
 }
 
+func request_CustomerPortalService_ListMyGarageLinks_0(ctx context.Context, marshaler runtime.Marshaler, client CustomerPortalServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListMyGarageLinksRequest
+		metadata runtime.ServerMetadata
+	)
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ListMyGarageLinks(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_CustomerPortalService_ListMyGarageLinks_0(ctx context.Context, marshaler runtime.Marshaler, server CustomerPortalServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListMyGarageLinksRequest
+		metadata runtime.ServerMetadata
+	)
+	msg, err := server.ListMyGarageLinks(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_CustomerPortalService_AcceptGarageLink_0(ctx context.Context, marshaler runtime.Marshaler, client CustomerPortalServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq AcceptGarageLinkRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["link_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "link_id")
+	}
+	protoReq.LinkId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "link_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.AcceptGarageLink(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_CustomerPortalService_AcceptGarageLink_0(ctx context.Context, marshaler runtime.Marshaler, server CustomerPortalServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq AcceptGarageLinkRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["link_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "link_id")
+	}
+	protoReq.LinkId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "link_id", err)
+	}
+	msg, err := server.AcceptGarageLink(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_CustomerPortalService_DeclineGarageLink_0(ctx context.Context, marshaler runtime.Marshaler, client CustomerPortalServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq DeclineGarageLinkRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["link_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "link_id")
+	}
+	protoReq.LinkId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "link_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.DeclineGarageLink(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_CustomerPortalService_DeclineGarageLink_0(ctx context.Context, marshaler runtime.Marshaler, server CustomerPortalServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq DeclineGarageLinkRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["link_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "link_id")
+	}
+	protoReq.LinkId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "link_id", err)
+	}
+	msg, err := server.DeclineGarageLink(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_CustomerPortalService_UnlinkGarageLink_0(ctx context.Context, marshaler runtime.Marshaler, client CustomerPortalServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UnlinkGarageLinkRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["link_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "link_id")
+	}
+	protoReq.LinkId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "link_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.UnlinkGarageLink(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_CustomerPortalService_UnlinkGarageLink_0(ctx context.Context, marshaler runtime.Marshaler, server CustomerPortalServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UnlinkGarageLinkRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["link_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "link_id")
+	}
+	protoReq.LinkId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "link_id", err)
+	}
+	msg, err := server.UnlinkGarageLink(ctx, &protoReq)
+	return msg, metadata, err
+}
+
 func request_CustomerPortalService_GetMyVehicleHistory_0(ctx context.Context, marshaler runtime.Marshaler, client CustomerPortalServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq GetMyVehicleHistoryRequest
@@ -137,6 +293,86 @@ func RegisterCustomerPortalServiceHandlerServer(ctx context.Context, mux *runtim
 		}
 		forward_CustomerPortalService_ListMyVehicles_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodGet, pattern_CustomerPortalService_ListMyGarageLinks_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.customerportal.v1.CustomerPortalService/ListMyGarageLinks", runtime.WithHTTPPathPattern("/api/v1/me/garage-links"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_CustomerPortalService_ListMyGarageLinks_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CustomerPortalService_ListMyGarageLinks_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_CustomerPortalService_AcceptGarageLink_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.customerportal.v1.CustomerPortalService/AcceptGarageLink", runtime.WithHTTPPathPattern("/api/v1/me/garage-links/{link_id}:accept"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_CustomerPortalService_AcceptGarageLink_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CustomerPortalService_AcceptGarageLink_0(annotatedContext, mux, outboundMarshaler, w, req, response_CustomerPortalService_AcceptGarageLink_0{resp.(*AcceptGarageLinkResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_CustomerPortalService_DeclineGarageLink_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.customerportal.v1.CustomerPortalService/DeclineGarageLink", runtime.WithHTTPPathPattern("/api/v1/me/garage-links/{link_id}:decline"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_CustomerPortalService_DeclineGarageLink_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CustomerPortalService_DeclineGarageLink_0(annotatedContext, mux, outboundMarshaler, w, req, response_CustomerPortalService_DeclineGarageLink_0{resp.(*DeclineGarageLinkResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_CustomerPortalService_UnlinkGarageLink_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.customerportal.v1.CustomerPortalService/UnlinkGarageLink", runtime.WithHTTPPathPattern("/api/v1/me/garage-links/{link_id}:unlink"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_CustomerPortalService_UnlinkGarageLink_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CustomerPortalService_UnlinkGarageLink_0(annotatedContext, mux, outboundMarshaler, w, req, response_CustomerPortalService_UnlinkGarageLink_0{resp.(*UnlinkGarageLinkResponse)}, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodGet, pattern_CustomerPortalService_GetMyVehicleHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -214,6 +450,74 @@ func RegisterCustomerPortalServiceHandlerClient(ctx context.Context, mux *runtim
 		}
 		forward_CustomerPortalService_ListMyVehicles_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodGet, pattern_CustomerPortalService_ListMyGarageLinks_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.customerportal.v1.CustomerPortalService/ListMyGarageLinks", runtime.WithHTTPPathPattern("/api/v1/me/garage-links"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_CustomerPortalService_ListMyGarageLinks_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CustomerPortalService_ListMyGarageLinks_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_CustomerPortalService_AcceptGarageLink_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.customerportal.v1.CustomerPortalService/AcceptGarageLink", runtime.WithHTTPPathPattern("/api/v1/me/garage-links/{link_id}:accept"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_CustomerPortalService_AcceptGarageLink_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CustomerPortalService_AcceptGarageLink_0(annotatedContext, mux, outboundMarshaler, w, req, response_CustomerPortalService_AcceptGarageLink_0{resp.(*AcceptGarageLinkResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_CustomerPortalService_DeclineGarageLink_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.customerportal.v1.CustomerPortalService/DeclineGarageLink", runtime.WithHTTPPathPattern("/api/v1/me/garage-links/{link_id}:decline"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_CustomerPortalService_DeclineGarageLink_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CustomerPortalService_DeclineGarageLink_0(annotatedContext, mux, outboundMarshaler, w, req, response_CustomerPortalService_DeclineGarageLink_0{resp.(*DeclineGarageLinkResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_CustomerPortalService_UnlinkGarageLink_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.customerportal.v1.CustomerPortalService/UnlinkGarageLink", runtime.WithHTTPPathPattern("/api/v1/me/garage-links/{link_id}:unlink"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_CustomerPortalService_UnlinkGarageLink_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CustomerPortalService_UnlinkGarageLink_0(annotatedContext, mux, outboundMarshaler, w, req, response_CustomerPortalService_UnlinkGarageLink_0{resp.(*UnlinkGarageLinkResponse)}, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodGet, pattern_CustomerPortalService_GetMyVehicleHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -234,12 +538,47 @@ func RegisterCustomerPortalServiceHandlerClient(ctx context.Context, mux *runtim
 	return nil
 }
 
+type response_CustomerPortalService_AcceptGarageLink_0 struct {
+	*AcceptGarageLinkResponse
+}
+
+func (m response_CustomerPortalService_AcceptGarageLink_0) XXX_ResponseBody() interface{} {
+	response := m.AcceptGarageLinkResponse
+	return response.Link
+}
+
+type response_CustomerPortalService_DeclineGarageLink_0 struct {
+	*DeclineGarageLinkResponse
+}
+
+func (m response_CustomerPortalService_DeclineGarageLink_0) XXX_ResponseBody() interface{} {
+	response := m.DeclineGarageLinkResponse
+	return response.Link
+}
+
+type response_CustomerPortalService_UnlinkGarageLink_0 struct {
+	*UnlinkGarageLinkResponse
+}
+
+func (m response_CustomerPortalService_UnlinkGarageLink_0) XXX_ResponseBody() interface{} {
+	response := m.UnlinkGarageLinkResponse
+	return response.Link
+}
+
 var (
 	pattern_CustomerPortalService_ListMyVehicles_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "customer", "vehicles"}, ""))
+	pattern_CustomerPortalService_ListMyGarageLinks_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "me", "garage-links"}, ""))
+	pattern_CustomerPortalService_AcceptGarageLink_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "me", "garage-links", "link_id"}, "accept"))
+	pattern_CustomerPortalService_DeclineGarageLink_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "me", "garage-links", "link_id"}, "decline"))
+	pattern_CustomerPortalService_UnlinkGarageLink_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "me", "garage-links", "link_id"}, "unlink"))
 	pattern_CustomerPortalService_GetMyVehicleHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"api", "v1", "customer", "garages", "garage_id", "vehicles", "vehicle_id", "history"}, ""))
 )
 
 var (
 	forward_CustomerPortalService_ListMyVehicles_0      = runtime.ForwardResponseMessage
+	forward_CustomerPortalService_ListMyGarageLinks_0   = runtime.ForwardResponseMessage
+	forward_CustomerPortalService_AcceptGarageLink_0    = runtime.ForwardResponseMessage
+	forward_CustomerPortalService_DeclineGarageLink_0   = runtime.ForwardResponseMessage
+	forward_CustomerPortalService_UnlinkGarageLink_0    = runtime.ForwardResponseMessage
 	forward_CustomerPortalService_GetMyVehicleHistory_0 = runtime.ForwardResponseMessage
 )

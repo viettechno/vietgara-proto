@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	LicenseService_ListPlans_FullMethodName             = "/vietgara.license.v1.LicenseService/ListPlans"
-	LicenseService_GetMySubscription_FullMethodName     = "/vietgara.license.v1.LicenseService/GetMySubscription"
-	LicenseService_ChangeMyPlan_FullMethodName          = "/vietgara.license.v1.LicenseService/ChangeMyPlan"
-	LicenseService_GetGarageEntitlements_FullMethodName = "/vietgara.license.v1.LicenseService/GetGarageEntitlements"
+	LicenseService_ListPlans_FullMethodName                 = "/vietgara.license.v1.LicenseService/ListPlans"
+	LicenseService_GetMySubscription_FullMethodName         = "/vietgara.license.v1.LicenseService/GetMySubscription"
+	LicenseService_ChangeMyPlan_FullMethodName              = "/vietgara.license.v1.LicenseService/ChangeMyPlan"
+	LicenseService_CancelMyPendingPlanChange_FullMethodName = "/vietgara.license.v1.LicenseService/CancelMyPendingPlanChange"
+	LicenseService_GetGarageEntitlements_FullMethodName     = "/vietgara.license.v1.LicenseService/GetGarageEntitlements"
 )
 
 // LicenseServiceClient is the client API for LicenseService service.
@@ -34,10 +35,16 @@ type LicenseServiceClient interface {
 	ListPlans(ctx context.Context, in *ListPlansRequest, opts ...grpc.CallOption) (*ListPlansResponse, error)
 	// The signed-in owner's subscription and usage.
 	GetMySubscription(ctx context.Context, in *GetMySubscriptionRequest, opts ...grpc.CallOption) (*GetMySubscriptionResponse, error)
-	// Switches the owner to another plan (FR-LIC-02). Takes effect at once
-	// and starts a new period; online payment arrives in Phase 2. Fails with
-	// PLAN_LIMIT_REACHED when current usage exceeds the new plan.
+	// Chooses another plan (FR-LIC-02). An upgrade and a downgrade both take
+	// effect when the current period ends (when the trial ends, during the
+	// trial); the answer carries pending_change. Choosing again replaces the
+	// pending change. Fails with PLAN_LIMIT_REACHED when current usage already
+	// exceeds the new plan; the limits are checked again on the effective
+	// date, and the switch is postponed if they are still exceeded.
 	ChangeMyPlan(ctx context.Context, in *ChangeMyPlanRequest, opts ...grpc.CallOption) (*ChangeMyPlanResponse, error)
+	// Cancels the pending plan change (FR-LIC-02); NOT_FOUND when there is
+	// none.
+	CancelMyPendingPlanChange(ctx context.Context, in *CancelMyPendingPlanChangeRequest, opts ...grpc.CallOption) (*CancelMyPendingPlanChangeResponse, error)
 	// What the garage may use; any active member may read it.
 	GetGarageEntitlements(ctx context.Context, in *GetGarageEntitlementsRequest, opts ...grpc.CallOption) (*GetGarageEntitlementsResponse, error)
 }
@@ -80,6 +87,16 @@ func (c *licenseServiceClient) ChangeMyPlan(ctx context.Context, in *ChangeMyPla
 	return out, nil
 }
 
+func (c *licenseServiceClient) CancelMyPendingPlanChange(ctx context.Context, in *CancelMyPendingPlanChangeRequest, opts ...grpc.CallOption) (*CancelMyPendingPlanChangeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelMyPendingPlanChangeResponse)
+	err := c.cc.Invoke(ctx, LicenseService_CancelMyPendingPlanChange_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *licenseServiceClient) GetGarageEntitlements(ctx context.Context, in *GetGarageEntitlementsRequest, opts ...grpc.CallOption) (*GetGarageEntitlementsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetGarageEntitlementsResponse)
@@ -99,10 +116,16 @@ type LicenseServiceServer interface {
 	ListPlans(context.Context, *ListPlansRequest) (*ListPlansResponse, error)
 	// The signed-in owner's subscription and usage.
 	GetMySubscription(context.Context, *GetMySubscriptionRequest) (*GetMySubscriptionResponse, error)
-	// Switches the owner to another plan (FR-LIC-02). Takes effect at once
-	// and starts a new period; online payment arrives in Phase 2. Fails with
-	// PLAN_LIMIT_REACHED when current usage exceeds the new plan.
+	// Chooses another plan (FR-LIC-02). An upgrade and a downgrade both take
+	// effect when the current period ends (when the trial ends, during the
+	// trial); the answer carries pending_change. Choosing again replaces the
+	// pending change. Fails with PLAN_LIMIT_REACHED when current usage already
+	// exceeds the new plan; the limits are checked again on the effective
+	// date, and the switch is postponed if they are still exceeded.
 	ChangeMyPlan(context.Context, *ChangeMyPlanRequest) (*ChangeMyPlanResponse, error)
+	// Cancels the pending plan change (FR-LIC-02); NOT_FOUND when there is
+	// none.
+	CancelMyPendingPlanChange(context.Context, *CancelMyPendingPlanChangeRequest) (*CancelMyPendingPlanChangeResponse, error)
 	// What the garage may use; any active member may read it.
 	GetGarageEntitlements(context.Context, *GetGarageEntitlementsRequest) (*GetGarageEntitlementsResponse, error)
 	mustEmbedUnimplementedLicenseServiceServer()
@@ -123,6 +146,9 @@ func (UnimplementedLicenseServiceServer) GetMySubscription(context.Context, *Get
 }
 func (UnimplementedLicenseServiceServer) ChangeMyPlan(context.Context, *ChangeMyPlanRequest) (*ChangeMyPlanResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ChangeMyPlan not implemented")
+}
+func (UnimplementedLicenseServiceServer) CancelMyPendingPlanChange(context.Context, *CancelMyPendingPlanChangeRequest) (*CancelMyPendingPlanChangeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelMyPendingPlanChange not implemented")
 }
 func (UnimplementedLicenseServiceServer) GetGarageEntitlements(context.Context, *GetGarageEntitlementsRequest) (*GetGarageEntitlementsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetGarageEntitlements not implemented")
@@ -202,6 +228,24 @@ func _LicenseService_ChangeMyPlan_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LicenseService_CancelMyPendingPlanChange_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelMyPendingPlanChangeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseServiceServer).CancelMyPendingPlanChange(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseService_CancelMyPendingPlanChange_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseServiceServer).CancelMyPendingPlanChange(ctx, req.(*CancelMyPendingPlanChangeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _LicenseService_GetGarageEntitlements_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetGarageEntitlementsRequest)
 	if err := dec(in); err != nil {
@@ -238,6 +282,10 @@ var LicenseService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ChangeMyPlan",
 			Handler:    _LicenseService_ChangeMyPlan_Handler,
+		},
+		{
+			MethodName: "CancelMyPendingPlanChange",
+			Handler:    _LicenseService_CancelMyPendingPlanChange_Handler,
 		},
 		{
 			MethodName: "GetGarageEntitlements",

@@ -20,6 +20,10 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	CustomerPortalService_ListMyVehicles_FullMethodName      = "/vietgara.customerportal.v1.CustomerPortalService/ListMyVehicles"
+	CustomerPortalService_ListMyGarageLinks_FullMethodName   = "/vietgara.customerportal.v1.CustomerPortalService/ListMyGarageLinks"
+	CustomerPortalService_AcceptGarageLink_FullMethodName    = "/vietgara.customerportal.v1.CustomerPortalService/AcceptGarageLink"
+	CustomerPortalService_DeclineGarageLink_FullMethodName   = "/vietgara.customerportal.v1.CustomerPortalService/DeclineGarageLink"
+	CustomerPortalService_UnlinkGarageLink_FullMethodName    = "/vietgara.customerportal.v1.CustomerPortalService/UnlinkGarageLink"
 	CustomerPortalService_GetMyVehicleHistory_FullMethodName = "/vietgara.customerportal.v1.CustomerPortalService/GetMyVehicleHistory"
 )
 
@@ -35,6 +39,13 @@ const (
 type CustomerPortalServiceClient interface {
 	// The signed-in person's vehicles, grouped by garage (FR-CAPP-02).
 	ListMyVehicles(ctx context.Context, in *ListMyVehiclesRequest, opts ...grpc.CallOption) (*ListMyVehiclesResponse, error)
+	// FR-CAPP-05: link requests from garages and the garages already linked.
+	ListMyGarageLinks(ctx context.Context, in *ListMyGarageLinksRequest, opts ...grpc.CallOption) (*ListMyGarageLinksResponse, error)
+	// Accepts a garage's request to link the user with its customer profile.
+	AcceptGarageLink(ctx context.Context, in *AcceptGarageLinkRequest, opts ...grpc.CallOption) (*AcceptGarageLinkResponse, error)
+	DeclineGarageLink(ctx context.Context, in *DeclineGarageLinkRequest, opts ...grpc.CallOption) (*DeclineGarageLinkResponse, error)
+	// Ends a link from the user's side.
+	UnlinkGarageLink(ctx context.Context, in *UnlinkGarageLinkRequest, opts ...grpc.CallOption) (*UnlinkGarageLinkResponse, error)
 	// One of the person's vehicles' repair history (FR-CAPP-02, FR-CUS-03);
 	// NOT_FOUND unless the vehicle belongs to their customer record there.
 	GetMyVehicleHistory(ctx context.Context, in *GetMyVehicleHistoryRequest, opts ...grpc.CallOption) (*GetMyVehicleHistoryResponse, error)
@@ -52,6 +63,46 @@ func (c *customerPortalServiceClient) ListMyVehicles(ctx context.Context, in *Li
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListMyVehiclesResponse)
 	err := c.cc.Invoke(ctx, CustomerPortalService_ListMyVehicles_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *customerPortalServiceClient) ListMyGarageLinks(ctx context.Context, in *ListMyGarageLinksRequest, opts ...grpc.CallOption) (*ListMyGarageLinksResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListMyGarageLinksResponse)
+	err := c.cc.Invoke(ctx, CustomerPortalService_ListMyGarageLinks_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *customerPortalServiceClient) AcceptGarageLink(ctx context.Context, in *AcceptGarageLinkRequest, opts ...grpc.CallOption) (*AcceptGarageLinkResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AcceptGarageLinkResponse)
+	err := c.cc.Invoke(ctx, CustomerPortalService_AcceptGarageLink_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *customerPortalServiceClient) DeclineGarageLink(ctx context.Context, in *DeclineGarageLinkRequest, opts ...grpc.CallOption) (*DeclineGarageLinkResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeclineGarageLinkResponse)
+	err := c.cc.Invoke(ctx, CustomerPortalService_DeclineGarageLink_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *customerPortalServiceClient) UnlinkGarageLink(ctx context.Context, in *UnlinkGarageLinkRequest, opts ...grpc.CallOption) (*UnlinkGarageLinkResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UnlinkGarageLinkResponse)
+	err := c.cc.Invoke(ctx, CustomerPortalService_UnlinkGarageLink_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,6 +131,13 @@ func (c *customerPortalServiceClient) GetMyVehicleHistory(ctx context.Context, i
 type CustomerPortalServiceServer interface {
 	// The signed-in person's vehicles, grouped by garage (FR-CAPP-02).
 	ListMyVehicles(context.Context, *ListMyVehiclesRequest) (*ListMyVehiclesResponse, error)
+	// FR-CAPP-05: link requests from garages and the garages already linked.
+	ListMyGarageLinks(context.Context, *ListMyGarageLinksRequest) (*ListMyGarageLinksResponse, error)
+	// Accepts a garage's request to link the user with its customer profile.
+	AcceptGarageLink(context.Context, *AcceptGarageLinkRequest) (*AcceptGarageLinkResponse, error)
+	DeclineGarageLink(context.Context, *DeclineGarageLinkRequest) (*DeclineGarageLinkResponse, error)
+	// Ends a link from the user's side.
+	UnlinkGarageLink(context.Context, *UnlinkGarageLinkRequest) (*UnlinkGarageLinkResponse, error)
 	// One of the person's vehicles' repair history (FR-CAPP-02, FR-CUS-03);
 	// NOT_FOUND unless the vehicle belongs to their customer record there.
 	GetMyVehicleHistory(context.Context, *GetMyVehicleHistoryRequest) (*GetMyVehicleHistoryResponse, error)
@@ -95,6 +153,18 @@ type UnimplementedCustomerPortalServiceServer struct{}
 
 func (UnimplementedCustomerPortalServiceServer) ListMyVehicles(context.Context, *ListMyVehiclesRequest) (*ListMyVehiclesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListMyVehicles not implemented")
+}
+func (UnimplementedCustomerPortalServiceServer) ListMyGarageLinks(context.Context, *ListMyGarageLinksRequest) (*ListMyGarageLinksResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListMyGarageLinks not implemented")
+}
+func (UnimplementedCustomerPortalServiceServer) AcceptGarageLink(context.Context, *AcceptGarageLinkRequest) (*AcceptGarageLinkResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AcceptGarageLink not implemented")
+}
+func (UnimplementedCustomerPortalServiceServer) DeclineGarageLink(context.Context, *DeclineGarageLinkRequest) (*DeclineGarageLinkResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeclineGarageLink not implemented")
+}
+func (UnimplementedCustomerPortalServiceServer) UnlinkGarageLink(context.Context, *UnlinkGarageLinkRequest) (*UnlinkGarageLinkResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UnlinkGarageLink not implemented")
 }
 func (UnimplementedCustomerPortalServiceServer) GetMyVehicleHistory(context.Context, *GetMyVehicleHistoryRequest) (*GetMyVehicleHistoryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetMyVehicleHistory not implemented")
@@ -138,6 +208,78 @@ func _CustomerPortalService_ListMyVehicles_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CustomerPortalService_ListMyGarageLinks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMyGarageLinksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CustomerPortalServiceServer).ListMyGarageLinks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CustomerPortalService_ListMyGarageLinks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CustomerPortalServiceServer).ListMyGarageLinks(ctx, req.(*ListMyGarageLinksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CustomerPortalService_AcceptGarageLink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AcceptGarageLinkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CustomerPortalServiceServer).AcceptGarageLink(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CustomerPortalService_AcceptGarageLink_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CustomerPortalServiceServer).AcceptGarageLink(ctx, req.(*AcceptGarageLinkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CustomerPortalService_DeclineGarageLink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeclineGarageLinkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CustomerPortalServiceServer).DeclineGarageLink(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CustomerPortalService_DeclineGarageLink_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CustomerPortalServiceServer).DeclineGarageLink(ctx, req.(*DeclineGarageLinkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CustomerPortalService_UnlinkGarageLink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnlinkGarageLinkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CustomerPortalServiceServer).UnlinkGarageLink(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CustomerPortalService_UnlinkGarageLink_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CustomerPortalServiceServer).UnlinkGarageLink(ctx, req.(*UnlinkGarageLinkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CustomerPortalService_GetMyVehicleHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetMyVehicleHistoryRequest)
 	if err := dec(in); err != nil {
@@ -166,6 +308,22 @@ var CustomerPortalService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListMyVehicles",
 			Handler:    _CustomerPortalService_ListMyVehicles_Handler,
+		},
+		{
+			MethodName: "ListMyGarageLinks",
+			Handler:    _CustomerPortalService_ListMyGarageLinks_Handler,
+		},
+		{
+			MethodName: "AcceptGarageLink",
+			Handler:    _CustomerPortalService_AcceptGarageLink_Handler,
+		},
+		{
+			MethodName: "DeclineGarageLink",
+			Handler:    _CustomerPortalService_DeclineGarageLink_Handler,
+		},
+		{
+			MethodName: "UnlinkGarageLink",
+			Handler:    _CustomerPortalService_UnlinkGarageLink_Handler,
 		},
 		{
 			MethodName: "GetMyVehicleHistory",

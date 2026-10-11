@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package vietgara.file.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/lifecycle.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/file/v1;filev1";
+
+// FileKind says what a file is for, and so whether it is public. Every kind
+// added later (repair photo, customer document, claim document, export) is
+// private and served through short-lived signed URLs.
+enum FileKind {
+  FILE_KIND_UNSPECIFIED = 0;
+  // A garage logo (public).
+  FILE_KIND_LOGO = 1;
+}
+
+// File is one uploaded object registered in the garage's file registry.
+// Business records refer to a file by id, never by URL, so a CDN or bucket
+// change breaks nothing.
+message File {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  FileKind kind = 3 [(google.api.field_behavior) = REQUIRED];
+  // What the file belongs to, e.g. "garage" or "part".
+  string entity_type = 4 [(google.api.field_behavior) = REQUIRED];
+  string entity_id = 5 [(google.api.field_behavior) = REQUIRED];
+  string content_type = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 size = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Hex-encoded SHA-256 of the content.
+  string sha256 = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Set for public kinds only; private files use GetFileUrl.
+  string url = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message UploadFileRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  FileKind kind = 2 [(google.api.field_behavior) = REQUIRED];
+  string entity_type = 3 [(google.api.field_behavior) = REQUIRED];
+  string entity_id = 4 [(google.api.field_behavior) = REQUIRED];
+  // The file content (base64 in JSON); the size limit depends on the kind.
+  bytes content = 5 [(google.api.field_behavior) = REQUIRED];
+  string content_type = 6 [(google.api.field_behavior) = REQUIRED];
+}
+
+message UploadFileResponse {
+  File file = 1;
+}
+
+message GetFileUrlRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string file_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetFileUrlResponse {
+  // A short-lived signed URL for a private file, or the public URL.
+  string url = 1;
+  google.protobuf.Timestamp expires_at = 2;
+}
+
+message DeleteFileRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string file_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Answer the outcome without changing anything.
+  bool dry_run = 3;
+}
+
+message DeleteFileResponse {
+  vietgara.common.v1.DeleteOutcome outcome = 1;
+}
+
+// FileService is the garage's file registry. Uploading, reading and
+// deleting a file need the write or read permission of the module that owns
+// the entity the file belongs to (e.g. garage.write for a logo).
+service FileService {
+  // Registers and stores a file; answers 201.
+  rpc UploadFile(UploadFileRequest) returns (UploadFileResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/files"
+      body: "*"
+      response_body: "file"
+    };
+  }
+
+  // A short-lived signed URL for a private file.
+  rpc GetFileUrl(GetFileUrlRequest) returns (GetFileUrlResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/files/{file_id}/url"};
+  }
+
+  // Follows the delete-or-deactivate rule (FR-CAT-07).
+  rpc DeleteFile(DeleteFileRequest) returns (DeleteFileResponse) {
+    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/files/{file_id}"};
+  }
+}

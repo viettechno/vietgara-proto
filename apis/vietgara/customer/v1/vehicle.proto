@@ -6,9 +6,24 @@ import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/lifecycle.proto";
 import "vietgara/common/v1/pagination.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1";
+
+// VehicleIdentityField names a field that identifies a vehicle (FR-CUS-02).
+// These fields are locked while a live document refers to the vehicle; a
+// locked field is changed by a correction (FR-CUS-09).
+enum VehicleIdentityField {
+  VEHICLE_IDENTITY_FIELD_UNSPECIFIED = 0;
+  VEHICLE_IDENTITY_FIELD_LICENSE_PLATE = 1;
+  // The chassis number.
+  VEHICLE_IDENTITY_FIELD_VIN = 2;
+  VEHICLE_IDENTITY_FIELD_ENGINE_NUMBER = 3;
+  VEHICLE_IDENTITY_FIELD_MAKE = 4;
+  VEHICLE_IDENTITY_FIELD_MODEL = 5;
+  VEHICLE_IDENTITY_FIELD_YEAR = 6;
+}
 
 // Vehicle belongs to one customer of the garage (FR-CUS-02).
 message Vehicle {
@@ -25,6 +40,14 @@ message Vehicle {
   optional string engine_number = 10;
   google.protobuf.Timestamp created_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp updated_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // False once the vehicle was deactivated instead of deleted (FR-CAT-07).
+  bool is_active = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // False while a live quote, repair order, settlement, booking or claim
+  // refers to the vehicle: its identity fields are then locked.
+  bool editable = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The identity fields that cannot be edited now (empty when editable).
+  // Colour, notes and odometer are never locked.
+  repeated VehicleIdentityField locked_fields = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message CreateVehicleRequest {
@@ -48,7 +71,8 @@ message GetVehicleResponse {
 message UpdateVehicleRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string vehicle_id = 2 [(google.api.field_behavior) = REQUIRED];
-  // customer_id may move the vehicle to another customer of the garage.
+  // Changing a locked identity field fails with VEHICLE_FIELD_LOCKED, and
+  // the owner (customer_id) is never changed here: use ChangeVehicleOwner.
   Vehicle vehicle = 3 [(google.api.field_behavior) = REQUIRED];
   // Filled from the JSON body keys when omitted.
   google.protobuf.FieldMask update_mask = 4;
@@ -66,6 +90,8 @@ message ListVehiclesRequest {
   string query = 3;
   int32 page = 4;
   int32 page_size = 5;
+  // Also list deactivated vehicles (staff screens); pickers leave it off.
+  bool include_inactive = 6;
 }
 
 message ListVehiclesResponse {
@@ -76,9 +102,48 @@ message ListVehiclesResponse {
 message DeleteVehicleRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string vehicle_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Answer the outcome without changing anything (`?dryRun=true`).
+  bool dry_run = 3;
 }
 
-message DeleteVehicleResponse {}
+message DeleteVehicleResponse {
+  vietgara.common.v1.DeleteOutcome outcome = 1;
+}
+
+message ActivateVehicleRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string vehicle_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ActivateVehicleResponse {
+  Vehicle vehicle = 1;
+}
+
+message CorrectVehicleRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string vehicle_id = 2 [(google.api.field_behavior) = REQUIRED];
+  VehicleIdentityField field = 3 [(google.api.field_behavior) = REQUIRED];
+  // The corrected value (the year as digits).
+  string value = 4 [(google.api.field_behavior) = REQUIRED];
+  // Why the correction is needed; kept in the audit log.
+  string reason = 5 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CorrectVehicleResponse {
+  Vehicle vehicle = 1;
+}
+
+message ChangeVehicleOwnerRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string vehicle_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // The customer the vehicle moves to; must belong to the same garage.
+  string customer_id = 3 [(google.api.field_behavior) = REQUIRED];
+  string reason = 4;
+}
+
+message ChangeVehicleOwnerResponse {
+  Vehicle vehicle = 1;
+}
 
 // VehicleHistoryEntryType names which module produced a history entry
 // (FR-CUS-03). Repair order and settlement entries appear once those
@@ -143,8 +208,40 @@ service VehicleService {
     };
   }
 
+  // Follows the delete-or-deactivate rule (FR-CAT-07): a vehicle that
+  // documents refer to is deactivated, otherwise soft-deleted.
   rpc DeleteVehicle(DeleteVehicleRequest) returns (DeleteVehicleResponse) {
     option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/vehicles/{vehicle_id}"};
+  }
+
+  // Reactivates a deactivated vehicle.
+  rpc ActivateVehicle(ActivateVehicleRequest) returns (ActivateVehicleResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/vehicles/{vehicle_id}:activate"
+      body: "*"
+      response_body: "vehicle"
+    };
+  }
+
+  // FR-CUS-09: corrects a locked identity field with a mandatory reason.
+  // Audited; documents keep the value they snapshotted. Needs
+  // PERMISSION_CUSTOMER_CORRECT.
+  rpc CorrectVehicle(CorrectVehicleRequest) returns (CorrectVehicleResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/vehicles/{vehicle_id}:correct"
+      body: "*"
+      response_body: "vehicle"
+    };
+  }
+
+  // FR-CUS-09: moves a sold vehicle to another customer, keeping its
+  // history. Needs PERMISSION_CUSTOMER_CORRECT.
+  rpc ChangeVehicleOwner(ChangeVehicleOwnerRequest) returns (ChangeVehicleOwnerResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/vehicles/{vehicle_id}:change-owner"
+      body: "*"
+      response_body: "vehicle"
+    };
   }
 
   // Vehicle repair history (FR-CUS-03, Release 1.2).

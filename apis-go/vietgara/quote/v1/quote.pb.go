@@ -314,15 +314,18 @@ type Quote struct {
 	Status QuoteStatus `protobuf:"varint,8,opt,name=status,proto3,enum=vietgara.quote.v1.QuoteStatus" json:"status,omitempty"`
 	// Defaults to the garage's default_quote_approval_mode; changeable while
 	// the quote is a draft.
-	ApprovalMode  v1.QuoteApprovalMode   `protobuf:"varint,9,opt,name=approval_mode,json=approvalMode,proto3,enum=vietgara.common.v1.QuoteApprovalMode" json:"approval_mode,omitempty"`
-	Lines         []*QuoteLine           `protobuf:"bytes,10,rep,name=lines,proto3" json:"lines,omitempty"`
-	TotalAmount   int64                  `protobuf:"varint,11,opt,name=total_amount,json=totalAmount,proto3" json:"total_amount,omitempty"`
-	Notes         string                 `protobuf:"bytes,12,opt,name=notes,proto3" json:"notes,omitempty"`
-	SentAt        *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=sent_at,json=sentAt,proto3" json:"sent_at,omitempty"`
-	DecidedAt     *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=decided_at,json=decidedAt,proto3" json:"decided_at,omitempty"`
-	ConvertedAt   *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=converted_at,json=convertedAt,proto3" json:"converted_at,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,17,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	ApprovalMode v1.QuoteApprovalMode   `protobuf:"varint,9,opt,name=approval_mode,json=approvalMode,proto3,enum=vietgara.common.v1.QuoteApprovalMode" json:"approval_mode,omitempty"`
+	Lines        []*QuoteLine           `protobuf:"bytes,10,rep,name=lines,proto3" json:"lines,omitempty"`
+	TotalAmount  int64                  `protobuf:"varint,11,opt,name=total_amount,json=totalAmount,proto3" json:"total_amount,omitempty"`
+	Notes        string                 `protobuf:"bytes,12,opt,name=notes,proto3" json:"notes,omitempty"`
+	SentAt       *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=sent_at,json=sentAt,proto3" json:"sent_at,omitempty"`
+	DecidedAt    *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=decided_at,json=decidedAt,proto3" json:"decided_at,omitempty"`
+	ConvertedAt  *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=converted_at,json=convertedAt,proto3" json:"converted_at,omitempty"`
+	CreatedAt    *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt    *timestamppb.Timestamp `protobuf:"bytes,17,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	// Who is billed (FR-CUS-07): send tax_profile_id; the snapshot of the
+	// profile is kept on the quote and printed on its PDF.
+	BillingParty  *v1.BillingParty `protobuf:"bytes,18,opt,name=billing_party,json=billingParty,proto3" json:"billing_party,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -472,6 +475,13 @@ func (x *Quote) GetCreatedAt() *timestamppb.Timestamp {
 func (x *Quote) GetUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.UpdatedAt
+	}
+	return nil
+}
+
+func (x *Quote) GetBillingParty() *v1.BillingParty {
+	if x != nil {
+		return x.BillingParty
 	}
 	return nil
 }
@@ -1686,7 +1696,7 @@ var File_vietgara_quote_v1_quote_proto protoreflect.FileDescriptor
 
 const file_vietgara_quote_v1_quote_proto_rawDesc = "" +
 	"\n" +
-	"\x1dvietgara/quote/v1/quote.proto\x12\x11vietgara.quote.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\x1a,vietgara/common/v1/quote_approval_mode.proto\"\xf0\x02\n" +
+	"\x1dvietgara/quote/v1/quote.proto\x12\x11vietgara.quote.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a&vietgara/common/v1/billing_party.proto\x1a#vietgara/common/v1/pagination.proto\x1a,vietgara/common/v1/quote_approval_mode.proto\"\xf0\x02\n" +
 	"\tQuoteLine\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12B\n" +
 	"\titem_type\x18\x02 \x01(\x0e2 .vietgara.quote.v1.QuoteItemTypeB\x03\xe0A\x02R\bitemType\x12#\n" +
@@ -1698,7 +1708,7 @@ const file_vietgara_quote_v1_quote_proto_rawDesc = "" +
 	"\n" +
 	"line_total\x18\a \x01(\x03B\x03\xe0A\x03R\tlineTotal\x12E\n" +
 	"\bdecision\x18\b \x01(\x0e2$.vietgara.quote.v1.QuoteLineDecisionB\x03\xe0A\x03R\bdecisionB\x0e\n" +
-	"\f_item_ref_id\"\xc1\x06\n" +
+	"\f_item_ref_id\"\x88\a\n" +
 	"\x05Quote\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
 	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12$\n" +
@@ -1722,7 +1732,8 @@ const file_vietgara_quote_v1_quote_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\"\xde\x01\n" +
+	"updated_at\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12E\n" +
+	"\rbilling_party\x18\x12 \x01(\v2 .vietgara.common.v1.BillingPartyR\fbillingParty\"\xde\x01\n" +
 	"\x11ListQuotesRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1f\n" +
 	"\vcustomer_id\x18\x02 \x01(\tR\n" +
@@ -1878,8 +1889,9 @@ var file_vietgara_quote_v1_quote_proto_goTypes = []any{
 	(*DecidePublicQuoteResponse)(nil),   // 26: vietgara.quote.v1.DecidePublicQuoteResponse
 	(v1.QuoteApprovalMode)(0),           // 27: vietgara.common.v1.QuoteApprovalMode
 	(*timestamppb.Timestamp)(nil),       // 28: google.protobuf.Timestamp
-	(*v1.Pagination)(nil),               // 29: vietgara.common.v1.Pagination
-	(*fieldmaskpb.FieldMask)(nil),       // 30: google.protobuf.FieldMask
+	(*v1.BillingParty)(nil),             // 29: vietgara.common.v1.BillingParty
+	(*v1.Pagination)(nil),               // 30: vietgara.common.v1.Pagination
+	(*fieldmaskpb.FieldMask)(nil),       // 31: google.protobuf.FieldMask
 }
 var file_vietgara_quote_v1_quote_proto_depIdxs = []int32{
 	1,  // 0: vietgara.quote.v1.QuoteLine.item_type:type_name -> vietgara.quote.v1.QuoteItemType
@@ -1892,50 +1904,51 @@ var file_vietgara_quote_v1_quote_proto_depIdxs = []int32{
 	28, // 7: vietgara.quote.v1.Quote.converted_at:type_name -> google.protobuf.Timestamp
 	28, // 8: vietgara.quote.v1.Quote.created_at:type_name -> google.protobuf.Timestamp
 	28, // 9: vietgara.quote.v1.Quote.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 10: vietgara.quote.v1.ListQuotesRequest.status:type_name -> vietgara.quote.v1.QuoteStatus
-	4,  // 11: vietgara.quote.v1.ListQuotesResponse.data:type_name -> vietgara.quote.v1.Quote
-	29, // 12: vietgara.quote.v1.ListQuotesResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	4,  // 13: vietgara.quote.v1.CreateQuoteRequest.quote:type_name -> vietgara.quote.v1.Quote
-	4,  // 14: vietgara.quote.v1.CreateQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
-	4,  // 15: vietgara.quote.v1.GetQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
-	4,  // 16: vietgara.quote.v1.UpdateQuoteRequest.quote:type_name -> vietgara.quote.v1.Quote
-	30, // 17: vietgara.quote.v1.UpdateQuoteRequest.update_mask:type_name -> google.protobuf.FieldMask
-	4,  // 18: vietgara.quote.v1.UpdateQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
-	4,  // 19: vietgara.quote.v1.SendQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
-	17, // 20: vietgara.quote.v1.RecordQuoteDecisionRequest.decisions:type_name -> vietgara.quote.v1.QuoteLineDecisionInput
-	4,  // 21: vietgara.quote.v1.RecordQuoteDecisionResponse.quote:type_name -> vietgara.quote.v1.Quote
-	4,  // 22: vietgara.quote.v1.ConvertQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
-	0,  // 23: vietgara.quote.v1.PublicQuote.status:type_name -> vietgara.quote.v1.QuoteStatus
-	3,  // 24: vietgara.quote.v1.PublicQuote.lines:type_name -> vietgara.quote.v1.QuoteLine
-	28, // 25: vietgara.quote.v1.PublicQuote.expires_at:type_name -> google.protobuf.Timestamp
-	22, // 26: vietgara.quote.v1.GetPublicQuoteResponse.quote:type_name -> vietgara.quote.v1.PublicQuote
-	17, // 27: vietgara.quote.v1.DecidePublicQuoteRequest.decisions:type_name -> vietgara.quote.v1.QuoteLineDecisionInput
-	22, // 28: vietgara.quote.v1.DecidePublicQuoteResponse.quote:type_name -> vietgara.quote.v1.PublicQuote
-	5,  // 29: vietgara.quote.v1.QuoteService.ListQuotes:input_type -> vietgara.quote.v1.ListQuotesRequest
-	7,  // 30: vietgara.quote.v1.QuoteService.CreateQuote:input_type -> vietgara.quote.v1.CreateQuoteRequest
-	9,  // 31: vietgara.quote.v1.QuoteService.GetQuote:input_type -> vietgara.quote.v1.GetQuoteRequest
-	11, // 32: vietgara.quote.v1.QuoteService.UpdateQuote:input_type -> vietgara.quote.v1.UpdateQuoteRequest
-	13, // 33: vietgara.quote.v1.QuoteService.DeleteQuote:input_type -> vietgara.quote.v1.DeleteQuoteRequest
-	15, // 34: vietgara.quote.v1.QuoteService.SendQuote:input_type -> vietgara.quote.v1.SendQuoteRequest
-	18, // 35: vietgara.quote.v1.QuoteService.RecordQuoteDecision:input_type -> vietgara.quote.v1.RecordQuoteDecisionRequest
-	20, // 36: vietgara.quote.v1.QuoteService.ConvertQuote:input_type -> vietgara.quote.v1.ConvertQuoteRequest
-	23, // 37: vietgara.quote.v1.PublicQuoteService.GetPublicQuote:input_type -> vietgara.quote.v1.GetPublicQuoteRequest
-	25, // 38: vietgara.quote.v1.PublicQuoteService.DecidePublicQuote:input_type -> vietgara.quote.v1.DecidePublicQuoteRequest
-	6,  // 39: vietgara.quote.v1.QuoteService.ListQuotes:output_type -> vietgara.quote.v1.ListQuotesResponse
-	8,  // 40: vietgara.quote.v1.QuoteService.CreateQuote:output_type -> vietgara.quote.v1.CreateQuoteResponse
-	10, // 41: vietgara.quote.v1.QuoteService.GetQuote:output_type -> vietgara.quote.v1.GetQuoteResponse
-	12, // 42: vietgara.quote.v1.QuoteService.UpdateQuote:output_type -> vietgara.quote.v1.UpdateQuoteResponse
-	14, // 43: vietgara.quote.v1.QuoteService.DeleteQuote:output_type -> vietgara.quote.v1.DeleteQuoteResponse
-	16, // 44: vietgara.quote.v1.QuoteService.SendQuote:output_type -> vietgara.quote.v1.SendQuoteResponse
-	19, // 45: vietgara.quote.v1.QuoteService.RecordQuoteDecision:output_type -> vietgara.quote.v1.RecordQuoteDecisionResponse
-	21, // 46: vietgara.quote.v1.QuoteService.ConvertQuote:output_type -> vietgara.quote.v1.ConvertQuoteResponse
-	24, // 47: vietgara.quote.v1.PublicQuoteService.GetPublicQuote:output_type -> vietgara.quote.v1.GetPublicQuoteResponse
-	26, // 48: vietgara.quote.v1.PublicQuoteService.DecidePublicQuote:output_type -> vietgara.quote.v1.DecidePublicQuoteResponse
-	39, // [39:49] is the sub-list for method output_type
-	29, // [29:39] is the sub-list for method input_type
-	29, // [29:29] is the sub-list for extension type_name
-	29, // [29:29] is the sub-list for extension extendee
-	0,  // [0:29] is the sub-list for field type_name
+	29, // 10: vietgara.quote.v1.Quote.billing_party:type_name -> vietgara.common.v1.BillingParty
+	0,  // 11: vietgara.quote.v1.ListQuotesRequest.status:type_name -> vietgara.quote.v1.QuoteStatus
+	4,  // 12: vietgara.quote.v1.ListQuotesResponse.data:type_name -> vietgara.quote.v1.Quote
+	30, // 13: vietgara.quote.v1.ListQuotesResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	4,  // 14: vietgara.quote.v1.CreateQuoteRequest.quote:type_name -> vietgara.quote.v1.Quote
+	4,  // 15: vietgara.quote.v1.CreateQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
+	4,  // 16: vietgara.quote.v1.GetQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
+	4,  // 17: vietgara.quote.v1.UpdateQuoteRequest.quote:type_name -> vietgara.quote.v1.Quote
+	31, // 18: vietgara.quote.v1.UpdateQuoteRequest.update_mask:type_name -> google.protobuf.FieldMask
+	4,  // 19: vietgara.quote.v1.UpdateQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
+	4,  // 20: vietgara.quote.v1.SendQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
+	17, // 21: vietgara.quote.v1.RecordQuoteDecisionRequest.decisions:type_name -> vietgara.quote.v1.QuoteLineDecisionInput
+	4,  // 22: vietgara.quote.v1.RecordQuoteDecisionResponse.quote:type_name -> vietgara.quote.v1.Quote
+	4,  // 23: vietgara.quote.v1.ConvertQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
+	0,  // 24: vietgara.quote.v1.PublicQuote.status:type_name -> vietgara.quote.v1.QuoteStatus
+	3,  // 25: vietgara.quote.v1.PublicQuote.lines:type_name -> vietgara.quote.v1.QuoteLine
+	28, // 26: vietgara.quote.v1.PublicQuote.expires_at:type_name -> google.protobuf.Timestamp
+	22, // 27: vietgara.quote.v1.GetPublicQuoteResponse.quote:type_name -> vietgara.quote.v1.PublicQuote
+	17, // 28: vietgara.quote.v1.DecidePublicQuoteRequest.decisions:type_name -> vietgara.quote.v1.QuoteLineDecisionInput
+	22, // 29: vietgara.quote.v1.DecidePublicQuoteResponse.quote:type_name -> vietgara.quote.v1.PublicQuote
+	5,  // 30: vietgara.quote.v1.QuoteService.ListQuotes:input_type -> vietgara.quote.v1.ListQuotesRequest
+	7,  // 31: vietgara.quote.v1.QuoteService.CreateQuote:input_type -> vietgara.quote.v1.CreateQuoteRequest
+	9,  // 32: vietgara.quote.v1.QuoteService.GetQuote:input_type -> vietgara.quote.v1.GetQuoteRequest
+	11, // 33: vietgara.quote.v1.QuoteService.UpdateQuote:input_type -> vietgara.quote.v1.UpdateQuoteRequest
+	13, // 34: vietgara.quote.v1.QuoteService.DeleteQuote:input_type -> vietgara.quote.v1.DeleteQuoteRequest
+	15, // 35: vietgara.quote.v1.QuoteService.SendQuote:input_type -> vietgara.quote.v1.SendQuoteRequest
+	18, // 36: vietgara.quote.v1.QuoteService.RecordQuoteDecision:input_type -> vietgara.quote.v1.RecordQuoteDecisionRequest
+	20, // 37: vietgara.quote.v1.QuoteService.ConvertQuote:input_type -> vietgara.quote.v1.ConvertQuoteRequest
+	23, // 38: vietgara.quote.v1.PublicQuoteService.GetPublicQuote:input_type -> vietgara.quote.v1.GetPublicQuoteRequest
+	25, // 39: vietgara.quote.v1.PublicQuoteService.DecidePublicQuote:input_type -> vietgara.quote.v1.DecidePublicQuoteRequest
+	6,  // 40: vietgara.quote.v1.QuoteService.ListQuotes:output_type -> vietgara.quote.v1.ListQuotesResponse
+	8,  // 41: vietgara.quote.v1.QuoteService.CreateQuote:output_type -> vietgara.quote.v1.CreateQuoteResponse
+	10, // 42: vietgara.quote.v1.QuoteService.GetQuote:output_type -> vietgara.quote.v1.GetQuoteResponse
+	12, // 43: vietgara.quote.v1.QuoteService.UpdateQuote:output_type -> vietgara.quote.v1.UpdateQuoteResponse
+	14, // 44: vietgara.quote.v1.QuoteService.DeleteQuote:output_type -> vietgara.quote.v1.DeleteQuoteResponse
+	16, // 45: vietgara.quote.v1.QuoteService.SendQuote:output_type -> vietgara.quote.v1.SendQuoteResponse
+	19, // 46: vietgara.quote.v1.QuoteService.RecordQuoteDecision:output_type -> vietgara.quote.v1.RecordQuoteDecisionResponse
+	21, // 47: vietgara.quote.v1.QuoteService.ConvertQuote:output_type -> vietgara.quote.v1.ConvertQuoteResponse
+	24, // 48: vietgara.quote.v1.PublicQuoteService.GetPublicQuote:output_type -> vietgara.quote.v1.GetPublicQuoteResponse
+	26, // 49: vietgara.quote.v1.PublicQuoteService.DecidePublicQuote:output_type -> vietgara.quote.v1.DecidePublicQuoteResponse
+	40, // [40:50] is the sub-list for method output_type
+	30, // [30:40] is the sub-list for method input_type
+	30, // [30:30] is the sub-list for extension type_name
+	30, // [30:30] is the sub-list for extension extendee
+	0,  // [0:30] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_quote_v1_quote_proto_init() }

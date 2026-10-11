@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package vietgara.common.v1;
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/common/v1;commonv1";
+
+// DeleteOutcome is what a DELETE did (FR-CAT-07, the delete-or-deactivate
+// rule). An object that nothing references is soft-deleted; one that is
+// still in use is only deactivated: it disappears from pickers, stays on
+// the documents that use it, and staff can reactivate it.
+//
+// Every deletable resource takes a `dry_run` flag (`?dryRun=true`) that
+// answers with the outcome without changing anything, so a confirmation
+// dialog can tell the user which one will happen.
+enum DeleteOutcome {
+  DELETE_OUTCOME_UNSPECIFIED = 0;
+  DELETE_OUTCOME_DELETED = 1;
+  DELETE_OUTCOME_DEACTIVATED = 2;
+}
