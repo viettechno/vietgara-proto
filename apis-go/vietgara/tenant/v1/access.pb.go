@@ -42,9 +42,9 @@ const (
 	// Customers and their vehicles.
 	Permission_PERMISSION_CUSTOMER_READ  Permission = 4
 	Permission_PERMISSION_CUSTOMER_WRITE Permission = 5
-	// Suppliers and insurers.
-	Permission_PERMISSION_PARTNER_READ       Permission = 6
-	Permission_PERMISSION_PARTNER_WRITE      Permission = 7
+	// The garage's suppliers (FR-SUP-01).
+	Permission_PERMISSION_SUPPLIER_READ      Permission = 6
+	Permission_PERMISSION_SUPPLIER_WRITE     Permission = 7
 	Permission_PERMISSION_SUBSCRIPTION_READ  Permission = 8
 	Permission_PERMISSION_QUOTE_READ         Permission = 9
 	Permission_PERMISSION_QUOTE_WRITE        Permission = 10
@@ -66,8 +66,8 @@ var (
 		3:  "PERMISSION_STAFF_WRITE",
 		4:  "PERMISSION_CUSTOMER_READ",
 		5:  "PERMISSION_CUSTOMER_WRITE",
-		6:  "PERMISSION_PARTNER_READ",
-		7:  "PERMISSION_PARTNER_WRITE",
+		6:  "PERMISSION_SUPPLIER_READ",
+		7:  "PERMISSION_SUPPLIER_WRITE",
 		8:  "PERMISSION_SUBSCRIPTION_READ",
 		9:  "PERMISSION_QUOTE_READ",
 		10: "PERMISSION_QUOTE_WRITE",
@@ -86,8 +86,8 @@ var (
 		"PERMISSION_STAFF_WRITE":        3,
 		"PERMISSION_CUSTOMER_READ":      4,
 		"PERMISSION_CUSTOMER_WRITE":     5,
-		"PERMISSION_PARTNER_READ":       6,
-		"PERMISSION_PARTNER_WRITE":      7,
+		"PERMISSION_SUPPLIER_READ":      6,
+		"PERMISSION_SUPPLIER_WRITE":     7,
 		"PERMISSION_SUBSCRIPTION_READ":  8,
 		"PERMISSION_QUOTE_READ":         9,
 		"PERMISSION_QUOTE_WRITE":        10,
@@ -1405,7 +1405,7 @@ const file_vietgara_tenant_v1_access_proto_rawDesc = "" +
 	"\x17DeleteStaffGroupRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1e\n" +
 	"\bgroup_id\x18\x02 \x01(\tB\x03\xe0A\x02R\agroupId\"\x1a\n" +
-	"\x18DeleteStaffGroupResponse*\xa8\x04\n" +
+	"\x18DeleteStaffGroupResponse*\xaa\x04\n" +
 	"\n" +
 	"Permission\x12\x1a\n" +
 	"\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x1b\n" +
@@ -1413,9 +1413,9 @@ const file_vietgara_tenant_v1_access_proto_rawDesc = "" +
 	"\x15PERMISSION_STAFF_READ\x10\x02\x12\x1a\n" +
 	"\x16PERMISSION_STAFF_WRITE\x10\x03\x12\x1c\n" +
 	"\x18PERMISSION_CUSTOMER_READ\x10\x04\x12\x1d\n" +
-	"\x19PERMISSION_CUSTOMER_WRITE\x10\x05\x12\x1b\n" +
-	"\x17PERMISSION_PARTNER_READ\x10\x06\x12\x1c\n" +
-	"\x18PERMISSION_PARTNER_WRITE\x10\a\x12 \n" +
+	"\x19PERMISSION_CUSTOMER_WRITE\x10\x05\x12\x1c\n" +
+	"\x18PERMISSION_SUPPLIER_READ\x10\x06\x12\x1d\n" +
+	"\x19PERMISSION_SUPPLIER_WRITE\x10\a\x12 \n" +
 	"\x1cPERMISSION_SUBSCRIPTION_READ\x10\b\x12\x19\n" +
 	"\x15PERMISSION_QUOTE_READ\x10\t\x12\x1a\n" +
 	"\x16PERMISSION_QUOTE_WRITE\x10\n" +

@@ -22,7 +22,6 @@ const (
 	SettlementService_ListSettlements_FullMethodName         = "/vietgara.billing.v1.SettlementService/ListSettlements"
 	SettlementService_CreateSettlement_FullMethodName        = "/vietgara.billing.v1.SettlementService/CreateSettlement"
 	SettlementService_GetSettlement_FullMethodName           = "/vietgara.billing.v1.SettlementService/GetSettlement"
-	SettlementService_AllocateSettlement_FullMethodName      = "/vietgara.billing.v1.SettlementService/AllocateSettlement"
 	SettlementService_RecordSettlementPayment_FullMethodName = "/vietgara.billing.v1.SettlementService/RecordSettlementPayment"
 )
 
@@ -40,13 +39,8 @@ type SettlementServiceClient interface {
 	// order is closed, and ALREADY_EXISTS if it already has one.
 	CreateSettlement(ctx context.Context, in *CreateSettlementRequest, opts ...grpc.CallOption) (*CreateSettlementResponse, error)
 	GetSettlement(ctx context.Context, in *GetSettlementRequest, opts ...grpc.CallOption) (*GetSettlementResponse, error)
-	// Splits the settlement between what the customer pays directly and
-	// what insurance covers (FR-BIL-02); customer_amount + insurer_amount
-	// must equal the total.
-	AllocateSettlement(ctx context.Context, in *AllocateSettlementRequest, opts ...grpc.CallOption) (*AllocateSettlementResponse, error)
 	// Records a payment actually collected (FR-BIL-03); a settlement may
-	// receive several, from either payer, until each payer's allocated
-	// amount is fully collected.
+	// receive several until the total is fully collected.
 	RecordSettlementPayment(ctx context.Context, in *RecordSettlementPaymentRequest, opts ...grpc.CallOption) (*RecordSettlementPaymentResponse, error)
 }
 
@@ -88,16 +82,6 @@ func (c *settlementServiceClient) GetSettlement(ctx context.Context, in *GetSett
 	return out, nil
 }
 
-func (c *settlementServiceClient) AllocateSettlement(ctx context.Context, in *AllocateSettlementRequest, opts ...grpc.CallOption) (*AllocateSettlementResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AllocateSettlementResponse)
-	err := c.cc.Invoke(ctx, SettlementService_AllocateSettlement_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *settlementServiceClient) RecordSettlementPayment(ctx context.Context, in *RecordSettlementPaymentRequest, opts ...grpc.CallOption) (*RecordSettlementPaymentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RecordSettlementPaymentResponse)
@@ -122,13 +106,8 @@ type SettlementServiceServer interface {
 	// order is closed, and ALREADY_EXISTS if it already has one.
 	CreateSettlement(context.Context, *CreateSettlementRequest) (*CreateSettlementResponse, error)
 	GetSettlement(context.Context, *GetSettlementRequest) (*GetSettlementResponse, error)
-	// Splits the settlement between what the customer pays directly and
-	// what insurance covers (FR-BIL-02); customer_amount + insurer_amount
-	// must equal the total.
-	AllocateSettlement(context.Context, *AllocateSettlementRequest) (*AllocateSettlementResponse, error)
 	// Records a payment actually collected (FR-BIL-03); a settlement may
-	// receive several, from either payer, until each payer's allocated
-	// amount is fully collected.
+	// receive several until the total is fully collected.
 	RecordSettlementPayment(context.Context, *RecordSettlementPaymentRequest) (*RecordSettlementPaymentResponse, error)
 	mustEmbedUnimplementedSettlementServiceServer()
 }
@@ -148,9 +127,6 @@ func (UnimplementedSettlementServiceServer) CreateSettlement(context.Context, *C
 }
 func (UnimplementedSettlementServiceServer) GetSettlement(context.Context, *GetSettlementRequest) (*GetSettlementResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSettlement not implemented")
-}
-func (UnimplementedSettlementServiceServer) AllocateSettlement(context.Context, *AllocateSettlementRequest) (*AllocateSettlementResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method AllocateSettlement not implemented")
 }
 func (UnimplementedSettlementServiceServer) RecordSettlementPayment(context.Context, *RecordSettlementPaymentRequest) (*RecordSettlementPaymentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RecordSettlementPayment not implemented")
@@ -230,24 +206,6 @@ func _SettlementService_GetSettlement_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SettlementService_AllocateSettlement_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AllocateSettlementRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SettlementServiceServer).AllocateSettlement(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: SettlementService_AllocateSettlement_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SettlementServiceServer).AllocateSettlement(ctx, req.(*AllocateSettlementRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _SettlementService_RecordSettlementPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RecordSettlementPaymentRequest)
 	if err := dec(in); err != nil {
@@ -284,10 +242,6 @@ var SettlementService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSettlement",
 			Handler:    _SettlementService_GetSettlement_Handler,
-		},
-		{
-			MethodName: "AllocateSettlement",
-			Handler:    _SettlementService_AllocateSettlement_Handler,
 		},
 		{
 			MethodName: "RecordSettlementPayment",

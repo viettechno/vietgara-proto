@@ -10,23 +10,15 @@ import "vietgara/common/v1/pagination.proto";
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/billing/v1;billingv1";
 
 // SettlementStatus is a settlement's collection status, derived from the
-// amounts actually paid against what was allocated (FR-BIL-01..03).
+// amounts actually paid against the total (FR-BIL-01..03).
 enum SettlementStatus {
   SETTLEMENT_STATUS_UNSPECIFIED = 0;
   // Nothing collected yet.
   SETTLEMENT_STATUS_PENDING = 1;
-  // Some, but not all, of the allocated amount collected.
+  // Some, but not all, of the total collected.
   SETTLEMENT_STATUS_PARTIALLY_PAID = 2;
-  // The full allocated amount collected from both payers.
+  // The full total collected.
   SETTLEMENT_STATUS_PAID = 3;
-}
-
-// PayerType: who a settlement amount, or a payment against it, is
-// attributed to.
-enum PayerType {
-  PAYER_TYPE_UNSPECIFIED = 0;
-  PAYER_TYPE_CUSTOMER = 1;
-  PAYER_TYPE_INSURER = 2;
 }
 
 // PaymentMethod: how a payment was actually collected (FR-BIL-03). ONLINE
@@ -41,20 +33,19 @@ enum PaymentMethod {
 }
 
 // SettlementPayment is one payment recorded against a settlement
-// (FR-BIL-03); a settlement may receive several, from either payer.
+// (FR-BIL-03); a settlement may receive several. The customer is the only
+// payer.
 message SettlementPayment {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-  PayerType payer_type = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Integer VND.
-  int64 amount = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
-  PaymentMethod method = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string note = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
-  google.protobuf.Timestamp created_at = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 amount = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  PaymentMethod method = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string note = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // Settlement is the final bill of a closed repair order (FR-BIL-01),
-// split between what the customer pays directly and what insurance
-// covers (FR-BIL-02). FR-REC-01's receivables view is this same list
+// paid by the customer. FR-REC-01's receivables view is this same list
 // filtered to not yet fully paid (ListSettlementsRequest.outstanding_only)
 // -- Release 1.4 has no separate receivables table; one arrives with
 // Release 2.2's reminders and reconciliation, which need their own
@@ -71,21 +62,12 @@ message Settlement {
   string number = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Copied from the repair order's total at creation time. Integer VND.
   int64 total_amount = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // How much of total_amount is allocated to each payer (FR-BIL-02);
-  // always sums to total_amount. Starts entirely allocated to the
-  // customer until AllocateSettlement says otherwise.
-  int64 customer_amount = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
-  int64 insurer_amount = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Set once insurer_amount > 0; a partner of type INSURER.
-  optional string insurer_partner_id = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string insurer_partner_name = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Running totals from settlement_payments (FR-BIL-03).
-  int64 customer_paid_amount = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
-  int64 insurer_paid_amount = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
-  SettlementStatus status = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
-  repeated SettlementPayment payments = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
-  google.protobuf.Timestamp created_at = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
-  google.protobuf.Timestamp updated_at = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Running total from settlement_payments (FR-BIL-03). Integer VND.
+  int64 paid_amount = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  SettlementStatus status = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated SettlementPayment payments = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message ListSettlementsRequest {
@@ -123,26 +105,12 @@ message GetSettlementResponse {
   Settlement settlement = 1;
 }
 
-message AllocateSettlementRequest {
-  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
-  string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
-  int64 customer_amount = 3 [(google.api.field_behavior) = REQUIRED];
-  int64 insurer_amount = 4 [(google.api.field_behavior) = REQUIRED];
-  // Required when insurer_amount > 0.
-  optional string insurer_partner_id = 5;
-}
-
-message AllocateSettlementResponse {
-  Settlement settlement = 1;
-}
-
 message RecordSettlementPaymentRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
-  PayerType payer_type = 3 [(google.api.field_behavior) = REQUIRED];
-  int64 amount = 4 [(google.api.field_behavior) = REQUIRED];
-  PaymentMethod method = 5 [(google.api.field_behavior) = REQUIRED];
-  string note = 6;
+  int64 amount = 3 [(google.api.field_behavior) = REQUIRED];
+  PaymentMethod method = 4 [(google.api.field_behavior) = REQUIRED];
+  string note = 5;
 }
 
 message RecordSettlementPaymentResponse {
@@ -175,20 +143,8 @@ service SettlementService {
     };
   }
 
-  // Splits the settlement between what the customer pays directly and
-  // what insurance covers (FR-BIL-02); customer_amount + insurer_amount
-  // must equal the total.
-  rpc AllocateSettlement(AllocateSettlementRequest) returns (AllocateSettlementResponse) {
-    option (google.api.http) = {
-      patch: "/api/v1/garages/{garage_id}/settlements/{settlement_id}"
-      body: "*"
-      response_body: "settlement"
-    };
-  }
-
   // Records a payment actually collected (FR-BIL-03); a settlement may
-  // receive several, from either payer, until each payer's allocated
-  // amount is fully collected.
+  // receive several until the total is fully collected.
   rpc RecordSettlementPayment(RecordSettlementPaymentRequest) returns (RecordSettlementPaymentResponse) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/settlements/{settlement_id}/payments"

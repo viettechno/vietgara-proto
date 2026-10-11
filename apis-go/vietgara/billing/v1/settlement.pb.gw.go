@@ -188,67 +188,6 @@ func local_request_SettlementService_GetSettlement_0(ctx context.Context, marsha
 	return msg, metadata, err
 }
 
-func request_SettlementService_AllocateSettlement_0(ctx context.Context, marshaler runtime.Marshaler, client SettlementServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var (
-		protoReq AllocateSettlementRequest
-		metadata runtime.ServerMetadata
-		err      error
-	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	val, ok := pathParams["garage_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
-	}
-	protoReq.GarageId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
-	}
-	val, ok = pathParams["settlement_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "settlement_id")
-	}
-	protoReq.SettlementId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "settlement_id", err)
-	}
-	if req.Body != nil {
-		_, _ = io.Copy(io.Discard, req.Body)
-	}
-	msg, err := client.AllocateSettlement(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-}
-
-func local_request_SettlementService_AllocateSettlement_0(ctx context.Context, marshaler runtime.Marshaler, server SettlementServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var (
-		protoReq AllocateSettlementRequest
-		metadata runtime.ServerMetadata
-		err      error
-	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	val, ok := pathParams["garage_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
-	}
-	protoReq.GarageId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
-	}
-	val, ok = pathParams["settlement_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "settlement_id")
-	}
-	protoReq.SettlementId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "settlement_id", err)
-	}
-	msg, err := server.AllocateSettlement(ctx, &protoReq)
-	return msg, metadata, err
-}
-
 func request_SettlementService_RecordSettlementPayment_0(ctx context.Context, marshaler runtime.Marshaler, client SettlementServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq RecordSettlementPaymentRequest
@@ -376,26 +315,6 @@ func RegisterSettlementServiceHandlerServer(ctx context.Context, mux *runtime.Se
 		}
 		forward_SettlementService_GetSettlement_0(annotatedContext, mux, outboundMarshaler, w, req, response_SettlementService_GetSettlement_0{resp.(*GetSettlementResponse)}, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPatch, pattern_SettlementService_AllocateSettlement_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		var stream runtime.ServerTransportStream
-		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.billing.v1.SettlementService/AllocateSettlement", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/settlements/{settlement_id}"))
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_SettlementService_AllocateSettlement_0(annotatedContext, inboundMarshaler, server, req, pathParams)
-		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
-		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
-		if err != nil {
-			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		forward_SettlementService_AllocateSettlement_0(annotatedContext, mux, outboundMarshaler, w, req, response_SettlementService_AllocateSettlement_0{resp.(*AllocateSettlementResponse)}, mux.GetForwardResponseOptions()...)
-	})
 	mux.Handle(http.MethodPost, pattern_SettlementService_RecordSettlementPayment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -507,23 +426,6 @@ func RegisterSettlementServiceHandlerClient(ctx context.Context, mux *runtime.Se
 		}
 		forward_SettlementService_GetSettlement_0(annotatedContext, mux, outboundMarshaler, w, req, response_SettlementService_GetSettlement_0{resp.(*GetSettlementResponse)}, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPatch, pattern_SettlementService_AllocateSettlement_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.billing.v1.SettlementService/AllocateSettlement", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/settlements/{settlement_id}"))
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_SettlementService_AllocateSettlement_0(annotatedContext, inboundMarshaler, client, req, pathParams)
-		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
-		if err != nil {
-			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		forward_SettlementService_AllocateSettlement_0(annotatedContext, mux, outboundMarshaler, w, req, response_SettlementService_AllocateSettlement_0{resp.(*AllocateSettlementResponse)}, mux.GetForwardResponseOptions()...)
-	})
 	mux.Handle(http.MethodPost, pattern_SettlementService_RecordSettlementPayment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -562,15 +464,6 @@ func (m response_SettlementService_GetSettlement_0) XXX_ResponseBody() interface
 	return response.Settlement
 }
 
-type response_SettlementService_AllocateSettlement_0 struct {
-	*AllocateSettlementResponse
-}
-
-func (m response_SettlementService_AllocateSettlement_0) XXX_ResponseBody() interface{} {
-	response := m.AllocateSettlementResponse
-	return response.Settlement
-}
-
 type response_SettlementService_RecordSettlementPayment_0 struct {
 	*RecordSettlementPaymentResponse
 }
@@ -584,7 +477,6 @@ var (
 	pattern_SettlementService_ListSettlements_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "settlements"}, ""))
 	pattern_SettlementService_CreateSettlement_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "settlements"}, ""))
 	pattern_SettlementService_GetSettlement_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "settlements", "settlement_id"}, ""))
-	pattern_SettlementService_AllocateSettlement_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "settlements", "settlement_id"}, ""))
 	pattern_SettlementService_RecordSettlementPayment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "settlements", "settlement_id", "payments"}, ""))
 )
 
@@ -592,6 +484,5 @@ var (
 	forward_SettlementService_ListSettlements_0         = runtime.ForwardResponseMessage
 	forward_SettlementService_CreateSettlement_0        = runtime.ForwardResponseMessage
 	forward_SettlementService_GetSettlement_0           = runtime.ForwardResponseMessage
-	forward_SettlementService_AllocateSettlement_0      = runtime.ForwardResponseMessage
 	forward_SettlementService_RecordSettlementPayment_0 = runtime.ForwardResponseMessage
 )

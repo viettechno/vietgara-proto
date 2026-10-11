@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+package vietgara.supplier.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/bank_details.proto";
+import "vietgara/common/v1/pagination.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/supplier/v1;supplierv1";
+
+message SupplierContact {
+  optional string contact_person = 1;
+  optional string phone = 2;
+  optional string email = 3;
+  optional string address = 4;
+}
+
+// Supplier is a business that sells parts to the garage, kept in the
+// garage's directory (FR-SUP-01). It is not a customer; insurers are not
+// suppliers either and come back in their own record in Phase 17.
+message Supplier {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Unique per garage (case-insensitive).
+  string name = 3 [(google.api.field_behavior) = REQUIRED];
+  optional string tax_code = 4;
+  SupplierContact contact = 5;
+  vietgara.common.v1.BankDetails bank = 6;
+  optional string note = 7;
+  google.protobuf.Timestamp created_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message CreateSupplierRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  Supplier supplier = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateSupplierResponse {
+  Supplier supplier = 1;
+}
+
+message GetSupplierRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string supplier_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetSupplierResponse {
+  Supplier supplier = 1;
+}
+
+message UpdateSupplierRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string supplier_id = 2 [(google.api.field_behavior) = REQUIRED];
+  Supplier supplier = 3 [(google.api.field_behavior) = REQUIRED];
+  // Filled from the JSON body keys when omitted; "contact" and "bank"
+  // replace the whole block.
+  google.protobuf.FieldMask update_mask = 4;
+}
+
+message UpdateSupplierResponse {
+  Supplier supplier = 1;
+}
+
+message ListSuppliersRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Matches name, tax code or contact.
+  string query = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message ListSuppliersResponse {
+  repeated Supplier data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message DeleteSupplierRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string supplier_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteSupplierResponse {}
+
+// SupplierService manages the garage's suppliers (FR-SUP-01). Reads need
+// PERMISSION_SUPPLIER_READ, changes PERMISSION_SUPPLIER_WRITE.
+service SupplierService {
+  rpc ListSuppliers(ListSuppliersRequest) returns (ListSuppliersResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/suppliers"};
+  }
+
+  rpc CreateSupplier(CreateSupplierRequest) returns (CreateSupplierResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/suppliers"
+      body: "supplier"
+      response_body: "supplier"
+    };
+  }
+
+  rpc GetSupplier(GetSupplierRequest) returns (GetSupplierResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/garages/{garage_id}/suppliers/{supplier_id}"
+      response_body: "supplier"
+    };
+  }
+
+  rpc UpdateSupplier(UpdateSupplierRequest) returns (UpdateSupplierResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/suppliers/{supplier_id}"
+      body: "supplier"
+      response_body: "supplier"
+    };
+  }
+
+  rpc DeleteSupplier(DeleteSupplierRequest) returns (DeleteSupplierResponse) {
+    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/suppliers/{supplier_id}"};
+  }
+}

@@ -15,10 +15,6 @@
       "description": "CustomerService manages a garage's customers (FRD 3.4). Reads need\nPERMISSION_CUSTOMER_READ, changes PERMISSION_CUSTOMER_WRITE."
     },
     {
-      "name": "PartnerService",
-      "description": "PartnerService manages suppliers and insurers (FR-CUS-04). Reads need\nPERMISSION_PARTNER_READ, changes PERMISSION_PARTNER_WRITE."
-    },
-    {
       "name": "VehicleService",
       "description": "VehicleService manages vehicles (FRD 3.4). Filter by customer with\n?customerId=. Reads need PERMISSION_CUSTOMER_READ, changes\nPERMISSION_CUSTOMER_WRITE."
     },
@@ -65,6 +61,10 @@
     {
       "name": "ReportingService",
       "description": "ReportingService serves the revenue-by-period report (FR-RPT-01) that\nbacks the Web Admin Dashboard's KPI card and revenue chart (UI Design\nSpec 3.1). It owns no tables of its own -- revenue is aggregated fresh\nfrom Billing \u0026 Settlement's settlements on every request, the same\ncross-module decoupling pattern used everywhere else (HLD Section 2).\nEvery other Dashboard KPI (orders in progress, low stock, outstanding\nreceivables) is served by each owning module's existing list endpoint;\nthis is the one figure not already exposed anywhere."
+    },
+    {
+      "name": "SupplierService",
+      "description": "SupplierService manages the garage's suppliers (FR-SUP-01). Reads need\nPERMISSION_SUPPLIER_READ, changes PERMISSION_SUPPLIER_WRITE."
     },
     {
       "name": "TechnicianService",
@@ -1423,215 +1423,6 @@
         ]
       }
     },
-    "/api/v1/garages/{garageId}/partners": {
-      "get": {
-        "operationId": "PartnerService_ListPartners",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1ListPartnersResponse"
-            }
-          },
-          "default": {
-            "description": "Error (API Specification Section 1.1).",
-            "schema": {
-              "$ref": "#/definitions/v1ErrorResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "garageId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "type",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "PARTNER_TYPE_SUPPLIER",
-              "PARTNER_TYPE_INSURER"
-            ]
-          },
-          {
-            "name": "query",
-            "description": "Matches name, tax code or contact.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
-        "tags": [
-          "PartnerService"
-        ]
-      },
-      "post": {
-        "operationId": "PartnerService_CreatePartner",
-        "responses": {
-          "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/v1Partner"
-            }
-          },
-          "default": {
-            "description": "Error (API Specification Section 1.1).",
-            "schema": {
-              "$ref": "#/definitions/v1ErrorResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "garageId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "partner",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1Partner"
-            }
-          }
-        ],
-        "tags": [
-          "PartnerService"
-        ]
-      }
-    },
-    "/api/v1/garages/{garageId}/partners/{partnerId}": {
-      "get": {
-        "operationId": "PartnerService_GetPartner",
-        "responses": {
-          "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/v1Partner"
-            }
-          },
-          "default": {
-            "description": "Error (API Specification Section 1.1).",
-            "schema": {
-              "$ref": "#/definitions/v1ErrorResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "garageId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "partnerId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "PartnerService"
-        ]
-      },
-      "delete": {
-        "operationId": "PartnerService_DeletePartner",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1DeletePartnerResponse"
-            }
-          },
-          "default": {
-            "description": "Error (API Specification Section 1.1).",
-            "schema": {
-              "$ref": "#/definitions/v1ErrorResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "garageId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "partnerId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "PartnerService"
-        ]
-      },
-      "patch": {
-        "operationId": "PartnerService_UpdatePartner",
-        "responses": {
-          "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/v1Partner"
-            }
-          },
-          "default": {
-            "description": "Error (API Specification Section 1.1).",
-            "schema": {
-              "$ref": "#/definitions/v1ErrorResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "garageId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "partnerId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "partner",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1Partner"
-            }
-          }
-        ],
-        "tags": [
-          "PartnerService"
-        ]
-      }
-    },
     "/api/v1/garages/{garageId}/quotes": {
       "get": {
         "operationId": "QuoteService_ListQuotes",
@@ -2486,7 +2277,7 @@
           },
           {
             "name": "status",
-            "description": " - SETTLEMENT_STATUS_PENDING: Nothing collected yet.\n - SETTLEMENT_STATUS_PARTIALLY_PAID: Some, but not all, of the allocated amount collected.\n - SETTLEMENT_STATUS_PAID: The full allocated amount collected from both payers.",
+            "description": " - SETTLEMENT_STATUS_PENDING: Nothing collected yet.\n - SETTLEMENT_STATUS_PARTIALLY_PAID: Some, but not all, of the total collected.\n - SETTLEMENT_STATUS_PAID: The full total collected.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -2594,54 +2385,11 @@
         "tags": [
           "SettlementService"
         ]
-      },
-      "patch": {
-        "summary": "Splits the settlement between what the customer pays directly and\nwhat insurance covers (FR-BIL-02); customer_amount + insurer_amount\nmust equal the total.",
-        "operationId": "SettlementService_AllocateSettlement",
-        "responses": {
-          "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/v1Settlement"
-            }
-          },
-          "default": {
-            "description": "Error (API Specification Section 1.1).",
-            "schema": {
-              "$ref": "#/definitions/v1ErrorResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "garageId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "settlementId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/SettlementServiceAllocateSettlementBody"
-            }
-          }
-        ],
-        "tags": [
-          "SettlementService"
-        ]
       }
     },
     "/api/v1/garages/{garageId}/settlements/{settlementId}/payments": {
       "post": {
-        "summary": "Records a payment actually collected (FR-BIL-03); a settlement may\nreceive several, from either payer, until each payer's allocated\namount is fully collected.",
+        "summary": "Records a payment actually collected (FR-BIL-03); a settlement may\nreceive several until the total is fully collected.",
         "operationId": "SettlementService_RecordSettlementPayment",
         "responses": {
           "200": {
@@ -3051,6 +2799,205 @@
         ],
         "tags": [
           "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/suppliers": {
+      "get": {
+        "operationId": "SupplierService_ListSuppliers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListSuppliersResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "query",
+            "description": "Matches name, tax code or contact.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "SupplierService"
+        ]
+      },
+      "post": {
+        "operationId": "SupplierService_CreateSupplier",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Supplier"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supplier",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Supplier"
+            }
+          }
+        ],
+        "tags": [
+          "SupplierService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/suppliers/{supplierId}": {
+      "get": {
+        "operationId": "SupplierService_GetSupplier",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Supplier"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supplierId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SupplierService"
+        ]
+      },
+      "delete": {
+        "operationId": "SupplierService_DeleteSupplier",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteSupplierResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supplierId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SupplierService"
+        ]
+      },
+      "patch": {
+        "operationId": "SupplierService_UpdateSupplier",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Supplier"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supplierId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supplier",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Supplier"
+            }
+          }
+        ],
+        "tags": [
+          "SupplierService"
         ]
       }
     },
@@ -3956,27 +3903,6 @@
     "RepairOrderServiceCloseRepairOrderBody": {
       "type": "object"
     },
-    "SettlementServiceAllocateSettlementBody": {
-      "type": "object",
-      "properties": {
-        "customerAmount": {
-          "type": "string",
-          "format": "int64"
-        },
-        "insurerAmount": {
-          "type": "string",
-          "format": "int64"
-        },
-        "insurerPartnerId": {
-          "type": "string",
-          "description": "Required when insurer_amount \u003e 0."
-        }
-      },
-      "required": [
-        "customerAmount",
-        "insurerAmount"
-      ]
-    },
     "SettlementServiceCreateSettlementBody": {
       "type": "object",
       "properties": {
@@ -3991,9 +3917,6 @@
     "SettlementServiceRecordSettlementPaymentBody": {
       "type": "object",
       "properties": {
-        "payerType": {
-          "$ref": "#/definitions/v1PayerType"
-        },
         "amount": {
           "type": "string",
           "format": "int64"
@@ -4006,7 +3929,6 @@
         }
       },
       "required": [
-        "payerType",
         "amount",
         "method"
       ]
@@ -4066,14 +3988,6 @@
         }
       }
     },
-    "v1AllocateSettlementResponse": {
-      "type": "object",
-      "properties": {
-        "settlement": {
-          "$ref": "#/definitions/v1Settlement"
-        }
-      }
-    },
     "v1AuthProvider": {
       "type": "string",
       "enum": [
@@ -4081,6 +3995,22 @@
         "AUTH_PROVIDER_GOOGLE"
       ],
       "description": "AuthProvider is how the user signed up (FR-IAM-01)."
+    },
+    "v1BankDetails": {
+      "type": "object",
+      "properties": {
+        "bankName": {
+          "type": "string"
+        },
+        "accountNumber": {
+          "type": "string"
+        },
+        "accountHolder": {
+          "type": "string",
+          "description": "Name the account is registered under."
+        }
+      },
+      "description": "BankDetails is a bank account that money is paid into. Shared by every\nrecord that carries one (suppliers today; the garage's legal profile and\ncustomers' tax profiles later)."
     },
     "v1BillingCycle": {
       "type": "string",
@@ -4169,14 +4099,6 @@
         }
       }
     },
-    "v1CreatePartnerResponse": {
-      "type": "object",
-      "properties": {
-        "partner": {
-          "$ref": "#/definitions/v1Partner"
-        }
-      }
-    },
     "v1CreatePlanResponse": {
       "type": "object",
       "properties": {
@@ -4234,6 +4156,14 @@
         "item": {
           "$ref": "#/definitions/v1Item",
           "description": "The item's on-hand quantity after this receipt."
+        }
+      }
+    },
+    "v1CreateSupplierResponse": {
+      "type": "object",
+      "properties": {
+        "supplier": {
+          "$ref": "#/definitions/v1Supplier"
         }
       }
     },
@@ -4349,9 +4279,6 @@
     "v1DeleteItemResponse": {
       "type": "object"
     },
-    "v1DeletePartnerResponse": {
-      "type": "object"
-    },
     "v1DeleteQuoteResponse": {
       "type": "object"
     },
@@ -4362,6 +4289,9 @@
       "type": "object"
     },
     "v1DeleteStaffResponse": {
+      "type": "object"
+    },
+    "v1DeleteSupplierResponse": {
       "type": "object"
     },
     "v1DeleteVehicleResponse": {
@@ -4632,14 +4562,6 @@
         }
       }
     },
-    "v1GetPartnerResponse": {
-      "type": "object",
-      "properties": {
-        "partner": {
-          "$ref": "#/definitions/v1Partner"
-        }
-      }
-    },
     "v1GetPublicQuoteResponse": {
       "type": "object",
       "properties": {
@@ -4694,6 +4616,14 @@
       "properties": {
         "settlement": {
           "$ref": "#/definitions/v1Settlement"
+        }
+      }
+    },
+    "v1GetSupplierResponse": {
+      "type": "object",
+      "properties": {
+        "supplier": {
+          "$ref": "#/definitions/v1Supplier"
         }
       }
     },
@@ -4939,21 +4869,6 @@
         }
       }
     },
-    "v1ListPartnersResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Partner"
-          }
-        },
-        "pagination": {
-          "$ref": "#/definitions/v1Pagination"
-        }
-      }
-    },
     "v1ListPermissionsResponse": {
       "type": "object",
       "properties": {
@@ -5083,6 +4998,21 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1SubscriptionSummary"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1ListSuppliersResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Supplier"
           }
         },
         "pagination": {
@@ -5250,82 +5180,6 @@
       },
       "description": "Pagination describes the page returned by every List call (API\nSpecification Section 1.1): lists are requested with `page` (1-based,\ndefault 1) and `page_size` (default 20, max 100)."
     },
-    "v1Partner": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "readOnly": true
-        },
-        "garageId": {
-          "type": "string",
-          "readOnly": true
-        },
-        "type": {
-          "$ref": "#/definitions/v1PartnerType"
-        },
-        "name": {
-          "type": "string",
-          "description": "Unique per garage and type (case-insensitive)."
-        },
-        "taxCode": {
-          "type": "string"
-        },
-        "contact": {
-          "$ref": "#/definitions/v1PartnerContact"
-        },
-        "note": {
-          "type": "string"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "readOnly": true
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "readOnly": true
-        }
-      },
-      "description": "Partner is a parts supplier or insurer in the garage's directory\n(FR-CUS-04).",
-      "required": [
-        "type",
-        "name"
-      ]
-    },
-    "v1PartnerContact": {
-      "type": "object",
-      "properties": {
-        "contactPerson": {
-          "type": "string"
-        },
-        "phone": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "address": {
-          "type": "string"
-        }
-      }
-    },
-    "v1PartnerType": {
-      "type": "string",
-      "enum": [
-        "PARTNER_TYPE_SUPPLIER",
-        "PARTNER_TYPE_INSURER"
-      ]
-    },
-    "v1PayerType": {
-      "type": "string",
-      "enum": [
-        "PAYER_TYPE_CUSTOMER",
-        "PAYER_TYPE_INSURER"
-      ],
-      "description": "PayerType: who a settlement amount, or a payment against it, is\nattributed to."
-    },
     "v1PaymentMethod": {
       "type": "string",
       "enum": [
@@ -5343,8 +5197,8 @@
         "PERMISSION_STAFF_WRITE",
         "PERMISSION_CUSTOMER_READ",
         "PERMISSION_CUSTOMER_WRITE",
-        "PERMISSION_PARTNER_READ",
-        "PERMISSION_PARTNER_WRITE",
+        "PERMISSION_SUPPLIER_READ",
+        "PERMISSION_SUPPLIER_WRITE",
         "PERMISSION_SUBSCRIPTION_READ",
         "PERMISSION_QUOTE_READ",
         "PERMISSION_QUOTE_WRITE",
@@ -5356,7 +5210,7 @@
         "PERMISSION_BILLING_WRITE",
         "PERMISSION_REPORT_READ"
       ],
-      "description": "Permission is one action a staff member may perform in a garage\n(FR-IAM-03). The catalog is fixed by the platform and grouped by module,\neach module offering a read and/or a write action; garage owners combine\npermissions into roles. A write permission includes the read permission\nof its module. Owners always hold every permission; every active member\nmay read the garage profile.\n\n - PERMISSION_GARAGE_WRITE: Edit the garage profile, configuration and logo.\n - PERMISSION_STAFF_WRITE: Invite, activate/deactivate and remove staff, and change their groups.\n - PERMISSION_CUSTOMER_READ: Customers and their vehicles.\n - PERMISSION_PARTNER_READ: Suppliers and insurers."
+      "description": "Permission is one action a staff member may perform in a garage\n(FR-IAM-03). The catalog is fixed by the platform and grouped by module,\neach module offering a read and/or a write action; garage owners combine\npermissions into roles. A write permission includes the read permission\nof its module. Owners always hold every permission; every active member\nmay read the garage profile.\n\n - PERMISSION_GARAGE_WRITE: Edit the garage profile, configuration and logo.\n - PERMISSION_STAFF_WRITE: Invite, activate/deactivate and remove staff, and change their groups.\n - PERMISSION_CUSTOMER_READ: Customers and their vehicles.\n - PERMISSION_SUPPLIER_READ: The garage's suppliers (FR-SUP-01)."
     },
     "v1PermissionInfo": {
       "type": "object",
@@ -6111,35 +5965,10 @@
           "description": "Copied from the repair order's total at creation time. Integer VND.",
           "readOnly": true
         },
-        "customerAmount": {
+        "paidAmount": {
           "type": "string",
           "format": "int64",
-          "description": "How much of total_amount is allocated to each payer (FR-BIL-02);\nalways sums to total_amount. Starts entirely allocated to the\ncustomer until AllocateSettlement says otherwise.",
-          "readOnly": true
-        },
-        "insurerAmount": {
-          "type": "string",
-          "format": "int64",
-          "readOnly": true
-        },
-        "insurerPartnerId": {
-          "type": "string",
-          "description": "Set once insurer_amount \u003e 0; a partner of type INSURER.",
-          "readOnly": true
-        },
-        "insurerPartnerName": {
-          "type": "string",
-          "readOnly": true
-        },
-        "customerPaidAmount": {
-          "type": "string",
-          "format": "int64",
-          "description": "Running totals from settlement_payments (FR-BIL-03).",
-          "readOnly": true
-        },
-        "insurerPaidAmount": {
-          "type": "string",
-          "format": "int64",
+          "description": "Running total from settlement_payments (FR-BIL-03). Integer VND.",
           "readOnly": true
         },
         "status": {
@@ -6165,17 +5994,13 @@
           "readOnly": true
         }
       },
-      "description": "Settlement is the final bill of a closed repair order (FR-BIL-01),\nsplit between what the customer pays directly and what insurance\ncovers (FR-BIL-02). FR-REC-01's receivables view is this same list\nfiltered to not yet fully paid (ListSettlementsRequest.outstanding_only)\n-- Release 1.4 has no separate receivables table; one arrives with\nRelease 2.2's reminders and reconciliation, which need their own\npersisted state."
+      "description": "Settlement is the final bill of a closed repair order (FR-BIL-01),\npaid by the customer. FR-REC-01's receivables view is this same list\nfiltered to not yet fully paid (ListSettlementsRequest.outstanding_only)\n-- Release 1.4 has no separate receivables table; one arrives with\nRelease 2.2's reminders and reconciliation, which need their own\npersisted state."
     },
     "v1SettlementPayment": {
       "type": "object",
       "properties": {
         "id": {
           "type": "string",
-          "readOnly": true
-        },
-        "payerType": {
-          "$ref": "#/definitions/v1PayerType",
           "readOnly": true
         },
         "amount": {
@@ -6198,7 +6023,7 @@
           "readOnly": true
         }
       },
-      "description": "SettlementPayment is one payment recorded against a settlement\n(FR-BIL-03); a settlement may receive several, from either payer."
+      "description": "SettlementPayment is one payment recorded against a settlement\n(FR-BIL-03); a settlement may receive several. The customer is the only\npayer."
     },
     "v1SettlementStatus": {
       "type": "string",
@@ -6207,7 +6032,7 @@
         "SETTLEMENT_STATUS_PARTIALLY_PAID",
         "SETTLEMENT_STATUS_PAID"
       ],
-      "description": "SettlementStatus is a settlement's collection status, derived from the\namounts actually paid against what was allocated (FR-BIL-01..03).\n\n - SETTLEMENT_STATUS_PENDING: Nothing collected yet.\n - SETTLEMENT_STATUS_PARTIALLY_PAID: Some, but not all, of the allocated amount collected.\n - SETTLEMENT_STATUS_PAID: The full allocated amount collected from both payers."
+      "description": "SettlementStatus is a settlement's collection status, derived from the\namounts actually paid against the total (FR-BIL-01..03).\n\n - SETTLEMENT_STATUS_PENDING: Nothing collected yet.\n - SETTLEMENT_STATUS_PARTIALLY_PAID: Some, but not all, of the total collected.\n - SETTLEMENT_STATUS_PAID: The full total collected."
     },
     "v1SignInWithGoogleIdTokenRequest": {
       "type": "object",
@@ -6512,6 +6337,66 @@
       },
       "description": "SubscriptionSummary is one row of the platform admin's subscription list."
     },
+    "v1Supplier": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "description": "Unique per garage (case-insensitive)."
+        },
+        "taxCode": {
+          "type": "string"
+        },
+        "contact": {
+          "$ref": "#/definitions/v1SupplierContact"
+        },
+        "bank": {
+          "$ref": "#/definitions/v1BankDetails"
+        },
+        "note": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Supplier is a business that sells parts to the garage, kept in the\ngarage's directory (FR-SUP-01). It is not a customer; insurers are not\nsuppliers either and come back in their own record in Phase 17.",
+      "required": [
+        "name"
+      ]
+    },
+    "v1SupplierContact": {
+      "type": "object",
+      "properties": {
+        "contactPerson": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        }
+      }
+    },
     "v1UpdateCustomerResponse": {
       "type": "object",
       "properties": {
@@ -6541,14 +6426,6 @@
       "properties": {
         "user": {
           "$ref": "#/definitions/v1User"
-        }
-      }
-    },
-    "v1UpdatePartnerResponse": {
-      "type": "object",
-      "properties": {
-        "partner": {
-          "$ref": "#/definitions/v1Partner"
         }
       }
     },
@@ -6597,6 +6474,14 @@
       "properties": {
         "staff": {
           "$ref": "#/definitions/v1Staff"
+        }
+      }
+    },
+    "v1UpdateSupplierResponse": {
+      "type": "object",
+      "properties": {
+        "supplier": {
+          "$ref": "#/definitions/v1Supplier"
         }
       }
     },
