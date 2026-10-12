@@ -77,9 +77,9 @@ func local_request_LicenseService_GetMySubscription_0(ctx context.Context, marsh
 	return msg, metadata, err
 }
 
-func request_LicenseService_ChangeMyPlan_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_LicenseService_CreatePlanPaymentRequest_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq ChangeMyPlanRequest
+		protoReq CreatePlanPaymentRequestRequest
 		metadata runtime.ServerMetadata
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
@@ -88,40 +88,225 @@ func request_LicenseService_ChangeMyPlan_0(ctx context.Context, marshaler runtim
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
 	}
-	msg, err := client.ChangeMyPlan(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.CreatePlanPaymentRequest(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 }
 
-func local_request_LicenseService_ChangeMyPlan_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_LicenseService_CreatePlanPaymentRequest_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq ChangeMyPlanRequest
+		protoReq CreatePlanPaymentRequestRequest
 		metadata runtime.ServerMetadata
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	msg, err := server.ChangeMyPlan(ctx, &protoReq)
+	msg, err := server.CreatePlanPaymentRequest(ctx, &protoReq)
 	return msg, metadata, err
 }
 
-func request_LicenseService_CancelMyPendingPlanChange_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+var filter_LicenseService_ListMyPlanPaymentRequests_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+
+func request_LicenseService_ListMyPlanPaymentRequests_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq CancelMyPendingPlanChangeRequest
+		protoReq ListMyPlanPaymentRequestsRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_LicenseService_ListMyPlanPaymentRequests_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ListMyPlanPaymentRequests(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_LicenseService_ListMyPlanPaymentRequests_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListMyPlanPaymentRequestsRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_LicenseService_ListMyPlanPaymentRequests_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.ListMyPlanPaymentRequests(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_LicenseService_GetMyPlanPaymentRequest_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetMyPlanPaymentRequestRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["request_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "request_id")
+	}
+	protoReq.RequestId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "request_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.GetMyPlanPaymentRequest(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_LicenseService_GetMyPlanPaymentRequest_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetMyPlanPaymentRequestRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["request_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "request_id")
+	}
+	protoReq.RequestId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "request_id", err)
+	}
+	msg, err := server.GetMyPlanPaymentRequest(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_LicenseService_SubmitPlanPayment_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq SubmitPlanPaymentRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["request_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "request_id")
+	}
+	protoReq.RequestId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "request_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.SubmitPlanPayment(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_LicenseService_SubmitPlanPayment_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq SubmitPlanPaymentRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["request_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "request_id")
+	}
+	protoReq.RequestId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "request_id", err)
+	}
+	msg, err := server.SubmitPlanPayment(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_LicenseService_CancelPlanPayment_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CancelPlanPaymentRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["request_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "request_id")
+	}
+	protoReq.RequestId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "request_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.CancelPlanPayment(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_LicenseService_CancelPlanPayment_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CancelPlanPaymentRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["request_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "request_id")
+	}
+	protoReq.RequestId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "request_id", err)
+	}
+	msg, err := server.CancelPlanPayment(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_LicenseService_ListMyCreditLedger_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListMyCreditLedgerRequest
 		metadata runtime.ServerMetadata
 	)
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
 	}
-	msg, err := client.CancelMyPendingPlanChange(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.ListMyCreditLedger(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 }
 
-func local_request_LicenseService_CancelMyPendingPlanChange_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_LicenseService_ListMyCreditLedger_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq CancelMyPendingPlanChangeRequest
+		protoReq ListMyCreditLedgerRequest
 		metadata runtime.ServerMetadata
 	)
-	msg, err := server.CancelMyPendingPlanChange(ctx, &protoReq)
+	msg, err := server.ListMyCreditLedger(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_LicenseService_GetPaymentInstructions_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetPaymentInstructionsRequest
+		metadata runtime.ServerMetadata
+	)
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.GetPaymentInstructions(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_LicenseService_GetPaymentInstructions_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetPaymentInstructionsRequest
+		metadata runtime.ServerMetadata
+	)
+	msg, err := server.GetPaymentInstructions(ctx, &protoReq)
 	return msg, metadata, err
 }
 
@@ -373,6 +558,326 @@ func local_request_LicenseAdminService_ExtendSubscription_0(ctx context.Context,
 	return msg, metadata, err
 }
 
+var filter_LicenseAdminService_ListPlanPaymentRequests_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+
+func request_LicenseAdminService_ListPlanPaymentRequests_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseAdminServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListPlanPaymentRequestsRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_LicenseAdminService_ListPlanPaymentRequests_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ListPlanPaymentRequests(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_LicenseAdminService_ListPlanPaymentRequests_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseAdminServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListPlanPaymentRequestsRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_LicenseAdminService_ListPlanPaymentRequests_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.ListPlanPaymentRequests(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_LicenseAdminService_GetPlanPaymentRequest_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseAdminServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetPlanPaymentRequestRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["request_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "request_id")
+	}
+	protoReq.RequestId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "request_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.GetPlanPaymentRequest(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_LicenseAdminService_GetPlanPaymentRequest_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseAdminServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetPlanPaymentRequestRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["request_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "request_id")
+	}
+	protoReq.RequestId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "request_id", err)
+	}
+	msg, err := server.GetPlanPaymentRequest(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_LicenseAdminService_ApprovePlanPayment_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseAdminServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ApprovePlanPaymentRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["request_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "request_id")
+	}
+	protoReq.RequestId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "request_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ApprovePlanPayment(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_LicenseAdminService_ApprovePlanPayment_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseAdminServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ApprovePlanPaymentRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["request_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "request_id")
+	}
+	protoReq.RequestId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "request_id", err)
+	}
+	msg, err := server.ApprovePlanPayment(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_LicenseAdminService_RejectPlanPayment_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseAdminServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq RejectPlanPaymentRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["request_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "request_id")
+	}
+	protoReq.RequestId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "request_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.RejectPlanPayment(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_LicenseAdminService_RejectPlanPayment_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseAdminServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq RejectPlanPaymentRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["request_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "request_id")
+	}
+	protoReq.RequestId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "request_id", err)
+	}
+	msg, err := server.RejectPlanPayment(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_LicenseAdminService_AdjustCredit_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseAdminServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq AdjustCreditRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["subscription_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "subscription_id")
+	}
+	protoReq.SubscriptionId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "subscription_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.AdjustCredit(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_LicenseAdminService_AdjustCredit_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseAdminServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq AdjustCreditRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["subscription_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "subscription_id")
+	}
+	protoReq.SubscriptionId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "subscription_id", err)
+	}
+	msg, err := server.AdjustCredit(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_LicenseAdminService_GetPlatformPaymentSettings_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseAdminServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetPlatformPaymentSettingsRequest
+		metadata runtime.ServerMetadata
+	)
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.GetPlatformPaymentSettings(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_LicenseAdminService_GetPlatformPaymentSettings_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseAdminServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetPlatformPaymentSettingsRequest
+		metadata runtime.ServerMetadata
+	)
+	msg, err := server.GetPlatformPaymentSettings(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+var filter_LicenseAdminService_UpdatePlatformPaymentSettings_0 = &utilities.DoubleArray{Encoding: map[string]int{"settings": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+
+func request_LicenseAdminService_UpdatePlatformPaymentSettings_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseAdminServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UpdatePlatformPaymentSettingsRequest
+		metadata runtime.ServerMetadata
+	)
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Settings); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if protoReq.UpdateMask == nil || len(protoReq.UpdateMask.GetPaths()) == 0 {
+		if fieldMask, err := runtime.FieldMaskFromRequestBody(newReader(), protoReq.Settings); err != nil {
+			return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+		} else {
+			protoReq.UpdateMask = fieldMask
+		}
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_LicenseAdminService_UpdatePlatformPaymentSettings_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.UpdatePlatformPaymentSettings(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_LicenseAdminService_UpdatePlatformPaymentSettings_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseAdminServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UpdatePlatformPaymentSettingsRequest
+		metadata runtime.ServerMetadata
+	)
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Settings); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if protoReq.UpdateMask == nil || len(protoReq.UpdateMask.GetPaths()) == 0 {
+		if fieldMask, err := runtime.FieldMaskFromRequestBody(newReader(), protoReq.Settings); err != nil {
+			return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+		} else {
+			protoReq.UpdateMask = fieldMask
+		}
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_LicenseAdminService_UpdatePlatformPaymentSettings_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.UpdatePlatformPaymentSettings(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_LicenseAdminService_UploadPaymentQr_0(ctx context.Context, marshaler runtime.Marshaler, client LicenseAdminServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UploadPaymentQrRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.UploadPaymentQr(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_LicenseAdminService_UploadPaymentQr_0(ctx context.Context, marshaler runtime.Marshaler, server LicenseAdminServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UploadPaymentQrRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.UploadPaymentQr(ctx, &protoReq)
+	return msg, metadata, err
+}
+
 // RegisterLicenseServiceHandlerServer registers the http handlers for service LicenseService to "mux".
 // UnaryRPC     :call LicenseServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -419,45 +924,145 @@ func RegisterLicenseServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		}
 		forward_LicenseService_GetMySubscription_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_GetMySubscription_0{resp.(*GetMySubscriptionResponse)}, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_LicenseService_ChangeMyPlan_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_LicenseService_CreatePlanPaymentRequest_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/ChangeMyPlan", runtime.WithHTTPPathPattern("/api/v1/me/subscription/plan-changes"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/CreatePlanPaymentRequest", runtime.WithHTTPPathPattern("/api/v1/me/subscription/payment-requests"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_LicenseService_ChangeMyPlan_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_LicenseService_CreatePlanPaymentRequest_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_LicenseService_ChangeMyPlan_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_ChangeMyPlan_0{resp.(*ChangeMyPlanResponse)}, mux.GetForwardResponseOptions()...)
+		forward_LicenseService_CreatePlanPaymentRequest_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_CreatePlanPaymentRequest_0{resp.(*CreatePlanPaymentRequestResponse)}, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodDelete, pattern_LicenseService_CancelMyPendingPlanChange_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_LicenseService_ListMyPlanPaymentRequests_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/CancelMyPendingPlanChange", runtime.WithHTTPPathPattern("/api/v1/me/subscription/plan-changes/pending"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/ListMyPlanPaymentRequests", runtime.WithHTTPPathPattern("/api/v1/me/subscription/payment-requests"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_LicenseService_CancelMyPendingPlanChange_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_LicenseService_ListMyPlanPaymentRequests_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_LicenseService_CancelMyPendingPlanChange_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_CancelMyPendingPlanChange_0{resp.(*CancelMyPendingPlanChangeResponse)}, mux.GetForwardResponseOptions()...)
+		forward_LicenseService_ListMyPlanPaymentRequests_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_LicenseService_GetMyPlanPaymentRequest_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/GetMyPlanPaymentRequest", runtime.WithHTTPPathPattern("/api/v1/me/subscription/payment-requests/{request_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_LicenseService_GetMyPlanPaymentRequest_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseService_GetMyPlanPaymentRequest_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_GetMyPlanPaymentRequest_0{resp.(*GetMyPlanPaymentRequestResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_LicenseService_SubmitPlanPayment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/SubmitPlanPayment", runtime.WithHTTPPathPattern("/api/v1/me/subscription/payment-requests/{request_id}:submit"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_LicenseService_SubmitPlanPayment_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseService_SubmitPlanPayment_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_SubmitPlanPayment_0{resp.(*SubmitPlanPaymentResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_LicenseService_CancelPlanPayment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/CancelPlanPayment", runtime.WithHTTPPathPattern("/api/v1/me/subscription/payment-requests/{request_id}:cancel"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_LicenseService_CancelPlanPayment_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseService_CancelPlanPayment_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_CancelPlanPayment_0{resp.(*CancelPlanPaymentResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_LicenseService_ListMyCreditLedger_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/ListMyCreditLedger", runtime.WithHTTPPathPattern("/api/v1/me/subscription/credit-ledger"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_LicenseService_ListMyCreditLedger_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseService_ListMyCreditLedger_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_LicenseService_GetPaymentInstructions_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/GetPaymentInstructions", runtime.WithHTTPPathPattern("/api/v1/payment-settings"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_LicenseService_GetPaymentInstructions_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseService_GetPaymentInstructions_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_GetPaymentInstructions_0{resp.(*GetPaymentInstructionsResponse)}, mux.GetForwardResponseOptions()...)
 	})
 	mux.Handle(http.MethodGet, pattern_LicenseService_GetGarageEntitlements_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -589,6 +1194,166 @@ func RegisterLicenseAdminServiceHandlerServer(ctx context.Context, mux *runtime.
 		}
 		forward_LicenseAdminService_ExtendSubscription_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_ExtendSubscription_0{resp.(*ExtendSubscriptionResponse)}, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodGet, pattern_LicenseAdminService_ListPlanPaymentRequests_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/ListPlanPaymentRequests", runtime.WithHTTPPathPattern("/api/v1/admin/plan-payment-requests"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_LicenseAdminService_ListPlanPaymentRequests_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_ListPlanPaymentRequests_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_LicenseAdminService_GetPlanPaymentRequest_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/GetPlanPaymentRequest", runtime.WithHTTPPathPattern("/api/v1/admin/plan-payment-requests/{request_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_LicenseAdminService_GetPlanPaymentRequest_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_GetPlanPaymentRequest_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_GetPlanPaymentRequest_0{resp.(*GetPlanPaymentRequestResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_LicenseAdminService_ApprovePlanPayment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/ApprovePlanPayment", runtime.WithHTTPPathPattern("/api/v1/admin/plan-payment-requests/{request_id}:approve"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_LicenseAdminService_ApprovePlanPayment_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_ApprovePlanPayment_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_ApprovePlanPayment_0{resp.(*ApprovePlanPaymentResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_LicenseAdminService_RejectPlanPayment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/RejectPlanPayment", runtime.WithHTTPPathPattern("/api/v1/admin/plan-payment-requests/{request_id}:reject"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_LicenseAdminService_RejectPlanPayment_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_RejectPlanPayment_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_RejectPlanPayment_0{resp.(*RejectPlanPaymentResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_LicenseAdminService_AdjustCredit_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/AdjustCredit", runtime.WithHTTPPathPattern("/api/v1/admin/subscriptions/{subscription_id}/credit-adjustments"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_LicenseAdminService_AdjustCredit_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_AdjustCredit_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_AdjustCredit_0{resp.(*AdjustCreditResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_LicenseAdminService_GetPlatformPaymentSettings_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/GetPlatformPaymentSettings", runtime.WithHTTPPathPattern("/api/v1/admin/payment-settings"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_LicenseAdminService_GetPlatformPaymentSettings_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_GetPlatformPaymentSettings_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_GetPlatformPaymentSettings_0{resp.(*GetPlatformPaymentSettingsResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPatch, pattern_LicenseAdminService_UpdatePlatformPaymentSettings_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/UpdatePlatformPaymentSettings", runtime.WithHTTPPathPattern("/api/v1/admin/payment-settings"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_LicenseAdminService_UpdatePlatformPaymentSettings_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_UpdatePlatformPaymentSettings_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_UpdatePlatformPaymentSettings_0{resp.(*UpdatePlatformPaymentSettingsResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_LicenseAdminService_UploadPaymentQr_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/UploadPaymentQr", runtime.WithHTTPPathPattern("/api/v1/admin/payment-settings/qr"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_LicenseAdminService_UploadPaymentQr_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_UploadPaymentQr_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_UploadPaymentQr_0{resp.(*UploadPaymentQrResponse)}, mux.GetForwardResponseOptions()...)
+	})
 
 	return nil
 }
@@ -663,39 +1428,124 @@ func RegisterLicenseServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		}
 		forward_LicenseService_GetMySubscription_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_GetMySubscription_0{resp.(*GetMySubscriptionResponse)}, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_LicenseService_ChangeMyPlan_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_LicenseService_CreatePlanPaymentRequest_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/ChangeMyPlan", runtime.WithHTTPPathPattern("/api/v1/me/subscription/plan-changes"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/CreatePlanPaymentRequest", runtime.WithHTTPPathPattern("/api/v1/me/subscription/payment-requests"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_LicenseService_ChangeMyPlan_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_LicenseService_CreatePlanPaymentRequest_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_LicenseService_ChangeMyPlan_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_ChangeMyPlan_0{resp.(*ChangeMyPlanResponse)}, mux.GetForwardResponseOptions()...)
+		forward_LicenseService_CreatePlanPaymentRequest_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_CreatePlanPaymentRequest_0{resp.(*CreatePlanPaymentRequestResponse)}, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodDelete, pattern_LicenseService_CancelMyPendingPlanChange_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_LicenseService_ListMyPlanPaymentRequests_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/CancelMyPendingPlanChange", runtime.WithHTTPPathPattern("/api/v1/me/subscription/plan-changes/pending"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/ListMyPlanPaymentRequests", runtime.WithHTTPPathPattern("/api/v1/me/subscription/payment-requests"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_LicenseService_CancelMyPendingPlanChange_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_LicenseService_ListMyPlanPaymentRequests_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_LicenseService_CancelMyPendingPlanChange_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_CancelMyPendingPlanChange_0{resp.(*CancelMyPendingPlanChangeResponse)}, mux.GetForwardResponseOptions()...)
+		forward_LicenseService_ListMyPlanPaymentRequests_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_LicenseService_GetMyPlanPaymentRequest_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/GetMyPlanPaymentRequest", runtime.WithHTTPPathPattern("/api/v1/me/subscription/payment-requests/{request_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_LicenseService_GetMyPlanPaymentRequest_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseService_GetMyPlanPaymentRequest_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_GetMyPlanPaymentRequest_0{resp.(*GetMyPlanPaymentRequestResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_LicenseService_SubmitPlanPayment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/SubmitPlanPayment", runtime.WithHTTPPathPattern("/api/v1/me/subscription/payment-requests/{request_id}:submit"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_LicenseService_SubmitPlanPayment_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseService_SubmitPlanPayment_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_SubmitPlanPayment_0{resp.(*SubmitPlanPaymentResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_LicenseService_CancelPlanPayment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/CancelPlanPayment", runtime.WithHTTPPathPattern("/api/v1/me/subscription/payment-requests/{request_id}:cancel"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_LicenseService_CancelPlanPayment_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseService_CancelPlanPayment_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_CancelPlanPayment_0{resp.(*CancelPlanPaymentResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_LicenseService_ListMyCreditLedger_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/ListMyCreditLedger", runtime.WithHTTPPathPattern("/api/v1/me/subscription/credit-ledger"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_LicenseService_ListMyCreditLedger_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseService_ListMyCreditLedger_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_LicenseService_GetPaymentInstructions_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseService/GetPaymentInstructions", runtime.WithHTTPPathPattern("/api/v1/payment-settings"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_LicenseService_GetPaymentInstructions_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseService_GetPaymentInstructions_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseService_GetPaymentInstructions_0{resp.(*GetPaymentInstructionsResponse)}, mux.GetForwardResponseOptions()...)
 	})
 	mux.Handle(http.MethodGet, pattern_LicenseService_GetGarageEntitlements_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -726,22 +1576,49 @@ func (m response_LicenseService_GetMySubscription_0) XXX_ResponseBody() interfac
 	return response.Subscription
 }
 
-type response_LicenseService_ChangeMyPlan_0 struct {
-	*ChangeMyPlanResponse
+type response_LicenseService_CreatePlanPaymentRequest_0 struct {
+	*CreatePlanPaymentRequestResponse
 }
 
-func (m response_LicenseService_ChangeMyPlan_0) XXX_ResponseBody() interface{} {
-	response := m.ChangeMyPlanResponse
-	return response.Subscription
+func (m response_LicenseService_CreatePlanPaymentRequest_0) XXX_ResponseBody() interface{} {
+	response := m.CreatePlanPaymentRequestResponse
+	return response.Request
 }
 
-type response_LicenseService_CancelMyPendingPlanChange_0 struct {
-	*CancelMyPendingPlanChangeResponse
+type response_LicenseService_GetMyPlanPaymentRequest_0 struct {
+	*GetMyPlanPaymentRequestResponse
 }
 
-func (m response_LicenseService_CancelMyPendingPlanChange_0) XXX_ResponseBody() interface{} {
-	response := m.CancelMyPendingPlanChangeResponse
-	return response.Subscription
+func (m response_LicenseService_GetMyPlanPaymentRequest_0) XXX_ResponseBody() interface{} {
+	response := m.GetMyPlanPaymentRequestResponse
+	return response.Request
+}
+
+type response_LicenseService_SubmitPlanPayment_0 struct {
+	*SubmitPlanPaymentResponse
+}
+
+func (m response_LicenseService_SubmitPlanPayment_0) XXX_ResponseBody() interface{} {
+	response := m.SubmitPlanPaymentResponse
+	return response.Request
+}
+
+type response_LicenseService_CancelPlanPayment_0 struct {
+	*CancelPlanPaymentResponse
+}
+
+func (m response_LicenseService_CancelPlanPayment_0) XXX_ResponseBody() interface{} {
+	response := m.CancelPlanPaymentResponse
+	return response.Request
+}
+
+type response_LicenseService_GetPaymentInstructions_0 struct {
+	*GetPaymentInstructionsResponse
+}
+
+func (m response_LicenseService_GetPaymentInstructions_0) XXX_ResponseBody() interface{} {
+	response := m.GetPaymentInstructionsResponse
+	return response.Instructions
 }
 
 type response_LicenseService_GetGarageEntitlements_0 struct {
@@ -756,16 +1633,26 @@ func (m response_LicenseService_GetGarageEntitlements_0) XXX_ResponseBody() inte
 var (
 	pattern_LicenseService_ListPlans_0                 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "plans"}, ""))
 	pattern_LicenseService_GetMySubscription_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "me", "subscription"}, ""))
-	pattern_LicenseService_ChangeMyPlan_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "me", "subscription", "plan-changes"}, ""))
-	pattern_LicenseService_CancelMyPendingPlanChange_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5}, []string{"api", "v1", "me", "subscription", "plan-changes", "pending"}, ""))
+	pattern_LicenseService_CreatePlanPaymentRequest_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "me", "subscription", "payment-requests"}, ""))
+	pattern_LicenseService_ListMyPlanPaymentRequests_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "me", "subscription", "payment-requests"}, ""))
+	pattern_LicenseService_GetMyPlanPaymentRequest_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "me", "subscription", "payment-requests", "request_id"}, ""))
+	pattern_LicenseService_SubmitPlanPayment_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "me", "subscription", "payment-requests", "request_id"}, "submit"))
+	pattern_LicenseService_CancelPlanPayment_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "me", "subscription", "payment-requests", "request_id"}, "cancel"))
+	pattern_LicenseService_ListMyCreditLedger_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "me", "subscription", "credit-ledger"}, ""))
+	pattern_LicenseService_GetPaymentInstructions_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "payment-settings"}, ""))
 	pattern_LicenseService_GetGarageEntitlements_0     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "entitlements"}, ""))
 )
 
 var (
 	forward_LicenseService_ListPlans_0                 = runtime.ForwardResponseMessage
 	forward_LicenseService_GetMySubscription_0         = runtime.ForwardResponseMessage
-	forward_LicenseService_ChangeMyPlan_0              = runtime.ForwardResponseMessage
-	forward_LicenseService_CancelMyPendingPlanChange_0 = runtime.ForwardResponseMessage
+	forward_LicenseService_CreatePlanPaymentRequest_0  = runtime.ForwardResponseMessage
+	forward_LicenseService_ListMyPlanPaymentRequests_0 = runtime.ForwardResponseMessage
+	forward_LicenseService_GetMyPlanPaymentRequest_0   = runtime.ForwardResponseMessage
+	forward_LicenseService_SubmitPlanPayment_0         = runtime.ForwardResponseMessage
+	forward_LicenseService_CancelPlanPayment_0         = runtime.ForwardResponseMessage
+	forward_LicenseService_ListMyCreditLedger_0        = runtime.ForwardResponseMessage
+	forward_LicenseService_GetPaymentInstructions_0    = runtime.ForwardResponseMessage
 	forward_LicenseService_GetGarageEntitlements_0     = runtime.ForwardResponseMessage
 )
 
@@ -890,6 +1777,142 @@ func RegisterLicenseAdminServiceHandlerClient(ctx context.Context, mux *runtime.
 		}
 		forward_LicenseAdminService_ExtendSubscription_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_ExtendSubscription_0{resp.(*ExtendSubscriptionResponse)}, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodGet, pattern_LicenseAdminService_ListPlanPaymentRequests_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/ListPlanPaymentRequests", runtime.WithHTTPPathPattern("/api/v1/admin/plan-payment-requests"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_LicenseAdminService_ListPlanPaymentRequests_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_ListPlanPaymentRequests_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_LicenseAdminService_GetPlanPaymentRequest_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/GetPlanPaymentRequest", runtime.WithHTTPPathPattern("/api/v1/admin/plan-payment-requests/{request_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_LicenseAdminService_GetPlanPaymentRequest_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_GetPlanPaymentRequest_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_GetPlanPaymentRequest_0{resp.(*GetPlanPaymentRequestResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_LicenseAdminService_ApprovePlanPayment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/ApprovePlanPayment", runtime.WithHTTPPathPattern("/api/v1/admin/plan-payment-requests/{request_id}:approve"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_LicenseAdminService_ApprovePlanPayment_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_ApprovePlanPayment_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_ApprovePlanPayment_0{resp.(*ApprovePlanPaymentResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_LicenseAdminService_RejectPlanPayment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/RejectPlanPayment", runtime.WithHTTPPathPattern("/api/v1/admin/plan-payment-requests/{request_id}:reject"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_LicenseAdminService_RejectPlanPayment_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_RejectPlanPayment_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_RejectPlanPayment_0{resp.(*RejectPlanPaymentResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_LicenseAdminService_AdjustCredit_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/AdjustCredit", runtime.WithHTTPPathPattern("/api/v1/admin/subscriptions/{subscription_id}/credit-adjustments"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_LicenseAdminService_AdjustCredit_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_AdjustCredit_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_AdjustCredit_0{resp.(*AdjustCreditResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_LicenseAdminService_GetPlatformPaymentSettings_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/GetPlatformPaymentSettings", runtime.WithHTTPPathPattern("/api/v1/admin/payment-settings"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_LicenseAdminService_GetPlatformPaymentSettings_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_GetPlatformPaymentSettings_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_GetPlatformPaymentSettings_0{resp.(*GetPlatformPaymentSettingsResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPatch, pattern_LicenseAdminService_UpdatePlatformPaymentSettings_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/UpdatePlatformPaymentSettings", runtime.WithHTTPPathPattern("/api/v1/admin/payment-settings"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_LicenseAdminService_UpdatePlatformPaymentSettings_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_UpdatePlatformPaymentSettings_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_UpdatePlatformPaymentSettings_0{resp.(*UpdatePlatformPaymentSettingsResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_LicenseAdminService_UploadPaymentQr_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.license.v1.LicenseAdminService/UploadPaymentQr", runtime.WithHTTPPathPattern("/api/v1/admin/payment-settings/qr"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_LicenseAdminService_UploadPaymentQr_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_LicenseAdminService_UploadPaymentQr_0(annotatedContext, mux, outboundMarshaler, w, req, response_LicenseAdminService_UploadPaymentQr_0{resp.(*UploadPaymentQrResponse)}, mux.GetForwardResponseOptions()...)
+	})
 	return nil
 }
 
@@ -920,18 +1943,97 @@ func (m response_LicenseAdminService_ExtendSubscription_0) XXX_ResponseBody() in
 	return response.Subscription
 }
 
+type response_LicenseAdminService_GetPlanPaymentRequest_0 struct {
+	*GetPlanPaymentRequestResponse
+}
+
+func (m response_LicenseAdminService_GetPlanPaymentRequest_0) XXX_ResponseBody() interface{} {
+	response := m.GetPlanPaymentRequestResponse
+	return response.Request
+}
+
+type response_LicenseAdminService_ApprovePlanPayment_0 struct {
+	*ApprovePlanPaymentResponse
+}
+
+func (m response_LicenseAdminService_ApprovePlanPayment_0) XXX_ResponseBody() interface{} {
+	response := m.ApprovePlanPaymentResponse
+	return response.Subscription
+}
+
+type response_LicenseAdminService_RejectPlanPayment_0 struct {
+	*RejectPlanPaymentResponse
+}
+
+func (m response_LicenseAdminService_RejectPlanPayment_0) XXX_ResponseBody() interface{} {
+	response := m.RejectPlanPaymentResponse
+	return response.Request
+}
+
+type response_LicenseAdminService_AdjustCredit_0 struct {
+	*AdjustCreditResponse
+}
+
+func (m response_LicenseAdminService_AdjustCredit_0) XXX_ResponseBody() interface{} {
+	response := m.AdjustCreditResponse
+	return response.Entry
+}
+
+type response_LicenseAdminService_GetPlatformPaymentSettings_0 struct {
+	*GetPlatformPaymentSettingsResponse
+}
+
+func (m response_LicenseAdminService_GetPlatformPaymentSettings_0) XXX_ResponseBody() interface{} {
+	response := m.GetPlatformPaymentSettingsResponse
+	return response.Settings
+}
+
+type response_LicenseAdminService_UpdatePlatformPaymentSettings_0 struct {
+	*UpdatePlatformPaymentSettingsResponse
+}
+
+func (m response_LicenseAdminService_UpdatePlatformPaymentSettings_0) XXX_ResponseBody() interface{} {
+	response := m.UpdatePlatformPaymentSettingsResponse
+	return response.Settings
+}
+
+type response_LicenseAdminService_UploadPaymentQr_0 struct {
+	*UploadPaymentQrResponse
+}
+
+func (m response_LicenseAdminService_UploadPaymentQr_0) XXX_ResponseBody() interface{} {
+	response := m.UploadPaymentQrResponse
+	return response.Settings
+}
+
 var (
-	pattern_LicenseAdminService_ListAllPlans_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "admin", "plans"}, ""))
-	pattern_LicenseAdminService_CreatePlan_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "admin", "plans"}, ""))
-	pattern_LicenseAdminService_UpdatePlan_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "admin", "plans", "plan_id"}, ""))
-	pattern_LicenseAdminService_ListSubscriptions_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "admin", "subscriptions"}, ""))
-	pattern_LicenseAdminService_ExtendSubscription_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"api", "v1", "admin", "subscriptions", "subscription_id", "extensions"}, ""))
+	pattern_LicenseAdminService_ListAllPlans_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "admin", "plans"}, ""))
+	pattern_LicenseAdminService_CreatePlan_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "admin", "plans"}, ""))
+	pattern_LicenseAdminService_UpdatePlan_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "admin", "plans", "plan_id"}, ""))
+	pattern_LicenseAdminService_ListSubscriptions_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "admin", "subscriptions"}, ""))
+	pattern_LicenseAdminService_ExtendSubscription_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"api", "v1", "admin", "subscriptions", "subscription_id", "extensions"}, ""))
+	pattern_LicenseAdminService_ListPlanPaymentRequests_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "admin", "plan-payment-requests"}, ""))
+	pattern_LicenseAdminService_GetPlanPaymentRequest_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "admin", "plan-payment-requests", "request_id"}, ""))
+	pattern_LicenseAdminService_ApprovePlanPayment_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "admin", "plan-payment-requests", "request_id"}, "approve"))
+	pattern_LicenseAdminService_RejectPlanPayment_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "admin", "plan-payment-requests", "request_id"}, "reject"))
+	pattern_LicenseAdminService_AdjustCredit_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"api", "v1", "admin", "subscriptions", "subscription_id", "credit-adjustments"}, ""))
+	pattern_LicenseAdminService_GetPlatformPaymentSettings_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "admin", "payment-settings"}, ""))
+	pattern_LicenseAdminService_UpdatePlatformPaymentSettings_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "admin", "payment-settings"}, ""))
+	pattern_LicenseAdminService_UploadPaymentQr_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "admin", "payment-settings", "qr"}, ""))
 )
 
 var (
-	forward_LicenseAdminService_ListAllPlans_0       = runtime.ForwardResponseMessage
-	forward_LicenseAdminService_CreatePlan_0         = runtime.ForwardResponseMessage
-	forward_LicenseAdminService_UpdatePlan_0         = runtime.ForwardResponseMessage
-	forward_LicenseAdminService_ListSubscriptions_0  = runtime.ForwardResponseMessage
-	forward_LicenseAdminService_ExtendSubscription_0 = runtime.ForwardResponseMessage
+	forward_LicenseAdminService_ListAllPlans_0                  = runtime.ForwardResponseMessage
+	forward_LicenseAdminService_CreatePlan_0                    = runtime.ForwardResponseMessage
+	forward_LicenseAdminService_UpdatePlan_0                    = runtime.ForwardResponseMessage
+	forward_LicenseAdminService_ListSubscriptions_0             = runtime.ForwardResponseMessage
+	forward_LicenseAdminService_ExtendSubscription_0            = runtime.ForwardResponseMessage
+	forward_LicenseAdminService_ListPlanPaymentRequests_0       = runtime.ForwardResponseMessage
+	forward_LicenseAdminService_GetPlanPaymentRequest_0         = runtime.ForwardResponseMessage
+	forward_LicenseAdminService_ApprovePlanPayment_0            = runtime.ForwardResponseMessage
+	forward_LicenseAdminService_RejectPlanPayment_0             = runtime.ForwardResponseMessage
+	forward_LicenseAdminService_AdjustCredit_0                  = runtime.ForwardResponseMessage
+	forward_LicenseAdminService_GetPlatformPaymentSettings_0    = runtime.ForwardResponseMessage
+	forward_LicenseAdminService_UpdatePlatformPaymentSettings_0 = runtime.ForwardResponseMessage
+	forward_LicenseAdminService_UploadPaymentQr_0               = runtime.ForwardResponseMessage
 )

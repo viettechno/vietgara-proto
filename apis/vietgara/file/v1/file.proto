@@ -16,6 +16,10 @@ enum FileKind {
   FILE_KIND_UNSPECIFIED = 0;
   // A garage logo (public).
   FILE_KIND_LOGO = 1;
+  // The screenshot of a subscription transfer (private).
+  FILE_KIND_PAYMENT_EVIDENCE = 2;
+  // The platform's bank QR code (private, read through a signed URL).
+  FILE_KIND_PLATFORM_QR = 3;
 }
 
 // File is one uploaded object registered in the garage's file registry.
