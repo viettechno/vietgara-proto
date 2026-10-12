@@ -72,27 +72,102 @@ message Plan {
   google.protobuf.Timestamp updated_at = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
-// PlanChangeStatus is the state of a plan change (FR-LIC-02).
-enum PlanChangeStatus {
-  PLAN_CHANGE_STATUS_UNSPECIFIED = 0;
-  // Takes effect when the current period ends.
-  PLAN_CHANGE_STATUS_SCHEDULED = 1;
-  // Due, but the new plan's limits are exceeded: it stays pending and the
-  // owner is told.
-  PLAN_CHANGE_STATUS_POSTPONED = 2;
-  PLAN_CHANGE_STATUS_APPLIED = 3;
-  PLAN_CHANGE_STATUS_CANCELLED = 4;
+// PlanPaymentKind says what a payment request pays for (FR-LIC-07).
+enum PlanPaymentKind {
+  PLAN_PAYMENT_KIND_UNSPECIFIED = 0;
+  // Another plan.
+  PLAN_PAYMENT_KIND_CHANGE = 1;
+  // The current plan for another period.
+  PLAN_PAYMENT_KIND_RENEW = 2;
 }
 
-// PendingPlanChange is a plan the owner chose that has not taken effect yet.
-// The owner can cancel it or replace it by choosing another plan.
-message PendingPlanChange {
-  Plan plan = 1;
-  // When it applies: the end of the current period (the end of the trial,
-  // during a trial).
-  google.protobuf.Timestamp effective_at = 2;
-  PlanChangeStatus status = 3;
-  google.protobuf.Timestamp requested_at = 4;
+// PlanPaymentStatus is the state of a payment request (LLD 3.3).
+enum PlanPaymentStatus {
+  PLAN_PAYMENT_STATUS_UNSPECIFIED = 0;
+  // Quoted, with its transfer reference; the owner has not declared the
+  // transfer yet. A new request replaces it.
+  PLAN_PAYMENT_STATUS_AWAITING_PAYMENT = 1;
+  // The owner declared the transfer; a platform admin reviews it.
+  PLAN_PAYMENT_STATUS_SUBMITTED = 2;
+  // Approved: the plan applied at once.
+  PLAN_PAYMENT_STATUS_APPROVED = 3;
+  PLAN_PAYMENT_STATUS_REJECTED = 4;
+  PLAN_PAYMENT_STATUS_CANCELLED = 5;
+}
+
+// CreditEntryKind is why the account credit changed (FR-LIC-09).
+enum CreditEntryKind {
+  CREDIT_ENTRY_KIND_UNSPECIFIED = 0;
+  // A downgrade's surplus.
+  CREDIT_ENTRY_KIND_EARNED = 1;
+  // Credit used by a payment.
+  CREDIT_ENTRY_KIND_APPLIED = 2;
+  // A correction by a platform admin.
+  CREDIT_ENTRY_KIND_ADJUSTMENT = 3;
+}
+
+// PaymentInstructions are the platform's payment details shown with a
+// payment request (FR-LIC-10).
+message PaymentInstructions {
+  string bank_name = 1;
+  string account_number = 2;
+  string account_holder = 3;
+  string branch = 4;
+  string transfer_instructions = 5;
+  // The QR code image, a signed URL valid for 5 minutes; empty when none.
+  string qr_url = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// PlanPaymentRequest is an owner's request to switch to a plan, or to renew
+// the current one, paid by a manual bank transfer (FR-LIC-07). The amounts
+// are fixed when it is quoted and honoured at approval.
+message PlanPaymentRequest {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  PlanPaymentKind kind = 2;
+  // The plan to pay for.
+  Plan plan = 3;
+  PlanPaymentStatus status = 4;
+  // The code the owner puts in the transfer note, e.g. "VG-7K2M9Q".
+  string reference = 5;
+  // New plan price, account credit applied, amount to transfer and any
+  // surplus that becomes credit (VND, FR-LIC-09).
+  int64 quoted_amount = 6;
+  int64 credit_applied = 7;
+  int64 amount_due = 8;
+  int64 credit_surplus = 9;
+  // Days of the current period and how many are unused (0 after expiry).
+  int32 period_days = 10;
+  int32 unused_days = 11;
+  // The payment details shown when the request was quoted.
+  PaymentInstructions instructions = 12;
+  // The owner's declaration, set once submitted.
+  string payer_name = 13;
+  string payer_bank = 14;
+  string payer_account = 15;
+  int64 transferred_amount = 16;
+  string bank_transaction_ref = 17;
+  google.protobuf.Timestamp paid_at = 18;
+  // The evidence screenshot, a signed URL valid for 5 minutes.
+  string evidence_url = 19 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // True when the transferred amount differs from amount_due.
+  bool amount_mismatch = 20;
+  // The admin's note on approval (required when amount_mismatch).
+  string review_note = 21;
+  string rejection_reason = 22;
+  google.protobuf.Timestamp submitted_at = 23;
+  google.protobuf.Timestamp reviewed_at = 24;
+  google.protobuf.Timestamp created_at = 25;
+}
+
+// CreditLedgerEntry is one change of the owner's account credit.
+message CreditLedgerEntry {
+  CreditEntryKind kind = 1;
+  // Signed VND: positive adds credit, negative uses it.
+  int64 amount = 2;
+  int64 balance_after = 3;
+  string plan_payment_request_id = 4;
+  string note = 5;
+  google.protobuf.Timestamp created_at = 6;
 }
 
 // Usage is the owner's current consumption of the plan limits.
@@ -117,8 +192,13 @@ message Subscription {
   Usage usage = 10;
   google.protobuf.Timestamp created_at = 11;
   google.protobuf.Timestamp updated_at = 12;
-  // Set while a plan change is scheduled or postponed (FR-LIC-02).
-  PendingPlanChange pending_change = 13;
+  // Account credit in VND (FR-LIC-09), applied to the next payment.
+  int64 credit_balance = 13;
+  // What was paid for the current period (0 for a trial); the basis of the
+  // credit when the plan is changed.
+  int64 period_paid_amount = 14;
+  // The request awaiting payment or review, unset when none.
+  PlanPaymentRequest open_request = 15;
 }
 
 // Entitlements is what a garage may currently use, derived from its
@@ -146,19 +226,73 @@ message GetMySubscriptionResponse {
   Subscription subscription = 1;
 }
 
-message ChangeMyPlanRequest {
+message CreatePlanPaymentRequestRequest {
   string plan_id = 1 [(google.api.field_behavior) = REQUIRED];
+  PlanPaymentKind kind = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-message ChangeMyPlanResponse {
-  // The current plan with its pending_change.
-  Subscription subscription = 1;
+message CreatePlanPaymentRequestResponse {
+  PlanPaymentRequest request = 1;
 }
 
-message CancelMyPendingPlanChangeRequest {}
+message ListMyPlanPaymentRequestsRequest {
+  // Optional filter.
+  PlanPaymentStatus status = 1;
+}
 
-message CancelMyPendingPlanChangeResponse {
-  Subscription subscription = 1;
+message ListMyPlanPaymentRequestsResponse {
+  repeated PlanPaymentRequest data = 1;
+}
+
+message GetMyPlanPaymentRequestRequest {
+  string request_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetMyPlanPaymentRequestResponse {
+  PlanPaymentRequest request = 1;
+}
+
+// PaymentEvidence is the screenshot of the transfer.
+message PaymentEvidence {
+  bytes content = 1 [(google.api.field_behavior) = REQUIRED];
+  // image/png, image/jpeg, image/webp or application/pdf, at most 5 MB.
+  string content_type = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message SubmitPlanPaymentRequest {
+  string request_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string payer_name = 2 [(google.api.field_behavior) = REQUIRED];
+  string payer_bank = 3;
+  string payer_account = 4;
+  int64 transferred_amount = 5 [(google.api.field_behavior) = REQUIRED];
+  string bank_transaction_ref = 6;
+  google.protobuf.Timestamp paid_at = 7;
+  // Required unless the amount due is 0.
+  PaymentEvidence evidence = 8;
+}
+
+message SubmitPlanPaymentResponse {
+  PlanPaymentRequest request = 1;
+}
+
+message CancelPlanPaymentRequest {
+  string request_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CancelPlanPaymentResponse {
+  PlanPaymentRequest request = 1;
+}
+
+message ListMyCreditLedgerRequest {}
+
+message ListMyCreditLedgerResponse {
+  repeated CreditLedgerEntry data = 1;
+}
+
+message GetPaymentInstructionsRequest {}
+
+message GetPaymentInstructionsResponse {
+  PaymentInstructions instructions = 1;
 }
 
 message GetGarageEntitlementsRequest {
@@ -183,26 +317,61 @@ service LicenseService {
     };
   }
 
-  // Chooses another plan (FR-LIC-02). An upgrade and a downgrade both take
-  // effect when the current period ends (when the trial ends, during the
-  // trial); the answer carries pending_change. Choosing again replaces the
-  // pending change. Fails with PLAN_LIMIT_REACHED when current usage already
-  // exceeds the new plan; the limits are checked again on the effective
-  // date, and the switch is postponed if they are still exceeded.
-  rpc ChangeMyPlan(ChangeMyPlanRequest) returns (ChangeMyPlanResponse) {
+  // Starts a plan change or a renewal (FR-LIC-07): validates the owner's
+  // usage against the plan's limits (PLAN_LIMIT_REACHED), quotes the amount
+  // with the account credit applied (FR-LIC-09) and returns the transfer
+  // reference and the platform's payment details. TRIAL_NOT_AVAILABLE for
+  // the trial plan, PLAN_NOT_AVAILABLE for a plan that cannot be chosen,
+  // REQUEST_ALREADY_OPEN while a request is SUBMITTED; a request still
+  // AWAITING_PAYMENT is replaced.
+  rpc CreatePlanPaymentRequest(CreatePlanPaymentRequestRequest) returns (CreatePlanPaymentRequestResponse) {
     option (google.api.http) = {
-      post: "/api/v1/me/subscription/plan-changes"
+      post: "/api/v1/me/subscription/payment-requests"
       body: "*"
-      response_body: "subscription"
+      response_body: "request"
     };
   }
 
-  // Cancels the pending plan change (FR-LIC-02); NOT_FOUND when there is
-  // none.
-  rpc CancelMyPendingPlanChange(CancelMyPendingPlanChangeRequest) returns (CancelMyPendingPlanChangeResponse) {
+  rpc ListMyPlanPaymentRequests(ListMyPlanPaymentRequestsRequest) returns (ListMyPlanPaymentRequestsResponse) {
+    option (google.api.http) = {get: "/api/v1/me/subscription/payment-requests"};
+  }
+
+  rpc GetMyPlanPaymentRequest(GetMyPlanPaymentRequestRequest) returns (GetMyPlanPaymentRequestResponse) {
     option (google.api.http) = {
-      delete: "/api/v1/me/subscription/plan-changes/pending"
-      response_body: "subscription"
+      get: "/api/v1/me/subscription/payment-requests/{request_id}"
+      response_body: "request"
+    };
+  }
+
+  // Declares the transfer with its evidence (EVIDENCE_REQUIRED when the
+  // amount due is not 0); the platform admins are notified.
+  rpc SubmitPlanPayment(SubmitPlanPaymentRequest) returns (SubmitPlanPaymentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/subscription/payment-requests/{request_id}:submit"
+      body: "*"
+      response_body: "request"
+    };
+  }
+
+  // Cancels a request that is AWAITING_PAYMENT or SUBMITTED;
+  // REQUEST_NOT_OPEN once reviewed.
+  rpc CancelPlanPayment(CancelPlanPaymentRequest) returns (CancelPlanPaymentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/subscription/payment-requests/{request_id}:cancel"
+      body: "*"
+      response_body: "request"
+    };
+  }
+
+  rpc ListMyCreditLedger(ListMyCreditLedgerRequest) returns (ListMyCreditLedgerResponse) {
+    option (google.api.http) = {get: "/api/v1/me/subscription/credit-ledger"};
+  }
+
+  // The platform's payment details (FR-LIC-10).
+  rpc GetPaymentInstructions(GetPaymentInstructionsRequest) returns (GetPaymentInstructionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/payment-settings"
+      response_body: "instructions"
     };
   }
 
@@ -271,7 +440,110 @@ message ExtendSubscriptionResponse {
   Subscription subscription = 1;
 }
 
-// LicenseAdminService is for platform admins only (FR-LIC-05).
+// AdminPlanPaymentRequest is one row of the platform admin's review queue.
+message AdminPlanPaymentRequest {
+  PlanPaymentRequest request = 1;
+  string subscription_id = 2;
+  string user_email = 3;
+  string user_name = 4;
+  // The owner's current plan and usage, to judge the request.
+  Plan current_plan = 5;
+  Usage usage = 6;
+}
+
+message ListPlanPaymentRequestsRequest {
+  // Defaults to SUBMITTED, oldest first.
+  PlanPaymentStatus status = 1;
+  // Matches the owner's e-mail or name, or the transfer reference.
+  string query = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message ListPlanPaymentRequestsResponse {
+  repeated AdminPlanPaymentRequest data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message GetPlanPaymentRequestRequest {
+  string request_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetPlanPaymentRequestResponse {
+  AdminPlanPaymentRequest request = 1;
+}
+
+message ApprovePlanPaymentRequest {
+  string request_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Required when the amount transferred differs from the amount due
+  // (AMOUNT_MISMATCH_NOTE_REQUIRED).
+  string note = 2;
+}
+
+message ApprovePlanPaymentResponse {
+  // The owner's subscription with the new plan and period.
+  Subscription subscription = 1;
+}
+
+message RejectPlanPaymentRequest {
+  string request_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string reason = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message RejectPlanPaymentResponse {
+  PlanPaymentRequest request = 1;
+}
+
+message AdjustCreditRequest {
+  string subscription_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Signed VND; the balance never goes below 0.
+  int64 amount = 2 [(google.api.field_behavior) = REQUIRED];
+  string note = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message AdjustCreditResponse {
+  CreditLedgerEntry entry = 1;
+}
+
+// PlatformPaymentSettings are the details owners transfer to (FR-LIC-10).
+message PlatformPaymentSettings {
+  string bank_name = 1;
+  string account_number = 2;
+  string account_holder = 3;
+  string branch = 4;
+  string transfer_instructions = 5;
+  // The QR code, a signed URL valid for 5 minutes; empty when none.
+  string qr_url = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message GetPlatformPaymentSettingsRequest {}
+
+message GetPlatformPaymentSettingsResponse {
+  PlatformPaymentSettings settings = 1;
+}
+
+message UpdatePlatformPaymentSettingsRequest {
+  PlatformPaymentSettings settings = 1 [(google.api.field_behavior) = REQUIRED];
+  // Filled from the JSON body keys when omitted.
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message UpdatePlatformPaymentSettingsResponse {
+  PlatformPaymentSettings settings = 1;
+}
+
+message UploadPaymentQrRequest {
+  bytes content = 1 [(google.api.field_behavior) = REQUIRED];
+  // image/png, image/jpeg or image/webp, at most 1 MB.
+  string content_type = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message UploadPaymentQrResponse {
+  PlatformPaymentSettings settings = 1;
+}
+
+// LicenseAdminService is for platform admins only (FR-LIC-05, FR-LIC-08, FR-LIC-10).
 service LicenseAdminService {
   // Every plan, including hidden and inactive ones.
   rpc ListAllPlans(ListAllPlansRequest) returns (ListAllPlansResponse) {
@@ -298,12 +570,75 @@ service LicenseAdminService {
     option (google.api.http) = {get: "/api/v1/admin/subscriptions"};
   }
 
-  // Manual renewal until online payment exists (Phase 2).
+  // A correction: renewals and plan changes go through payment requests.
   rpc ExtendSubscription(ExtendSubscriptionRequest) returns (ExtendSubscriptionResponse) {
     option (google.api.http) = {
       post: "/api/v1/admin/subscriptions/{subscription_id}/extensions"
       body: "*"
       response_body: "subscription"
+    };
+  }
+
+  // The review queue (FR-LIC-08).
+  rpc ListPlanPaymentRequests(ListPlanPaymentRequestsRequest) returns (ListPlanPaymentRequestsResponse) {
+    option (google.api.http) = {get: "/api/v1/admin/plan-payment-requests"};
+  }
+
+  rpc GetPlanPaymentRequest(GetPlanPaymentRequestRequest) returns (GetPlanPaymentRequestResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/plan-payment-requests/{request_id}"
+      response_body: "request"
+    };
+  }
+
+  // Approves the payment: the plan applies at once and a new period starts;
+  // the limits are validated again (PLAN_LIMIT_REACHED).
+  // REQUEST_NOT_OPEN unless SUBMITTED.
+  rpc ApprovePlanPayment(ApprovePlanPaymentRequest) returns (ApprovePlanPaymentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/plan-payment-requests/{request_id}:approve"
+      body: "*"
+      response_body: "subscription"
+    };
+  }
+
+  rpc RejectPlanPayment(RejectPlanPaymentRequest) returns (RejectPlanPaymentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/plan-payment-requests/{request_id}:reject"
+      body: "*"
+      response_body: "request"
+    };
+  }
+
+  rpc AdjustCredit(AdjustCreditRequest) returns (AdjustCreditResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/subscriptions/{subscription_id}/credit-adjustments"
+      body: "*"
+      response_body: "entry"
+    };
+  }
+
+  rpc GetPlatformPaymentSettings(GetPlatformPaymentSettingsRequest) returns (GetPlatformPaymentSettingsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/payment-settings"
+      response_body: "settings"
+    };
+  }
+
+  rpc UpdatePlatformPaymentSettings(UpdatePlatformPaymentSettingsRequest) returns (UpdatePlatformPaymentSettingsResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/admin/payment-settings"
+      body: "settings"
+      response_body: "settings"
+    };
+  }
+
+  // Uploads or replaces the QR code image.
+  rpc UploadPaymentQr(UploadPaymentQrRequest) returns (UploadPaymentQrResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/payment-settings/qr"
+      body: "*"
+      response_body: "settings"
     };
   }
 }

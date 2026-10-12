@@ -21,8 +21,13 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	LicenseService_ListPlans_FullMethodName                 = "/vietgara.license.v1.LicenseService/ListPlans"
 	LicenseService_GetMySubscription_FullMethodName         = "/vietgara.license.v1.LicenseService/GetMySubscription"
-	LicenseService_ChangeMyPlan_FullMethodName              = "/vietgara.license.v1.LicenseService/ChangeMyPlan"
-	LicenseService_CancelMyPendingPlanChange_FullMethodName = "/vietgara.license.v1.LicenseService/CancelMyPendingPlanChange"
+	LicenseService_CreatePlanPaymentRequest_FullMethodName  = "/vietgara.license.v1.LicenseService/CreatePlanPaymentRequest"
+	LicenseService_ListMyPlanPaymentRequests_FullMethodName = "/vietgara.license.v1.LicenseService/ListMyPlanPaymentRequests"
+	LicenseService_GetMyPlanPaymentRequest_FullMethodName   = "/vietgara.license.v1.LicenseService/GetMyPlanPaymentRequest"
+	LicenseService_SubmitPlanPayment_FullMethodName         = "/vietgara.license.v1.LicenseService/SubmitPlanPayment"
+	LicenseService_CancelPlanPayment_FullMethodName         = "/vietgara.license.v1.LicenseService/CancelPlanPayment"
+	LicenseService_ListMyCreditLedger_FullMethodName        = "/vietgara.license.v1.LicenseService/ListMyCreditLedger"
+	LicenseService_GetPaymentInstructions_FullMethodName    = "/vietgara.license.v1.LicenseService/GetPaymentInstructions"
 	LicenseService_GetGarageEntitlements_FullMethodName     = "/vietgara.license.v1.LicenseService/GetGarageEntitlements"
 )
 
@@ -35,16 +40,25 @@ type LicenseServiceClient interface {
 	ListPlans(ctx context.Context, in *ListPlansRequest, opts ...grpc.CallOption) (*ListPlansResponse, error)
 	// The signed-in owner's subscription and usage.
 	GetMySubscription(ctx context.Context, in *GetMySubscriptionRequest, opts ...grpc.CallOption) (*GetMySubscriptionResponse, error)
-	// Chooses another plan (FR-LIC-02). An upgrade and a downgrade both take
-	// effect when the current period ends (when the trial ends, during the
-	// trial); the answer carries pending_change. Choosing again replaces the
-	// pending change. Fails with PLAN_LIMIT_REACHED when current usage already
-	// exceeds the new plan; the limits are checked again on the effective
-	// date, and the switch is postponed if they are still exceeded.
-	ChangeMyPlan(ctx context.Context, in *ChangeMyPlanRequest, opts ...grpc.CallOption) (*ChangeMyPlanResponse, error)
-	// Cancels the pending plan change (FR-LIC-02); NOT_FOUND when there is
-	// none.
-	CancelMyPendingPlanChange(ctx context.Context, in *CancelMyPendingPlanChangeRequest, opts ...grpc.CallOption) (*CancelMyPendingPlanChangeResponse, error)
+	// Starts a plan change or a renewal (FR-LIC-07): validates the owner's
+	// usage against the plan's limits (PLAN_LIMIT_REACHED), quotes the amount
+	// with the account credit applied (FR-LIC-09) and returns the transfer
+	// reference and the platform's payment details. TRIAL_NOT_AVAILABLE for
+	// the trial plan, PLAN_NOT_AVAILABLE for a plan that cannot be chosen,
+	// REQUEST_ALREADY_OPEN while a request is SUBMITTED; a request still
+	// AWAITING_PAYMENT is replaced.
+	CreatePlanPaymentRequest(ctx context.Context, in *CreatePlanPaymentRequestRequest, opts ...grpc.CallOption) (*CreatePlanPaymentRequestResponse, error)
+	ListMyPlanPaymentRequests(ctx context.Context, in *ListMyPlanPaymentRequestsRequest, opts ...grpc.CallOption) (*ListMyPlanPaymentRequestsResponse, error)
+	GetMyPlanPaymentRequest(ctx context.Context, in *GetMyPlanPaymentRequestRequest, opts ...grpc.CallOption) (*GetMyPlanPaymentRequestResponse, error)
+	// Declares the transfer with its evidence (EVIDENCE_REQUIRED when the
+	// amount due is not 0); the platform admins are notified.
+	SubmitPlanPayment(ctx context.Context, in *SubmitPlanPaymentRequest, opts ...grpc.CallOption) (*SubmitPlanPaymentResponse, error)
+	// Cancels a request that is AWAITING_PAYMENT or SUBMITTED;
+	// REQUEST_NOT_OPEN once reviewed.
+	CancelPlanPayment(ctx context.Context, in *CancelPlanPaymentRequest, opts ...grpc.CallOption) (*CancelPlanPaymentResponse, error)
+	ListMyCreditLedger(ctx context.Context, in *ListMyCreditLedgerRequest, opts ...grpc.CallOption) (*ListMyCreditLedgerResponse, error)
+	// The platform's payment details (FR-LIC-10).
+	GetPaymentInstructions(ctx context.Context, in *GetPaymentInstructionsRequest, opts ...grpc.CallOption) (*GetPaymentInstructionsResponse, error)
 	// What the garage may use; any active member may read it.
 	GetGarageEntitlements(ctx context.Context, in *GetGarageEntitlementsRequest, opts ...grpc.CallOption) (*GetGarageEntitlementsResponse, error)
 }
@@ -77,20 +91,70 @@ func (c *licenseServiceClient) GetMySubscription(ctx context.Context, in *GetMyS
 	return out, nil
 }
 
-func (c *licenseServiceClient) ChangeMyPlan(ctx context.Context, in *ChangeMyPlanRequest, opts ...grpc.CallOption) (*ChangeMyPlanResponse, error) {
+func (c *licenseServiceClient) CreatePlanPaymentRequest(ctx context.Context, in *CreatePlanPaymentRequestRequest, opts ...grpc.CallOption) (*CreatePlanPaymentRequestResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ChangeMyPlanResponse)
-	err := c.cc.Invoke(ctx, LicenseService_ChangeMyPlan_FullMethodName, in, out, cOpts...)
+	out := new(CreatePlanPaymentRequestResponse)
+	err := c.cc.Invoke(ctx, LicenseService_CreatePlanPaymentRequest_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *licenseServiceClient) CancelMyPendingPlanChange(ctx context.Context, in *CancelMyPendingPlanChangeRequest, opts ...grpc.CallOption) (*CancelMyPendingPlanChangeResponse, error) {
+func (c *licenseServiceClient) ListMyPlanPaymentRequests(ctx context.Context, in *ListMyPlanPaymentRequestsRequest, opts ...grpc.CallOption) (*ListMyPlanPaymentRequestsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CancelMyPendingPlanChangeResponse)
-	err := c.cc.Invoke(ctx, LicenseService_CancelMyPendingPlanChange_FullMethodName, in, out, cOpts...)
+	out := new(ListMyPlanPaymentRequestsResponse)
+	err := c.cc.Invoke(ctx, LicenseService_ListMyPlanPaymentRequests_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseServiceClient) GetMyPlanPaymentRequest(ctx context.Context, in *GetMyPlanPaymentRequestRequest, opts ...grpc.CallOption) (*GetMyPlanPaymentRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMyPlanPaymentRequestResponse)
+	err := c.cc.Invoke(ctx, LicenseService_GetMyPlanPaymentRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseServiceClient) SubmitPlanPayment(ctx context.Context, in *SubmitPlanPaymentRequest, opts ...grpc.CallOption) (*SubmitPlanPaymentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SubmitPlanPaymentResponse)
+	err := c.cc.Invoke(ctx, LicenseService_SubmitPlanPayment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseServiceClient) CancelPlanPayment(ctx context.Context, in *CancelPlanPaymentRequest, opts ...grpc.CallOption) (*CancelPlanPaymentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelPlanPaymentResponse)
+	err := c.cc.Invoke(ctx, LicenseService_CancelPlanPayment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseServiceClient) ListMyCreditLedger(ctx context.Context, in *ListMyCreditLedgerRequest, opts ...grpc.CallOption) (*ListMyCreditLedgerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListMyCreditLedgerResponse)
+	err := c.cc.Invoke(ctx, LicenseService_ListMyCreditLedger_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseServiceClient) GetPaymentInstructions(ctx context.Context, in *GetPaymentInstructionsRequest, opts ...grpc.CallOption) (*GetPaymentInstructionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPaymentInstructionsResponse)
+	err := c.cc.Invoke(ctx, LicenseService_GetPaymentInstructions_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -116,16 +180,25 @@ type LicenseServiceServer interface {
 	ListPlans(context.Context, *ListPlansRequest) (*ListPlansResponse, error)
 	// The signed-in owner's subscription and usage.
 	GetMySubscription(context.Context, *GetMySubscriptionRequest) (*GetMySubscriptionResponse, error)
-	// Chooses another plan (FR-LIC-02). An upgrade and a downgrade both take
-	// effect when the current period ends (when the trial ends, during the
-	// trial); the answer carries pending_change. Choosing again replaces the
-	// pending change. Fails with PLAN_LIMIT_REACHED when current usage already
-	// exceeds the new plan; the limits are checked again on the effective
-	// date, and the switch is postponed if they are still exceeded.
-	ChangeMyPlan(context.Context, *ChangeMyPlanRequest) (*ChangeMyPlanResponse, error)
-	// Cancels the pending plan change (FR-LIC-02); NOT_FOUND when there is
-	// none.
-	CancelMyPendingPlanChange(context.Context, *CancelMyPendingPlanChangeRequest) (*CancelMyPendingPlanChangeResponse, error)
+	// Starts a plan change or a renewal (FR-LIC-07): validates the owner's
+	// usage against the plan's limits (PLAN_LIMIT_REACHED), quotes the amount
+	// with the account credit applied (FR-LIC-09) and returns the transfer
+	// reference and the platform's payment details. TRIAL_NOT_AVAILABLE for
+	// the trial plan, PLAN_NOT_AVAILABLE for a plan that cannot be chosen,
+	// REQUEST_ALREADY_OPEN while a request is SUBMITTED; a request still
+	// AWAITING_PAYMENT is replaced.
+	CreatePlanPaymentRequest(context.Context, *CreatePlanPaymentRequestRequest) (*CreatePlanPaymentRequestResponse, error)
+	ListMyPlanPaymentRequests(context.Context, *ListMyPlanPaymentRequestsRequest) (*ListMyPlanPaymentRequestsResponse, error)
+	GetMyPlanPaymentRequest(context.Context, *GetMyPlanPaymentRequestRequest) (*GetMyPlanPaymentRequestResponse, error)
+	// Declares the transfer with its evidence (EVIDENCE_REQUIRED when the
+	// amount due is not 0); the platform admins are notified.
+	SubmitPlanPayment(context.Context, *SubmitPlanPaymentRequest) (*SubmitPlanPaymentResponse, error)
+	// Cancels a request that is AWAITING_PAYMENT or SUBMITTED;
+	// REQUEST_NOT_OPEN once reviewed.
+	CancelPlanPayment(context.Context, *CancelPlanPaymentRequest) (*CancelPlanPaymentResponse, error)
+	ListMyCreditLedger(context.Context, *ListMyCreditLedgerRequest) (*ListMyCreditLedgerResponse, error)
+	// The platform's payment details (FR-LIC-10).
+	GetPaymentInstructions(context.Context, *GetPaymentInstructionsRequest) (*GetPaymentInstructionsResponse, error)
 	// What the garage may use; any active member may read it.
 	GetGarageEntitlements(context.Context, *GetGarageEntitlementsRequest) (*GetGarageEntitlementsResponse, error)
 	mustEmbedUnimplementedLicenseServiceServer()
@@ -144,11 +217,26 @@ func (UnimplementedLicenseServiceServer) ListPlans(context.Context, *ListPlansRe
 func (UnimplementedLicenseServiceServer) GetMySubscription(context.Context, *GetMySubscriptionRequest) (*GetMySubscriptionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetMySubscription not implemented")
 }
-func (UnimplementedLicenseServiceServer) ChangeMyPlan(context.Context, *ChangeMyPlanRequest) (*ChangeMyPlanResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ChangeMyPlan not implemented")
+func (UnimplementedLicenseServiceServer) CreatePlanPaymentRequest(context.Context, *CreatePlanPaymentRequestRequest) (*CreatePlanPaymentRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreatePlanPaymentRequest not implemented")
 }
-func (UnimplementedLicenseServiceServer) CancelMyPendingPlanChange(context.Context, *CancelMyPendingPlanChangeRequest) (*CancelMyPendingPlanChangeResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method CancelMyPendingPlanChange not implemented")
+func (UnimplementedLicenseServiceServer) ListMyPlanPaymentRequests(context.Context, *ListMyPlanPaymentRequestsRequest) (*ListMyPlanPaymentRequestsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListMyPlanPaymentRequests not implemented")
+}
+func (UnimplementedLicenseServiceServer) GetMyPlanPaymentRequest(context.Context, *GetMyPlanPaymentRequestRequest) (*GetMyPlanPaymentRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetMyPlanPaymentRequest not implemented")
+}
+func (UnimplementedLicenseServiceServer) SubmitPlanPayment(context.Context, *SubmitPlanPaymentRequest) (*SubmitPlanPaymentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SubmitPlanPayment not implemented")
+}
+func (UnimplementedLicenseServiceServer) CancelPlanPayment(context.Context, *CancelPlanPaymentRequest) (*CancelPlanPaymentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelPlanPayment not implemented")
+}
+func (UnimplementedLicenseServiceServer) ListMyCreditLedger(context.Context, *ListMyCreditLedgerRequest) (*ListMyCreditLedgerResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListMyCreditLedger not implemented")
+}
+func (UnimplementedLicenseServiceServer) GetPaymentInstructions(context.Context, *GetPaymentInstructionsRequest) (*GetPaymentInstructionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPaymentInstructions not implemented")
 }
 func (UnimplementedLicenseServiceServer) GetGarageEntitlements(context.Context, *GetGarageEntitlementsRequest) (*GetGarageEntitlementsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetGarageEntitlements not implemented")
@@ -210,38 +298,128 @@ func _LicenseService_GetMySubscription_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LicenseService_ChangeMyPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChangeMyPlanRequest)
+func _LicenseService_CreatePlanPaymentRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePlanPaymentRequestRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LicenseServiceServer).ChangeMyPlan(ctx, in)
+		return srv.(LicenseServiceServer).CreatePlanPaymentRequest(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: LicenseService_ChangeMyPlan_FullMethodName,
+		FullMethod: LicenseService_CreatePlanPaymentRequest_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LicenseServiceServer).ChangeMyPlan(ctx, req.(*ChangeMyPlanRequest))
+		return srv.(LicenseServiceServer).CreatePlanPaymentRequest(ctx, req.(*CreatePlanPaymentRequestRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LicenseService_CancelMyPendingPlanChange_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CancelMyPendingPlanChangeRequest)
+func _LicenseService_ListMyPlanPaymentRequests_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMyPlanPaymentRequestsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LicenseServiceServer).CancelMyPendingPlanChange(ctx, in)
+		return srv.(LicenseServiceServer).ListMyPlanPaymentRequests(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: LicenseService_CancelMyPendingPlanChange_FullMethodName,
+		FullMethod: LicenseService_ListMyPlanPaymentRequests_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LicenseServiceServer).CancelMyPendingPlanChange(ctx, req.(*CancelMyPendingPlanChangeRequest))
+		return srv.(LicenseServiceServer).ListMyPlanPaymentRequests(ctx, req.(*ListMyPlanPaymentRequestsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseService_GetMyPlanPaymentRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMyPlanPaymentRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseServiceServer).GetMyPlanPaymentRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseService_GetMyPlanPaymentRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseServiceServer).GetMyPlanPaymentRequest(ctx, req.(*GetMyPlanPaymentRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseService_SubmitPlanPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SubmitPlanPaymentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseServiceServer).SubmitPlanPayment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseService_SubmitPlanPayment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseServiceServer).SubmitPlanPayment(ctx, req.(*SubmitPlanPaymentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseService_CancelPlanPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelPlanPaymentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseServiceServer).CancelPlanPayment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseService_CancelPlanPayment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseServiceServer).CancelPlanPayment(ctx, req.(*CancelPlanPaymentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseService_ListMyCreditLedger_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMyCreditLedgerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseServiceServer).ListMyCreditLedger(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseService_ListMyCreditLedger_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseServiceServer).ListMyCreditLedger(ctx, req.(*ListMyCreditLedgerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseService_GetPaymentInstructions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPaymentInstructionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseServiceServer).GetPaymentInstructions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseService_GetPaymentInstructions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseServiceServer).GetPaymentInstructions(ctx, req.(*GetPaymentInstructionsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -280,12 +458,32 @@ var LicenseService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _LicenseService_GetMySubscription_Handler,
 		},
 		{
-			MethodName: "ChangeMyPlan",
-			Handler:    _LicenseService_ChangeMyPlan_Handler,
+			MethodName: "CreatePlanPaymentRequest",
+			Handler:    _LicenseService_CreatePlanPaymentRequest_Handler,
 		},
 		{
-			MethodName: "CancelMyPendingPlanChange",
-			Handler:    _LicenseService_CancelMyPendingPlanChange_Handler,
+			MethodName: "ListMyPlanPaymentRequests",
+			Handler:    _LicenseService_ListMyPlanPaymentRequests_Handler,
+		},
+		{
+			MethodName: "GetMyPlanPaymentRequest",
+			Handler:    _LicenseService_GetMyPlanPaymentRequest_Handler,
+		},
+		{
+			MethodName: "SubmitPlanPayment",
+			Handler:    _LicenseService_SubmitPlanPayment_Handler,
+		},
+		{
+			MethodName: "CancelPlanPayment",
+			Handler:    _LicenseService_CancelPlanPayment_Handler,
+		},
+		{
+			MethodName: "ListMyCreditLedger",
+			Handler:    _LicenseService_ListMyCreditLedger_Handler,
+		},
+		{
+			MethodName: "GetPaymentInstructions",
+			Handler:    _LicenseService_GetPaymentInstructions_Handler,
 		},
 		{
 			MethodName: "GetGarageEntitlements",
@@ -297,26 +495,47 @@ var LicenseService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	LicenseAdminService_ListAllPlans_FullMethodName       = "/vietgara.license.v1.LicenseAdminService/ListAllPlans"
-	LicenseAdminService_CreatePlan_FullMethodName         = "/vietgara.license.v1.LicenseAdminService/CreatePlan"
-	LicenseAdminService_UpdatePlan_FullMethodName         = "/vietgara.license.v1.LicenseAdminService/UpdatePlan"
-	LicenseAdminService_ListSubscriptions_FullMethodName  = "/vietgara.license.v1.LicenseAdminService/ListSubscriptions"
-	LicenseAdminService_ExtendSubscription_FullMethodName = "/vietgara.license.v1.LicenseAdminService/ExtendSubscription"
+	LicenseAdminService_ListAllPlans_FullMethodName                  = "/vietgara.license.v1.LicenseAdminService/ListAllPlans"
+	LicenseAdminService_CreatePlan_FullMethodName                    = "/vietgara.license.v1.LicenseAdminService/CreatePlan"
+	LicenseAdminService_UpdatePlan_FullMethodName                    = "/vietgara.license.v1.LicenseAdminService/UpdatePlan"
+	LicenseAdminService_ListSubscriptions_FullMethodName             = "/vietgara.license.v1.LicenseAdminService/ListSubscriptions"
+	LicenseAdminService_ExtendSubscription_FullMethodName            = "/vietgara.license.v1.LicenseAdminService/ExtendSubscription"
+	LicenseAdminService_ListPlanPaymentRequests_FullMethodName       = "/vietgara.license.v1.LicenseAdminService/ListPlanPaymentRequests"
+	LicenseAdminService_GetPlanPaymentRequest_FullMethodName         = "/vietgara.license.v1.LicenseAdminService/GetPlanPaymentRequest"
+	LicenseAdminService_ApprovePlanPayment_FullMethodName            = "/vietgara.license.v1.LicenseAdminService/ApprovePlanPayment"
+	LicenseAdminService_RejectPlanPayment_FullMethodName             = "/vietgara.license.v1.LicenseAdminService/RejectPlanPayment"
+	LicenseAdminService_AdjustCredit_FullMethodName                  = "/vietgara.license.v1.LicenseAdminService/AdjustCredit"
+	LicenseAdminService_GetPlatformPaymentSettings_FullMethodName    = "/vietgara.license.v1.LicenseAdminService/GetPlatformPaymentSettings"
+	LicenseAdminService_UpdatePlatformPaymentSettings_FullMethodName = "/vietgara.license.v1.LicenseAdminService/UpdatePlatformPaymentSettings"
+	LicenseAdminService_UploadPaymentQr_FullMethodName               = "/vietgara.license.v1.LicenseAdminService/UploadPaymentQr"
 )
 
 // LicenseAdminServiceClient is the client API for LicenseAdminService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// LicenseAdminService is for platform admins only (FR-LIC-05).
+// LicenseAdminService is for platform admins only (FR-LIC-05, FR-LIC-08, FR-LIC-10).
 type LicenseAdminServiceClient interface {
 	// Every plan, including hidden and inactive ones.
 	ListAllPlans(ctx context.Context, in *ListAllPlansRequest, opts ...grpc.CallOption) (*ListAllPlansResponse, error)
 	CreatePlan(ctx context.Context, in *CreatePlanRequest, opts ...grpc.CallOption) (*CreatePlanResponse, error)
 	UpdatePlan(ctx context.Context, in *UpdatePlanRequest, opts ...grpc.CallOption) (*UpdatePlanResponse, error)
 	ListSubscriptions(ctx context.Context, in *ListSubscriptionsRequest, opts ...grpc.CallOption) (*ListSubscriptionsResponse, error)
-	// Manual renewal until online payment exists (Phase 2).
+	// A correction: renewals and plan changes go through payment requests.
 	ExtendSubscription(ctx context.Context, in *ExtendSubscriptionRequest, opts ...grpc.CallOption) (*ExtendSubscriptionResponse, error)
+	// The review queue (FR-LIC-08).
+	ListPlanPaymentRequests(ctx context.Context, in *ListPlanPaymentRequestsRequest, opts ...grpc.CallOption) (*ListPlanPaymentRequestsResponse, error)
+	GetPlanPaymentRequest(ctx context.Context, in *GetPlanPaymentRequestRequest, opts ...grpc.CallOption) (*GetPlanPaymentRequestResponse, error)
+	// Approves the payment: the plan applies at once and a new period starts;
+	// the limits are validated again (PLAN_LIMIT_REACHED).
+	// REQUEST_NOT_OPEN unless SUBMITTED.
+	ApprovePlanPayment(ctx context.Context, in *ApprovePlanPaymentRequest, opts ...grpc.CallOption) (*ApprovePlanPaymentResponse, error)
+	RejectPlanPayment(ctx context.Context, in *RejectPlanPaymentRequest, opts ...grpc.CallOption) (*RejectPlanPaymentResponse, error)
+	AdjustCredit(ctx context.Context, in *AdjustCreditRequest, opts ...grpc.CallOption) (*AdjustCreditResponse, error)
+	GetPlatformPaymentSettings(ctx context.Context, in *GetPlatformPaymentSettingsRequest, opts ...grpc.CallOption) (*GetPlatformPaymentSettingsResponse, error)
+	UpdatePlatformPaymentSettings(ctx context.Context, in *UpdatePlatformPaymentSettingsRequest, opts ...grpc.CallOption) (*UpdatePlatformPaymentSettingsResponse, error)
+	// Uploads or replaces the QR code image.
+	UploadPaymentQr(ctx context.Context, in *UploadPaymentQrRequest, opts ...grpc.CallOption) (*UploadPaymentQrResponse, error)
 }
 
 type licenseAdminServiceClient struct {
@@ -377,19 +596,112 @@ func (c *licenseAdminServiceClient) ExtendSubscription(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *licenseAdminServiceClient) ListPlanPaymentRequests(ctx context.Context, in *ListPlanPaymentRequestsRequest, opts ...grpc.CallOption) (*ListPlanPaymentRequestsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPlanPaymentRequestsResponse)
+	err := c.cc.Invoke(ctx, LicenseAdminService_ListPlanPaymentRequests_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseAdminServiceClient) GetPlanPaymentRequest(ctx context.Context, in *GetPlanPaymentRequestRequest, opts ...grpc.CallOption) (*GetPlanPaymentRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPlanPaymentRequestResponse)
+	err := c.cc.Invoke(ctx, LicenseAdminService_GetPlanPaymentRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseAdminServiceClient) ApprovePlanPayment(ctx context.Context, in *ApprovePlanPaymentRequest, opts ...grpc.CallOption) (*ApprovePlanPaymentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApprovePlanPaymentResponse)
+	err := c.cc.Invoke(ctx, LicenseAdminService_ApprovePlanPayment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseAdminServiceClient) RejectPlanPayment(ctx context.Context, in *RejectPlanPaymentRequest, opts ...grpc.CallOption) (*RejectPlanPaymentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RejectPlanPaymentResponse)
+	err := c.cc.Invoke(ctx, LicenseAdminService_RejectPlanPayment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseAdminServiceClient) AdjustCredit(ctx context.Context, in *AdjustCreditRequest, opts ...grpc.CallOption) (*AdjustCreditResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdjustCreditResponse)
+	err := c.cc.Invoke(ctx, LicenseAdminService_AdjustCredit_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseAdminServiceClient) GetPlatformPaymentSettings(ctx context.Context, in *GetPlatformPaymentSettingsRequest, opts ...grpc.CallOption) (*GetPlatformPaymentSettingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPlatformPaymentSettingsResponse)
+	err := c.cc.Invoke(ctx, LicenseAdminService_GetPlatformPaymentSettings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseAdminServiceClient) UpdatePlatformPaymentSettings(ctx context.Context, in *UpdatePlatformPaymentSettingsRequest, opts ...grpc.CallOption) (*UpdatePlatformPaymentSettingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdatePlatformPaymentSettingsResponse)
+	err := c.cc.Invoke(ctx, LicenseAdminService_UpdatePlatformPaymentSettings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *licenseAdminServiceClient) UploadPaymentQr(ctx context.Context, in *UploadPaymentQrRequest, opts ...grpc.CallOption) (*UploadPaymentQrResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UploadPaymentQrResponse)
+	err := c.cc.Invoke(ctx, LicenseAdminService_UploadPaymentQr_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LicenseAdminServiceServer is the server API for LicenseAdminService service.
 // All implementations must embed UnimplementedLicenseAdminServiceServer
 // for forward compatibility.
 //
-// LicenseAdminService is for platform admins only (FR-LIC-05).
+// LicenseAdminService is for platform admins only (FR-LIC-05, FR-LIC-08, FR-LIC-10).
 type LicenseAdminServiceServer interface {
 	// Every plan, including hidden and inactive ones.
 	ListAllPlans(context.Context, *ListAllPlansRequest) (*ListAllPlansResponse, error)
 	CreatePlan(context.Context, *CreatePlanRequest) (*CreatePlanResponse, error)
 	UpdatePlan(context.Context, *UpdatePlanRequest) (*UpdatePlanResponse, error)
 	ListSubscriptions(context.Context, *ListSubscriptionsRequest) (*ListSubscriptionsResponse, error)
-	// Manual renewal until online payment exists (Phase 2).
+	// A correction: renewals and plan changes go through payment requests.
 	ExtendSubscription(context.Context, *ExtendSubscriptionRequest) (*ExtendSubscriptionResponse, error)
+	// The review queue (FR-LIC-08).
+	ListPlanPaymentRequests(context.Context, *ListPlanPaymentRequestsRequest) (*ListPlanPaymentRequestsResponse, error)
+	GetPlanPaymentRequest(context.Context, *GetPlanPaymentRequestRequest) (*GetPlanPaymentRequestResponse, error)
+	// Approves the payment: the plan applies at once and a new period starts;
+	// the limits are validated again (PLAN_LIMIT_REACHED).
+	// REQUEST_NOT_OPEN unless SUBMITTED.
+	ApprovePlanPayment(context.Context, *ApprovePlanPaymentRequest) (*ApprovePlanPaymentResponse, error)
+	RejectPlanPayment(context.Context, *RejectPlanPaymentRequest) (*RejectPlanPaymentResponse, error)
+	AdjustCredit(context.Context, *AdjustCreditRequest) (*AdjustCreditResponse, error)
+	GetPlatformPaymentSettings(context.Context, *GetPlatformPaymentSettingsRequest) (*GetPlatformPaymentSettingsResponse, error)
+	UpdatePlatformPaymentSettings(context.Context, *UpdatePlatformPaymentSettingsRequest) (*UpdatePlatformPaymentSettingsResponse, error)
+	// Uploads or replaces the QR code image.
+	UploadPaymentQr(context.Context, *UploadPaymentQrRequest) (*UploadPaymentQrResponse, error)
 	mustEmbedUnimplementedLicenseAdminServiceServer()
 }
 
@@ -414,6 +726,30 @@ func (UnimplementedLicenseAdminServiceServer) ListSubscriptions(context.Context,
 }
 func (UnimplementedLicenseAdminServiceServer) ExtendSubscription(context.Context, *ExtendSubscriptionRequest) (*ExtendSubscriptionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ExtendSubscription not implemented")
+}
+func (UnimplementedLicenseAdminServiceServer) ListPlanPaymentRequests(context.Context, *ListPlanPaymentRequestsRequest) (*ListPlanPaymentRequestsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListPlanPaymentRequests not implemented")
+}
+func (UnimplementedLicenseAdminServiceServer) GetPlanPaymentRequest(context.Context, *GetPlanPaymentRequestRequest) (*GetPlanPaymentRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPlanPaymentRequest not implemented")
+}
+func (UnimplementedLicenseAdminServiceServer) ApprovePlanPayment(context.Context, *ApprovePlanPaymentRequest) (*ApprovePlanPaymentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApprovePlanPayment not implemented")
+}
+func (UnimplementedLicenseAdminServiceServer) RejectPlanPayment(context.Context, *RejectPlanPaymentRequest) (*RejectPlanPaymentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RejectPlanPayment not implemented")
+}
+func (UnimplementedLicenseAdminServiceServer) AdjustCredit(context.Context, *AdjustCreditRequest) (*AdjustCreditResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdjustCredit not implemented")
+}
+func (UnimplementedLicenseAdminServiceServer) GetPlatformPaymentSettings(context.Context, *GetPlatformPaymentSettingsRequest) (*GetPlatformPaymentSettingsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPlatformPaymentSettings not implemented")
+}
+func (UnimplementedLicenseAdminServiceServer) UpdatePlatformPaymentSettings(context.Context, *UpdatePlatformPaymentSettingsRequest) (*UpdatePlatformPaymentSettingsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdatePlatformPaymentSettings not implemented")
+}
+func (UnimplementedLicenseAdminServiceServer) UploadPaymentQr(context.Context, *UploadPaymentQrRequest) (*UploadPaymentQrResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UploadPaymentQr not implemented")
 }
 func (UnimplementedLicenseAdminServiceServer) mustEmbedUnimplementedLicenseAdminServiceServer() {}
 func (UnimplementedLicenseAdminServiceServer) testEmbeddedByValue()                             {}
@@ -526,6 +862,150 @@ func _LicenseAdminService_ExtendSubscription_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LicenseAdminService_ListPlanPaymentRequests_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPlanPaymentRequestsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseAdminServiceServer).ListPlanPaymentRequests(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseAdminService_ListPlanPaymentRequests_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseAdminServiceServer).ListPlanPaymentRequests(ctx, req.(*ListPlanPaymentRequestsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseAdminService_GetPlanPaymentRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPlanPaymentRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseAdminServiceServer).GetPlanPaymentRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseAdminService_GetPlanPaymentRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseAdminServiceServer).GetPlanPaymentRequest(ctx, req.(*GetPlanPaymentRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseAdminService_ApprovePlanPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApprovePlanPaymentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseAdminServiceServer).ApprovePlanPayment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseAdminService_ApprovePlanPayment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseAdminServiceServer).ApprovePlanPayment(ctx, req.(*ApprovePlanPaymentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseAdminService_RejectPlanPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RejectPlanPaymentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseAdminServiceServer).RejectPlanPayment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseAdminService_RejectPlanPayment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseAdminServiceServer).RejectPlanPayment(ctx, req.(*RejectPlanPaymentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseAdminService_AdjustCredit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdjustCreditRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseAdminServiceServer).AdjustCredit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseAdminService_AdjustCredit_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseAdminServiceServer).AdjustCredit(ctx, req.(*AdjustCreditRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseAdminService_GetPlatformPaymentSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPlatformPaymentSettingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseAdminServiceServer).GetPlatformPaymentSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseAdminService_GetPlatformPaymentSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseAdminServiceServer).GetPlatformPaymentSettings(ctx, req.(*GetPlatformPaymentSettingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseAdminService_UpdatePlatformPaymentSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePlatformPaymentSettingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseAdminServiceServer).UpdatePlatformPaymentSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseAdminService_UpdatePlatformPaymentSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseAdminServiceServer).UpdatePlatformPaymentSettings(ctx, req.(*UpdatePlatformPaymentSettingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LicenseAdminService_UploadPaymentQr_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadPaymentQrRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LicenseAdminServiceServer).UploadPaymentQr(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LicenseAdminService_UploadPaymentQr_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LicenseAdminServiceServer).UploadPaymentQr(ctx, req.(*UploadPaymentQrRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // LicenseAdminService_ServiceDesc is the grpc.ServiceDesc for LicenseAdminService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -552,6 +1032,38 @@ var LicenseAdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ExtendSubscription",
 			Handler:    _LicenseAdminService_ExtendSubscription_Handler,
+		},
+		{
+			MethodName: "ListPlanPaymentRequests",
+			Handler:    _LicenseAdminService_ListPlanPaymentRequests_Handler,
+		},
+		{
+			MethodName: "GetPlanPaymentRequest",
+			Handler:    _LicenseAdminService_GetPlanPaymentRequest_Handler,
+		},
+		{
+			MethodName: "ApprovePlanPayment",
+			Handler:    _LicenseAdminService_ApprovePlanPayment_Handler,
+		},
+		{
+			MethodName: "RejectPlanPayment",
+			Handler:    _LicenseAdminService_RejectPlanPayment_Handler,
+		},
+		{
+			MethodName: "AdjustCredit",
+			Handler:    _LicenseAdminService_AdjustCredit_Handler,
+		},
+		{
+			MethodName: "GetPlatformPaymentSettings",
+			Handler:    _LicenseAdminService_GetPlatformPaymentSettings_Handler,
+		},
+		{
+			MethodName: "UpdatePlatformPaymentSettings",
+			Handler:    _LicenseAdminService_UpdatePlatformPaymentSettings_Handler,
+		},
+		{
+			MethodName: "UploadPaymentQr",
+			Handler:    _LicenseAdminService_UploadPaymentQr_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

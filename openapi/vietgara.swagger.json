@@ -56,7 +56,7 @@
     },
     {
       "name": "LicenseAdminService",
-      "description": "LicenseAdminService is for platform admins only (FR-LIC-05)."
+      "description": "LicenseAdminService is for platform admins only (FR-LIC-05, FR-LIC-08, FR-LIC-10)."
     },
     {
       "name": "QuoteService",
@@ -114,6 +114,258 @@
     "application/json"
   ],
   "paths": {
+    "/api/v1/admin/payment-settings": {
+      "get": {
+        "operationId": "LicenseAdminService_GetPlatformPaymentSettings",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlatformPaymentSettings"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "LicenseAdminService"
+        ]
+      },
+      "patch": {
+        "operationId": "LicenseAdminService_UpdatePlatformPaymentSettings",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlatformPaymentSettings"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "settings",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PlatformPaymentSettings"
+            }
+          }
+        ],
+        "tags": [
+          "LicenseAdminService"
+        ]
+      }
+    },
+    "/api/v1/admin/payment-settings/qr": {
+      "post": {
+        "summary": "Uploads or replaces the QR code image.",
+        "operationId": "LicenseAdminService_UploadPaymentQr",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlatformPaymentSettings"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UploadPaymentQrRequest"
+            }
+          }
+        ],
+        "tags": [
+          "LicenseAdminService"
+        ]
+      }
+    },
+    "/api/v1/admin/plan-payment-requests": {
+      "get": {
+        "summary": "The review queue (FR-LIC-08).",
+        "operationId": "LicenseAdminService_ListPlanPaymentRequests",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPlanPaymentRequestsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "description": "Defaults to SUBMITTED, oldest first.\n\n - PLAN_PAYMENT_STATUS_AWAITING_PAYMENT: Quoted, with its transfer reference; the owner has not declared the\ntransfer yet. A new request replaces it.\n - PLAN_PAYMENT_STATUS_SUBMITTED: The owner declared the transfer; a platform admin reviews it.\n - PLAN_PAYMENT_STATUS_APPROVED: Approved: the plan applied at once.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PLAN_PAYMENT_STATUS_AWAITING_PAYMENT",
+              "PLAN_PAYMENT_STATUS_SUBMITTED",
+              "PLAN_PAYMENT_STATUS_APPROVED",
+              "PLAN_PAYMENT_STATUS_REJECTED",
+              "PLAN_PAYMENT_STATUS_CANCELLED"
+            ]
+          },
+          {
+            "name": "query",
+            "description": "Matches the owner's e-mail or name, or the transfer reference.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "LicenseAdminService"
+        ]
+      }
+    },
+    "/api/v1/admin/plan-payment-requests/{requestId}": {
+      "get": {
+        "operationId": "LicenseAdminService_GetPlanPaymentRequest",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1AdminPlanPaymentRequest"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LicenseAdminService"
+        ]
+      }
+    },
+    "/api/v1/admin/plan-payment-requests/{requestId}:approve": {
+      "post": {
+        "summary": "Approves the payment: the plan applies at once and a new period starts;\nthe limits are validated again (PLAN_LIMIT_REACHED).\nREQUEST_NOT_OPEN unless SUBMITTED.",
+        "operationId": "LicenseAdminService_ApprovePlanPayment",
+        "responses": {
+          "200": {
+            "description": "The owner's subscription with the new plan and period.",
+            "schema": {
+              "$ref": "#/definitions/v1Subscription"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LicenseAdminServiceApprovePlanPaymentBody"
+            }
+          }
+        ],
+        "tags": [
+          "LicenseAdminService"
+        ]
+      }
+    },
+    "/api/v1/admin/plan-payment-requests/{requestId}:reject": {
+      "post": {
+        "operationId": "LicenseAdminService_RejectPlanPayment",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlanPaymentRequest"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LicenseAdminServiceRejectPlanPaymentBody"
+            }
+          }
+        ],
+        "tags": [
+          "LicenseAdminService"
+        ]
+      }
+    },
     "/api/v1/admin/plans": {
       "get": {
         "summary": "Every plan, including hidden and inactive ones.",
@@ -263,9 +515,47 @@
         ]
       }
     },
+    "/api/v1/admin/subscriptions/{subscriptionId}/credit-adjustments": {
+      "post": {
+        "operationId": "LicenseAdminService_AdjustCredit",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1CreditLedgerEntry"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "subscriptionId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LicenseAdminServiceAdjustCreditBody"
+            }
+          }
+        ],
+        "tags": [
+          "LicenseAdminService"
+        ]
+      }
+    },
     "/api/v1/admin/subscriptions/{subscriptionId}/extensions": {
       "post": {
-        "summary": "Manual renewal until online payment exists (Phase 2).",
+        "summary": "A correction: renewals and plan changes go through payment requests.",
         "operationId": "LicenseAdminService_ExtendSubscription",
         "responses": {
           "200": {
@@ -4591,15 +4881,73 @@
         ]
       }
     },
-    "/api/v1/me/subscription/plan-changes": {
-      "post": {
-        "summary": "Chooses another plan (FR-LIC-02). An upgrade and a downgrade both take\neffect when the current period ends (when the trial ends, during the\ntrial); the answer carries pending_change. Choosing again replaces the\npending change. Fails with PLAN_LIMIT_REACHED when current usage already\nexceeds the new plan; the limits are checked again on the effective\ndate, and the switch is postponed if they are still exceeded.",
-        "operationId": "LicenseService_ChangeMyPlan",
+    "/api/v1/me/subscription/credit-ledger": {
+      "get": {
+        "operationId": "LicenseService_ListMyCreditLedger",
         "responses": {
           "200": {
-            "description": "The current plan with its pending_change.",
+            "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1Subscription"
+              "$ref": "#/definitions/v1ListMyCreditLedgerResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "LicenseService"
+        ]
+      }
+    },
+    "/api/v1/me/subscription/payment-requests": {
+      "get": {
+        "operationId": "LicenseService_ListMyPlanPaymentRequests",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListMyPlanPaymentRequestsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "description": "Optional filter.\n\n - PLAN_PAYMENT_STATUS_AWAITING_PAYMENT: Quoted, with its transfer reference; the owner has not declared the\ntransfer yet. A new request replaces it.\n - PLAN_PAYMENT_STATUS_SUBMITTED: The owner declared the transfer; a platform admin reviews it.\n - PLAN_PAYMENT_STATUS_APPROVED: Approved: the plan applied at once.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PLAN_PAYMENT_STATUS_AWAITING_PAYMENT",
+              "PLAN_PAYMENT_STATUS_SUBMITTED",
+              "PLAN_PAYMENT_STATUS_APPROVED",
+              "PLAN_PAYMENT_STATUS_REJECTED",
+              "PLAN_PAYMENT_STATUS_CANCELLED"
+            ]
+          }
+        ],
+        "tags": [
+          "LicenseService"
+        ]
+      },
+      "post": {
+        "summary": "Starts a plan change or a renewal (FR-LIC-07): validates the owner's\nusage against the plan's limits (PLAN_LIMIT_REACHED), quotes the amount\nwith the account credit applied (FR-LIC-09) and returns the transfer\nreference and the platform's payment details. TRIAL_NOT_AVAILABLE for\nthe trial plan, PLAN_NOT_AVAILABLE for a plan that cannot be chosen,\nREQUEST_ALREADY_OPEN while a request is SUBMITTED; a request still\nAWAITING_PAYMENT is replaced.",
+        "operationId": "LicenseService_CreatePlanPaymentRequest",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlanPaymentRequest"
             }
           },
           "default": {
@@ -4615,7 +4963,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1ChangeMyPlanRequest"
+              "$ref": "#/definitions/v1CreatePlanPaymentRequestRequest"
             }
           }
         ],
@@ -4624,15 +4972,123 @@
         ]
       }
     },
-    "/api/v1/me/subscription/plan-changes/pending": {
-      "delete": {
-        "summary": "Cancels the pending plan change (FR-LIC-02); NOT_FOUND when there is\nnone.",
-        "operationId": "LicenseService_CancelMyPendingPlanChange",
+    "/api/v1/me/subscription/payment-requests/{requestId}": {
+      "get": {
+        "operationId": "LicenseService_GetMyPlanPaymentRequest",
         "responses": {
           "200": {
             "description": "",
             "schema": {
-              "$ref": "#/definitions/v1Subscription"
+              "$ref": "#/definitions/v1PlanPaymentRequest"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LicenseService"
+        ]
+      }
+    },
+    "/api/v1/me/subscription/payment-requests/{requestId}:cancel": {
+      "post": {
+        "summary": "Cancels a request that is AWAITING_PAYMENT or SUBMITTED;\nREQUEST_NOT_OPEN once reviewed.",
+        "operationId": "LicenseService_CancelPlanPayment",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlanPaymentRequest"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LicenseServiceCancelPlanPaymentBody"
+            }
+          }
+        ],
+        "tags": [
+          "LicenseService"
+        ]
+      }
+    },
+    "/api/v1/me/subscription/payment-requests/{requestId}:submit": {
+      "post": {
+        "summary": "Declares the transfer with its evidence (EVIDENCE_REQUIRED when the\namount due is not 0); the platform admins are notified.",
+        "operationId": "LicenseService_SubmitPlanPayment",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlanPaymentRequest"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LicenseServiceSubmitPlanPaymentBody"
+            }
+          }
+        ],
+        "tags": [
+          "LicenseService"
+        ]
+      }
+    },
+    "/api/v1/payment-settings": {
+      "get": {
+        "summary": "The platform's payment details (FR-LIC-10).",
+        "operationId": "LicenseService_GetPaymentInstructions",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PaymentInstructions"
             }
           },
           "default": {
@@ -5055,6 +5511,32 @@
     "InvitationServiceRevokeInvitationBody": {
       "type": "object"
     },
+    "LicenseAdminServiceAdjustCreditBody": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Signed VND; the balance never goes below 0."
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount",
+        "note"
+      ]
+    },
+    "LicenseAdminServiceApprovePlanPaymentBody": {
+      "type": "object",
+      "properties": {
+        "note": {
+          "type": "string",
+          "description": "Required when the amount transferred differs from the amount due\n(AMOUNT_MISMATCH_NOTE_REQUIRED)."
+        }
+      }
+    },
     "LicenseAdminServiceExtendSubscriptionBody": {
       "type": "object",
       "properties": {
@@ -5066,6 +5548,53 @@
       },
       "required": [
         "days"
+      ]
+    },
+    "LicenseAdminServiceRejectPlanPaymentBody": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason"
+      ]
+    },
+    "LicenseServiceCancelPlanPaymentBody": {
+      "type": "object"
+    },
+    "LicenseServiceSubmitPlanPaymentBody": {
+      "type": "object",
+      "properties": {
+        "payerName": {
+          "type": "string"
+        },
+        "payerBank": {
+          "type": "string"
+        },
+        "payerAccount": {
+          "type": "string"
+        },
+        "transferredAmount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "bankTransactionRef": {
+          "type": "string"
+        },
+        "paidAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evidence": {
+          "$ref": "#/definitions/v1PaymentEvidence",
+          "description": "Required unless the amount due is 0."
+        }
+      },
+      "required": [
+        "payerName",
+        "transferredAmount"
       ]
     },
     "PublicQuoteServiceDecidePublicQuoteBody": {
@@ -5303,6 +5832,48 @@
         }
       }
     },
+    "v1AdjustCreditResponse": {
+      "type": "object",
+      "properties": {
+        "entry": {
+          "$ref": "#/definitions/v1CreditLedgerEntry"
+        }
+      }
+    },
+    "v1AdminPlanPaymentRequest": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/v1PlanPaymentRequest"
+        },
+        "subscriptionId": {
+          "type": "string"
+        },
+        "userEmail": {
+          "type": "string"
+        },
+        "userName": {
+          "type": "string"
+        },
+        "currentPlan": {
+          "$ref": "#/definitions/v1Plan",
+          "description": "The owner's current plan and usage, to judge the request."
+        },
+        "usage": {
+          "$ref": "#/definitions/v1Usage"
+        }
+      },
+      "description": "AdminPlanPaymentRequest is one row of the platform admin's review queue."
+    },
+    "v1ApprovePlanPaymentResponse": {
+      "type": "object",
+      "properties": {
+        "subscription": {
+          "$ref": "#/definitions/v1Subscription",
+          "description": "The owner's subscription with the new plan and period."
+        }
+      }
+    },
     "v1AuthProvider": {
       "type": "string",
       "enum": [
@@ -5364,11 +5935,11 @@
       },
       "description": "BillingParty is who a quote or settlement is billed to (FR-CUS-07). A\nclient sends only tax_profile_id; the other fields are the snapshot kept\non the document, so later edits of the profile never change a document\nalready issued. Without a tax_profile_id the customer is billed under\ntheir own name as a retail receipt."
     },
-    "v1CancelMyPendingPlanChangeResponse": {
+    "v1CancelPlanPaymentResponse": {
       "type": "object",
       "properties": {
-        "subscription": {
-          "$ref": "#/definitions/v1Subscription"
+        "request": {
+          "$ref": "#/definitions/v1PlanPaymentRequest"
         }
       }
     },
@@ -5380,26 +5951,6 @@
         "CANDIDATE_MEMBERSHIP_INVITED"
       ],
       "description": "CandidateMembership is where a looked-up user stands with the garage."
-    },
-    "v1ChangeMyPlanRequest": {
-      "type": "object",
-      "properties": {
-        "planId": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "planId"
-      ]
-    },
-    "v1ChangeMyPlanResponse": {
-      "type": "object",
-      "properties": {
-        "subscription": {
-          "$ref": "#/definitions/v1Subscription",
-          "description": "The current plan with its pending_change."
-        }
-      }
     },
     "v1ChangeVehicleOwnerResponse": {
       "type": "object",
@@ -5485,6 +6036,29 @@
         }
       }
     },
+    "v1CreatePlanPaymentRequestRequest": {
+      "type": "object",
+      "properties": {
+        "planId": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/definitions/v1PlanPaymentKind"
+        }
+      },
+      "required": [
+        "planId",
+        "kind"
+      ]
+    },
+    "v1CreatePlanPaymentRequestResponse": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/v1PlanPaymentRequest"
+        }
+      }
+    },
     "v1CreatePlanResponse": {
       "type": "object",
       "properties": {
@@ -5560,6 +6134,43 @@
           "$ref": "#/definitions/v1Vehicle"
         }
       }
+    },
+    "v1CreditEntryKind": {
+      "type": "string",
+      "enum": [
+        "CREDIT_ENTRY_KIND_EARNED",
+        "CREDIT_ENTRY_KIND_APPLIED",
+        "CREDIT_ENTRY_KIND_ADJUSTMENT"
+      ],
+      "description": "CreditEntryKind is why the account credit changed (FR-LIC-09).\n\n - CREDIT_ENTRY_KIND_EARNED: A downgrade's surplus.\n - CREDIT_ENTRY_KIND_APPLIED: Credit used by a payment.\n - CREDIT_ENTRY_KIND_ADJUSTMENT: A correction by a platform admin."
+    },
+    "v1CreditLedgerEntry": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/v1CreditEntryKind"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Signed VND: positive adds credit, negative uses it."
+        },
+        "balanceAfter": {
+          "type": "string",
+          "format": "int64"
+        },
+        "planPaymentRequestId": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "CreditLedgerEntry is one change of the owner's account credit."
     },
     "v1Customer": {
       "type": "object",
@@ -6008,9 +6619,11 @@
     "v1FileKind": {
       "type": "string",
       "enum": [
-        "FILE_KIND_LOGO"
+        "FILE_KIND_LOGO",
+        "FILE_KIND_PAYMENT_EVIDENCE",
+        "FILE_KIND_PLATFORM_QR"
       ],
-      "description": "FileKind says what a file is for, and so whether it is public. Every kind\nadded later (repair photo, customer document, claim document, export) is\nprivate and served through short-lived signed URLs.\n\n - FILE_KIND_LOGO: A garage logo (public)."
+      "description": "FileKind says what a file is for, and so whether it is public. Every kind\nadded later (repair photo, customer document, claim document, export) is\nprivate and served through short-lived signed URLs.\n\n - FILE_KIND_LOGO: A garage logo (public).\n - FILE_KIND_PAYMENT_EVIDENCE: The screenshot of a subscription transfer (private).\n - FILE_KIND_PLATFORM_QR: The platform's bank QR code (private, read through a signed URL)."
     },
     "v1Garage": {
       "type": "object",
@@ -6242,6 +6855,14 @@
         }
       }
     },
+    "v1GetMyPlanPaymentRequestResponse": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/v1PlanPaymentRequest"
+        }
+      }
+    },
     "v1GetMySubscriptionResponse": {
       "type": "object",
       "properties": {
@@ -6260,6 +6881,30 @@
             "$ref": "#/definitions/v1VehicleHistoryEntry"
           },
           "description": "Quotes, repair orders and settlements of the vehicle, newest first."
+        }
+      }
+    },
+    "v1GetPaymentInstructionsResponse": {
+      "type": "object",
+      "properties": {
+        "instructions": {
+          "$ref": "#/definitions/v1PaymentInstructions"
+        }
+      }
+    },
+    "v1GetPlanPaymentRequestResponse": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/v1AdminPlanPaymentRequest"
+        }
+      }
+    },
+    "v1GetPlatformPaymentSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/v1PlatformPaymentSettings"
         }
       }
     },
@@ -6544,6 +7189,18 @@
         }
       }
     },
+    "v1ListMyCreditLedgerResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1CreditLedgerEntry"
+          }
+        }
+      }
+    },
     "v1ListMyGarageLinksResponse": {
       "type": "object",
       "properties": {
@@ -6565,6 +7222,18 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1Invitation"
+          }
+        }
+      }
+    },
+    "v1ListMyPlanPaymentRequestsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PlanPaymentRequest"
           }
         }
       }
@@ -6604,6 +7273,21 @@
             "type": "object",
             "$ref": "#/definitions/v1PermissionInfo"
           }
+        }
+      }
+    },
+    "v1ListPlanPaymentRequestsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1AdminPlanPaymentRequest"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
         }
       }
     },
@@ -6927,6 +7611,50 @@
       },
       "description": "Pagination describes the page returned by every List call (API\nSpecification Section 1.1): lists are requested with `page` (1-based,\ndefault 1) and `page_size` (default 20, max 100)."
     },
+    "v1PaymentEvidence": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "format": "byte"
+        },
+        "contentType": {
+          "type": "string",
+          "description": "image/png, image/jpeg, image/webp or application/pdf, at most 5 MB."
+        }
+      },
+      "description": "PaymentEvidence is the screenshot of the transfer.",
+      "required": [
+        "content",
+        "contentType"
+      ]
+    },
+    "v1PaymentInstructions": {
+      "type": "object",
+      "properties": {
+        "bankName": {
+          "type": "string"
+        },
+        "accountNumber": {
+          "type": "string"
+        },
+        "accountHolder": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "transferInstructions": {
+          "type": "string"
+        },
+        "qrUrl": {
+          "type": "string",
+          "description": "The QR code image, a signed URL valid for 5 minutes; empty when none.",
+          "readOnly": true
+        }
+      },
+      "description": "PaymentInstructions are the platform's payment details shown with a\npayment request (FR-LIC-10)."
+    },
     "v1PaymentMethod": {
       "type": "string",
       "enum": [
@@ -6935,27 +7663,6 @@
         "PAYMENT_METHOD_ONLINE"
       ],
       "description": "PaymentMethod: how a payment was actually collected (FR-BIL-03). ONLINE\nis recorded manually in Release 1.4 (staff sees a bank app or gateway\ndashboard confirmation and records it); automatic confirmation via a\npayment gateway webhook is Release 2.0 (FR-PAY-02)."
-    },
-    "v1PendingPlanChange": {
-      "type": "object",
-      "properties": {
-        "plan": {
-          "$ref": "#/definitions/v1Plan"
-        },
-        "effectiveAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When it applies: the end of the current period (the end of the trial,\nduring a trial)."
-        },
-        "status": {
-          "$ref": "#/definitions/v1PlanChangeStatus"
-        },
-        "requestedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      },
-      "description": "PendingPlanChange is a plan the owner chose that has not taken effect yet.\nThe owner can cancel it or replace it by choosing another plan."
     },
     "v1Permission": {
       "type": "string",
@@ -7065,16 +7772,6 @@
         "limits"
       ]
     },
-    "v1PlanChangeStatus": {
-      "type": "string",
-      "enum": [
-        "PLAN_CHANGE_STATUS_SCHEDULED",
-        "PLAN_CHANGE_STATUS_POSTPONED",
-        "PLAN_CHANGE_STATUS_APPLIED",
-        "PLAN_CHANGE_STATUS_CANCELLED"
-      ],
-      "description": "PlanChangeStatus is the state of a plan change (FR-LIC-02).\n\n - PLAN_CHANGE_STATUS_SCHEDULED: Takes effect when the current period ends.\n - PLAN_CHANGE_STATUS_POSTPONED: Due, but the new plan's limits are exceeded: it stays pending and the\nowner is told."
-    },
     "v1PlanLimits": {
       "type": "object",
       "properties": {
@@ -7094,6 +7791,159 @@
         }
       },
       "description": "PlanLimits caps usage across all garages of the subscribing owner."
+    },
+    "v1PlanPaymentKind": {
+      "type": "string",
+      "enum": [
+        "PLAN_PAYMENT_KIND_CHANGE",
+        "PLAN_PAYMENT_KIND_RENEW"
+      ],
+      "description": "PlanPaymentKind says what a payment request pays for (FR-LIC-07).\n\n - PLAN_PAYMENT_KIND_CHANGE: Another plan.\n - PLAN_PAYMENT_KIND_RENEW: The current plan for another period."
+    },
+    "v1PlanPaymentRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "kind": {
+          "$ref": "#/definitions/v1PlanPaymentKind"
+        },
+        "plan": {
+          "$ref": "#/definitions/v1Plan",
+          "description": "The plan to pay for."
+        },
+        "status": {
+          "$ref": "#/definitions/v1PlanPaymentStatus"
+        },
+        "reference": {
+          "type": "string",
+          "description": "The code the owner puts in the transfer note, e.g. \"VG-7K2M9Q\"."
+        },
+        "quotedAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "New plan price, account credit applied, amount to transfer and any\nsurplus that becomes credit (VND, FR-LIC-09)."
+        },
+        "creditApplied": {
+          "type": "string",
+          "format": "int64"
+        },
+        "amountDue": {
+          "type": "string",
+          "format": "int64"
+        },
+        "creditSurplus": {
+          "type": "string",
+          "format": "int64"
+        },
+        "periodDays": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Days of the current period and how many are unused (0 after expiry)."
+        },
+        "unusedDays": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "instructions": {
+          "$ref": "#/definitions/v1PaymentInstructions",
+          "description": "The payment details shown when the request was quoted."
+        },
+        "payerName": {
+          "type": "string",
+          "description": "The owner's declaration, set once submitted."
+        },
+        "payerBank": {
+          "type": "string"
+        },
+        "payerAccount": {
+          "type": "string"
+        },
+        "transferredAmount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "bankTransactionRef": {
+          "type": "string"
+        },
+        "paidAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evidenceUrl": {
+          "type": "string",
+          "description": "The evidence screenshot, a signed URL valid for 5 minutes.",
+          "readOnly": true
+        },
+        "amountMismatch": {
+          "type": "boolean",
+          "description": "True when the transferred amount differs from amount_due."
+        },
+        "reviewNote": {
+          "type": "string",
+          "description": "The admin's note on approval (required when amount_mismatch)."
+        },
+        "rejectionReason": {
+          "type": "string"
+        },
+        "submittedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reviewedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "PlanPaymentRequest is an owner's request to switch to a plan, or to renew\nthe current one, paid by a manual bank transfer (FR-LIC-07). The amounts\nare fixed when it is quoted and honoured at approval."
+    },
+    "v1PlanPaymentStatus": {
+      "type": "string",
+      "enum": [
+        "PLAN_PAYMENT_STATUS_AWAITING_PAYMENT",
+        "PLAN_PAYMENT_STATUS_SUBMITTED",
+        "PLAN_PAYMENT_STATUS_APPROVED",
+        "PLAN_PAYMENT_STATUS_REJECTED",
+        "PLAN_PAYMENT_STATUS_CANCELLED"
+      ],
+      "description": "PlanPaymentStatus is the state of a payment request (LLD 3.3).\n\n - PLAN_PAYMENT_STATUS_AWAITING_PAYMENT: Quoted, with its transfer reference; the owner has not declared the\ntransfer yet. A new request replaces it.\n - PLAN_PAYMENT_STATUS_SUBMITTED: The owner declared the transfer; a platform admin reviews it.\n - PLAN_PAYMENT_STATUS_APPROVED: Approved: the plan applied at once."
+    },
+    "v1PlatformPaymentSettings": {
+      "type": "object",
+      "properties": {
+        "bankName": {
+          "type": "string"
+        },
+        "accountNumber": {
+          "type": "string"
+        },
+        "accountHolder": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "transferInstructions": {
+          "type": "string"
+        },
+        "qrUrl": {
+          "type": "string",
+          "description": "The QR code, a signed URL valid for 5 minutes; empty when none.",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "PlatformPaymentSettings are the details owners transfer to (FR-LIC-10)."
     },
     "v1PublicQuote": {
       "type": "object",
@@ -7385,6 +8235,14 @@
       "properties": {
         "session": {
           "$ref": "#/definitions/v1Session"
+        }
+      }
+    },
+    "v1RejectPlanPaymentResponse": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/v1PlanPaymentRequest"
         }
       }
     },
@@ -8100,6 +8958,14 @@
       ],
       "description": "StockTransactionType: a movement either adds to stock or removes from it."
     },
+    "v1SubmitPlanPaymentResponse": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/v1PlanPaymentRequest"
+        }
+      }
+    },
     "v1Subscription": {
       "type": "object",
       "properties": {
@@ -8145,9 +9011,19 @@
           "type": "string",
           "format": "date-time"
         },
-        "pendingChange": {
-          "$ref": "#/definitions/v1PendingPlanChange",
-          "description": "Set while a plan change is scheduled or postponed (FR-LIC-02)."
+        "creditBalance": {
+          "type": "string",
+          "format": "int64",
+          "description": "Account credit in VND (FR-LIC-09), applied to the next payment."
+        },
+        "periodPaidAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "What was paid for the current period (0 for a trial); the basis of the\ncredit when the plan is changed."
+        },
+        "openRequest": {
+          "$ref": "#/definitions/v1PlanPaymentRequest",
+          "description": "The request awaiting payment or review, unset when none."
         }
       },
       "description": "Subscription belongs to an owner user and covers all their garages\n(FR-LIC-01..04)."
@@ -8315,6 +9191,14 @@
         }
       }
     },
+    "v1UpdatePlatformPaymentSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/v1PlatformPaymentSettings"
+        }
+      }
+    },
     "v1UpdateQuoteResponse": {
       "type": "object",
       "properties": {
@@ -8392,6 +9276,31 @@
       "properties": {
         "garage": {
           "$ref": "#/definitions/v1Garage"
+        }
+      }
+    },
+    "v1UploadPaymentQrRequest": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "format": "byte"
+        },
+        "contentType": {
+          "type": "string",
+          "description": "image/png, image/jpeg or image/webp, at most 1 MB."
+        }
+      },
+      "required": [
+        "content",
+        "contentType"
+      ]
+    },
+    "v1UploadPaymentQrResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/v1PlatformPaymentSettings"
         }
       }
     },
