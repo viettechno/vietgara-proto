@@ -61,6 +61,8 @@ Protocol Buffers. The same `.proto` files describe:
 | | | `LicenseAdminService`: ListAllPlans, CreatePlan, UpdatePlan, ListSubscriptions, ExtendSubscription |
 | `vietgara.customer.v1` | Customer & Vehicle (HLD #4) | `CustomerService` (+ Activate, Lookup), `VehicleService` (+ Activate, Correct, ChangeOwner), `CustomerLinkService` (RequestCustomerUserLink, ConfirmCustomerUserLink, UnlinkCustomerUser), `CustomerTaxProfileService` |
 | `vietgara.supplier.v1` | Supplier (FR-SUP-01) | `SupplierService`: List, Create, Get, Update, Delete, Activate (replaces `PartnerService`, Release 5.0) |
+| `vietgara.catalogue.v1` | Catalogue (HLD #18, Release 6.0) | `CatalogueService`: parts (List, Create, Get, Update, Delete, Activate, SetPartUnits, AddPartImage, RemovePartImage), units, part categories. The part and everything that describes it; no quantities |
+| `vietgara.inventory.v1` | Inventory (HLD #7) | `InventoryService`: ListStockLevels, GetStockLevel, CreateStockReceipt, ListStockTransactions. Stock only; the part is in `vietgara.catalogue.v1` |
 | `vietgara.file.v1` | File registry (Release 5.0) | `FileService`: UploadFile, GetFileUrl, DeleteFile |
 | `vietgara.common.v1` | Shared messages | `Pagination`, `BankDetails`, `DeleteOutcome`, `BillingParty` and `TaxProfileKind`, `ErrorResponse` and the OpenAPI document options (no services) |
 
@@ -82,7 +84,8 @@ Per the [Release Plan](https://github.com/viettechno/vietgara-docs/blob/master/d
 | Release 5.0 | **Done:** insurer fields of settlements and payments, the `PayerType` enum and `AllocateSettlement` are removed (no `reserved` fields, numbers are renumbered); `Settlement.customer_amount` / `customer_paid_amount` become `paid_amount`; `PartnerService` becomes `SupplierService` in the new `vietgara.supplier.v1` package with `PERMISSION_SUPPLIER_*` and a shared `vietgara.common.v1.BankDetails`. payment vouchers (voucher number, payer, reason, void, voucher PDF), the file registry (`vietgara.file.v1`), the garage legal profile and voucher numbering template, and the `DELETED` / `DEACTIVATED` outcome with `dryRun`, `isActive`, `includeInactive` and `:activate` on customers, vehicles, suppliers and tax profiles |
 | Release 5.1 | **Done:** customer lookup and user links (`CustomerLinkService`, `/me/garage-links` in the Customer BFF), customer tax profiles, billing party on quotes and settlements, `invoiceRequested` and `UpdateSettlement`, vehicle `editable` / `lockedFields`, `:correct` and `:change-owner`, `PERMISSION_CUSTOMER_CORRECT` |
 | Release 5.2 | **Done:** `Subscription.pendingChange` and `CancelMyPendingPlanChange` (plan changes take effect at the period end) |
-| Releases 6.0, 6.1 | Units, part categories, MFA challenge and enrolment |
+| Release 6.0 | **Done:** the Catalogue module (`vietgara.catalogue.v1`: `Part`, `Unit`, `PackagingUnit`, `PartCategory`, `/parts`); `inventory.v1` keeps stock only (`StockLevel`, `Item` is gone, receipts take an optional `unit_id`); `unit_id` / `entered_quantity` on quote and repair-order lines; `FILE_KIND_PART_IMAGE`; `PERMISSION_CATALOGUE_READ` / `_WRITE`; `ExportRevenueExcel`. Breaking for `inventory.v1`, acknowledged with the `breaking-change` label |
+| Release 6.1 | MFA challenge and enrolment |
 | Phases 7, 10 | Goods receipts, stock counts, adjustments, barcodes, imports; jobs, print settings; the public contact request (Release 10.2, `POST /api/v1/public/contact-requests`) |
 | Phase 8 | Platform roles, groups and invitations; support grants |
 | Phases 11-15 | Device tokens and push, sync for the technician BFF; booking; receivables, purchase orders; printers and templates; transfers |

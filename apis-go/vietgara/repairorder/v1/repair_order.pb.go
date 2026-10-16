@@ -204,12 +204,16 @@ type RepairOrderLine struct {
 	// stock. Validated against the garage's items when set.
 	ItemRefId   *string `protobuf:"bytes,3,opt,name=item_ref_id,json=itemRefId,proto3,oneof" json:"item_ref_id,omitempty"`
 	Description string  `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	// Decimal string, e.g. "1" or "1.5".
+	// Decimal string in the base unit of the part; derived from
+	// entered_quantity when unit_id is set (same rule as a quote line).
 	Quantity string `protobuf:"bytes,5,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	// Integer VND.
-	UnitPrice int64                 `protobuf:"varint,6,opt,name=unit_price,json=unitPrice,proto3" json:"unit_price,omitempty"`
-	LineTotal int64                 `protobuf:"varint,7,opt,name=line_total,json=lineTotal,proto3" json:"line_total,omitempty"`
-	Status    RepairOrderLineStatus `protobuf:"varint,8,opt,name=status,proto3,enum=vietgara.repairorder.v1.RepairOrderLineStatus" json:"status,omitempty"`
+	UnitPrice        int64                 `protobuf:"varint,6,opt,name=unit_price,json=unitPrice,proto3" json:"unit_price,omitempty"`
+	LineTotal        int64                 `protobuf:"varint,7,opt,name=line_total,json=lineTotal,proto3" json:"line_total,omitempty"`
+	Status           RepairOrderLineStatus `protobuf:"varint,8,opt,name=status,proto3,enum=vietgara.repairorder.v1.RepairOrderLineStatus" json:"status,omitempty"`
+	UnitId           *string               `protobuf:"bytes,10,opt,name=unit_id,json=unitId,proto3,oneof" json:"unit_id,omitempty"`
+	EnteredQuantity  string                `protobuf:"bytes,11,opt,name=entered_quantity,json=enteredQuantity,proto3" json:"entered_quantity,omitempty"`
+	UnitAbbreviation string                `protobuf:"bytes,12,opt,name=unit_abbreviation,json=unitAbbreviation,proto3" json:"unit_abbreviation,omitempty"`
 	// Technician user ids assigned to this line (FR-REP-02); a line may
 	// have more than one.
 	AssignedTechnicianIds []string `protobuf:"bytes,9,rep,name=assigned_technician_ids,json=assignedTechnicianIds,proto3" json:"assigned_technician_ids,omitempty"`
@@ -301,6 +305,27 @@ func (x *RepairOrderLine) GetStatus() RepairOrderLineStatus {
 		return x.Status
 	}
 	return RepairOrderLineStatus_REPAIR_ORDER_LINE_STATUS_UNSPECIFIED
+}
+
+func (x *RepairOrderLine) GetUnitId() string {
+	if x != nil && x.UnitId != nil {
+		return *x.UnitId
+	}
+	return ""
+}
+
+func (x *RepairOrderLine) GetEnteredQuantity() string {
+	if x != nil {
+		return x.EnteredQuantity
+	}
+	return ""
+}
+
+func (x *RepairOrderLine) GetUnitAbbreviation() string {
+	if x != nil {
+		return x.UnitAbbreviation
+	}
+	return ""
 }
 
 func (x *RepairOrderLine) GetAssignedTechnicianIds() []string {
@@ -1006,7 +1031,7 @@ var File_vietgara_repairorder_v1_repair_order_proto protoreflect.FileDescriptor
 
 const file_vietgara_repairorder_v1_repair_order_proto_rawDesc = "" +
 	"\n" +
-	"*vietgara/repairorder/v1/repair_order.proto\x12\x17vietgara.repairorder.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xbb\x03\n" +
+	"*vietgara/repairorder/v1/repair_order.proto\x12\x17vietgara.repairorder.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xc2\x04\n" +
 	"\x0fRepairOrderLine\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12N\n" +
 	"\titem_type\x18\x02 \x01(\x0e2,.vietgara.repairorder.v1.RepairOrderItemTypeB\x03\xe0A\x02R\bitemType\x12#\n" +
@@ -1017,9 +1042,15 @@ const file_vietgara_repairorder_v1_repair_order_proto_rawDesc = "" +
 	"unit_price\x18\x06 \x01(\x03B\x03\xe0A\x02R\tunitPrice\x12\"\n" +
 	"\n" +
 	"line_total\x18\a \x01(\x03B\x03\xe0A\x03R\tlineTotal\x12F\n" +
-	"\x06status\x18\b \x01(\x0e2..vietgara.repairorder.v1.RepairOrderLineStatusR\x06status\x126\n" +
+	"\x06status\x18\b \x01(\x0e2..vietgara.repairorder.v1.RepairOrderLineStatusR\x06status\x12\x1c\n" +
+	"\aunit_id\x18\n" +
+	" \x01(\tH\x01R\x06unitId\x88\x01\x01\x12)\n" +
+	"\x10entered_quantity\x18\v \x01(\tR\x0fenteredQuantity\x120\n" +
+	"\x11unit_abbreviation\x18\f \x01(\tB\x03\xe0A\x03R\x10unitAbbreviation\x126\n" +
 	"\x17assigned_technician_ids\x18\t \x03(\tR\x15assignedTechnicianIdsB\x0e\n" +
-	"\f_item_ref_id\"\xf7\x04\n" +
+	"\f_item_ref_idB\n" +
+	"\n" +
+	"\b_unit_id\"\xf7\x04\n" +
 	"\vRepairOrder\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
 	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\x1e\n" +

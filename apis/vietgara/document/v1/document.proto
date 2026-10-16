@@ -5,6 +5,7 @@ package vietgara.document.v1;
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/api/httpbody.proto";
+import "vietgara/reporting/v1/reporting.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/document/v1;documentv1";
 
@@ -33,6 +34,15 @@ message ExportStockMovementsExcelRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   // Same optional filter as InventoryService.ListStockTransactions.
   string item_id = 2;
+}
+
+message ExportRevenueExcelRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  vietgara.reporting.v1.RevenuePeriod period = 2 [(google.api.field_behavior) = REQUIRED];
+  // Inclusive, "YYYY-MM-DD" in the garage's timezone.
+  string from = 3 [(google.api.field_behavior) = REQUIRED];
+  // Exclusive, "YYYY-MM-DD".
+  string to = 4 [(google.api.field_behavior) = REQUIRED];
 }
 
 // DocumentService renders PDFs and Excel reports on request (FRD 3.13).
@@ -72,5 +82,11 @@ service DocumentService {
   // (InventoryService.ListStockTransactions).
   rpc ExportStockMovementsExcel(ExportStockMovementsExcelRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/stock-movements/excel"};
+  }
+
+  // FR-DOC-02 (Release 6.0): the revenue-by-period report
+  // (ReportingService.GetRevenueReport) as an Excel workbook.
+  rpc ExportRevenueExcel(ExportRevenueExcelRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/revenue/excel"};
   }
 }

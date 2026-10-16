@@ -203,14 +203,23 @@ type QuoteLine struct {
 	// 1.3); free text for now.
 	ItemRefId   *string `protobuf:"bytes,3,opt,name=item_ref_id,json=itemRefId,proto3,oneof" json:"item_ref_id,omitempty"`
 	Description string  `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	// Decimal string, e.g. "1" or "1.5".
+	// Decimal string, e.g. "1" or "1.5", in the base unit of the part. When
+	// unit_id is set the server ignores this on input and derives it from
+	// entered_quantity (FR-CAT-02), so a line read back and sent again is
+	// never converted twice.
 	Quantity string `protobuf:"bytes,5,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	// Integer VND.
-	UnitPrice     int64             `protobuf:"varint,6,opt,name=unit_price,json=unitPrice,proto3" json:"unit_price,omitempty"`
-	LineTotal     int64             `protobuf:"varint,7,opt,name=line_total,json=lineTotal,proto3" json:"line_total,omitempty"`
-	Decision      QuoteLineDecision `protobuf:"varint,8,opt,name=decision,proto3,enum=vietgara.quote.v1.QuoteLineDecision" json:"decision,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	UnitPrice int64             `protobuf:"varint,6,opt,name=unit_price,json=unitPrice,proto3" json:"unit_price,omitempty"`
+	LineTotal int64             `protobuf:"varint,7,opt,name=line_total,json=lineTotal,proto3" json:"line_total,omitempty"`
+	Decision  QuoteLineDecision `protobuf:"varint,8,opt,name=decision,proto3,enum=vietgara.quote.v1.QuoteLineDecision" json:"decision,omitempty"`
+	// The packaging unit of the part the amount was entered in; unset for
+	// labor and for base-unit lines.
+	UnitId *string `protobuf:"bytes,9,opt,name=unit_id,json=unitId,proto3,oneof" json:"unit_id,omitempty"`
+	// The amount as typed, in unit_id (decimal string); required with unit_id.
+	EnteredQuantity  string `protobuf:"bytes,10,opt,name=entered_quantity,json=enteredQuantity,proto3" json:"entered_quantity,omitempty"`
+	UnitAbbreviation string `protobuf:"bytes,11,opt,name=unit_abbreviation,json=unitAbbreviation,proto3" json:"unit_abbreviation,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *QuoteLine) Reset() {
@@ -297,6 +306,27 @@ func (x *QuoteLine) GetDecision() QuoteLineDecision {
 		return x.Decision
 	}
 	return QuoteLineDecision_QUOTE_LINE_DECISION_UNSPECIFIED
+}
+
+func (x *QuoteLine) GetUnitId() string {
+	if x != nil && x.UnitId != nil {
+		return *x.UnitId
+	}
+	return ""
+}
+
+func (x *QuoteLine) GetEnteredQuantity() string {
+	if x != nil {
+		return x.EnteredQuantity
+	}
+	return ""
+}
+
+func (x *QuoteLine) GetUnitAbbreviation() string {
+	if x != nil {
+		return x.UnitAbbreviation
+	}
+	return ""
 }
 
 // Quote is a price estimate awaiting the customer's approval (FR-QUO-01).
@@ -1696,7 +1726,7 @@ var File_vietgara_quote_v1_quote_proto protoreflect.FileDescriptor
 
 const file_vietgara_quote_v1_quote_proto_rawDesc = "" +
 	"\n" +
-	"\x1dvietgara/quote/v1/quote.proto\x12\x11vietgara.quote.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a&vietgara/common/v1/billing_party.proto\x1a#vietgara/common/v1/pagination.proto\x1a,vietgara/common/v1/quote_approval_mode.proto\"\xf0\x02\n" +
+	"\x1dvietgara/quote/v1/quote.proto\x12\x11vietgara.quote.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a&vietgara/common/v1/billing_party.proto\x1a#vietgara/common/v1/pagination.proto\x1a,vietgara/common/v1/quote_approval_mode.proto\"\xf7\x03\n" +
 	"\tQuoteLine\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12B\n" +
 	"\titem_type\x18\x02 \x01(\x0e2 .vietgara.quote.v1.QuoteItemTypeB\x03\xe0A\x02R\bitemType\x12#\n" +
@@ -1707,8 +1737,14 @@ const file_vietgara_quote_v1_quote_proto_rawDesc = "" +
 	"unit_price\x18\x06 \x01(\x03B\x03\xe0A\x02R\tunitPrice\x12\"\n" +
 	"\n" +
 	"line_total\x18\a \x01(\x03B\x03\xe0A\x03R\tlineTotal\x12E\n" +
-	"\bdecision\x18\b \x01(\x0e2$.vietgara.quote.v1.QuoteLineDecisionB\x03\xe0A\x03R\bdecisionB\x0e\n" +
-	"\f_item_ref_id\"\x88\a\n" +
+	"\bdecision\x18\b \x01(\x0e2$.vietgara.quote.v1.QuoteLineDecisionB\x03\xe0A\x03R\bdecision\x12\x1c\n" +
+	"\aunit_id\x18\t \x01(\tH\x01R\x06unitId\x88\x01\x01\x12)\n" +
+	"\x10entered_quantity\x18\n" +
+	" \x01(\tR\x0fenteredQuantity\x120\n" +
+	"\x11unit_abbreviation\x18\v \x01(\tB\x03\xe0A\x03R\x10unitAbbreviationB\x0e\n" +
+	"\f_item_ref_idB\n" +
+	"\n" +
+	"\b_unit_id\"\x88\a\n" +
 	"\x05Quote\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
 	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12$\n" +

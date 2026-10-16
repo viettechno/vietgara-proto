@@ -11,6 +11,10 @@
       "description": "SettlementService manages settlements (FRD 3.8/3.9). Reads need\nPERMISSION_BILLING_READ, changes PERMISSION_BILLING_WRITE."
     },
     {
+      "name": "CatalogueService",
+      "description": "CatalogueService manages the parts of a garage and the reference data\naround them. Reads need PERMISSION_CATALOGUE_READ, changes\nPERMISSION_CATALOGUE_WRITE."
+    },
+    {
       "name": "CustomerService",
       "description": "CustomerService manages a garage's customers (FRD 3.4). Reads need\nPERMISSION_CUSTOMER_READ, changes PERMISSION_CUSTOMER_WRITE."
     },
@@ -31,6 +35,10 @@
       "description": "CustomerPortalService is the Customer BFF (Release 2.4, HLD Section 6).\nThe caller is a VietGara user -- in Release 2.4 created by Google\nsign-in (FR-CAPP-01) -- matched to garages' customer records by its\nverified e-mail. It never reads garage data beyond those records, their\nvehicles and the vehicles' history."
     },
     {
+      "name": "ReportingService",
+      "description": "ReportingService serves the revenue-by-period report (FR-RPT-01) that\nbacks the Web Admin Dashboard's KPI card and revenue chart (UI Design\nSpec 3.1). It owns no tables of its own -- revenue is aggregated fresh\nfrom Billing \u0026 Settlement's settlements on every request, the same\ncross-module decoupling pattern used everywhere else (HLD Section 2).\nEvery other Dashboard KPI (orders in progress, low stock, outstanding\nreceivables) is served by each owning module's existing list endpoint;\nthis is the one figure not already exposed anywhere."
+    },
+    {
       "name": "DocumentService",
       "description": "DocumentService renders PDFs and Excel reports on request (FRD 3.13).\nNo templates are stored -- FR-DOC-03 (letting a garage customize the\nlogo and layout) is Phase 4 -- every document is generated fresh from\nthe owning module's own data, read through a narrow interface the same\nway every other cross-module read works (HLD Section 2: a module never\nqueries another module's tables directly). Each RPC needs the same\npermission as the data it renders (quote.read, billing.read,\ninventory.read), not a permission of its own."
     },
@@ -48,7 +56,7 @@
     },
     {
       "name": "InventoryService",
-      "description": "InventoryService manages parts stock (FRD 3.7). Reads need\nPERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE."
+      "description": "InventoryService manages how many of each part a garage has (FRD 3.7).\nReads need PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE.\nThe parts themselves are managed by CatalogueService."
     },
     {
       "name": "LicenseService",
@@ -69,10 +77,6 @@
     {
       "name": "RepairOrderService",
       "description": "RepairOrderService manages repair orders (FRD 3.6). Reads need\nPERMISSION_REPAIR_ORDER_READ, changes PERMISSION_REPAIR_ORDER_WRITE."
-    },
-    {
-      "name": "ReportingService",
-      "description": "ReportingService serves the revenue-by-period report (FR-RPT-01) that\nbacks the Web Admin Dashboard's KPI card and revenue chart (UI Design\nSpec 3.1). It owns no tables of its own -- revenue is aggregated fresh\nfrom Billing \u0026 Settlement's settlements on every request, the same\ncross-module decoupling pattern used everywhere else (HLD Section 2).\nEvery other Dashboard KPI (orders in progress, low stock, outstanding\nreceivables) is served by each owning module's existing list endpoint;\nthis is the one figure not already exposed anywhere."
     },
     {
       "name": "SupplierService",
@@ -1958,13 +1962,13 @@
     },
     "/api/v1/garages/{garageId}/inventory-items": {
       "get": {
-        "summary": "Items with their current stock on hand (FR-INV-03), the same list\nthe Stock on Hand screen shows.",
-        "operationId": "InventoryService_ListItems",
+        "summary": "The stock-on-hand list (FR-INV-03): parts with their balances.",
+        "operationId": "InventoryService_ListStockLevels",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ListItemsResponse"
+              "$ref": "#/definitions/v1ListStockLevelsResponse"
             }
           },
           "default": {
@@ -1983,10 +1987,36 @@
           },
           {
             "name": "query",
-            "description": "Matches SKU or name.",
+            "description": "Matches SKU, name or brand (answered by Catalogue).",
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "categoryId",
+            "description": "Also matches the sub-categories of this category.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "lowStock",
+            "description": "Only parts at or below their reorder threshold.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "includeInactive",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           },
           {
             "name": "page",
@@ -2006,52 +2036,16 @@
         "tags": [
           "InventoryService"
         ]
-      },
-      "post": {
-        "operationId": "InventoryService_CreateItem",
-        "responses": {
-          "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/v1Item"
-            }
-          },
-          "default": {
-            "description": "Error (API Specification Section 1.1).",
-            "schema": {
-              "$ref": "#/definitions/v1ErrorResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "garageId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "item",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1Item"
-            }
-          }
-        ],
-        "tags": [
-          "InventoryService"
-        ]
       }
     },
-    "/api/v1/garages/{garageId}/inventory-items/{itemId}": {
+    "/api/v1/garages/{garageId}/inventory-items/{partId}": {
       "get": {
-        "operationId": "InventoryService_GetItem",
+        "operationId": "InventoryService_GetStockLevel",
         "responses": {
           "200": {
             "description": "",
             "schema": {
-              "$ref": "#/definitions/v1Item"
+              "$ref": "#/definitions/v1StockLevel"
             }
           },
           "default": {
@@ -2069,86 +2063,10 @@
             "type": "string"
           },
           {
-            "name": "itemId",
+            "name": "partId",
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "tags": [
-          "InventoryService"
-        ]
-      },
-      "delete": {
-        "operationId": "InventoryService_DeleteItem",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1DeleteItemResponse"
-            }
-          },
-          "default": {
-            "description": "Error (API Specification Section 1.1).",
-            "schema": {
-              "$ref": "#/definitions/v1ErrorResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "garageId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "itemId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "InventoryService"
-        ]
-      },
-      "patch": {
-        "operationId": "InventoryService_UpdateItem",
-        "responses": {
-          "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/v1Item"
-            }
-          },
-          "default": {
-            "description": "Error (API Specification Section 1.1).",
-            "schema": {
-              "$ref": "#/definitions/v1ErrorResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "garageId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "itemId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "item",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1Item"
-            }
           }
         ],
         "tags": [
@@ -2346,6 +2264,565 @@
         ],
         "tags": [
           "GarageService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/part-categories": {
+      "get": {
+        "summary": "The category tree of at most three levels (FR-CAT-03).",
+        "operationId": "CatalogueService_ListPartCategories",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPartCategoriesResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "includeInactive",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      },
+      "post": {
+        "operationId": "CatalogueService_CreatePartCategory",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PartCategory"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "category",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PartCategory"
+            }
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/part-categories/{categoryId}": {
+      "delete": {
+        "operationId": "CatalogueService_DeletePartCategory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeletePartCategoryResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "dryRun",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      },
+      "patch": {
+        "operationId": "CatalogueService_UpdatePartCategory",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PartCategory"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "category",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PartCategory"
+            }
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/parts": {
+      "get": {
+        "operationId": "CatalogueService_ListParts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPartsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "query",
+            "description": "Matches SKU, name or brand.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "categoryId",
+            "description": "Also matches the sub-categories of this category.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "includeInactive",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      },
+      "post": {
+        "operationId": "CatalogueService_CreatePart",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Part"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "part",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Part"
+            }
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/parts/{partId}": {
+      "get": {
+        "operationId": "CatalogueService_GetPart",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Part"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      },
+      "delete": {
+        "summary": "Follows the delete-or-deactivate rule (FR-CAT-07).",
+        "operationId": "CatalogueService_DeletePart",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeletePartResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "dryRun",
+            "description": "Answer the outcome without changing anything.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      },
+      "patch": {
+        "operationId": "CatalogueService_UpdatePart",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Part"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "part",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Part"
+            }
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/parts/{partId}/images": {
+      "post": {
+        "summary": "Attaches an uploaded part_image file, at most three per part\n(FR-CAT-04).",
+        "operationId": "CatalogueService_AddPartImage",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Part"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CatalogueServiceAddPartImageBody"
+            }
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/parts/{partId}/images/{fileId}": {
+      "delete": {
+        "operationId": "CatalogueService_RemovePartImage",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Part"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/parts/{partId}/units": {
+      "put": {
+        "summary": "Replaces the part's packaging table (FR-CAT-02).",
+        "operationId": "CatalogueService_SetPartUnits",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Part"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CatalogueServiceSetPartUnitsBody"
+            }
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/parts/{partId}:activate": {
+      "post": {
+        "operationId": "CatalogueService_ActivatePart",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Part"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CatalogueServiceActivatePartBody"
+            }
+          }
+        ],
+        "tags": [
+          "CatalogueService"
         ]
       }
     },
@@ -3077,9 +3554,66 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/reports/revenue/excel": {
+      "get": {
+        "summary": "FR-DOC-02 (Release 6.0): the revenue-by-period report\n(ReportingService.GetRevenueReport) as an Excel workbook.",
+        "operationId": "DocumentService_ExportRevenueExcel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "REVENUE_PERIOD_DAY",
+              "REVENUE_PERIOD_MONTH",
+              "REVENUE_PERIOD_QUARTER",
+              "REVENUE_PERIOD_YEAR"
+            ]
+          },
+          {
+            "name": "from",
+            "description": "Inclusive, \"YYYY-MM-DD\" in the garage's timezone.",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "to",
+            "description": "Exclusive, \"YYYY-MM-DD\".",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/reports/stock-movements": {
       "get": {
-        "summary": "The stock in/out/on-hand movement report (FR-INV-05); Excel export\nof the same data is added with the Document/Print Service (Release\n1.4).",
+        "summary": "The stock in/out/on-hand movement report (FR-INV-05).",
         "operationId": "InventoryService_ListStockTransactions",
         "responses": {
           "200": {
@@ -4122,6 +4656,177 @@
         ],
         "tags": [
           "SupplierService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/units": {
+      "get": {
+        "summary": "Units of measure of the garage (FR-CAT-01).",
+        "operationId": "CatalogueService_ListUnits",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListUnitsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "includeInactive",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      },
+      "post": {
+        "operationId": "CatalogueService_CreateUnit",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Unit"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "unit",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Unit"
+            }
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/units/{unitId}": {
+      "delete": {
+        "operationId": "CatalogueService_DeleteUnit",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteUnitResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "unitId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "dryRun",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "CatalogueService"
+        ]
+      },
+      "patch": {
+        "operationId": "CatalogueService_UpdateUnit",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Unit"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "unitId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "unit",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Unit"
+            }
+          }
+        ],
+        "tags": [
+          "CatalogueService"
         ]
       }
     },
@@ -5388,6 +6093,34 @@
     }
   },
   "definitions": {
+    "CatalogueServiceActivatePartBody": {
+      "type": "object"
+    },
+    "CatalogueServiceAddPartImageBody": {
+      "type": "object",
+      "properties": {
+        "fileId": {
+          "type": "string",
+          "description": "A file of kind part_image of this garage, uploaded with FileService\n(entity_type \"part\", entity_id the part id)."
+        }
+      },
+      "required": [
+        "fileId"
+      ]
+    },
+    "CatalogueServiceSetPartUnitsBody": {
+      "type": "object",
+      "properties": {
+        "packagingUnits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PackagingUnit"
+          },
+          "description": "Replaces the whole packaging table."
+        }
+      }
+    },
     "CustomerLinkServiceConfirmCustomerUserLinkBody": {
       "type": "object",
       "properties": {
@@ -5469,14 +6202,20 @@
       "type": "object",
       "properties": {
         "itemId": {
-          "type": "string"
+          "type": "string",
+          "description": "The part's id (the JSON field keeps the name item_id)."
         },
         "quantity": {
-          "type": "string"
+          "type": "string",
+          "description": "In the base unit unless unit_id names a packaging unit of the part, in\nwhich case it is converted on save (FR-CAT-02)."
         },
         "unitCost": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "VND per entered unit; stored per base unit. Zero means \"not recorded\"."
+        },
+        "unitId": {
+          "type": "string"
         }
       },
       "required": [
@@ -5816,6 +6555,14 @@
         }
       }
     },
+    "v1ActivatePartResponse": {
+      "type": "object",
+      "properties": {
+        "part": {
+          "$ref": "#/definitions/v1Part"
+        }
+      }
+    },
     "v1ActivateSupplierResponse": {
       "type": "object",
       "properties": {
@@ -5829,6 +6576,14 @@
       "properties": {
         "vehicle": {
           "$ref": "#/definitions/v1Vehicle"
+        }
+      }
+    },
+    "v1AddPartImageResponse": {
+      "type": "object",
+      "properties": {
+        "part": {
+          "$ref": "#/definitions/v1Part"
         }
       }
     },
@@ -6028,11 +6783,19 @@
         }
       }
     },
-    "v1CreateItemResponse": {
+    "v1CreatePartCategoryResponse": {
       "type": "object",
       "properties": {
-        "item": {
-          "$ref": "#/definitions/v1Item"
+        "category": {
+          "$ref": "#/definitions/v1PartCategory"
+        }
+      }
+    },
+    "v1CreatePartResponse": {
+      "type": "object",
+      "properties": {
+        "part": {
+          "$ref": "#/definitions/v1Part"
         }
       }
     },
@@ -6113,9 +6876,9 @@
         "transaction": {
           "$ref": "#/definitions/v1StockTransaction"
         },
-        "item": {
-          "$ref": "#/definitions/v1Item",
-          "description": "The item's on-hand quantity after this receipt."
+        "stockLevel": {
+          "$ref": "#/definitions/v1StockLevel",
+          "description": "The part's stock level after this receipt."
         }
       }
     },
@@ -6124,6 +6887,14 @@
       "properties": {
         "supplier": {
           "$ref": "#/definitions/v1Supplier"
+        }
+      }
+    },
+    "v1CreateUnitResponse": {
+      "type": "object",
+      "properties": {
+        "unit": {
+          "$ref": "#/definitions/v1Unit"
         }
       }
     },
@@ -6427,9 +7198,6 @@
         }
       }
     },
-    "v1DeleteItemResponse": {
-      "type": "object"
-    },
     "v1DeleteOutcome": {
       "type": "string",
       "enum": [
@@ -6437,6 +7205,22 @@
         "DELETE_OUTCOME_DEACTIVATED"
       ],
       "description": "DeleteOutcome is what a DELETE did (FR-CAT-07, the delete-or-deactivate\nrule). An object that nothing references is soft-deleted; one that is\nstill in use is only deactivated: it disappears from pickers, stays on\nthe documents that use it, and staff can reactivate it.\n\nEvery deletable resource takes a `dry_run` flag (`?dryRun=true`) that\nanswers with the outcome without changing anything, so a confirmation\ndialog can tell the user which one will happen."
+    },
+    "v1DeletePartCategoryResponse": {
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "$ref": "#/definitions/v1DeleteOutcome"
+        }
+      }
+    },
+    "v1DeletePartResponse": {
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "$ref": "#/definitions/v1DeleteOutcome"
+        }
+      }
     },
     "v1DeleteQuoteResponse": {
       "type": "object"
@@ -6451,6 +7235,14 @@
       "type": "object"
     },
     "v1DeleteSupplierResponse": {
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "$ref": "#/definitions/v1DeleteOutcome"
+        }
+      }
+    },
+    "v1DeleteUnitResponse": {
       "type": "object",
       "properties": {
         "outcome": {
@@ -6621,9 +7413,10 @@
       "enum": [
         "FILE_KIND_LOGO",
         "FILE_KIND_PAYMENT_EVIDENCE",
-        "FILE_KIND_PLATFORM_QR"
+        "FILE_KIND_PLATFORM_QR",
+        "FILE_KIND_PART_IMAGE"
       ],
-      "description": "FileKind says what a file is for, and so whether it is public. Every kind\nadded later (repair photo, customer document, claim document, export) is\nprivate and served through short-lived signed URLs.\n\n - FILE_KIND_LOGO: A garage logo (public).\n - FILE_KIND_PAYMENT_EVIDENCE: The screenshot of a subscription transfer (private).\n - FILE_KIND_PLATFORM_QR: The platform's bank QR code (private, read through a signed URL)."
+      "description": "FileKind says what a file is for, and so whether it is public. Every kind\nadded later (repair photo, customer document, claim document, export) is\nprivate, except part images and served through short-lived signed URLs.\n\n - FILE_KIND_LOGO: A garage logo (public).\n - FILE_KIND_PAYMENT_EVIDENCE: The screenshot of a subscription transfer (private).\n - FILE_KIND_PLATFORM_QR: The platform's bank QR code (private, read through a signed URL).\n - FILE_KIND_PART_IMAGE: An image of a part (public, at most three per part, Release 6.0)."
     },
     "v1Garage": {
       "type": "object",
@@ -6831,14 +7624,6 @@
         }
       }
     },
-    "v1GetItemResponse": {
-      "type": "object",
-      "properties": {
-        "item": {
-          "$ref": "#/definitions/v1Item"
-        }
-      }
-    },
     "v1GetMeResponse": {
       "type": "object",
       "properties": {
@@ -6881,6 +7666,14 @@
             "$ref": "#/definitions/v1VehicleHistoryEntry"
           },
           "description": "Quotes, repair orders and settlements of the vehicle, newest first."
+        }
+      }
+    },
+    "v1GetPartResponse": {
+      "type": "object",
+      "properties": {
+        "part": {
+          "$ref": "#/definitions/v1Part"
         }
       }
     },
@@ -6962,6 +7755,14 @@
       "properties": {
         "settlement": {
           "$ref": "#/definitions/v1Settlement"
+        }
+      }
+    },
+    "v1GetStockLevelResponse": {
+      "type": "object",
+      "properties": {
+        "stockLevel": {
+          "$ref": "#/definitions/v1StockLevel"
         }
       }
     },
@@ -7062,54 +7863,6 @@
         "INVITATION_STATUS_EXPIRED"
       ]
     },
-    "v1Item": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "readOnly": true
-        },
-        "garageId": {
-          "type": "string",
-          "readOnly": true
-        },
-        "sku": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "unit": {
-          "type": "string",
-          "description": "e.g. \"piece\", \"liter\"; free text."
-        },
-        "reorderThreshold": {
-          "type": "integer",
-          "format": "int32",
-          "description": "A quantityOnHand at or below this triggers the low-stock badge\n(FR-INV-04's UI half; the notification itself is Release 2)."
-        },
-        "quantityOnHand": {
-          "type": "string",
-          "description": "Decimal string; derived from stock_transactions, never written\ndirectly (FR-INV-03).",
-          "readOnly": true
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "readOnly": true
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "readOnly": true
-        }
-      },
-      "description": "Item is one part code a garage stocks (FR-INV-01..03).",
-      "required": [
-        "sku",
-        "name"
-      ]
-    },
     "v1ListAllPlansResponse": {
       "type": "object",
       "properties": {
@@ -7171,21 +7924,6 @@
             "type": "object",
             "$ref": "#/definitions/v1Invitation"
           }
-        }
-      }
-    },
-    "v1ListItemsResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Item"
-          }
-        },
-        "pagination": {
-          "$ref": "#/definitions/v1Pagination"
         }
       }
     },
@@ -7261,6 +7999,34 @@
             "$ref": "#/definitions/v1WorkOrder"
           },
           "description": "Open repair orders (not closed) with at least one line assigned to the\ntechnician, across every garage where they are an active member\nallowed to read repair orders; oldest first."
+        }
+      }
+    },
+    "v1ListPartCategoriesResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PartCategory"
+          }
+        }
+      },
+      "description": "The whole tree as a flat list with parent ids."
+    },
+    "v1ListPartsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Part"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
         }
       }
     },
@@ -7385,6 +8151,21 @@
         }
       }
     },
+    "v1ListStockLevelsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1StockLevel"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
     "v1ListStockTransactionsResponse": {
       "type": "object",
       "properties": {
@@ -7423,6 +8204,21 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1Supplier"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1ListUnitsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Unit"
           }
         },
         "pagination": {
@@ -7590,6 +8386,41 @@
       },
       "description": "OtpChallenge tells the client how long the e-mailed OTP is valid."
     },
+    "v1PackagingUnit": {
+      "type": "object",
+      "properties": {
+        "unitId": {
+          "type": "string"
+        },
+        "factor": {
+          "type": "string",
+          "description": "Base units in one of this unit; a decimal string above zero."
+        },
+        "salePrice": {
+          "type": "string",
+          "format": "int64",
+          "description": "VND for one of this unit. On input it is an override; on output it is\nthe override or, when none is set, the part's sale_price times factor."
+        },
+        "unitName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "unitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "salePriceOverridden": {
+          "type": "boolean",
+          "description": "True when sale_price is an override rather than derived.",
+          "readOnly": true
+        }
+      },
+      "description": "PackagingUnit is one non-base unit of a part with its factor to the base\nunit (FR-CAT-02): 1 case = 24 cans is factor \"24\" when the base unit is\nthe can. The base unit has no row.",
+      "required": [
+        "unitId",
+        "factor"
+      ]
+    },
     "v1Pagination": {
       "type": "object",
       "properties": {
@@ -7610,6 +8441,141 @@
         }
       },
       "description": "Pagination describes the page returned by every List call (API\nSpecification Section 1.1): lists are requested with `page` (1-based,\ndefault 1) and `page_size` (default 20, max 100)."
+    },
+    "v1Part": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "sku": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "baseUnitId": {
+          "type": "string",
+          "description": "The unit stock, thresholds and document quantities are kept in. It\ncannot change once the part has stock movements, packaging units or\ndocument lines."
+        },
+        "baseUnitName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "baseUnitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "salePrice": {
+          "type": "string",
+          "format": "int64",
+          "description": "What the customer pays per base unit, whole VND (FR-CAT-09)."
+        },
+        "categoryId": {
+          "type": "string"
+        },
+        "categoryName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "brand": {
+          "type": "string"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "reorderThreshold": {
+          "type": "string",
+          "description": "A decimal string in the base unit; the low-stock badge shows at or\nbelow it (FR-INV-04, display half)."
+        },
+        "packagingUnits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PackagingUnit"
+          },
+          "readOnly": true
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PartImage"
+          },
+          "description": "At most three, in display order; the first is the thumbnail.",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Part is one part code of a garage (FR-INV-01, FR-CAT-01..04, FR-CAT-09).",
+      "required": [
+        "sku",
+        "name",
+        "baseUnitId"
+      ]
+    },
+    "v1PartCategory": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "parentId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "PartCategory is one node of the category tree of at most three levels\n(FR-CAT-03), e.g. Engine oil \u003e Synthetic \u003e 5W-30.",
+      "required": [
+        "name"
+      ]
+    },
+    "v1PartImage": {
+      "type": "object",
+      "properties": {
+        "fileId": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "description": "Public URL; the part_image kind needs no signature."
+        }
+      },
+      "description": "PartImage is one image of a part (FR-CAT-04), a file of kind part_image."
     },
     "v1PaymentEvidence": {
       "type": "object",
@@ -7684,9 +8650,11 @@
         "PERMISSION_BILLING_READ",
         "PERMISSION_BILLING_WRITE",
         "PERMISSION_REPORT_READ",
-        "PERMISSION_CUSTOMER_CORRECT"
+        "PERMISSION_CUSTOMER_CORRECT",
+        "PERMISSION_CATALOGUE_READ",
+        "PERMISSION_CATALOGUE_WRITE"
       ],
-      "description": "Permission is one action a staff member may perform in a garage\n(FR-IAM-03). The catalog is fixed by the platform and grouped by module,\neach module offering a read and/or a write action; garage owners combine\npermissions into roles. A write permission includes the read permission\nof its module. Owners always hold every permission; every active member\nmay read the garage profile.\n\n - PERMISSION_GARAGE_WRITE: Edit the garage profile, configuration and logo.\n - PERMISSION_STAFF_WRITE: Invite, activate/deactivate and remove staff, and change their groups.\n - PERMISSION_CUSTOMER_READ: Customers and their vehicles.\n - PERMISSION_SUPPLIER_READ: The garage's suppliers (FR-SUP-01).\n - PERMISSION_CUSTOMER_CORRECT: Correct a locked vehicle identity field and move a vehicle to another\ncustomer (FR-CUS-09). Held by the manager role by default."
+      "description": "Permission is one action a staff member may perform in a garage\n(FR-IAM-03). The catalog is fixed by the platform and grouped by module,\neach module offering a read and/or a write action; garage owners combine\npermissions into roles. A write permission includes the read permission\nof its module. Owners always hold every permission; every active member\nmay read the garage profile.\n\n - PERMISSION_GARAGE_WRITE: Edit the garage profile, configuration and logo.\n - PERMISSION_STAFF_WRITE: Invite, activate/deactivate and remove staff, and change their groups.\n - PERMISSION_CUSTOMER_READ: Customers and their vehicles.\n - PERMISSION_SUPPLIER_READ: The garage's suppliers (FR-SUP-01).\n - PERMISSION_CUSTOMER_CORRECT: Correct a locked vehicle identity field and move a vehicle to another\ncustomer (FR-CUS-09). Held by the manager role by default.\n - PERMISSION_CATALOGUE_READ: Parts, units, packaging, categories, prices and images (Release 6.0)."
     },
     "v1PermissionInfo": {
       "type": "object",
@@ -8109,7 +9077,7 @@
         },
         "quantity": {
           "type": "string",
-          "description": "Decimal string, e.g. \"1\" or \"1.5\"."
+          "description": "Decimal string, e.g. \"1\" or \"1.5\", in the base unit of the part. When\nunit_id is set the server ignores this on input and derives it from\nentered_quantity (FR-CAT-02), so a line read back and sent again is\nnever converted twice."
         },
         "unitPrice": {
           "type": "string",
@@ -8123,6 +9091,18 @@
         },
         "decision": {
           "$ref": "#/definitions/v1QuoteLineDecision",
+          "readOnly": true
+        },
+        "unitId": {
+          "type": "string",
+          "description": "The packaging unit of the part the amount was entered in; unset for\nlabor and for base-unit lines."
+        },
+        "enteredQuantity": {
+          "type": "string",
+          "description": "The amount as typed, in unit_id (decimal string); required with unit_id."
+        },
+        "unitAbbreviation": {
+          "type": "string",
           "readOnly": true
         }
       },
@@ -8246,6 +9226,14 @@
         }
       }
     },
+    "v1RemovePartImageResponse": {
+      "type": "object",
+      "properties": {
+        "part": {
+          "$ref": "#/definitions/v1Part"
+        }
+      }
+    },
     "v1RepairOrder": {
       "type": "object",
       "properties": {
@@ -8342,7 +9330,7 @@
         },
         "quantity": {
           "type": "string",
-          "description": "Decimal string, e.g. \"1\" or \"1.5\"."
+          "description": "Decimal string in the base unit of the part; derived from\nentered_quantity when unit_id is set (same rule as a quote line)."
         },
         "unitPrice": {
           "type": "string",
@@ -8356,6 +9344,16 @@
         },
         "status": {
           "$ref": "#/definitions/v1RepairOrderLineStatus"
+        },
+        "unitId": {
+          "type": "string"
+        },
+        "enteredQuantity": {
+          "type": "string"
+        },
+        "unitAbbreviation": {
+          "type": "string",
+          "readOnly": true
         },
         "assignedTechnicianIds": {
           "type": "array",
@@ -8578,6 +9576,14 @@
         }
       },
       "description": "Session is what every successful sign-in returns."
+    },
+    "v1SetPartUnitsResponse": {
+      "type": "object",
+      "properties": {
+        "part": {
+          "$ref": "#/definitions/v1Part"
+        }
+      }
     },
     "v1Settlement": {
       "type": "object",
@@ -8891,6 +9897,64 @@
       ],
       "description": "StaffStatus: inactive staff keep their record but lose access."
     },
+    "v1StockLevel": {
+      "type": "object",
+      "properties": {
+        "partId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "sku": {
+          "type": "string",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "readOnly": true
+        },
+        "baseUnitName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "baseUnitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "categoryName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "brand": {
+          "type": "string",
+          "readOnly": true
+        },
+        "isActive": {
+          "type": "boolean",
+          "readOnly": true
+        },
+        "thumbnailUrl": {
+          "type": "string",
+          "description": "URL of the first image, empty when the part has none.",
+          "readOnly": true
+        },
+        "quantityOnHand": {
+          "type": "string",
+          "description": "Decimal string in the base unit; derived from stock_transactions, never\nwritten directly (FR-INV-03).",
+          "readOnly": true
+        },
+        "reorderThreshold": {
+          "type": "string",
+          "description": "Decimal string in the base unit.",
+          "readOnly": true
+        },
+        "lowStock": {
+          "type": "boolean",
+          "description": "True at or below the reorder threshold.",
+          "readOnly": true
+        }
+      },
+      "description": "StockLevel is one part with how many of it the garage has (FR-INV-03).\nThe part itself (SKU, name, units, category, brand, price, images) is\nowned by the Catalogue module (vietgara.catalogue.v1); this is the\nstock-on-hand view that joins it with the balance."
+    },
     "v1StockTransaction": {
       "type": "object",
       "properties": {
@@ -8937,6 +10001,25 @@
         "createdAt": {
           "type": "string",
           "format": "date-time",
+          "readOnly": true
+        },
+        "unitId": {
+          "type": "string",
+          "description": "Release 6.0: the packaging unit the user entered and the typed amount;\n`quantity` stays the base-unit amount. Empty when the base unit was used.",
+          "readOnly": true
+        },
+        "enteredQuantity": {
+          "type": "string",
+          "readOnly": true
+        },
+        "unitAbbreviation": {
+          "type": "string",
+          "description": "The abbreviation of the entered unit; empty when the base unit was used.",
+          "readOnly": true
+        },
+        "baseUnitAbbreviation": {
+          "type": "string",
+          "description": "The abbreviation of the part's base unit, the unit `quantity` is in.",
           "readOnly": true
         }
       },
@@ -9127,6 +10210,43 @@
       ],
       "description": "TaxProfileKind: a customer has at most one personal tax profile and any\nnumber of company tax profiles (FR-CUS-07)."
     },
+    "v1Unit": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "abbreviation": {
+          "type": "string"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Unit is one unit of measure of a garage (FR-CAT-01). A unit is per\ngarage; the factor between two units lives on the part, not here.",
+      "required": [
+        "name",
+        "abbreviation"
+      ]
+    },
     "v1UnlinkCustomerUserResponse": {
       "type": "object",
       "properties": {
@@ -9167,19 +10287,27 @@
         }
       }
     },
-    "v1UpdateItemResponse": {
-      "type": "object",
-      "properties": {
-        "item": {
-          "$ref": "#/definitions/v1Item"
-        }
-      }
-    },
     "v1UpdateMeResponse": {
       "type": "object",
       "properties": {
         "user": {
           "$ref": "#/definitions/v1User"
+        }
+      }
+    },
+    "v1UpdatePartCategoryResponse": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "$ref": "#/definitions/v1PartCategory"
+        }
+      }
+    },
+    "v1UpdatePartResponse": {
+      "type": "object",
+      "properties": {
+        "part": {
+          "$ref": "#/definitions/v1Part"
         }
       }
     },
@@ -9252,6 +10380,14 @@
       "properties": {
         "supplier": {
           "$ref": "#/definitions/v1Supplier"
+        }
+      }
+    },
+    "v1UpdateUnitResponse": {
+      "type": "object",
+      "properties": {
+        "unit": {
+          "$ref": "#/definitions/v1Unit"
         }
       }
     },

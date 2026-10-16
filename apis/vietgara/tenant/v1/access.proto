@@ -41,6 +41,9 @@ enum Permission {
   // Correct a locked vehicle identity field and move a vehicle to another
   // customer (FR-CUS-09). Held by the manager role by default.
   PERMISSION_CUSTOMER_CORRECT = 18;
+  // Parts, units, packaging, categories, prices and images (Release 6.0).
+  PERMISSION_CATALOGUE_READ = 19;
+  PERMISSION_CATALOGUE_WRITE = 20;
 }
 
 // PermissionInfo describes one catalog entry.

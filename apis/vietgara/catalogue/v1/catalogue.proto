@@ -1,0 +1,394 @@
+syntax = "proto3";
+
+package vietgara.catalogue.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/lifecycle.proto";
+import "vietgara/common/v1/pagination.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/catalogue/v1;cataloguev1";
+
+// The Catalogue module answers "what is this part?" (HLD module #18): the
+// part itself, its units of measure and packaging, its category, brand,
+// selling price and images. Stock quantities live in the Inventory module
+// (vietgara.inventory.v1); nothing here carries a quantity.
+
+// Unit is one unit of measure of a garage (FR-CAT-01). A unit is per
+// garage; the factor between two units lives on the part, not here.
+message Unit {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string name = 3 [(google.api.field_behavior) = REQUIRED];
+  string abbreviation = 4 [(google.api.field_behavior) = REQUIRED];
+  bool is_active = 5;
+  google.protobuf.Timestamp created_at = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// PackagingUnit is one non-base unit of a part with its factor to the base
+// unit (FR-CAT-02): 1 case = 24 cans is factor "24" when the base unit is
+// the can. The base unit has no row.
+message PackagingUnit {
+  string unit_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Base units in one of this unit; a decimal string above zero.
+  string factor = 2 [(google.api.field_behavior) = REQUIRED];
+  // VND for one of this unit. On input it is an override; on output it is
+  // the override or, when none is set, the part's sale_price times factor.
+  optional int64 sale_price = 3;
+  string unit_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string unit_abbreviation = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // True when sale_price is an override rather than derived.
+  bool sale_price_overridden = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// PartCategory is one node of the category tree of at most three levels
+// (FR-CAT-03), e.g. Engine oil > Synthetic > 5W-30.
+message PartCategory {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  optional string parent_id = 3;
+  string name = 4 [(google.api.field_behavior) = REQUIRED];
+  bool is_active = 5;
+  google.protobuf.Timestamp created_at = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// PartImage is one image of a part (FR-CAT-04), a file of kind part_image.
+message PartImage {
+  string file_id = 1;
+  // Public URL; the part_image kind needs no signature.
+  string url = 2;
+}
+
+// Part is one part code of a garage (FR-INV-01, FR-CAT-01..04, FR-CAT-09).
+message Part {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string sku = 3 [(google.api.field_behavior) = REQUIRED];
+  string name = 4 [(google.api.field_behavior) = REQUIRED];
+  // The unit stock, thresholds and document quantities are kept in. It
+  // cannot change once the part has stock movements, packaging units or
+  // document lines.
+  string base_unit_id = 5 [(google.api.field_behavior) = REQUIRED];
+  string base_unit_name = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string base_unit_abbreviation = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // What the customer pays per base unit, whole VND (FR-CAT-09).
+  int64 sale_price = 8;
+  optional string category_id = 9;
+  string category_name = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string brand = 11;
+  bool is_active = 12;
+  // A decimal string in the base unit; the low-stock badge shows at or
+  // below it (FR-INV-04, display half).
+  string reorder_threshold = 13;
+  repeated PackagingUnit packaging_units = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // At most three, in display order; the first is the thumbnail.
+  repeated PartImage images = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListPartsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Matches SKU, name or brand.
+  string query = 2;
+  // Also matches the sub-categories of this category.
+  string category_id = 3;
+  string brand = 4;
+  bool include_inactive = 5;
+  int32 page = 6;
+  int32 page_size = 7;
+}
+
+message ListPartsResponse {
+  repeated Part data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message CreatePartRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  Part part = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreatePartResponse {
+  Part part = 1;
+}
+
+message GetPartRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetPartResponse {
+  Part part = 1;
+}
+
+message UpdatePartRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
+  Part part = 3 [(google.api.field_behavior) = REQUIRED];
+  google.protobuf.FieldMask update_mask = 4;
+}
+
+message UpdatePartResponse {
+  Part part = 1;
+}
+
+message DeletePartRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Answer the outcome without changing anything.
+  bool dry_run = 3;
+}
+
+message DeletePartResponse {
+  vietgara.common.v1.DeleteOutcome outcome = 1;
+}
+
+message ActivatePartRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ActivatePartResponse {
+  Part part = 1;
+}
+
+message SetPartUnitsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Replaces the whole packaging table.
+  repeated PackagingUnit packaging_units = 3;
+}
+
+message SetPartUnitsResponse {
+  Part part = 1;
+}
+
+message AddPartImageRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // A file of kind part_image of this garage, uploaded with FileService
+  // (entity_type "part", entity_id the part id).
+  string file_id = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message AddPartImageResponse {
+  Part part = 1;
+}
+
+message RemovePartImageRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string file_id = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message RemovePartImageResponse {
+  Part part = 1;
+}
+
+message ListUnitsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  bool include_inactive = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message ListUnitsResponse {
+  repeated Unit data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message CreateUnitRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  Unit unit = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateUnitResponse {
+  Unit unit = 1;
+}
+
+message UpdateUnitRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string unit_id = 2 [(google.api.field_behavior) = REQUIRED];
+  Unit unit = 3 [(google.api.field_behavior) = REQUIRED];
+  google.protobuf.FieldMask update_mask = 4;
+}
+
+message UpdateUnitResponse {
+  Unit unit = 1;
+}
+
+message DeleteUnitRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string unit_id = 2 [(google.api.field_behavior) = REQUIRED];
+  bool dry_run = 3;
+}
+
+message DeleteUnitResponse {
+  vietgara.common.v1.DeleteOutcome outcome = 1;
+}
+
+message ListPartCategoriesRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  bool include_inactive = 2;
+}
+
+// The whole tree as a flat list with parent ids.
+message ListPartCategoriesResponse {
+  repeated PartCategory data = 1;
+}
+
+message CreatePartCategoryRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  PartCategory category = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreatePartCategoryResponse {
+  PartCategory category = 1;
+}
+
+message UpdatePartCategoryRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string category_id = 2 [(google.api.field_behavior) = REQUIRED];
+  PartCategory category = 3 [(google.api.field_behavior) = REQUIRED];
+  google.protobuf.FieldMask update_mask = 4;
+}
+
+message UpdatePartCategoryResponse {
+  PartCategory category = 1;
+}
+
+message DeletePartCategoryRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string category_id = 2 [(google.api.field_behavior) = REQUIRED];
+  bool dry_run = 3;
+}
+
+message DeletePartCategoryResponse {
+  vietgara.common.v1.DeleteOutcome outcome = 1;
+}
+
+// CatalogueService manages the parts of a garage and the reference data
+// around them. Reads need PERMISSION_CATALOGUE_READ, changes
+// PERMISSION_CATALOGUE_WRITE.
+service CatalogueService {
+  rpc ListParts(ListPartsRequest) returns (ListPartsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/parts"};
+  }
+
+  rpc CreatePart(CreatePartRequest) returns (CreatePartResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/parts"
+      body: "part"
+      response_body: "part"
+    };
+  }
+
+  rpc GetPart(GetPartRequest) returns (GetPartResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/garages/{garage_id}/parts/{part_id}"
+      response_body: "part"
+    };
+  }
+
+  rpc UpdatePart(UpdatePartRequest) returns (UpdatePartResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/parts/{part_id}"
+      body: "part"
+      response_body: "part"
+    };
+  }
+
+  // Follows the delete-or-deactivate rule (FR-CAT-07).
+  rpc DeletePart(DeletePartRequest) returns (DeletePartResponse) {
+    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/parts/{part_id}"};
+  }
+
+  rpc ActivatePart(ActivatePartRequest) returns (ActivatePartResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/parts/{part_id}:activate"
+      body: "*"
+      response_body: "part"
+    };
+  }
+
+  // Replaces the part's packaging table (FR-CAT-02).
+  rpc SetPartUnits(SetPartUnitsRequest) returns (SetPartUnitsResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/garages/{garage_id}/parts/{part_id}/units"
+      body: "*"
+      response_body: "part"
+    };
+  }
+
+  // Attaches an uploaded part_image file, at most three per part
+  // (FR-CAT-04).
+  rpc AddPartImage(AddPartImageRequest) returns (AddPartImageResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/parts/{part_id}/images"
+      body: "*"
+      response_body: "part"
+    };
+  }
+
+  rpc RemovePartImage(RemovePartImageRequest) returns (RemovePartImageResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/garages/{garage_id}/parts/{part_id}/images/{file_id}"
+      response_body: "part"
+    };
+  }
+
+  // Units of measure of the garage (FR-CAT-01).
+  rpc ListUnits(ListUnitsRequest) returns (ListUnitsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/units"};
+  }
+
+  rpc CreateUnit(CreateUnitRequest) returns (CreateUnitResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/units"
+      body: "unit"
+      response_body: "unit"
+    };
+  }
+
+  rpc UpdateUnit(UpdateUnitRequest) returns (UpdateUnitResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/units/{unit_id}"
+      body: "unit"
+      response_body: "unit"
+    };
+  }
+
+  rpc DeleteUnit(DeleteUnitRequest) returns (DeleteUnitResponse) {
+    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/units/{unit_id}"};
+  }
+
+  // The category tree of at most three levels (FR-CAT-03).
+  rpc ListPartCategories(ListPartCategoriesRequest) returns (ListPartCategoriesResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/part-categories"};
+  }
+
+  rpc CreatePartCategory(CreatePartCategoryRequest) returns (CreatePartCategoryResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/part-categories"
+      body: "category"
+      response_body: "category"
+    };
+  }
+
+  rpc UpdatePartCategory(UpdatePartCategoryRequest) returns (UpdatePartCategoryResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/part-categories/{category_id}"
+      body: "category"
+      response_body: "category"
+    };
+  }
+
+  rpc DeletePartCategory(DeletePartCategoryRequest) returns (DeletePartCategoryResponse) {
+    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/part-categories/{category_id}"};
+  }
+}

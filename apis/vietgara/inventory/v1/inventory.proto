@@ -4,7 +4,6 @@ package vietgara.inventory.v1;
 
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
-import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "vietgara/common/v1/pagination.proto";
 
@@ -27,72 +26,57 @@ enum StockTransactionRefType {
   STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER = 2;
 }
 
-// Item is one part code a garage stocks (FR-INV-01..03).
-message Item {
-  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string sku = 3 [(google.api.field_behavior) = REQUIRED];
-  string name = 4 [(google.api.field_behavior) = REQUIRED];
-  // e.g. "piece", "liter"; free text.
-  string unit = 5;
-  // A quantityOnHand at or below this triggers the low-stock badge
-  // (FR-INV-04's UI half; the notification itself is Release 2).
-  int32 reorder_threshold = 6;
-  // Decimal string; derived from stock_transactions, never written
-  // directly (FR-INV-03).
-  string quantity_on_hand = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
-  google.protobuf.Timestamp created_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
-  google.protobuf.Timestamp updated_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+// StockLevel is one part with how many of it the garage has (FR-INV-03).
+// The part itself (SKU, name, units, category, brand, price, images) is
+// owned by the Catalogue module (vietgara.catalogue.v1); this is the
+// stock-on-hand view that joins it with the balance.
+message StockLevel {
+  string part_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string sku = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string base_unit_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string base_unit_abbreviation = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string category_name = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string brand = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  bool is_active = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // URL of the first image, empty when the part has none.
+  string thumbnail_url = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Decimal string in the base unit; derived from stock_transactions, never
+  // written directly (FR-INV-03).
+  string quantity_on_hand = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Decimal string in the base unit.
+  string reorder_threshold = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // True at or below the reorder threshold.
+  bool low_stock = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
-message ListItemsRequest {
+message ListStockLevelsRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
-  // Matches SKU or name.
+  // Matches SKU, name or brand (answered by Catalogue).
   string query = 2;
-  int32 page = 3;
-  int32 page_size = 4;
+  // Also matches the sub-categories of this category.
+  string category_id = 3;
+  string brand = 4;
+  // Only parts at or below their reorder threshold.
+  bool low_stock = 5;
+  bool include_inactive = 6;
+  int32 page = 7;
+  int32 page_size = 8;
 }
 
-message ListItemsResponse {
-  repeated Item data = 1;
+message ListStockLevelsResponse {
+  repeated StockLevel data = 1;
   vietgara.common.v1.Pagination pagination = 2;
 }
 
-message CreateItemRequest {
+message GetStockLevelRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
-  Item item = 2 [(google.api.field_behavior) = REQUIRED];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-message CreateItemResponse {
-  Item item = 1;
+message GetStockLevelResponse {
+  StockLevel stock_level = 1;
 }
-
-message GetItemRequest {
-  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
-  string item_id = 2 [(google.api.field_behavior) = REQUIRED];
-}
-
-message GetItemResponse {
-  Item item = 1;
-}
-
-message UpdateItemRequest {
-  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
-  string item_id = 2 [(google.api.field_behavior) = REQUIRED];
-  Item item = 3 [(google.api.field_behavior) = REQUIRED];
-  google.protobuf.FieldMask update_mask = 4;
-}
-
-message UpdateItemResponse {
-  Item item = 1;
-}
-
-message DeleteItemRequest {
-  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
-  string item_id = 2 [(google.api.field_behavior) = REQUIRED];
-}
-
-message DeleteItemResponse {}
 
 // StockTransaction is one recorded stock movement.
 message StockTransaction {
@@ -109,19 +93,32 @@ message StockTransaction {
   // The repair order id, for an OUT transaction caused by one.
   string ref_id = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp created_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release 6.0: the packaging unit the user entered and the typed amount;
+  // `quantity` stays the base-unit amount. Empty when the base unit was used.
+  optional string unit_id = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string entered_quantity = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The abbreviation of the entered unit; empty when the base unit was used.
+  string unit_abbreviation = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The abbreviation of the part's base unit, the unit `quantity` is in.
+  string base_unit_abbreviation = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message CreateStockReceiptRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // The part's id (the JSON field keeps the name item_id).
   string item_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // In the base unit unless unit_id names a packaging unit of the part, in
+  // which case it is converted on save (FR-CAT-02).
   string quantity = 3 [(google.api.field_behavior) = REQUIRED];
+  // VND per entered unit; stored per base unit. Zero means "not recorded".
   int64 unit_cost = 4;
+  optional string unit_id = 5;
 }
 
 message CreateStockReceiptResponse {
   StockTransaction transaction = 1;
-  // The item's on-hand quantity after this receipt.
-  Item item = 2;
+  // The part's stock level after this receipt.
+  StockLevel stock_level = 2;
 }
 
 message ListStockTransactionsRequest {
@@ -137,40 +134,20 @@ message ListStockTransactionsResponse {
   vietgara.common.v1.Pagination pagination = 2;
 }
 
-// InventoryService manages parts stock (FRD 3.7). Reads need
-// PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE.
+// InventoryService manages how many of each part a garage has (FRD 3.7).
+// Reads need PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE.
+// The parts themselves are managed by CatalogueService.
 service InventoryService {
-  // Items with their current stock on hand (FR-INV-03), the same list
-  // the Stock on Hand screen shows.
-  rpc ListItems(ListItemsRequest) returns (ListItemsResponse) {
+  // The stock-on-hand list (FR-INV-03): parts with their balances.
+  rpc ListStockLevels(ListStockLevelsRequest) returns (ListStockLevelsResponse) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/inventory-items"};
   }
 
-  rpc CreateItem(CreateItemRequest) returns (CreateItemResponse) {
+  rpc GetStockLevel(GetStockLevelRequest) returns (GetStockLevelResponse) {
     option (google.api.http) = {
-      post: "/api/v1/garages/{garage_id}/inventory-items"
-      body: "item"
-      response_body: "item"
+      get: "/api/v1/garages/{garage_id}/inventory-items/{part_id}"
+      response_body: "stock_level"
     };
-  }
-
-  rpc GetItem(GetItemRequest) returns (GetItemResponse) {
-    option (google.api.http) = {
-      get: "/api/v1/garages/{garage_id}/inventory-items/{item_id}"
-      response_body: "item"
-    };
-  }
-
-  rpc UpdateItem(UpdateItemRequest) returns (UpdateItemResponse) {
-    option (google.api.http) = {
-      patch: "/api/v1/garages/{garage_id}/inventory-items/{item_id}"
-      body: "item"
-      response_body: "item"
-    };
-  }
-
-  rpc DeleteItem(DeleteItemRequest) returns (DeleteItemResponse) {
-    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/inventory-items/{item_id}"};
   }
 
   // Records a goods-receipt note from a supplier (FR-INV-01), increasing
@@ -182,9 +159,7 @@ service InventoryService {
     };
   }
 
-  // The stock in/out/on-hand movement report (FR-INV-05); Excel export
-  // of the same data is added with the Document/Print Service (Release
-  // 1.4).
+  // The stock in/out/on-hand movement report (FR-INV-05).
   rpc ListStockTransactions(ListStockTransactionsRequest) returns (ListStockTransactionsResponse) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/stock-movements"};
   }

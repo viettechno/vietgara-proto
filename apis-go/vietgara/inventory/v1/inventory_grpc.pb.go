@@ -19,11 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	InventoryService_ListItems_FullMethodName             = "/vietgara.inventory.v1.InventoryService/ListItems"
-	InventoryService_CreateItem_FullMethodName            = "/vietgara.inventory.v1.InventoryService/CreateItem"
-	InventoryService_GetItem_FullMethodName               = "/vietgara.inventory.v1.InventoryService/GetItem"
-	InventoryService_UpdateItem_FullMethodName            = "/vietgara.inventory.v1.InventoryService/UpdateItem"
-	InventoryService_DeleteItem_FullMethodName            = "/vietgara.inventory.v1.InventoryService/DeleteItem"
+	InventoryService_ListStockLevels_FullMethodName       = "/vietgara.inventory.v1.InventoryService/ListStockLevels"
+	InventoryService_GetStockLevel_FullMethodName         = "/vietgara.inventory.v1.InventoryService/GetStockLevel"
 	InventoryService_CreateStockReceipt_FullMethodName    = "/vietgara.inventory.v1.InventoryService/CreateStockReceipt"
 	InventoryService_ListStockTransactions_FullMethodName = "/vietgara.inventory.v1.InventoryService/ListStockTransactions"
 )
@@ -32,22 +29,17 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// InventoryService manages parts stock (FRD 3.7). Reads need
-// PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE.
+// InventoryService manages how many of each part a garage has (FRD 3.7).
+// Reads need PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE.
+// The parts themselves are managed by CatalogueService.
 type InventoryServiceClient interface {
-	// Items with their current stock on hand (FR-INV-03), the same list
-	// the Stock on Hand screen shows.
-	ListItems(ctx context.Context, in *ListItemsRequest, opts ...grpc.CallOption) (*ListItemsResponse, error)
-	CreateItem(ctx context.Context, in *CreateItemRequest, opts ...grpc.CallOption) (*CreateItemResponse, error)
-	GetItem(ctx context.Context, in *GetItemRequest, opts ...grpc.CallOption) (*GetItemResponse, error)
-	UpdateItem(ctx context.Context, in *UpdateItemRequest, opts ...grpc.CallOption) (*UpdateItemResponse, error)
-	DeleteItem(ctx context.Context, in *DeleteItemRequest, opts ...grpc.CallOption) (*DeleteItemResponse, error)
+	// The stock-on-hand list (FR-INV-03): parts with their balances.
+	ListStockLevels(ctx context.Context, in *ListStockLevelsRequest, opts ...grpc.CallOption) (*ListStockLevelsResponse, error)
+	GetStockLevel(ctx context.Context, in *GetStockLevelRequest, opts ...grpc.CallOption) (*GetStockLevelResponse, error)
 	// Records a goods-receipt note from a supplier (FR-INV-01), increasing
 	// stock on hand.
 	CreateStockReceipt(ctx context.Context, in *CreateStockReceiptRequest, opts ...grpc.CallOption) (*CreateStockReceiptResponse, error)
-	// The stock in/out/on-hand movement report (FR-INV-05); Excel export
-	// of the same data is added with the Document/Print Service (Release
-	// 1.4).
+	// The stock in/out/on-hand movement report (FR-INV-05).
 	ListStockTransactions(ctx context.Context, in *ListStockTransactionsRequest, opts ...grpc.CallOption) (*ListStockTransactionsResponse, error)
 }
 
@@ -59,50 +51,20 @@ func NewInventoryServiceClient(cc grpc.ClientConnInterface) InventoryServiceClie
 	return &inventoryServiceClient{cc}
 }
 
-func (c *inventoryServiceClient) ListItems(ctx context.Context, in *ListItemsRequest, opts ...grpc.CallOption) (*ListItemsResponse, error) {
+func (c *inventoryServiceClient) ListStockLevels(ctx context.Context, in *ListStockLevelsRequest, opts ...grpc.CallOption) (*ListStockLevelsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListItemsResponse)
-	err := c.cc.Invoke(ctx, InventoryService_ListItems_FullMethodName, in, out, cOpts...)
+	out := new(ListStockLevelsResponse)
+	err := c.cc.Invoke(ctx, InventoryService_ListStockLevels_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *inventoryServiceClient) CreateItem(ctx context.Context, in *CreateItemRequest, opts ...grpc.CallOption) (*CreateItemResponse, error) {
+func (c *inventoryServiceClient) GetStockLevel(ctx context.Context, in *GetStockLevelRequest, opts ...grpc.CallOption) (*GetStockLevelResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateItemResponse)
-	err := c.cc.Invoke(ctx, InventoryService_CreateItem_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *inventoryServiceClient) GetItem(ctx context.Context, in *GetItemRequest, opts ...grpc.CallOption) (*GetItemResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetItemResponse)
-	err := c.cc.Invoke(ctx, InventoryService_GetItem_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *inventoryServiceClient) UpdateItem(ctx context.Context, in *UpdateItemRequest, opts ...grpc.CallOption) (*UpdateItemResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateItemResponse)
-	err := c.cc.Invoke(ctx, InventoryService_UpdateItem_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *inventoryServiceClient) DeleteItem(ctx context.Context, in *DeleteItemRequest, opts ...grpc.CallOption) (*DeleteItemResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteItemResponse)
-	err := c.cc.Invoke(ctx, InventoryService_DeleteItem_FullMethodName, in, out, cOpts...)
+	out := new(GetStockLevelResponse)
+	err := c.cc.Invoke(ctx, InventoryService_GetStockLevel_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -133,22 +95,17 @@ func (c *inventoryServiceClient) ListStockTransactions(ctx context.Context, in *
 // All implementations must embed UnimplementedInventoryServiceServer
 // for forward compatibility.
 //
-// InventoryService manages parts stock (FRD 3.7). Reads need
-// PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE.
+// InventoryService manages how many of each part a garage has (FRD 3.7).
+// Reads need PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE.
+// The parts themselves are managed by CatalogueService.
 type InventoryServiceServer interface {
-	// Items with their current stock on hand (FR-INV-03), the same list
-	// the Stock on Hand screen shows.
-	ListItems(context.Context, *ListItemsRequest) (*ListItemsResponse, error)
-	CreateItem(context.Context, *CreateItemRequest) (*CreateItemResponse, error)
-	GetItem(context.Context, *GetItemRequest) (*GetItemResponse, error)
-	UpdateItem(context.Context, *UpdateItemRequest) (*UpdateItemResponse, error)
-	DeleteItem(context.Context, *DeleteItemRequest) (*DeleteItemResponse, error)
+	// The stock-on-hand list (FR-INV-03): parts with their balances.
+	ListStockLevels(context.Context, *ListStockLevelsRequest) (*ListStockLevelsResponse, error)
+	GetStockLevel(context.Context, *GetStockLevelRequest) (*GetStockLevelResponse, error)
 	// Records a goods-receipt note from a supplier (FR-INV-01), increasing
 	// stock on hand.
 	CreateStockReceipt(context.Context, *CreateStockReceiptRequest) (*CreateStockReceiptResponse, error)
-	// The stock in/out/on-hand movement report (FR-INV-05); Excel export
-	// of the same data is added with the Document/Print Service (Release
-	// 1.4).
+	// The stock in/out/on-hand movement report (FR-INV-05).
 	ListStockTransactions(context.Context, *ListStockTransactionsRequest) (*ListStockTransactionsResponse, error)
 	mustEmbedUnimplementedInventoryServiceServer()
 }
@@ -160,20 +117,11 @@ type InventoryServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedInventoryServiceServer struct{}
 
-func (UnimplementedInventoryServiceServer) ListItems(context.Context, *ListItemsRequest) (*ListItemsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListItems not implemented")
+func (UnimplementedInventoryServiceServer) ListStockLevels(context.Context, *ListStockLevelsRequest) (*ListStockLevelsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListStockLevels not implemented")
 }
-func (UnimplementedInventoryServiceServer) CreateItem(context.Context, *CreateItemRequest) (*CreateItemResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method CreateItem not implemented")
-}
-func (UnimplementedInventoryServiceServer) GetItem(context.Context, *GetItemRequest) (*GetItemResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetItem not implemented")
-}
-func (UnimplementedInventoryServiceServer) UpdateItem(context.Context, *UpdateItemRequest) (*UpdateItemResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method UpdateItem not implemented")
-}
-func (UnimplementedInventoryServiceServer) DeleteItem(context.Context, *DeleteItemRequest) (*DeleteItemResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method DeleteItem not implemented")
+func (UnimplementedInventoryServiceServer) GetStockLevel(context.Context, *GetStockLevelRequest) (*GetStockLevelResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetStockLevel not implemented")
 }
 func (UnimplementedInventoryServiceServer) CreateStockReceipt(context.Context, *CreateStockReceiptRequest) (*CreateStockReceiptResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateStockReceipt not implemented")
@@ -202,92 +150,38 @@ func RegisterInventoryServiceServer(s grpc.ServiceRegistrar, srv InventoryServic
 	s.RegisterService(&InventoryService_ServiceDesc, srv)
 }
 
-func _InventoryService_ListItems_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListItemsRequest)
+func _InventoryService_ListStockLevels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListStockLevelsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(InventoryServiceServer).ListItems(ctx, in)
+		return srv.(InventoryServiceServer).ListStockLevels(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: InventoryService_ListItems_FullMethodName,
+		FullMethod: InventoryService_ListStockLevels_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InventoryServiceServer).ListItems(ctx, req.(*ListItemsRequest))
+		return srv.(InventoryServiceServer).ListStockLevels(ctx, req.(*ListStockLevelsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _InventoryService_CreateItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateItemRequest)
+func _InventoryService_GetStockLevel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStockLevelRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(InventoryServiceServer).CreateItem(ctx, in)
+		return srv.(InventoryServiceServer).GetStockLevel(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: InventoryService_CreateItem_FullMethodName,
+		FullMethod: InventoryService_GetStockLevel_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InventoryServiceServer).CreateItem(ctx, req.(*CreateItemRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _InventoryService_GetItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetItemRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(InventoryServiceServer).GetItem(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: InventoryService_GetItem_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InventoryServiceServer).GetItem(ctx, req.(*GetItemRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _InventoryService_UpdateItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateItemRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(InventoryServiceServer).UpdateItem(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: InventoryService_UpdateItem_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InventoryServiceServer).UpdateItem(ctx, req.(*UpdateItemRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _InventoryService_DeleteItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteItemRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(InventoryServiceServer).DeleteItem(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: InventoryService_DeleteItem_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InventoryServiceServer).DeleteItem(ctx, req.(*DeleteItemRequest))
+		return srv.(InventoryServiceServer).GetStockLevel(ctx, req.(*GetStockLevelRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -336,24 +230,12 @@ var InventoryService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*InventoryServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ListItems",
-			Handler:    _InventoryService_ListItems_Handler,
+			MethodName: "ListStockLevels",
+			Handler:    _InventoryService_ListStockLevels_Handler,
 		},
 		{
-			MethodName: "CreateItem",
-			Handler:    _InventoryService_CreateItem_Handler,
-		},
-		{
-			MethodName: "GetItem",
-			Handler:    _InventoryService_GetItem_Handler,
-		},
-		{
-			MethodName: "UpdateItem",
-			Handler:    _InventoryService_UpdateItem_Handler,
-		},
-		{
-			MethodName: "DeleteItem",
-			Handler:    _InventoryService_DeleteItem_Handler,
+			MethodName: "GetStockLevel",
+			Handler:    _InventoryService_GetStockLevel_Handler,
 		},
 		{
 			MethodName: "CreateStockReceipt",

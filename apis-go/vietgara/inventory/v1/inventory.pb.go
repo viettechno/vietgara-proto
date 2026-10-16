@@ -11,7 +11,6 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -128,41 +127,47 @@ func (StockTransactionRefType) EnumDescriptor() ([]byte, []int) {
 	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{1}
 }
 
-// Item is one part code a garage stocks (FR-INV-01..03).
-type Item struct {
-	state    protoimpl.MessageState `protogen:"open.v1"`
-	Id       string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	GarageId string                 `protobuf:"bytes,2,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	Sku      string                 `protobuf:"bytes,3,opt,name=sku,proto3" json:"sku,omitempty"`
-	Name     string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	// e.g. "piece", "liter"; free text.
-	Unit string `protobuf:"bytes,5,opt,name=unit,proto3" json:"unit,omitempty"`
-	// A quantityOnHand at or below this triggers the low-stock badge
-	// (FR-INV-04's UI half; the notification itself is Release 2).
-	ReorderThreshold int32 `protobuf:"varint,6,opt,name=reorder_threshold,json=reorderThreshold,proto3" json:"reorder_threshold,omitempty"`
-	// Decimal string; derived from stock_transactions, never written
-	// directly (FR-INV-03).
-	QuantityOnHand string                 `protobuf:"bytes,7,opt,name=quantity_on_hand,json=quantityOnHand,proto3" json:"quantity_on_hand,omitempty"`
-	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt      *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+// StockLevel is one part with how many of it the garage has (FR-INV-03).
+// The part itself (SKU, name, units, category, brand, price, images) is
+// owned by the Catalogue module (vietgara.catalogue.v1); this is the
+// stock-on-hand view that joins it with the balance.
+type StockLevel struct {
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	PartId               string                 `protobuf:"bytes,1,opt,name=part_id,json=partId,proto3" json:"part_id,omitempty"`
+	Sku                  string                 `protobuf:"bytes,2,opt,name=sku,proto3" json:"sku,omitempty"`
+	Name                 string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	BaseUnitName         string                 `protobuf:"bytes,4,opt,name=base_unit_name,json=baseUnitName,proto3" json:"base_unit_name,omitempty"`
+	BaseUnitAbbreviation string                 `protobuf:"bytes,5,opt,name=base_unit_abbreviation,json=baseUnitAbbreviation,proto3" json:"base_unit_abbreviation,omitempty"`
+	CategoryName         string                 `protobuf:"bytes,6,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
+	Brand                string                 `protobuf:"bytes,7,opt,name=brand,proto3" json:"brand,omitempty"`
+	IsActive             bool                   `protobuf:"varint,8,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	// URL of the first image, empty when the part has none.
+	ThumbnailUrl string `protobuf:"bytes,9,opt,name=thumbnail_url,json=thumbnailUrl,proto3" json:"thumbnail_url,omitempty"`
+	// Decimal string in the base unit; derived from stock_transactions, never
+	// written directly (FR-INV-03).
+	QuantityOnHand string `protobuf:"bytes,10,opt,name=quantity_on_hand,json=quantityOnHand,proto3" json:"quantity_on_hand,omitempty"`
+	// Decimal string in the base unit.
+	ReorderThreshold string `protobuf:"bytes,11,opt,name=reorder_threshold,json=reorderThreshold,proto3" json:"reorder_threshold,omitempty"`
+	// True at or below the reorder threshold.
+	LowStock      bool `protobuf:"varint,12,opt,name=low_stock,json=lowStock,proto3" json:"low_stock,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Item) Reset() {
-	*x = Item{}
+func (x *StockLevel) Reset() {
+	*x = StockLevel{}
 	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Item) String() string {
+func (x *StockLevel) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Item) ProtoMessage() {}
+func (*StockLevel) ProtoMessage() {}
 
-func (x *Item) ProtoReflect() protoreflect.Message {
+func (x *StockLevel) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -174,99 +179,126 @@ func (x *Item) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Item.ProtoReflect.Descriptor instead.
-func (*Item) Descriptor() ([]byte, []int) {
+// Deprecated: Use StockLevel.ProtoReflect.Descriptor instead.
+func (*StockLevel) Descriptor() ([]byte, []int) {
 	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Item) GetId() string {
+func (x *StockLevel) GetPartId() string {
 	if x != nil {
-		return x.Id
+		return x.PartId
 	}
 	return ""
 }
 
-func (x *Item) GetGarageId() string {
-	if x != nil {
-		return x.GarageId
-	}
-	return ""
-}
-
-func (x *Item) GetSku() string {
+func (x *StockLevel) GetSku() string {
 	if x != nil {
 		return x.Sku
 	}
 	return ""
 }
 
-func (x *Item) GetName() string {
+func (x *StockLevel) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *Item) GetUnit() string {
+func (x *StockLevel) GetBaseUnitName() string {
 	if x != nil {
-		return x.Unit
+		return x.BaseUnitName
 	}
 	return ""
 }
 
-func (x *Item) GetReorderThreshold() int32 {
+func (x *StockLevel) GetBaseUnitAbbreviation() string {
 	if x != nil {
-		return x.ReorderThreshold
+		return x.BaseUnitAbbreviation
 	}
-	return 0
+	return ""
 }
 
-func (x *Item) GetQuantityOnHand() string {
+func (x *StockLevel) GetCategoryName() string {
+	if x != nil {
+		return x.CategoryName
+	}
+	return ""
+}
+
+func (x *StockLevel) GetBrand() string {
+	if x != nil {
+		return x.Brand
+	}
+	return ""
+}
+
+func (x *StockLevel) GetIsActive() bool {
+	if x != nil {
+		return x.IsActive
+	}
+	return false
+}
+
+func (x *StockLevel) GetThumbnailUrl() string {
+	if x != nil {
+		return x.ThumbnailUrl
+	}
+	return ""
+}
+
+func (x *StockLevel) GetQuantityOnHand() string {
 	if x != nil {
 		return x.QuantityOnHand
 	}
 	return ""
 }
 
-func (x *Item) GetCreatedAt() *timestamppb.Timestamp {
+func (x *StockLevel) GetReorderThreshold() string {
 	if x != nil {
-		return x.CreatedAt
+		return x.ReorderThreshold
 	}
-	return nil
+	return ""
 }
 
-func (x *Item) GetUpdatedAt() *timestamppb.Timestamp {
+func (x *StockLevel) GetLowStock() bool {
 	if x != nil {
-		return x.UpdatedAt
+		return x.LowStock
 	}
-	return nil
+	return false
 }
 
-type ListItemsRequest struct {
+type ListStockLevelsRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// Matches SKU or name.
-	Query         string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
-	Page          int32  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// Matches SKU, name or brand (answered by Catalogue).
+	Query string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
+	// Also matches the sub-categories of this category.
+	CategoryId string `protobuf:"bytes,3,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	Brand      string `protobuf:"bytes,4,opt,name=brand,proto3" json:"brand,omitempty"`
+	// Only parts at or below their reorder threshold.
+	LowStock        bool  `protobuf:"varint,5,opt,name=low_stock,json=lowStock,proto3" json:"low_stock,omitempty"`
+	IncludeInactive bool  `protobuf:"varint,6,opt,name=include_inactive,json=includeInactive,proto3" json:"include_inactive,omitempty"`
+	Page            int32 `protobuf:"varint,7,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize        int32 `protobuf:"varint,8,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
-func (x *ListItemsRequest) Reset() {
-	*x = ListItemsRequest{}
+func (x *ListStockLevelsRequest) Reset() {
+	*x = ListStockLevelsRequest{}
 	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListItemsRequest) String() string {
+func (x *ListStockLevelsRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListItemsRequest) ProtoMessage() {}
+func (*ListStockLevelsRequest) ProtoMessage() {}
 
-func (x *ListItemsRequest) ProtoReflect() protoreflect.Message {
+func (x *ListStockLevelsRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -278,61 +310,89 @@ func (x *ListItemsRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListItemsRequest.ProtoReflect.Descriptor instead.
-func (*ListItemsRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use ListStockLevelsRequest.ProtoReflect.Descriptor instead.
+func (*ListStockLevelsRequest) Descriptor() ([]byte, []int) {
 	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ListItemsRequest) GetGarageId() string {
+func (x *ListStockLevelsRequest) GetGarageId() string {
 	if x != nil {
 		return x.GarageId
 	}
 	return ""
 }
 
-func (x *ListItemsRequest) GetQuery() string {
+func (x *ListStockLevelsRequest) GetQuery() string {
 	if x != nil {
 		return x.Query
 	}
 	return ""
 }
 
-func (x *ListItemsRequest) GetPage() int32 {
+func (x *ListStockLevelsRequest) GetCategoryId() string {
+	if x != nil {
+		return x.CategoryId
+	}
+	return ""
+}
+
+func (x *ListStockLevelsRequest) GetBrand() string {
+	if x != nil {
+		return x.Brand
+	}
+	return ""
+}
+
+func (x *ListStockLevelsRequest) GetLowStock() bool {
+	if x != nil {
+		return x.LowStock
+	}
+	return false
+}
+
+func (x *ListStockLevelsRequest) GetIncludeInactive() bool {
+	if x != nil {
+		return x.IncludeInactive
+	}
+	return false
+}
+
+func (x *ListStockLevelsRequest) GetPage() int32 {
 	if x != nil {
 		return x.Page
 	}
 	return 0
 }
 
-func (x *ListItemsRequest) GetPageSize() int32 {
+func (x *ListStockLevelsRequest) GetPageSize() int32 {
 	if x != nil {
 		return x.PageSize
 	}
 	return 0
 }
 
-type ListItemsResponse struct {
+type ListStockLevelsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []*Item                `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	Data          []*StockLevel          `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
 	Pagination    *v1.Pagination         `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListItemsResponse) Reset() {
-	*x = ListItemsResponse{}
+func (x *ListStockLevelsResponse) Reset() {
+	*x = ListStockLevelsResponse{}
 	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListItemsResponse) String() string {
+func (x *ListStockLevelsResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListItemsResponse) ProtoMessage() {}
+func (*ListStockLevelsResponse) ProtoMessage() {}
 
-func (x *ListItemsResponse) ProtoReflect() protoreflect.Message {
+func (x *ListStockLevelsResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -344,47 +404,47 @@ func (x *ListItemsResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListItemsResponse.ProtoReflect.Descriptor instead.
-func (*ListItemsResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use ListStockLevelsResponse.ProtoReflect.Descriptor instead.
+func (*ListStockLevelsResponse) Descriptor() ([]byte, []int) {
 	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *ListItemsResponse) GetData() []*Item {
+func (x *ListStockLevelsResponse) GetData() []*StockLevel {
 	if x != nil {
 		return x.Data
 	}
 	return nil
 }
 
-func (x *ListItemsResponse) GetPagination() *v1.Pagination {
+func (x *ListStockLevelsResponse) GetPagination() *v1.Pagination {
 	if x != nil {
 		return x.Pagination
 	}
 	return nil
 }
 
-type CreateItemRequest struct {
+type GetStockLevelRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	Item          *Item                  `protobuf:"bytes,2,opt,name=item,proto3" json:"item,omitempty"`
+	PartId        string                 `protobuf:"bytes,2,opt,name=part_id,json=partId,proto3" json:"part_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateItemRequest) Reset() {
-	*x = CreateItemRequest{}
+func (x *GetStockLevelRequest) Reset() {
+	*x = GetStockLevelRequest{}
 	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateItemRequest) String() string {
+func (x *GetStockLevelRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateItemRequest) ProtoMessage() {}
+func (*GetStockLevelRequest) ProtoMessage() {}
 
-func (x *CreateItemRequest) ProtoReflect() protoreflect.Message {
+func (x *GetStockLevelRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -396,46 +456,46 @@ func (x *CreateItemRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateItemRequest.ProtoReflect.Descriptor instead.
-func (*CreateItemRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetStockLevelRequest.ProtoReflect.Descriptor instead.
+func (*GetStockLevelRequest) Descriptor() ([]byte, []int) {
 	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *CreateItemRequest) GetGarageId() string {
+func (x *GetStockLevelRequest) GetGarageId() string {
 	if x != nil {
 		return x.GarageId
 	}
 	return ""
 }
 
-func (x *CreateItemRequest) GetItem() *Item {
+func (x *GetStockLevelRequest) GetPartId() string {
 	if x != nil {
-		return x.Item
+		return x.PartId
 	}
-	return nil
+	return ""
 }
 
-type CreateItemResponse struct {
+type GetStockLevelResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Item          *Item                  `protobuf:"bytes,1,opt,name=item,proto3" json:"item,omitempty"`
+	StockLevel    *StockLevel            `protobuf:"bytes,1,opt,name=stock_level,json=stockLevel,proto3" json:"stock_level,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateItemResponse) Reset() {
-	*x = CreateItemResponse{}
+func (x *GetStockLevelResponse) Reset() {
+	*x = GetStockLevelResponse{}
 	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateItemResponse) String() string {
+func (x *GetStockLevelResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateItemResponse) ProtoMessage() {}
+func (*GetStockLevelResponse) ProtoMessage() {}
 
-func (x *CreateItemResponse) ProtoReflect() protoreflect.Message {
+func (x *GetStockLevelResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -447,312 +507,16 @@ func (x *CreateItemResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateItemResponse.ProtoReflect.Descriptor instead.
-func (*CreateItemResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetStockLevelResponse.ProtoReflect.Descriptor instead.
+func (*GetStockLevelResponse) Descriptor() ([]byte, []int) {
 	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *CreateItemResponse) GetItem() *Item {
+func (x *GetStockLevelResponse) GetStockLevel() *StockLevel {
 	if x != nil {
-		return x.Item
+		return x.StockLevel
 	}
 	return nil
-}
-
-type GetItemRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	ItemId        string                 `protobuf:"bytes,2,opt,name=item_id,json=itemId,proto3" json:"item_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetItemRequest) Reset() {
-	*x = GetItemRequest{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetItemRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetItemRequest) ProtoMessage() {}
-
-func (x *GetItemRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetItemRequest.ProtoReflect.Descriptor instead.
-func (*GetItemRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *GetItemRequest) GetGarageId() string {
-	if x != nil {
-		return x.GarageId
-	}
-	return ""
-}
-
-func (x *GetItemRequest) GetItemId() string {
-	if x != nil {
-		return x.ItemId
-	}
-	return ""
-}
-
-type GetItemResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Item          *Item                  `protobuf:"bytes,1,opt,name=item,proto3" json:"item,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetItemResponse) Reset() {
-	*x = GetItemResponse{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetItemResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetItemResponse) ProtoMessage() {}
-
-func (x *GetItemResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetItemResponse.ProtoReflect.Descriptor instead.
-func (*GetItemResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *GetItemResponse) GetItem() *Item {
-	if x != nil {
-		return x.Item
-	}
-	return nil
-}
-
-type UpdateItemRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	ItemId        string                 `protobuf:"bytes,2,opt,name=item_id,json=itemId,proto3" json:"item_id,omitempty"`
-	Item          *Item                  `protobuf:"bytes,3,opt,name=item,proto3" json:"item,omitempty"`
-	UpdateMask    *fieldmaskpb.FieldMask `protobuf:"bytes,4,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateItemRequest) Reset() {
-	*x = UpdateItemRequest{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateItemRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateItemRequest) ProtoMessage() {}
-
-func (x *UpdateItemRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateItemRequest.ProtoReflect.Descriptor instead.
-func (*UpdateItemRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *UpdateItemRequest) GetGarageId() string {
-	if x != nil {
-		return x.GarageId
-	}
-	return ""
-}
-
-func (x *UpdateItemRequest) GetItemId() string {
-	if x != nil {
-		return x.ItemId
-	}
-	return ""
-}
-
-func (x *UpdateItemRequest) GetItem() *Item {
-	if x != nil {
-		return x.Item
-	}
-	return nil
-}
-
-func (x *UpdateItemRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
-	if x != nil {
-		return x.UpdateMask
-	}
-	return nil
-}
-
-type UpdateItemResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Item          *Item                  `protobuf:"bytes,1,opt,name=item,proto3" json:"item,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateItemResponse) Reset() {
-	*x = UpdateItemResponse{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateItemResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateItemResponse) ProtoMessage() {}
-
-func (x *UpdateItemResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateItemResponse.ProtoReflect.Descriptor instead.
-func (*UpdateItemResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *UpdateItemResponse) GetItem() *Item {
-	if x != nil {
-		return x.Item
-	}
-	return nil
-}
-
-type DeleteItemRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	ItemId        string                 `protobuf:"bytes,2,opt,name=item_id,json=itemId,proto3" json:"item_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteItemRequest) Reset() {
-	*x = DeleteItemRequest{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteItemRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteItemRequest) ProtoMessage() {}
-
-func (x *DeleteItemRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteItemRequest.ProtoReflect.Descriptor instead.
-func (*DeleteItemRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *DeleteItemRequest) GetGarageId() string {
-	if x != nil {
-		return x.GarageId
-	}
-	return ""
-}
-
-func (x *DeleteItemRequest) GetItemId() string {
-	if x != nil {
-		return x.ItemId
-	}
-	return ""
-}
-
-type DeleteItemResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteItemResponse) Reset() {
-	*x = DeleteItemResponse{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteItemResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteItemResponse) ProtoMessage() {}
-
-func (x *DeleteItemResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteItemResponse.ProtoReflect.Descriptor instead.
-func (*DeleteItemResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{10}
 }
 
 // StockTransaction is one recorded stock movement.
@@ -769,15 +533,23 @@ type StockTransaction struct {
 	UnitCost *int64                  `protobuf:"varint,7,opt,name=unit_cost,json=unitCost,proto3,oneof" json:"unit_cost,omitempty"`
 	RefType  StockTransactionRefType `protobuf:"varint,8,opt,name=ref_type,json=refType,proto3,enum=vietgara.inventory.v1.StockTransactionRefType" json:"ref_type,omitempty"`
 	// The repair order id, for an OUT transaction caused by one.
-	RefId         string                 `protobuf:"bytes,9,opt,name=ref_id,json=refId,proto3" json:"ref_id,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	RefId     string                 `protobuf:"bytes,9,opt,name=ref_id,json=refId,proto3" json:"ref_id,omitempty"`
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// Release 6.0: the packaging unit the user entered and the typed amount;
+	// `quantity` stays the base-unit amount. Empty when the base unit was used.
+	UnitId          *string `protobuf:"bytes,11,opt,name=unit_id,json=unitId,proto3,oneof" json:"unit_id,omitempty"`
+	EnteredQuantity string  `protobuf:"bytes,12,opt,name=entered_quantity,json=enteredQuantity,proto3" json:"entered_quantity,omitempty"`
+	// The abbreviation of the entered unit; empty when the base unit was used.
+	UnitAbbreviation string `protobuf:"bytes,13,opt,name=unit_abbreviation,json=unitAbbreviation,proto3" json:"unit_abbreviation,omitempty"`
+	// The abbreviation of the part's base unit, the unit `quantity` is in.
+	BaseUnitAbbreviation string `protobuf:"bytes,14,opt,name=base_unit_abbreviation,json=baseUnitAbbreviation,proto3" json:"base_unit_abbreviation,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *StockTransaction) Reset() {
 	*x = StockTransaction{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[11]
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -789,7 +561,7 @@ func (x *StockTransaction) String() string {
 func (*StockTransaction) ProtoMessage() {}
 
 func (x *StockTransaction) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[11]
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -802,7 +574,7 @@ func (x *StockTransaction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StockTransaction.ProtoReflect.Descriptor instead.
 func (*StockTransaction) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{11}
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *StockTransaction) GetId() string {
@@ -875,19 +647,52 @@ func (x *StockTransaction) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *StockTransaction) GetUnitId() string {
+	if x != nil && x.UnitId != nil {
+		return *x.UnitId
+	}
+	return ""
+}
+
+func (x *StockTransaction) GetEnteredQuantity() string {
+	if x != nil {
+		return x.EnteredQuantity
+	}
+	return ""
+}
+
+func (x *StockTransaction) GetUnitAbbreviation() string {
+	if x != nil {
+		return x.UnitAbbreviation
+	}
+	return ""
+}
+
+func (x *StockTransaction) GetBaseUnitAbbreviation() string {
+	if x != nil {
+		return x.BaseUnitAbbreviation
+	}
+	return ""
+}
+
 type CreateStockReceiptRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	ItemId        string                 `protobuf:"bytes,2,opt,name=item_id,json=itemId,proto3" json:"item_id,omitempty"`
-	Quantity      string                 `protobuf:"bytes,3,opt,name=quantity,proto3" json:"quantity,omitempty"`
-	UnitCost      int64                  `protobuf:"varint,4,opt,name=unit_cost,json=unitCost,proto3" json:"unit_cost,omitempty"`
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	// The part's id (the JSON field keeps the name item_id).
+	ItemId string `protobuf:"bytes,2,opt,name=item_id,json=itemId,proto3" json:"item_id,omitempty"`
+	// In the base unit unless unit_id names a packaging unit of the part, in
+	// which case it is converted on save (FR-CAT-02).
+	Quantity string `protobuf:"bytes,3,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	// VND per entered unit; stored per base unit. Zero means "not recorded".
+	UnitCost      int64   `protobuf:"varint,4,opt,name=unit_cost,json=unitCost,proto3" json:"unit_cost,omitempty"`
+	UnitId        *string `protobuf:"bytes,5,opt,name=unit_id,json=unitId,proto3,oneof" json:"unit_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateStockReceiptRequest) Reset() {
 	*x = CreateStockReceiptRequest{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[12]
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -899,7 +704,7 @@ func (x *CreateStockReceiptRequest) String() string {
 func (*CreateStockReceiptRequest) ProtoMessage() {}
 
 func (x *CreateStockReceiptRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[12]
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -912,7 +717,7 @@ func (x *CreateStockReceiptRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateStockReceiptRequest.ProtoReflect.Descriptor instead.
 func (*CreateStockReceiptRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{12}
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CreateStockReceiptRequest) GetGarageId() string {
@@ -943,18 +748,25 @@ func (x *CreateStockReceiptRequest) GetUnitCost() int64 {
 	return 0
 }
 
+func (x *CreateStockReceiptRequest) GetUnitId() string {
+	if x != nil && x.UnitId != nil {
+		return *x.UnitId
+	}
+	return ""
+}
+
 type CreateStockReceiptResponse struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
 	Transaction *StockTransaction      `protobuf:"bytes,1,opt,name=transaction,proto3" json:"transaction,omitempty"`
-	// The item's on-hand quantity after this receipt.
-	Item          *Item `protobuf:"bytes,2,opt,name=item,proto3" json:"item,omitempty"`
+	// The part's stock level after this receipt.
+	StockLevel    *StockLevel `protobuf:"bytes,2,opt,name=stock_level,json=stockLevel,proto3" json:"stock_level,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateStockReceiptResponse) Reset() {
 	*x = CreateStockReceiptResponse{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[13]
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -966,7 +778,7 @@ func (x *CreateStockReceiptResponse) String() string {
 func (*CreateStockReceiptResponse) ProtoMessage() {}
 
 func (x *CreateStockReceiptResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[13]
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -979,7 +791,7 @@ func (x *CreateStockReceiptResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateStockReceiptResponse.ProtoReflect.Descriptor instead.
 func (*CreateStockReceiptResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{13}
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *CreateStockReceiptResponse) GetTransaction() *StockTransaction {
@@ -989,9 +801,9 @@ func (x *CreateStockReceiptResponse) GetTransaction() *StockTransaction {
 	return nil
 }
 
-func (x *CreateStockReceiptResponse) GetItem() *Item {
+func (x *CreateStockReceiptResponse) GetStockLevel() *StockLevel {
 	if x != nil {
-		return x.Item
+		return x.StockLevel
 	}
 	return nil
 }
@@ -1009,7 +821,7 @@ type ListStockTransactionsRequest struct {
 
 func (x *ListStockTransactionsRequest) Reset() {
 	*x = ListStockTransactionsRequest{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[14]
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1021,7 +833,7 @@ func (x *ListStockTransactionsRequest) String() string {
 func (*ListStockTransactionsRequest) ProtoMessage() {}
 
 func (x *ListStockTransactionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[14]
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1034,7 +846,7 @@ func (x *ListStockTransactionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListStockTransactionsRequest.ProtoReflect.Descriptor instead.
 func (*ListStockTransactionsRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{14}
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ListStockTransactionsRequest) GetGarageId() string {
@@ -1082,7 +894,7 @@ type ListStockTransactionsResponse struct {
 
 func (x *ListStockTransactionsResponse) Reset() {
 	*x = ListStockTransactionsResponse{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[15]
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1094,7 +906,7 @@ func (x *ListStockTransactionsResponse) String() string {
 func (*ListStockTransactionsResponse) ProtoMessage() {}
 
 func (x *ListStockTransactionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[15]
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1107,7 +919,7 @@ func (x *ListStockTransactionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListStockTransactionsResponse.ProtoReflect.Descriptor instead.
 func (*ListStockTransactionsResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{15}
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ListStockTransactionsResponse) GetData() []*StockTransaction {
@@ -1128,51 +940,43 @@ var File_vietgara_inventory_v1_inventory_proto protoreflect.FileDescriptor
 
 const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\n" +
-	"%vietgara/inventory/v1/inventory.proto\x12\x15vietgara.inventory.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xdd\x02\n" +
-	"\x04Item\x12\x13\n" +
-	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
-	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\x15\n" +
-	"\x03sku\x18\x03 \x01(\tB\x03\xe0A\x02R\x03sku\x12\x17\n" +
-	"\x04name\x18\x04 \x01(\tB\x03\xe0A\x02R\x04name\x12\x12\n" +
-	"\x04unit\x18\x05 \x01(\tR\x04unit\x12+\n" +
-	"\x11reorder_threshold\x18\x06 \x01(\x05R\x10reorderThreshold\x12-\n" +
-	"\x10quantity_on_hand\x18\a \x01(\tB\x03\xe0A\x03R\x0equantityOnHand\x12>\n" +
+	"%vietgara/inventory/v1/inventory.proto\x12\x15vietgara.inventory.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xd4\x03\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
-	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\"{\n" +
-	"\x10ListItemsRequest\x12 \n" +
+	"StockLevel\x12\x1c\n" +
+	"\apart_id\x18\x01 \x01(\tB\x03\xe0A\x03R\x06partId\x12\x15\n" +
+	"\x03sku\x18\x02 \x01(\tB\x03\xe0A\x03R\x03sku\x12\x17\n" +
+	"\x04name\x18\x03 \x01(\tB\x03\xe0A\x03R\x04name\x12)\n" +
+	"\x0ebase_unit_name\x18\x04 \x01(\tB\x03\xe0A\x03R\fbaseUnitName\x129\n" +
+	"\x16base_unit_abbreviation\x18\x05 \x01(\tB\x03\xe0A\x03R\x14baseUnitAbbreviation\x12(\n" +
+	"\rcategory_name\x18\x06 \x01(\tB\x03\xe0A\x03R\fcategoryName\x12\x19\n" +
+	"\x05brand\x18\a \x01(\tB\x03\xe0A\x03R\x05brand\x12 \n" +
+	"\tis_active\x18\b \x01(\bB\x03\xe0A\x03R\bisActive\x12(\n" +
+	"\rthumbnail_url\x18\t \x01(\tB\x03\xe0A\x03R\fthumbnailUrl\x12-\n" +
+	"\x10quantity_on_hand\x18\n" +
+	" \x01(\tB\x03\xe0A\x03R\x0equantityOnHand\x120\n" +
+	"\x11reorder_threshold\x18\v \x01(\tB\x03\xe0A\x03R\x10reorderThreshold\x12 \n" +
+	"\tlow_stock\x18\f \x01(\bB\x03\xe0A\x03R\blowStock\"\x80\x02\n" +
+	"\x16ListStockLevelsRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x14\n" +
-	"\x05query\x18\x02 \x01(\tR\x05query\x12\x12\n" +
-	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"\x84\x01\n" +
-	"\x11ListItemsResponse\x12/\n" +
-	"\x04data\x18\x01 \x03(\v2\x1b.vietgara.inventory.v1.ItemR\x04data\x12>\n" +
+	"\x05query\x18\x02 \x01(\tR\x05query\x12\x1f\n" +
+	"\vcategory_id\x18\x03 \x01(\tR\n" +
+	"categoryId\x12\x14\n" +
+	"\x05brand\x18\x04 \x01(\tR\x05brand\x12\x1b\n" +
+	"\tlow_stock\x18\x05 \x01(\bR\blowStock\x12)\n" +
+	"\x10include_inactive\x18\x06 \x01(\bR\x0fincludeInactive\x12\x12\n" +
+	"\x04page\x18\a \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\b \x01(\x05R\bpageSize\"\x90\x01\n" +
+	"\x17ListStockLevelsResponse\x125\n" +
+	"\x04data\x18\x01 \x03(\v2!.vietgara.inventory.v1.StockLevelR\x04data\x12>\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1e.vietgara.common.v1.PaginationR\n" +
-	"pagination\"k\n" +
-	"\x11CreateItemRequest\x12 \n" +
-	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x124\n" +
-	"\x04item\x18\x02 \x01(\v2\x1b.vietgara.inventory.v1.ItemB\x03\xe0A\x02R\x04item\"E\n" +
-	"\x12CreateItemResponse\x12/\n" +
-	"\x04item\x18\x01 \x01(\v2\x1b.vietgara.inventory.v1.ItemR\x04item\"P\n" +
-	"\x0eGetItemRequest\x12 \n" +
+	"pagination\"V\n" +
+	"\x14GetStockLevelRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1c\n" +
-	"\aitem_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06itemId\"B\n" +
-	"\x0fGetItemResponse\x12/\n" +
-	"\x04item\x18\x01 \x01(\v2\x1b.vietgara.inventory.v1.ItemR\x04item\"\xc6\x01\n" +
-	"\x11UpdateItemRequest\x12 \n" +
-	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1c\n" +
-	"\aitem_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06itemId\x124\n" +
-	"\x04item\x18\x03 \x01(\v2\x1b.vietgara.inventory.v1.ItemB\x03\xe0A\x02R\x04item\x12;\n" +
-	"\vupdate_mask\x18\x04 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
-	"updateMask\"E\n" +
-	"\x12UpdateItemResponse\x12/\n" +
-	"\x04item\x18\x01 \x01(\v2\x1b.vietgara.inventory.v1.ItemR\x04item\"S\n" +
-	"\x11DeleteItemRequest\x12 \n" +
-	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1c\n" +
-	"\aitem_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06itemId\"\x14\n" +
-	"\x12DeleteItemResponse\"\xcf\x03\n" +
+	"\apart_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06partId\"[\n" +
+	"\x15GetStockLevelResponse\x12B\n" +
+	"\vstock_level\x18\x01 \x01(\v2!.vietgara.inventory.v1.StockLevelR\n" +
+	"stockLevel\"\x9b\x05\n" +
 	"\x10StockTransaction\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x1c\n" +
 	"\aitem_id\x18\x02 \x01(\tB\x03\xe0A\x03R\x06itemId\x12\x1e\n" +
@@ -1185,17 +989,27 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\x06ref_id\x18\t \x01(\tB\x03\xe0A\x03R\x05refId\x12>\n" +
 	"\n" +
 	"created_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAtB\f\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12!\n" +
+	"\aunit_id\x18\v \x01(\tB\x03\xe0A\x03H\x01R\x06unitId\x88\x01\x01\x12.\n" +
+	"\x10entered_quantity\x18\f \x01(\tB\x03\xe0A\x03R\x0fenteredQuantity\x120\n" +
+	"\x11unit_abbreviation\x18\r \x01(\tB\x03\xe0A\x03R\x10unitAbbreviation\x129\n" +
+	"\x16base_unit_abbreviation\x18\x0e \x01(\tB\x03\xe0A\x03R\x14baseUnitAbbreviationB\f\n" +
 	"\n" +
-	"_unit_cost\"\x99\x01\n" +
+	"_unit_costB\n" +
+	"\n" +
+	"\b_unit_id\"\xc3\x01\n" +
 	"\x19CreateStockReceiptRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1c\n" +
 	"\aitem_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06itemId\x12\x1f\n" +
 	"\bquantity\x18\x03 \x01(\tB\x03\xe0A\x02R\bquantity\x12\x1b\n" +
-	"\tunit_cost\x18\x04 \x01(\x03R\bunitCost\"\x98\x01\n" +
+	"\tunit_cost\x18\x04 \x01(\x03R\bunitCost\x12\x1c\n" +
+	"\aunit_id\x18\x05 \x01(\tH\x00R\x06unitId\x88\x01\x01B\n" +
+	"\n" +
+	"\b_unit_id\"\xab\x01\n" +
 	"\x1aCreateStockReceiptResponse\x12I\n" +
-	"\vtransaction\x18\x01 \x01(\v2'.vietgara.inventory.v1.StockTransactionR\vtransaction\x12/\n" +
-	"\x04item\x18\x02 \x01(\v2\x1b.vietgara.inventory.v1.ItemR\x04item\"\xcb\x01\n" +
+	"\vtransaction\x18\x01 \x01(\v2'.vietgara.inventory.v1.StockTransactionR\vtransaction\x12B\n" +
+	"\vstock_level\x18\x02 \x01(\v2!.vietgara.inventory.v1.StockLevelR\n" +
+	"stockLevel\"\xcb\x01\n" +
 	"\x1cListStockTransactionsRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x17\n" +
 	"\aitem_id\x18\x02 \x01(\tR\x06itemId\x12?\n" +
@@ -1214,16 +1028,10 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\x17StockTransactionRefType\x12*\n" +
 	"&STOCK_TRANSACTION_REF_TYPE_UNSPECIFIED\x10\x00\x12'\n" +
 	"#STOCK_TRANSACTION_REF_TYPE_PURCHASE\x10\x01\x12+\n" +
-	"'STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER\x10\x022\xb4\t\n" +
-	"\x10InventoryService\x12\x93\x01\n" +
-	"\tListItems\x12'.vietgara.inventory.v1.ListItemsRequest\x1a(.vietgara.inventory.v1.ListItemsResponse\"3\x82\xd3\xe4\x93\x02-\x12+/api/v1/garages/{garage_id}/inventory-items\x12\xa2\x01\n" +
-	"\n" +
-	"CreateItem\x12(.vietgara.inventory.v1.CreateItemRequest\x1a).vietgara.inventory.v1.CreateItemResponse\"?\x82\xd3\xe4\x93\x029:\x04itemb\x04item\"+/api/v1/garages/{garage_id}/inventory-items\x12\x9d\x01\n" +
-	"\aGetItem\x12%.vietgara.inventory.v1.GetItemRequest\x1a&.vietgara.inventory.v1.GetItemResponse\"C\x82\xd3\xe4\x93\x02=b\x04item\x125/api/v1/garages/{garage_id}/inventory-items/{item_id}\x12\xac\x01\n" +
-	"\n" +
-	"UpdateItem\x12(.vietgara.inventory.v1.UpdateItemRequest\x1a).vietgara.inventory.v1.UpdateItemResponse\"I\x82\xd3\xe4\x93\x02C:\x04itemb\x04item25/api/v1/garages/{garage_id}/inventory-items/{item_id}\x12\xa0\x01\n" +
-	"\n" +
-	"DeleteItem\x12(.vietgara.inventory.v1.DeleteItemRequest\x1a).vietgara.inventory.v1.DeleteItemResponse\"=\x82\xd3\xe4\x93\x027*5/api/v1/garages/{garage_id}/inventory-items/{item_id}\x12\xb0\x01\n" +
+	"'STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER\x10\x022\xe8\x05\n" +
+	"\x10InventoryService\x12\xa5\x01\n" +
+	"\x0fListStockLevels\x12-.vietgara.inventory.v1.ListStockLevelsRequest\x1a..vietgara.inventory.v1.ListStockLevelsResponse\"3\x82\xd3\xe4\x93\x02-\x12+/api/v1/garages/{garage_id}/inventory-items\x12\xb6\x01\n" +
+	"\rGetStockLevel\x12+.vietgara.inventory.v1.GetStockLevelRequest\x1a,.vietgara.inventory.v1.GetStockLevelResponse\"J\x82\xd3\xe4\x93\x02Db\vstock_level\x125/api/v1/garages/{garage_id}/inventory-items/{part_id}\x12\xb0\x01\n" +
 	"\x12CreateStockReceipt\x120.vietgara.inventory.v1.CreateStockReceiptRequest\x1a1.vietgara.inventory.v1.CreateStockReceiptResponse\"5\x82\xd3\xe4\x93\x02/:\x01*\"*/api/v1/garages/{garage_id}/stock-receipts\x12\xbf\x01\n" +
 	"\x15ListStockTransactions\x123.vietgara.inventory.v1.ListStockTransactionsRequest\x1a4.vietgara.inventory.v1.ListStockTransactionsResponse\";\x82\xd3\xe4\x93\x025\x123/api/v1/garages/{garage_id}/reports/stock-movementsBPZNgithub.com/viettechno/vietgara-proto/apis-go/vietgara/inventory/v1;inventoryv1b\x06proto3"
 
@@ -1240,68 +1048,48 @@ func file_vietgara_inventory_v1_inventory_proto_rawDescGZIP() []byte {
 }
 
 var file_vietgara_inventory_v1_inventory_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_vietgara_inventory_v1_inventory_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_vietgara_inventory_v1_inventory_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_vietgara_inventory_v1_inventory_proto_goTypes = []any{
 	(StockTransactionType)(0),             // 0: vietgara.inventory.v1.StockTransactionType
 	(StockTransactionRefType)(0),          // 1: vietgara.inventory.v1.StockTransactionRefType
-	(*Item)(nil),                          // 2: vietgara.inventory.v1.Item
-	(*ListItemsRequest)(nil),              // 3: vietgara.inventory.v1.ListItemsRequest
-	(*ListItemsResponse)(nil),             // 4: vietgara.inventory.v1.ListItemsResponse
-	(*CreateItemRequest)(nil),             // 5: vietgara.inventory.v1.CreateItemRequest
-	(*CreateItemResponse)(nil),            // 6: vietgara.inventory.v1.CreateItemResponse
-	(*GetItemRequest)(nil),                // 7: vietgara.inventory.v1.GetItemRequest
-	(*GetItemResponse)(nil),               // 8: vietgara.inventory.v1.GetItemResponse
-	(*UpdateItemRequest)(nil),             // 9: vietgara.inventory.v1.UpdateItemRequest
-	(*UpdateItemResponse)(nil),            // 10: vietgara.inventory.v1.UpdateItemResponse
-	(*DeleteItemRequest)(nil),             // 11: vietgara.inventory.v1.DeleteItemRequest
-	(*DeleteItemResponse)(nil),            // 12: vietgara.inventory.v1.DeleteItemResponse
-	(*StockTransaction)(nil),              // 13: vietgara.inventory.v1.StockTransaction
-	(*CreateStockReceiptRequest)(nil),     // 14: vietgara.inventory.v1.CreateStockReceiptRequest
-	(*CreateStockReceiptResponse)(nil),    // 15: vietgara.inventory.v1.CreateStockReceiptResponse
-	(*ListStockTransactionsRequest)(nil),  // 16: vietgara.inventory.v1.ListStockTransactionsRequest
-	(*ListStockTransactionsResponse)(nil), // 17: vietgara.inventory.v1.ListStockTransactionsResponse
-	(*timestamppb.Timestamp)(nil),         // 18: google.protobuf.Timestamp
-	(*v1.Pagination)(nil),                 // 19: vietgara.common.v1.Pagination
-	(*fieldmaskpb.FieldMask)(nil),         // 20: google.protobuf.FieldMask
+	(*StockLevel)(nil),                    // 2: vietgara.inventory.v1.StockLevel
+	(*ListStockLevelsRequest)(nil),        // 3: vietgara.inventory.v1.ListStockLevelsRequest
+	(*ListStockLevelsResponse)(nil),       // 4: vietgara.inventory.v1.ListStockLevelsResponse
+	(*GetStockLevelRequest)(nil),          // 5: vietgara.inventory.v1.GetStockLevelRequest
+	(*GetStockLevelResponse)(nil),         // 6: vietgara.inventory.v1.GetStockLevelResponse
+	(*StockTransaction)(nil),              // 7: vietgara.inventory.v1.StockTransaction
+	(*CreateStockReceiptRequest)(nil),     // 8: vietgara.inventory.v1.CreateStockReceiptRequest
+	(*CreateStockReceiptResponse)(nil),    // 9: vietgara.inventory.v1.CreateStockReceiptResponse
+	(*ListStockTransactionsRequest)(nil),  // 10: vietgara.inventory.v1.ListStockTransactionsRequest
+	(*ListStockTransactionsResponse)(nil), // 11: vietgara.inventory.v1.ListStockTransactionsResponse
+	(*v1.Pagination)(nil),                 // 12: vietgara.common.v1.Pagination
+	(*timestamppb.Timestamp)(nil),         // 13: google.protobuf.Timestamp
 }
 var file_vietgara_inventory_v1_inventory_proto_depIdxs = []int32{
-	18, // 0: vietgara.inventory.v1.Item.created_at:type_name -> google.protobuf.Timestamp
-	18, // 1: vietgara.inventory.v1.Item.updated_at:type_name -> google.protobuf.Timestamp
-	2,  // 2: vietgara.inventory.v1.ListItemsResponse.data:type_name -> vietgara.inventory.v1.Item
-	19, // 3: vietgara.inventory.v1.ListItemsResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	2,  // 4: vietgara.inventory.v1.CreateItemRequest.item:type_name -> vietgara.inventory.v1.Item
-	2,  // 5: vietgara.inventory.v1.CreateItemResponse.item:type_name -> vietgara.inventory.v1.Item
-	2,  // 6: vietgara.inventory.v1.GetItemResponse.item:type_name -> vietgara.inventory.v1.Item
-	2,  // 7: vietgara.inventory.v1.UpdateItemRequest.item:type_name -> vietgara.inventory.v1.Item
-	20, // 8: vietgara.inventory.v1.UpdateItemRequest.update_mask:type_name -> google.protobuf.FieldMask
-	2,  // 9: vietgara.inventory.v1.UpdateItemResponse.item:type_name -> vietgara.inventory.v1.Item
-	0,  // 10: vietgara.inventory.v1.StockTransaction.type:type_name -> vietgara.inventory.v1.StockTransactionType
-	1,  // 11: vietgara.inventory.v1.StockTransaction.ref_type:type_name -> vietgara.inventory.v1.StockTransactionRefType
-	18, // 12: vietgara.inventory.v1.StockTransaction.created_at:type_name -> google.protobuf.Timestamp
-	13, // 13: vietgara.inventory.v1.CreateStockReceiptResponse.transaction:type_name -> vietgara.inventory.v1.StockTransaction
-	2,  // 14: vietgara.inventory.v1.CreateStockReceiptResponse.item:type_name -> vietgara.inventory.v1.Item
-	0,  // 15: vietgara.inventory.v1.ListStockTransactionsRequest.type:type_name -> vietgara.inventory.v1.StockTransactionType
-	13, // 16: vietgara.inventory.v1.ListStockTransactionsResponse.data:type_name -> vietgara.inventory.v1.StockTransaction
-	19, // 17: vietgara.inventory.v1.ListStockTransactionsResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	3,  // 18: vietgara.inventory.v1.InventoryService.ListItems:input_type -> vietgara.inventory.v1.ListItemsRequest
-	5,  // 19: vietgara.inventory.v1.InventoryService.CreateItem:input_type -> vietgara.inventory.v1.CreateItemRequest
-	7,  // 20: vietgara.inventory.v1.InventoryService.GetItem:input_type -> vietgara.inventory.v1.GetItemRequest
-	9,  // 21: vietgara.inventory.v1.InventoryService.UpdateItem:input_type -> vietgara.inventory.v1.UpdateItemRequest
-	11, // 22: vietgara.inventory.v1.InventoryService.DeleteItem:input_type -> vietgara.inventory.v1.DeleteItemRequest
-	14, // 23: vietgara.inventory.v1.InventoryService.CreateStockReceipt:input_type -> vietgara.inventory.v1.CreateStockReceiptRequest
-	16, // 24: vietgara.inventory.v1.InventoryService.ListStockTransactions:input_type -> vietgara.inventory.v1.ListStockTransactionsRequest
-	4,  // 25: vietgara.inventory.v1.InventoryService.ListItems:output_type -> vietgara.inventory.v1.ListItemsResponse
-	6,  // 26: vietgara.inventory.v1.InventoryService.CreateItem:output_type -> vietgara.inventory.v1.CreateItemResponse
-	8,  // 27: vietgara.inventory.v1.InventoryService.GetItem:output_type -> vietgara.inventory.v1.GetItemResponse
-	10, // 28: vietgara.inventory.v1.InventoryService.UpdateItem:output_type -> vietgara.inventory.v1.UpdateItemResponse
-	12, // 29: vietgara.inventory.v1.InventoryService.DeleteItem:output_type -> vietgara.inventory.v1.DeleteItemResponse
-	15, // 30: vietgara.inventory.v1.InventoryService.CreateStockReceipt:output_type -> vietgara.inventory.v1.CreateStockReceiptResponse
-	17, // 31: vietgara.inventory.v1.InventoryService.ListStockTransactions:output_type -> vietgara.inventory.v1.ListStockTransactionsResponse
-	25, // [25:32] is the sub-list for method output_type
-	18, // [18:25] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	2,  // 0: vietgara.inventory.v1.ListStockLevelsResponse.data:type_name -> vietgara.inventory.v1.StockLevel
+	12, // 1: vietgara.inventory.v1.ListStockLevelsResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	2,  // 2: vietgara.inventory.v1.GetStockLevelResponse.stock_level:type_name -> vietgara.inventory.v1.StockLevel
+	0,  // 3: vietgara.inventory.v1.StockTransaction.type:type_name -> vietgara.inventory.v1.StockTransactionType
+	1,  // 4: vietgara.inventory.v1.StockTransaction.ref_type:type_name -> vietgara.inventory.v1.StockTransactionRefType
+	13, // 5: vietgara.inventory.v1.StockTransaction.created_at:type_name -> google.protobuf.Timestamp
+	7,  // 6: vietgara.inventory.v1.CreateStockReceiptResponse.transaction:type_name -> vietgara.inventory.v1.StockTransaction
+	2,  // 7: vietgara.inventory.v1.CreateStockReceiptResponse.stock_level:type_name -> vietgara.inventory.v1.StockLevel
+	0,  // 8: vietgara.inventory.v1.ListStockTransactionsRequest.type:type_name -> vietgara.inventory.v1.StockTransactionType
+	7,  // 9: vietgara.inventory.v1.ListStockTransactionsResponse.data:type_name -> vietgara.inventory.v1.StockTransaction
+	12, // 10: vietgara.inventory.v1.ListStockTransactionsResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	3,  // 11: vietgara.inventory.v1.InventoryService.ListStockLevels:input_type -> vietgara.inventory.v1.ListStockLevelsRequest
+	5,  // 12: vietgara.inventory.v1.InventoryService.GetStockLevel:input_type -> vietgara.inventory.v1.GetStockLevelRequest
+	8,  // 13: vietgara.inventory.v1.InventoryService.CreateStockReceipt:input_type -> vietgara.inventory.v1.CreateStockReceiptRequest
+	10, // 14: vietgara.inventory.v1.InventoryService.ListStockTransactions:input_type -> vietgara.inventory.v1.ListStockTransactionsRequest
+	4,  // 15: vietgara.inventory.v1.InventoryService.ListStockLevels:output_type -> vietgara.inventory.v1.ListStockLevelsResponse
+	6,  // 16: vietgara.inventory.v1.InventoryService.GetStockLevel:output_type -> vietgara.inventory.v1.GetStockLevelResponse
+	9,  // 17: vietgara.inventory.v1.InventoryService.CreateStockReceipt:output_type -> vietgara.inventory.v1.CreateStockReceiptResponse
+	11, // 18: vietgara.inventory.v1.InventoryService.ListStockTransactions:output_type -> vietgara.inventory.v1.ListStockTransactionsResponse
+	15, // [15:19] is the sub-list for method output_type
+	11, // [11:15] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_inventory_v1_inventory_proto_init() }
@@ -1309,14 +1097,15 @@ func file_vietgara_inventory_v1_inventory_proto_init() {
 	if File_vietgara_inventory_v1_inventory_proto != nil {
 		return
 	}
-	file_vietgara_inventory_v1_inventory_proto_msgTypes[11].OneofWrappers = []any{}
+	file_vietgara_inventory_v1_inventory_proto_msgTypes[5].OneofWrappers = []any{}
+	file_vietgara_inventory_v1_inventory_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_inventory_v1_inventory_proto_rawDesc), len(file_vietgara_inventory_v1_inventory_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   16,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

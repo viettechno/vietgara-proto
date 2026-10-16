@@ -11,7 +11,7 @@ option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/file/
 
 // FileKind says what a file is for, and so whether it is public. Every kind
 // added later (repair photo, customer document, claim document, export) is
-// private and served through short-lived signed URLs.
+// private, except part images and served through short-lived signed URLs.
 enum FileKind {
   FILE_KIND_UNSPECIFIED = 0;
   // A garage logo (public).
@@ -20,6 +20,8 @@ enum FileKind {
   FILE_KIND_PAYMENT_EVIDENCE = 2;
   // The platform's bank QR code (private, read through a signed URL).
   FILE_KIND_PLATFORM_QR = 3;
+  // An image of a part (public, at most three per part, Release 6.0).
+  FILE_KIND_PART_IMAGE = 4;
 }
 
 // File is one uploaded object registered in the garage's file registry.
