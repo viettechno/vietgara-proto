@@ -46,8 +46,7 @@ type MfaServiceClient interface {
 	// Replaces the recovery codes with a new set; the old ones stop working.
 	// Needs a current TOTP code.
 	RegenerateRecoveryCodes(ctx context.Context, in *RegenerateRecoveryCodesRequest, opts ...grpc.CallOption) (*RegenerateRecoveryCodesResponse, error)
-	// Turns MFA off. Needs a TOTP code or a recovery code, and revokes the
-	// user's other sessions.
+	// Turns MFA off. Needs a TOTP code or a recovery code.
 	DisableMfa(ctx context.Context, in *DisableMfaRequest, opts ...grpc.CallOption) (*DisableMfaResponse, error)
 }
 
@@ -129,8 +128,7 @@ type MfaServiceServer interface {
 	// Replaces the recovery codes with a new set; the old ones stop working.
 	// Needs a current TOTP code.
 	RegenerateRecoveryCodes(context.Context, *RegenerateRecoveryCodesRequest) (*RegenerateRecoveryCodesResponse, error)
-	// Turns MFA off. Needs a TOTP code or a recovery code, and revokes the
-	// user's other sessions.
+	// Turns MFA off. Needs a TOTP code or a recovery code.
 	DisableMfa(context.Context, *DisableMfaRequest) (*DisableMfaResponse, error)
 	mustEmbedUnimplementedMfaServiceServer()
 }

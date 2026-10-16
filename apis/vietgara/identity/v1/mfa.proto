@@ -45,8 +45,7 @@ service MfaService {
     };
   }
 
-  // Turns MFA off. Needs a TOTP code or a recovery code, and revokes the
-  // user's other sessions.
+  // Turns MFA off. Needs a TOTP code or a recovery code.
   rpc DisableMfa(DisableMfaRequest) returns (DisableMfaResponse) {
     option (google.api.http) = {
       post: "/api/v1/me/mfa:disable"

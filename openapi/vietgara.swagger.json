@@ -5724,7 +5724,7 @@
     },
     "/api/v1/me/mfa:disable": {
       "post": {
-        "summary": "Turns MFA off. Needs a TOTP code or a recovery code, and revokes the\nuser's other sessions.",
+        "summary": "Turns MFA off. Needs a TOTP code or a recovery code.",
         "operationId": "MfaService_DisableMfa",
         "responses": {
           "200": {
