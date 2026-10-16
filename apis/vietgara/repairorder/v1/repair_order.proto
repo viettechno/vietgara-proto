@@ -51,12 +51,16 @@ message RepairOrderLine {
   // stock. Validated against the garage's items when set.
   optional string item_ref_id = 3;
   string description = 4 [(google.api.field_behavior) = REQUIRED];
-  // Decimal string, e.g. "1" or "1.5".
+  // Decimal string in the base unit of the part; derived from
+  // entered_quantity when unit_id is set (same rule as a quote line).
   string quantity = 5 [(google.api.field_behavior) = REQUIRED];
   // Integer VND.
   int64 unit_price = 6 [(google.api.field_behavior) = REQUIRED];
   int64 line_total = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
   RepairOrderLineStatus status = 8;
+  optional string unit_id = 10;
+  string entered_quantity = 11;
+  string unit_abbreviation = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Technician user ids assigned to this line (FR-REP-02); a line may
   // have more than one.
   repeated string assigned_technician_ids = 9;

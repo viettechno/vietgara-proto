@@ -26,7 +26,7 @@ const (
 
 // FileKind says what a file is for, and so whether it is public. Every kind
 // added later (repair photo, customer document, claim document, export) is
-// private and served through short-lived signed URLs.
+// private, except part images and served through short-lived signed URLs.
 type FileKind int32
 
 const (
@@ -37,6 +37,8 @@ const (
 	FileKind_FILE_KIND_PAYMENT_EVIDENCE FileKind = 2
 	// The platform's bank QR code (private, read through a signed URL).
 	FileKind_FILE_KIND_PLATFORM_QR FileKind = 3
+	// An image of a part (public, at most three per part, Release 6.0).
+	FileKind_FILE_KIND_PART_IMAGE FileKind = 4
 )
 
 // Enum value maps for FileKind.
@@ -46,12 +48,14 @@ var (
 		1: "FILE_KIND_LOGO",
 		2: "FILE_KIND_PAYMENT_EVIDENCE",
 		3: "FILE_KIND_PLATFORM_QR",
+		4: "FILE_KIND_PART_IMAGE",
 	}
 	FileKind_value = map[string]int32{
 		"FILE_KIND_UNSPECIFIED":      0,
 		"FILE_KIND_LOGO":             1,
 		"FILE_KIND_PAYMENT_EVIDENCE": 2,
 		"FILE_KIND_PLATFORM_QR":      3,
+		"FILE_KIND_PART_IMAGE":       4,
 	}
 )
 
@@ -584,12 +588,13 @@ const file_vietgara_file_v1_file_proto_rawDesc = "" +
 	"\afile_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06fileId\x12\x17\n" +
 	"\adry_run\x18\x03 \x01(\bR\x06dryRun\"Q\n" +
 	"\x12DeleteFileResponse\x12;\n" +
-	"\aoutcome\x18\x01 \x01(\x0e2!.vietgara.common.v1.DeleteOutcomeR\aoutcome*t\n" +
+	"\aoutcome\x18\x01 \x01(\x0e2!.vietgara.common.v1.DeleteOutcomeR\aoutcome*\x8e\x01\n" +
 	"\bFileKind\x12\x19\n" +
 	"\x15FILE_KIND_UNSPECIFIED\x10\x00\x12\x12\n" +
 	"\x0eFILE_KIND_LOGO\x10\x01\x12\x1e\n" +
 	"\x1aFILE_KIND_PAYMENT_EVIDENCE\x10\x02\x12\x19\n" +
-	"\x15FILE_KIND_PLATFORM_QR\x10\x032\xbd\x03\n" +
+	"\x15FILE_KIND_PLATFORM_QR\x10\x03\x12\x18\n" +
+	"\x14FILE_KIND_PART_IMAGE\x10\x042\xbd\x03\n" +
 	"\vFileService\x12\x8b\x01\n" +
 	"\n" +
 	"UploadFile\x12#.vietgara.file.v1.UploadFileRequest\x1a$.vietgara.file.v1.UploadFileResponse\"2\x82\xd3\xe4\x93\x02,:\x01*b\x04file\"!/api/v1/garages/{garage_id}/files\x12\x90\x01\n" +
