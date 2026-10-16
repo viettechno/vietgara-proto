@@ -537,11 +537,14 @@ type StockTransaction struct {
 	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	// Release 6.0: the packaging unit the user entered and the typed amount;
 	// `quantity` stays the base-unit amount. Empty when the base unit was used.
-	UnitId           *string `protobuf:"bytes,11,opt,name=unit_id,json=unitId,proto3,oneof" json:"unit_id,omitempty"`
-	EnteredQuantity  string  `protobuf:"bytes,12,opt,name=entered_quantity,json=enteredQuantity,proto3" json:"entered_quantity,omitempty"`
-	UnitAbbreviation string  `protobuf:"bytes,13,opt,name=unit_abbreviation,json=unitAbbreviation,proto3" json:"unit_abbreviation,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	UnitId          *string `protobuf:"bytes,11,opt,name=unit_id,json=unitId,proto3,oneof" json:"unit_id,omitempty"`
+	EnteredQuantity string  `protobuf:"bytes,12,opt,name=entered_quantity,json=enteredQuantity,proto3" json:"entered_quantity,omitempty"`
+	// The abbreviation of the entered unit; empty when the base unit was used.
+	UnitAbbreviation string `protobuf:"bytes,13,opt,name=unit_abbreviation,json=unitAbbreviation,proto3" json:"unit_abbreviation,omitempty"`
+	// The abbreviation of the part's base unit, the unit `quantity` is in.
+	BaseUnitAbbreviation string `protobuf:"bytes,14,opt,name=base_unit_abbreviation,json=baseUnitAbbreviation,proto3" json:"base_unit_abbreviation,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *StockTransaction) Reset() {
@@ -661,6 +664,13 @@ func (x *StockTransaction) GetEnteredQuantity() string {
 func (x *StockTransaction) GetUnitAbbreviation() string {
 	if x != nil {
 		return x.UnitAbbreviation
+	}
+	return ""
+}
+
+func (x *StockTransaction) GetBaseUnitAbbreviation() string {
+	if x != nil {
+		return x.BaseUnitAbbreviation
 	}
 	return ""
 }
@@ -966,7 +976,7 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\apart_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06partId\"[\n" +
 	"\x15GetStockLevelResponse\x12B\n" +
 	"\vstock_level\x18\x01 \x01(\v2!.vietgara.inventory.v1.StockLevelR\n" +
-	"stockLevel\"\xe0\x04\n" +
+	"stockLevel\"\x9b\x05\n" +
 	"\x10StockTransaction\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x1c\n" +
 	"\aitem_id\x18\x02 \x01(\tB\x03\xe0A\x03R\x06itemId\x12\x1e\n" +
@@ -982,7 +992,8 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	" \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12!\n" +
 	"\aunit_id\x18\v \x01(\tB\x03\xe0A\x03H\x01R\x06unitId\x88\x01\x01\x12.\n" +
 	"\x10entered_quantity\x18\f \x01(\tB\x03\xe0A\x03R\x0fenteredQuantity\x120\n" +
-	"\x11unit_abbreviation\x18\r \x01(\tB\x03\xe0A\x03R\x10unitAbbreviationB\f\n" +
+	"\x11unit_abbreviation\x18\r \x01(\tB\x03\xe0A\x03R\x10unitAbbreviation\x129\n" +
+	"\x16base_unit_abbreviation\x18\x0e \x01(\tB\x03\xe0A\x03R\x14baseUnitAbbreviationB\f\n" +
 	"\n" +
 	"_unit_costB\n" +
 	"\n" +

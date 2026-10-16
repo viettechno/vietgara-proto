@@ -97,7 +97,10 @@ message StockTransaction {
   // `quantity` stays the base-unit amount. Empty when the base unit was used.
   optional string unit_id = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
   string entered_quantity = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The abbreviation of the entered unit; empty when the base unit was used.
   string unit_abbreviation = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The abbreviation of the part's base unit, the unit `quantity` is in.
+  string base_unit_abbreviation = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message CreateStockReceiptRequest {

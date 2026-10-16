@@ -10014,6 +10014,12 @@
         },
         "unitAbbreviation": {
           "type": "string",
+          "description": "The abbreviation of the entered unit; empty when the base unit was used.",
+          "readOnly": true
+        },
+        "baseUnitAbbreviation": {
+          "type": "string",
+          "description": "The abbreviation of the part's base unit, the unit `quantity` is in.",
           "readOnly": true
         }
       },
