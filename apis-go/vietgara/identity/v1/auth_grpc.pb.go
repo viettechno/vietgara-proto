@@ -22,6 +22,7 @@ const (
 	AuthService_Register_FullMethodName                 = "/vietgara.identity.v1.AuthService/Register"
 	AuthService_Login_FullMethodName                    = "/vietgara.identity.v1.AuthService/Login"
 	AuthService_SignInWithGoogleIdToken_FullMethodName  = "/vietgara.identity.v1.AuthService/SignInWithGoogleIdToken"
+	AuthService_VerifyMfaChallenge_FullMethodName       = "/vietgara.identity.v1.AuthService/VerifyMfaChallenge"
 	AuthService_RefreshToken_FullMethodName             = "/vietgara.identity.v1.AuthService/RefreshToken"
 	AuthService_Logout_FullMethodName                   = "/vietgara.identity.v1.AuthService/Logout"
 	AuthService_SendEmailVerificationOtp_FullMethodName = "/vietgara.identity.v1.AuthService/SendEmailVerificationOtp"
@@ -50,6 +51,10 @@ type AuthServiceClient interface {
 	// the user is found by its Google subject or e-mail, or created --
 	// the same rules as the web's Google redirect sign-in.
 	SignInWithGoogleIdToken(ctx context.Context, in *SignInWithGoogleIdTokenRequest, opts ...grpc.CallOption) (*SignInWithGoogleIdTokenResponse, error)
+	// Completes a sign-in that answered mfa_required (FR-IAM-09): exchanges the
+	// challenge token and a TOTP code or an unused recovery code for the
+	// session. Five wrong codes lock the challenge for 15 minutes.
+	VerifyMfaChallenge(ctx context.Context, in *VerifyMfaChallengeRequest, opts ...grpc.CallOption) (*VerifyMfaChallengeResponse, error)
 	// Exchanges a refresh token for a new session; the old token is revoked
 	// (rotation).
 	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*RefreshTokenResponse, error)
@@ -102,6 +107,16 @@ func (c *authServiceClient) SignInWithGoogleIdToken(ctx context.Context, in *Sig
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SignInWithGoogleIdTokenResponse)
 	err := c.cc.Invoke(ctx, AuthService_SignInWithGoogleIdToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) VerifyMfaChallenge(ctx context.Context, in *VerifyMfaChallengeRequest, opts ...grpc.CallOption) (*VerifyMfaChallengeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(VerifyMfaChallengeResponse)
+	err := c.cc.Invoke(ctx, AuthService_VerifyMfaChallenge_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -197,6 +212,10 @@ type AuthServiceServer interface {
 	// the user is found by its Google subject or e-mail, or created --
 	// the same rules as the web's Google redirect sign-in.
 	SignInWithGoogleIdToken(context.Context, *SignInWithGoogleIdTokenRequest) (*SignInWithGoogleIdTokenResponse, error)
+	// Completes a sign-in that answered mfa_required (FR-IAM-09): exchanges the
+	// challenge token and a TOTP code or an unused recovery code for the
+	// session. Five wrong codes lock the challenge for 15 minutes.
+	VerifyMfaChallenge(context.Context, *VerifyMfaChallengeRequest) (*VerifyMfaChallengeResponse, error)
 	// Exchanges a refresh token for a new session; the old token is revoked
 	// (rotation).
 	RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error)
@@ -233,6 +252,9 @@ func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*Lo
 }
 func (UnimplementedAuthServiceServer) SignInWithGoogleIdToken(context.Context, *SignInWithGoogleIdTokenRequest) (*SignInWithGoogleIdTokenResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SignInWithGoogleIdToken not implemented")
+}
+func (UnimplementedAuthServiceServer) VerifyMfaChallenge(context.Context, *VerifyMfaChallengeRequest) (*VerifyMfaChallengeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method VerifyMfaChallenge not implemented")
 }
 func (UnimplementedAuthServiceServer) RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RefreshToken not implemented")
@@ -326,6 +348,24 @@ func _AuthService_SignInWithGoogleIdToken_Handler(srv interface{}, ctx context.C
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServiceServer).SignInWithGoogleIdToken(ctx, req.(*SignInWithGoogleIdTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_VerifyMfaChallenge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyMfaChallengeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).VerifyMfaChallenge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_VerifyMfaChallenge_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).VerifyMfaChallenge(ctx, req.(*VerifyMfaChallengeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -474,6 +514,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SignInWithGoogleIdToken",
 			Handler:    _AuthService_SignInWithGoogleIdToken_Handler,
+		},
+		{
+			MethodName: "VerifyMfaChallenge",
+			Handler:    _AuthService_VerifyMfaChallenge_Handler,
 		},
 		{
 			MethodName: "RefreshToken",

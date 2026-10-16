@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package vietgara.identity.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/identity/v1;identityv1";
+
+// MfaService lets a signed-in user manage their own TOTP second factor
+// (FR-IAM-09, NFR-SE-04). MFA is optional for every user and applies only to
+// e-mail and password sign-in. Resetting a password does not disable it.
+service MfaService {
+  // Returns whether MFA is on and how many recovery codes are left.
+  rpc GetMfaStatus(GetMfaStatusRequest) returns (GetMfaStatusResponse) {
+    option (google.api.http) = {get: "/api/v1/me/mfa"};
+  }
+
+  // Starts enrolment: creates a pending TOTP secret (replacing an earlier
+  // pending one). MFA is not on until EnrollMfaConfirm succeeds. Refused for
+  // Google-only users and when MFA is already on.
+  rpc EnrollMfa(EnrollMfaRequest) returns (EnrollMfaResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/mfa/enroll"
+      body: "*"
+    };
+  }
+
+  // Confirms enrolment with a code from the authenticator app, turns MFA on
+  // and returns the recovery codes. They are shown only once.
+  rpc ConfirmMfaEnrollment(ConfirmMfaEnrollmentRequest) returns (ConfirmMfaEnrollmentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/mfa/enroll:confirm"
+      body: "*"
+    };
+  }
+
+  // Replaces the recovery codes with a new set; the old ones stop working.
+  // Needs a current TOTP code.
+  rpc RegenerateRecoveryCodes(RegenerateRecoveryCodesRequest) returns (RegenerateRecoveryCodesResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/mfa/recovery-codes"
+      body: "*"
+    };
+  }
+
+  // Turns MFA off. Needs a TOTP code or a recovery code, and revokes the
+  // user's other sessions.
+  rpc DisableMfa(DisableMfaRequest) returns (DisableMfaResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/mfa:disable"
+      body: "*"
+    };
+  }
+}
+
+message GetMfaStatusRequest {}
+
+message GetMfaStatusResponse {
+  bool enabled = 1;
+  google.protobuf.Timestamp enabled_at = 2;
+  int32 recovery_codes_remaining = 3;
+}
+
+message EnrollMfaRequest {}
+
+message EnrollMfaResponse {
+  // Base32 secret for manual entry.
+  string secret = 1;
+  // otpauth:// URI; clients draw it as a QR code.
+  string otpauth_uri = 2;
+}
+
+message ConfirmMfaEnrollmentRequest {
+  // A 6-digit code from the authenticator app.
+  string code = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ConfirmMfaEnrollmentResponse {
+  // One-time recovery codes, shown only once.
+  repeated string recovery_codes = 1;
+}
+
+message RegenerateRecoveryCodesRequest {
+  // A current 6-digit TOTP code.
+  string code = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message RegenerateRecoveryCodesResponse {
+  repeated string recovery_codes = 1;
+}
+
+message DisableMfaRequest {
+  // A 6-digit TOTP code or an unused recovery code.
+  string code = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DisableMfaResponse {}

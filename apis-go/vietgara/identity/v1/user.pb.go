@@ -193,6 +193,8 @@ type User struct {
 	PlatformAdmin bool                   `protobuf:"varint,9,opt,name=platform_admin,json=platformAdmin,proto3" json:"platform_admin,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	// True when the user has turned on a TOTP second factor (FR-IAM-09).
+	MfaEnabled    bool `protobuf:"varint,12,opt,name=mfa_enabled,json=mfaEnabled,proto3" json:"mfa_enabled,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -302,6 +304,13 @@ func (x *User) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *User) GetMfaEnabled() bool {
+	if x != nil {
+		return x.MfaEnabled
+	}
+	return false
 }
 
 type GetMeRequest struct {
@@ -486,7 +495,7 @@ var File_vietgara_identity_v1_user_proto protoreflect.FileDescriptor
 
 const file_vietgara_identity_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x1fvietgara/identity/v1/user.proto\x12\x14vietgara.identity.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x93\x04\n" +
+	"\x1fvietgara/identity/v1/user.proto\x12\x14vietgara.identity.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb9\x04\n" +
 	"\x04User\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x19\n" +
 	"\x05email\x18\x02 \x01(\tB\x03\xe0A\x03R\x05email\x12\x19\n" +
@@ -501,7 +510,9 @@ const file_vietgara_identity_v1_user_proto_rawDesc = "" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\b\n" +
+	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12$\n" +
+	"\vmfa_enabled\x18\f \x01(\bB\x03\xe0A\x03R\n" +
+	"mfaEnabledB\b\n" +
 	"\x06_phone\"\x0e\n" +
 	"\fGetMeRequest\"?\n" +
 	"\rGetMeResponse\x12.\n" +
