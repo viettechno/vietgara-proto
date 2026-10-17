@@ -4,6 +4,7 @@ package vietgara.inventory.v1;
 
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "vietgara/common/v1/pagination.proto";
 
@@ -19,11 +20,16 @@ enum StockTransactionType {
 // StockTransactionRefType names what caused a stock movement.
 enum StockTransactionRefType {
   STOCK_TRANSACTION_REF_TYPE_UNSPECIFIED = 0;
-  // A manual stock receipt from a supplier (FR-INV-01).
+  // A manual stock receipt from a supplier (FR-INV-01). Superseded in
+  // Release 7.0 by GOODS_RECEIPT, kept for movements recorded before it.
   STOCK_TRANSACTION_REF_TYPE_PURCHASE = 1;
   // Automatic deduction when a repair order with part lines closes
-  // (FR-INV-02).
+  // (FR-INV-02). Superseded in Release 7.0 by STOCK_ISSUE.
   STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER = 2;
+  // A completed goods receipt document (FR-INV-06, Release 7.0).
+  STOCK_TRANSACTION_REF_TYPE_GOODS_RECEIPT = 3;
+  // A posted stock issue document (phiếu xuất kho, FR-INV-20, Release 7.0).
+  STOCK_TRANSACTION_REF_TYPE_STOCK_ISSUE = 4;
 }
 
 // StockLevel is one part with how many of it the garage has (FR-INV-03).
@@ -48,6 +54,19 @@ message StockLevel {
   string reorder_threshold = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
   // True at or below the reorder threshold.
   bool low_stock = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Decimal string in the base unit held by the part's draft stock issues
+  // (Release 7.0, FR-INV-20): on hand minus this is what a new order can
+  // reserve.
+  string quantity_reserved = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // quantity_on_hand minus quantity_reserved, in the base unit.
+  string quantity_available = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Weighted-average cost per base unit, whole VND, rounded for display
+  // (FR-INV-07). Omitted from answers when the caller lacks
+  // PERMISSION_INVENTORY_COST_READ.
+  optional int64 average_cost = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // average_cost times quantity_on_hand, whole VND. Omitted without
+  // PERMISSION_INVENTORY_COST_READ.
+  optional int64 stock_value = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message ListStockLevelsRequest {
@@ -103,24 +122,6 @@ message StockTransaction {
   string base_unit_abbreviation = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
-message CreateStockReceiptRequest {
-  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
-  // The part's id (the JSON field keeps the name item_id).
-  string item_id = 2 [(google.api.field_behavior) = REQUIRED];
-  // In the base unit unless unit_id names a packaging unit of the part, in
-  // which case it is converted on save (FR-CAT-02).
-  string quantity = 3 [(google.api.field_behavior) = REQUIRED];
-  // VND per entered unit; stored per base unit. Zero means "not recorded".
-  int64 unit_cost = 4;
-  optional string unit_id = 5;
-}
-
-message CreateStockReceiptResponse {
-  StockTransaction transaction = 1;
-  // The part's stock level after this receipt.
-  StockLevel stock_level = 2;
-}
-
 message ListStockTransactionsRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string item_id = 2;
@@ -132,6 +133,316 @@ message ListStockTransactionsRequest {
 message ListStockTransactionsResponse {
   repeated StockTransaction data = 1;
   vietgara.common.v1.Pagination pagination = 2;
+}
+
+// GoodsReceiptStatus is the lifecycle of a goods receipt document
+// (FR-INV-06): saved as a draft, then completed (which updates stock and
+// cost), or cancelled (which reverses a completed one).
+enum GoodsReceiptStatus {
+  GOODS_RECEIPT_STATUS_UNSPECIFIED = 0;
+  GOODS_RECEIPT_STATUS_DRAFT = 1;
+  GOODS_RECEIPT_STATUS_COMPLETED = 2;
+  GOODS_RECEIPT_STATUS_CANCELLED = 3;
+}
+
+// GoodsReceiptLine is one part on a goods receipt. Every line carries its
+// supplier: the header's default_supplier_id is inherited by new lines,
+// and the part's default supplier (FR-INV-19) pre-fills it.
+message GoodsReceiptLine {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The part's id (the JSON field keeps the name item_id).
+  string item_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string item_sku = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string item_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string base_unit_abbreviation = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The packaging unit the user typed the quantity in; unset means the base
+  // unit.
+  optional string unit_id = 6;
+  // The abbreviation of the entered unit; empty for the base unit.
+  string unit_abbreviation = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // In the entered unit unless unit_id is unset (then the base unit). The
+  // stored base amount is derived on save (quantity).
+  string entered_quantity = 8;
+  // The base-unit amount, derived from entered_quantity on save.
+  string quantity = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The line's supplier; inherited from the header's default_supplier_id.
+  // Empty is allowed while the receipt is a draft, but completion is
+  // refused (SUPPLIER_REQUIRED) while any line has none (FR-INV-06).
+  string supplier_id = 10;
+  string supplier_name = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // VND per entered unit, as typed; stored per base unit. Zero means "not
+  // recorded".
+  int64 unit_cost = 12;
+  // entered_quantity times unit_cost, whole VND (running total).
+  int64 line_amount = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// GoodsReceipt is a numbered multi-line document recording a delivery
+// (FR-INV-06): header number, date, supplier delivery note and notes,
+// status draft -> completed -> cancelled. One delivery from several
+// suppliers is a single document whose lines name their supplier.
+message GoodsReceipt {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Rendered from the garage's goods_receipt numbering template
+  // (FR-TEN-05); assigned when the document is created.
+  string number = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  GoodsReceiptStatus status = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The default supplier new lines inherit and may override.
+  optional string default_supplier_id = 5;
+  string default_supplier_name = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The receipt date, "YYYY-MM-DD" in the garage's timezone.
+  string receipt_date = 7;
+  // The supplier's own delivery note number.
+  string delivery_note_number = 8;
+  string notes = 9;
+  repeated GoodsReceiptLine lines = 10;
+  // Sum of the lines' amounts, whole VND.
+  int64 total_amount = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Set when the receipt is completed / cancelled.
+  google.protobuf.Timestamp completed_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp cancelled_at = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListGoodsReceiptsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Matches the number, delivery note number or notes.
+  string query = 2;
+  // Only receipts with a line from this supplier.
+  string supplier_id = 3;
+  GoodsReceiptStatus status = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+message ListGoodsReceiptsResponse {
+  repeated GoodsReceipt data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message GetGoodsReceiptRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string goods_receipt_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetGoodsReceiptResponse {
+  GoodsReceipt goods_receipt = 1;
+}
+
+message CreateGoodsReceiptRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  GoodsReceipt goods_receipt = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateGoodsReceiptResponse {
+  GoodsReceipt goods_receipt = 1;
+}
+
+message UpdateGoodsReceiptRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string goods_receipt_id = 2 [(google.api.field_behavior) = REQUIRED];
+  GoodsReceipt goods_receipt = 3 [(google.api.field_behavior) = REQUIRED];
+  // Fields of the receipt and of its lines to replace; filled from the
+  // JSON body when omitted.
+  google.protobuf.FieldMask update_mask = 4;
+}
+
+message UpdateGoodsReceiptResponse {
+  GoodsReceipt goods_receipt = 1;
+}
+
+message CompleteGoodsReceiptRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string goods_receipt_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CompleteGoodsReceiptResponse {
+  GoodsReceipt goods_receipt = 1;
+}
+
+message CancelGoodsReceiptRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string goods_receipt_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CancelGoodsReceiptResponse {
+  GoodsReceipt goods_receipt = 1;
+}
+
+// ItemSupplier is one usual supplier of a part with the supplier's own code
+// and the last cost paid (FR-INV-19). One of them is the default that
+// pre-fills a receipt line's supplier.
+message ItemSupplier {
+  string supplier_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string supplier_name = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The supplier's own code for the part.
+  string supplier_sku = 3;
+  // The last cost paid per base unit, whole VND; omitted when never paid.
+  optional int64 last_unit_cost = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  bool is_default = 5;
+}
+
+message GetItemSuppliersRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string item_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetItemSuppliersResponse {
+  repeated ItemSupplier data = 1;
+}
+
+message PutItemSuppliersRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string item_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Replaces the part's list as a whole; at most one default.
+  repeated ItemSupplier data = 3;
+}
+
+message PutItemSuppliersResponse {
+  repeated ItemSupplier data = 1;
+}
+
+// StockIssueStatus is the lifecycle of a stock issue document (phiếu xuất
+// kho, FR-INV-20): a draft follows its repair order (the draft is the
+// reservation), then it is posted (stock movements written) or cancelled.
+enum StockIssueStatus {
+  STOCK_ISSUE_STATUS_UNSPECIFIED = 0;
+  STOCK_ISSUE_STATUS_DRAFT = 1;
+  STOCK_ISSUE_STATUS_POSTED = 2;
+  STOCK_ISSUE_STATUS_CANCELLED = 3;
+}
+
+// StockIssueLine is one part line of a stock issue, derived from the
+// matching part line of the repair order while it is a draft.
+message StockIssueLine {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string repair_order_line_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string item_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string item_sku = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string item_name = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string base_unit_abbreviation = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  optional string unit_id = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string unit_abbreviation = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string entered_quantity = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The base-unit amount posted on the issue.
+  string quantity = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The cost snapshot per base unit, whole VND; omitted without
+  // PERMISSION_INVENTORY_COST_READ.
+  optional int64 unit_cost = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// StockIssue is the numbered stock-out document of a repair order
+// (FR-INV-20). It is created as a draft with the repair order and follows
+// it until posted; printing it uses the standard document layout.
+message StockIssue {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Rendered from the garage's stock_issue numbering template (FR-TEN-05).
+  string number = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string repair_order_id = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string repair_order_number = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  StockIssueStatus status = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated StockIssueLine lines = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp posted_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string posted_by_name = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message GetRepairOrderStockIssueRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetRepairOrderStockIssueResponse {
+  StockIssue stock_issue = 1;
+}
+
+message PostStockIssueRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string stock_issue_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PostStockIssueResponse {
+  StockIssue stock_issue = 1;
+}
+
+// PurchaseLine is one line of a completed goods receipt in the purchases
+// report (FR-INV-19).
+message PurchaseLine {
+  string goods_receipt_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string goods_receipt_number = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The receipt date, "YYYY-MM-DD".
+  string receipt_date = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string supplier_id = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string supplier_name = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string item_id = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string item_sku = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string item_name = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The base-unit amount.
+  string quantity = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string base_unit_abbreviation = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The cost per base unit, whole VND.
+  int64 unit_cost = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // quantity times unit_cost, whole VND.
+  int64 amount = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message GetPurchasesReportRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string supplier_id = 2;
+  // Inclusive, "YYYY-MM-DD" in the garage's timezone.
+  string from = 3;
+  // Exclusive, "YYYY-MM-DD".
+  string to = 4;
+}
+
+message GetPurchasesReportResponse {
+  repeated PurchaseLine data = 1;
+  // Sum of every line's amount, over the requested range.
+  int64 total_amount = 2;
+}
+
+// StockValuationLine is one part's quantity and value at a date
+// (FR-INV-07). Only callers with PERMISSION_INVENTORY_COST_READ see it.
+message StockValuationLine {
+  string item_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string item_sku = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string item_name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string category_id = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string category_name = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The base-unit amount on hand.
+  string quantity_on_hand = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string base_unit_abbreviation = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The weighted-average cost per base unit, whole VND.
+  int64 average_cost = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // quantity_on_hand times average_cost, whole VND.
+  int64 value = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// StockValuationCategory is one category's total value.
+message StockValuationCategory {
+  string category_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string category_name = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 value = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message GetStockValuationReportRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // The date to value at, "YYYY-MM-DD" in the garage's timezone; empty
+  // means today.
+  string at = 2;
+}
+
+message GetStockValuationReportResponse {
+  repeated StockValuationLine data = 1;
+  repeated StockValuationCategory categories = 2;
+  int64 total_value = 3;
+  // The date valued at, "YYYY-MM-DD"; today when the request left it
+  // empty.
+  string at = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // InventoryService manages how many of each part a garage has (FRD 3.7).
@@ -150,17 +461,98 @@ service InventoryService {
     };
   }
 
-  // Records a goods-receipt note from a supplier (FR-INV-01), increasing
-  // stock on hand.
-  rpc CreateStockReceipt(CreateStockReceiptRequest) returns (CreateStockReceiptResponse) {
+  // The stock in/out/on-hand movement report (FR-INV-05).
+  rpc ListStockTransactions(ListStockTransactionsRequest) returns (ListStockTransactionsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/stock-movements"};
+  }
+
+  // Goods receipt documents (FR-INV-06, Release 7.0): a multi-line receipt
+  // with a supplier per line. Reads need PERMISSION_INVENTORY_READ,
+  // changes PERMISSION_INVENTORY_WRITE.
+  rpc ListGoodsReceipts(ListGoodsReceiptsRequest) returns (ListGoodsReceiptsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/goods-receipts"};
+  }
+
+  rpc GetGoodsReceipt(GetGoodsReceiptRequest) returns (GetGoodsReceiptResponse) {
     option (google.api.http) = {
-      post: "/api/v1/garages/{garage_id}/stock-receipts"
+      get: "/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}"
+      response_body: "goods_receipt"
+    };
+  }
+
+  rpc CreateGoodsReceipt(CreateGoodsReceiptRequest) returns (CreateGoodsReceiptResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/goods-receipts"
+      body: "goods_receipt"
+      response_body: "goods_receipt"
+    };
+  }
+
+  rpc UpdateGoodsReceipt(UpdateGoodsReceiptRequest) returns (UpdateGoodsReceiptResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}"
+      body: "goods_receipt"
+      response_body: "goods_receipt"
+    };
+  }
+
+  // Completing posts the receipt's stock movements; refused with
+  // SUPPLIER_REQUIRED while a line has no supplier.
+  rpc CompleteGoodsReceipt(CompleteGoodsReceiptRequest) returns (CompleteGoodsReceiptResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}:complete"
+      body: "*"
+      response_body: "goods_receipt"
+    };
+  }
+
+  // Cancelling a completed receipt reverses its stock movements.
+  rpc CancelGoodsReceipt(CancelGoodsReceiptRequest) returns (CancelGoodsReceiptResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}:cancel"
+      body: "*"
+      response_body: "goods_receipt"
+    };
+  }
+
+  // The usual suppliers of a part with their code, last cost and default
+  // (FR-INV-19, Release 7.0).
+  rpc GetItemSuppliers(GetItemSuppliersRequest) returns (GetItemSuppliersResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/inventory-items/{item_id}/suppliers"};
+  }
+
+  rpc PutItemSuppliers(PutItemSuppliersRequest) returns (PutItemSuppliersResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/garages/{garage_id}/inventory-items/{item_id}/suppliers"
       body: "*"
     };
   }
 
-  // The stock in/out/on-hand movement report (FR-INV-05).
-  rpc ListStockTransactions(ListStockTransactionsRequest) returns (ListStockTransactionsResponse) {
-    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/stock-movements"};
+  // The repair order's stock issue document (FR-INV-20, Release 7.0),
+  // created with the order and, while a draft, following its part lines.
+  rpc GetRepairOrderStockIssue(GetRepairOrderStockIssueRequest) returns (GetRepairOrderStockIssueResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue"};
+  }
+
+  // Posts the issue now ("issue now"); otherwise the repair order's
+  // closing posts it.
+  rpc PostStockIssue(PostStockIssueRequest) returns (PostStockIssueResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/stock-issues/{stock_issue_id}:post"
+      body: "*"
+      response_body: "stock_issue"
+    };
+  }
+
+  // Purchases by supplier and period (FR-INV-19), from completed goods
+  // receipts. Needs PERMISSION_INVENTORY_COST_READ.
+  rpc GetPurchasesReport(GetPurchasesReportRequest) returns (GetPurchasesReportResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/purchases"};
+  }
+
+  // Quantity and value per part and category at a date (FR-INV-07). Needs
+  // PERMISSION_INVENTORY_COST_READ.
+  rpc GetStockValuationReport(GetStockValuationReportRequest) returns (GetStockValuationReportResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/stock-valuation"};
   }
 }

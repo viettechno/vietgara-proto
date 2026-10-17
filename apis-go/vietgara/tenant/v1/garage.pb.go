@@ -77,6 +77,57 @@ func (GarageStatus) EnumDescriptor() ([]byte, []int) {
 	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{0}
 }
 
+// StockIssueMode is when a repair order's draft stock issue posts
+// (FR-INV-20): on close by default, or when the order starts.
+type StockIssueMode int32
+
+const (
+	StockIssueMode_STOCK_ISSUE_MODE_UNSPECIFIED StockIssueMode = 0
+	StockIssueMode_STOCK_ISSUE_MODE_ON_CLOSE    StockIssueMode = 1
+	StockIssueMode_STOCK_ISSUE_MODE_ON_START    StockIssueMode = 2
+)
+
+// Enum value maps for StockIssueMode.
+var (
+	StockIssueMode_name = map[int32]string{
+		0: "STOCK_ISSUE_MODE_UNSPECIFIED",
+		1: "STOCK_ISSUE_MODE_ON_CLOSE",
+		2: "STOCK_ISSUE_MODE_ON_START",
+	}
+	StockIssueMode_value = map[string]int32{
+		"STOCK_ISSUE_MODE_UNSPECIFIED": 0,
+		"STOCK_ISSUE_MODE_ON_CLOSE":    1,
+		"STOCK_ISSUE_MODE_ON_START":    2,
+	}
+)
+
+func (x StockIssueMode) Enum() *StockIssueMode {
+	p := new(StockIssueMode)
+	*p = x
+	return p
+}
+
+func (x StockIssueMode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (StockIssueMode) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_tenant_v1_garage_proto_enumTypes[1].Descriptor()
+}
+
+func (StockIssueMode) Type() protoreflect.EnumType {
+	return &file_vietgara_tenant_v1_garage_proto_enumTypes[1]
+}
+
+func (x StockIssueMode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use StockIssueMode.Descriptor instead.
+func (StockIssueMode) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_tenant_v1_garage_proto_rawDescGZIP(), []int{1}
+}
+
 // DailyHours is the opening time of one weekday (FR-TEN-05).
 type DailyHours struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -159,8 +210,12 @@ type NumberingTemplates struct {
 	Settlement string `protobuf:"bytes,3,opt,name=settlement,proto3" json:"settlement,omitempty"`
 	// Payment voucher (phiếu thu) numbers (FR-BIL-05, Release 5.0).
 	PaymentVoucher string `protobuf:"bytes,4,opt,name=payment_voucher,json=paymentVoucher,proto3" json:"payment_voucher,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// Goods receipt numbers (FR-INV-06, Release 7.0).
+	GoodsReceipt string `protobuf:"bytes,5,opt,name=goods_receipt,json=goodsReceipt,proto3" json:"goods_receipt,omitempty"`
+	// Stock issue (phiếu xuất kho) numbers (FR-INV-20, Release 7.0).
+	StockIssue    string `protobuf:"bytes,6,opt,name=stock_issue,json=stockIssue,proto3" json:"stock_issue,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *NumberingTemplates) Reset() {
@@ -217,6 +272,20 @@ func (x *NumberingTemplates) GetSettlement() string {
 func (x *NumberingTemplates) GetPaymentVoucher() string {
 	if x != nil {
 		return x.PaymentVoucher
+	}
+	return ""
+}
+
+func (x *NumberingTemplates) GetGoodsReceipt() string {
+	if x != nil {
+		return x.GoodsReceipt
+	}
+	return ""
+}
+
+func (x *NumberingTemplates) GetStockIssue() string {
+	if x != nil {
+		return x.StockIssue
 	}
 	return ""
 }
@@ -308,6 +377,9 @@ type Garage struct {
 	// The legal representative.
 	Representative *string         `protobuf:"bytes,20,opt,name=representative,proto3,oneof" json:"representative,omitempty"`
 	Bank           *v1.BankDetails `protobuf:"bytes,21,opt,name=bank,proto3" json:"bank,omitempty"`
+	// When a repair order's draft stock issue posts (FR-INV-20, Release
+	// 7.0). Default ON_CLOSE.
+	StockIssueMode StockIssueMode `protobuf:"varint,22,opt,name=stock_issue_mode,json=stockIssueMode,proto3,enum=vietgara.tenant.v1.StockIssueMode" json:"stock_issue_mode,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -487,6 +559,13 @@ func (x *Garage) GetBank() *v1.BankDetails {
 		return x.Bank
 	}
 	return nil
+}
+
+func (x *Garage) GetStockIssueMode() StockIssueMode {
+	if x != nil {
+		return x.StockIssueMode
+	}
+	return StockIssueMode_STOCK_ISSUE_MODE_UNSPECIFIED
 }
 
 type ListGaragesRequest struct {
@@ -1057,17 +1136,20 @@ const file_vietgara_tenant_v1_garage_proto_rawDesc = "" +
 	"\x03day\x18\x01 \x01(\x0e2\x16.google.type.DayOfWeekR\x03day\x12\x16\n" +
 	"\x06closed\x18\x02 \x01(\bR\x06closed\x12\x12\n" +
 	"\x04open\x18\x03 \x01(\tR\x04open\x12\x14\n" +
-	"\x05close\x18\x04 \x01(\tR\x05close\"\x96\x01\n" +
+	"\x05close\x18\x04 \x01(\tR\x05close\"\xdc\x01\n" +
 	"\x12NumberingTemplates\x12\x14\n" +
 	"\x05quote\x18\x01 \x01(\tR\x05quote\x12!\n" +
 	"\frepair_order\x18\x02 \x01(\tR\vrepairOrder\x12\x1e\n" +
 	"\n" +
 	"settlement\x18\x03 \x01(\tR\n" +
 	"settlement\x12'\n" +
-	"\x0fpayment_voucher\x18\x04 \x01(\tR\x0epaymentVoucher\"f\n" +
+	"\x0fpayment_voucher\x18\x04 \x01(\tR\x0epaymentVoucher\x12#\n" +
+	"\rgoods_receipt\x18\x05 \x01(\tR\fgoodsReceipt\x12\x1f\n" +
+	"\vstock_issue\x18\x06 \x01(\tR\n" +
+	"stockIssue\"f\n" +
 	"\fGarageAccess\x12\x14\n" +
 	"\x05owner\x18\x01 \x01(\bR\x05owner\x12@\n" +
-	"\vpermissions\x18\x02 \x03(\x0e2\x1e.vietgara.tenant.v1.PermissionR\vpermissions\"\xbd\b\n" +
+	"\vpermissions\x18\x02 \x03(\x0e2\x1e.vietgara.tenant.v1.PermissionR\vpermissions\"\x8b\t\n" +
 	"\x06Garage\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12'\n" +
 	"\rowner_user_id\x18\x02 \x01(\tB\x03\xe0A\x03R\vownerUserId\x12\x17\n" +
@@ -1093,7 +1175,8 @@ const file_vietgara_tenant_v1_garage_proto_rawDesc = "" +
 	"legal_name\x18\x12 \x01(\tH\x05R\tlegalName\x88\x01\x01\x12(\n" +
 	"\rlegal_address\x18\x13 \x01(\tH\x06R\flegalAddress\x88\x01\x01\x12+\n" +
 	"\x0erepresentative\x18\x14 \x01(\tH\aR\x0erepresentative\x88\x01\x01\x123\n" +
-	"\x04bank\x18\x15 \x01(\v2\x1f.vietgara.common.v1.BankDetailsR\x04bankB\v\n" +
+	"\x04bank\x18\x15 \x01(\v2\x1f.vietgara.common.v1.BankDetailsR\x04bank\x12L\n" +
+	"\x10stock_issue_mode\x18\x16 \x01(\x0e2\".vietgara.tenant.v1.StockIssueModeR\x0estockIssueModeB\v\n" +
 	"\t_tax_codeB\n" +
 	"\n" +
 	"\b_addressB\b\n" +
@@ -1134,7 +1217,11 @@ const file_vietgara_tenant_v1_garage_proto_rawDesc = "" +
 	"\fGarageStatus\x12\x1d\n" +
 	"\x19GARAGE_STATUS_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14GARAGE_STATUS_ACTIVE\x10\x01\x12\x1a\n" +
-	"\x16GARAGE_STATUS_INACTIVE\x10\x022\xfd\x06\n" +
+	"\x16GARAGE_STATUS_INACTIVE\x10\x02*p\n" +
+	"\x0eStockIssueMode\x12 \n" +
+	"\x1cSTOCK_ISSUE_MODE_UNSPECIFIED\x10\x00\x12\x1d\n" +
+	"\x19STOCK_ISSUE_MODE_ON_CLOSE\x10\x01\x12\x1d\n" +
+	"\x19STOCK_ISSUE_MODE_ON_START\x10\x022\xfd\x06\n" +
 	"\rGarageService\x12w\n" +
 	"\vListGarages\x12&.vietgara.tenant.v1.ListGaragesRequest\x1a'.vietgara.tenant.v1.ListGaragesResponse\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/api/v1/garages\x12\x8a\x01\n" +
 	"\fCreateGarage\x12'.vietgara.tenant.v1.CreateGarageRequest\x1a(.vietgara.tenant.v1.CreateGarageResponse\"'\x82\xd3\xe4\x93\x02!:\x06garageb\x06garage\"\x0f/api/v1/garages\x12\x85\x01\n" +
@@ -1155,70 +1242,72 @@ func file_vietgara_tenant_v1_garage_proto_rawDescGZIP() []byte {
 	return file_vietgara_tenant_v1_garage_proto_rawDescData
 }
 
-var file_vietgara_tenant_v1_garage_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_vietgara_tenant_v1_garage_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
 var file_vietgara_tenant_v1_garage_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_vietgara_tenant_v1_garage_proto_goTypes = []any{
 	(GarageStatus)(0),                // 0: vietgara.tenant.v1.GarageStatus
-	(*DailyHours)(nil),               // 1: vietgara.tenant.v1.DailyHours
-	(*NumberingTemplates)(nil),       // 2: vietgara.tenant.v1.NumberingTemplates
-	(*GarageAccess)(nil),             // 3: vietgara.tenant.v1.GarageAccess
-	(*Garage)(nil),                   // 4: vietgara.tenant.v1.Garage
-	(*ListGaragesRequest)(nil),       // 5: vietgara.tenant.v1.ListGaragesRequest
-	(*ListGaragesResponse)(nil),      // 6: vietgara.tenant.v1.ListGaragesResponse
-	(*CreateGarageRequest)(nil),      // 7: vietgara.tenant.v1.CreateGarageRequest
-	(*CreateGarageResponse)(nil),     // 8: vietgara.tenant.v1.CreateGarageResponse
-	(*GetGarageRequest)(nil),         // 9: vietgara.tenant.v1.GetGarageRequest
-	(*GetGarageResponse)(nil),        // 10: vietgara.tenant.v1.GetGarageResponse
-	(*UpdateGarageRequest)(nil),      // 11: vietgara.tenant.v1.UpdateGarageRequest
-	(*UpdateGarageResponse)(nil),     // 12: vietgara.tenant.v1.UpdateGarageResponse
-	(*UploadGarageLogoRequest)(nil),  // 13: vietgara.tenant.v1.UploadGarageLogoRequest
-	(*UploadGarageLogoResponse)(nil), // 14: vietgara.tenant.v1.UploadGarageLogoResponse
-	(*DeleteGarageLogoRequest)(nil),  // 15: vietgara.tenant.v1.DeleteGarageLogoRequest
-	(*DeleteGarageLogoResponse)(nil), // 16: vietgara.tenant.v1.DeleteGarageLogoResponse
-	(dayofweek.DayOfWeek)(0),         // 17: google.type.DayOfWeek
-	(Permission)(0),                  // 18: vietgara.tenant.v1.Permission
-	(*timestamppb.Timestamp)(nil),    // 19: google.protobuf.Timestamp
-	(v1.QuoteApprovalMode)(0),        // 20: vietgara.common.v1.QuoteApprovalMode
-	(*v1.BankDetails)(nil),           // 21: vietgara.common.v1.BankDetails
-	(*fieldmaskpb.FieldMask)(nil),    // 22: google.protobuf.FieldMask
+	(StockIssueMode)(0),              // 1: vietgara.tenant.v1.StockIssueMode
+	(*DailyHours)(nil),               // 2: vietgara.tenant.v1.DailyHours
+	(*NumberingTemplates)(nil),       // 3: vietgara.tenant.v1.NumberingTemplates
+	(*GarageAccess)(nil),             // 4: vietgara.tenant.v1.GarageAccess
+	(*Garage)(nil),                   // 5: vietgara.tenant.v1.Garage
+	(*ListGaragesRequest)(nil),       // 6: vietgara.tenant.v1.ListGaragesRequest
+	(*ListGaragesResponse)(nil),      // 7: vietgara.tenant.v1.ListGaragesResponse
+	(*CreateGarageRequest)(nil),      // 8: vietgara.tenant.v1.CreateGarageRequest
+	(*CreateGarageResponse)(nil),     // 9: vietgara.tenant.v1.CreateGarageResponse
+	(*GetGarageRequest)(nil),         // 10: vietgara.tenant.v1.GetGarageRequest
+	(*GetGarageResponse)(nil),        // 11: vietgara.tenant.v1.GetGarageResponse
+	(*UpdateGarageRequest)(nil),      // 12: vietgara.tenant.v1.UpdateGarageRequest
+	(*UpdateGarageResponse)(nil),     // 13: vietgara.tenant.v1.UpdateGarageResponse
+	(*UploadGarageLogoRequest)(nil),  // 14: vietgara.tenant.v1.UploadGarageLogoRequest
+	(*UploadGarageLogoResponse)(nil), // 15: vietgara.tenant.v1.UploadGarageLogoResponse
+	(*DeleteGarageLogoRequest)(nil),  // 16: vietgara.tenant.v1.DeleteGarageLogoRequest
+	(*DeleteGarageLogoResponse)(nil), // 17: vietgara.tenant.v1.DeleteGarageLogoResponse
+	(dayofweek.DayOfWeek)(0),         // 18: google.type.DayOfWeek
+	(Permission)(0),                  // 19: vietgara.tenant.v1.Permission
+	(*timestamppb.Timestamp)(nil),    // 20: google.protobuf.Timestamp
+	(v1.QuoteApprovalMode)(0),        // 21: vietgara.common.v1.QuoteApprovalMode
+	(*v1.BankDetails)(nil),           // 22: vietgara.common.v1.BankDetails
+	(*fieldmaskpb.FieldMask)(nil),    // 23: google.protobuf.FieldMask
 }
 var file_vietgara_tenant_v1_garage_proto_depIdxs = []int32{
-	17, // 0: vietgara.tenant.v1.DailyHours.day:type_name -> google.type.DayOfWeek
-	18, // 1: vietgara.tenant.v1.GarageAccess.permissions:type_name -> vietgara.tenant.v1.Permission
+	18, // 0: vietgara.tenant.v1.DailyHours.day:type_name -> google.type.DayOfWeek
+	19, // 1: vietgara.tenant.v1.GarageAccess.permissions:type_name -> vietgara.tenant.v1.Permission
 	0,  // 2: vietgara.tenant.v1.Garage.status:type_name -> vietgara.tenant.v1.GarageStatus
-	1,  // 3: vietgara.tenant.v1.Garage.operating_hours:type_name -> vietgara.tenant.v1.DailyHours
-	2,  // 4: vietgara.tenant.v1.Garage.numbering:type_name -> vietgara.tenant.v1.NumberingTemplates
-	3,  // 5: vietgara.tenant.v1.Garage.access:type_name -> vietgara.tenant.v1.GarageAccess
-	19, // 6: vietgara.tenant.v1.Garage.created_at:type_name -> google.protobuf.Timestamp
-	19, // 7: vietgara.tenant.v1.Garage.updated_at:type_name -> google.protobuf.Timestamp
-	20, // 8: vietgara.tenant.v1.Garage.default_quote_approval_mode:type_name -> vietgara.common.v1.QuoteApprovalMode
-	21, // 9: vietgara.tenant.v1.Garage.bank:type_name -> vietgara.common.v1.BankDetails
-	4,  // 10: vietgara.tenant.v1.ListGaragesResponse.data:type_name -> vietgara.tenant.v1.Garage
-	4,  // 11: vietgara.tenant.v1.CreateGarageRequest.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 12: vietgara.tenant.v1.CreateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 13: vietgara.tenant.v1.GetGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 14: vietgara.tenant.v1.UpdateGarageRequest.garage:type_name -> vietgara.tenant.v1.Garage
-	22, // 15: vietgara.tenant.v1.UpdateGarageRequest.update_mask:type_name -> google.protobuf.FieldMask
-	4,  // 16: vietgara.tenant.v1.UpdateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 17: vietgara.tenant.v1.UploadGarageLogoResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	4,  // 18: vietgara.tenant.v1.DeleteGarageLogoResponse.garage:type_name -> vietgara.tenant.v1.Garage
-	5,  // 19: vietgara.tenant.v1.GarageService.ListGarages:input_type -> vietgara.tenant.v1.ListGaragesRequest
-	7,  // 20: vietgara.tenant.v1.GarageService.CreateGarage:input_type -> vietgara.tenant.v1.CreateGarageRequest
-	9,  // 21: vietgara.tenant.v1.GarageService.GetGarage:input_type -> vietgara.tenant.v1.GetGarageRequest
-	11, // 22: vietgara.tenant.v1.GarageService.UpdateGarage:input_type -> vietgara.tenant.v1.UpdateGarageRequest
-	13, // 23: vietgara.tenant.v1.GarageService.UploadGarageLogo:input_type -> vietgara.tenant.v1.UploadGarageLogoRequest
-	15, // 24: vietgara.tenant.v1.GarageService.DeleteGarageLogo:input_type -> vietgara.tenant.v1.DeleteGarageLogoRequest
-	6,  // 25: vietgara.tenant.v1.GarageService.ListGarages:output_type -> vietgara.tenant.v1.ListGaragesResponse
-	8,  // 26: vietgara.tenant.v1.GarageService.CreateGarage:output_type -> vietgara.tenant.v1.CreateGarageResponse
-	10, // 27: vietgara.tenant.v1.GarageService.GetGarage:output_type -> vietgara.tenant.v1.GetGarageResponse
-	12, // 28: vietgara.tenant.v1.GarageService.UpdateGarage:output_type -> vietgara.tenant.v1.UpdateGarageResponse
-	14, // 29: vietgara.tenant.v1.GarageService.UploadGarageLogo:output_type -> vietgara.tenant.v1.UploadGarageLogoResponse
-	16, // 30: vietgara.tenant.v1.GarageService.DeleteGarageLogo:output_type -> vietgara.tenant.v1.DeleteGarageLogoResponse
-	25, // [25:31] is the sub-list for method output_type
-	19, // [19:25] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	2,  // 3: vietgara.tenant.v1.Garage.operating_hours:type_name -> vietgara.tenant.v1.DailyHours
+	3,  // 4: vietgara.tenant.v1.Garage.numbering:type_name -> vietgara.tenant.v1.NumberingTemplates
+	4,  // 5: vietgara.tenant.v1.Garage.access:type_name -> vietgara.tenant.v1.GarageAccess
+	20, // 6: vietgara.tenant.v1.Garage.created_at:type_name -> google.protobuf.Timestamp
+	20, // 7: vietgara.tenant.v1.Garage.updated_at:type_name -> google.protobuf.Timestamp
+	21, // 8: vietgara.tenant.v1.Garage.default_quote_approval_mode:type_name -> vietgara.common.v1.QuoteApprovalMode
+	22, // 9: vietgara.tenant.v1.Garage.bank:type_name -> vietgara.common.v1.BankDetails
+	1,  // 10: vietgara.tenant.v1.Garage.stock_issue_mode:type_name -> vietgara.tenant.v1.StockIssueMode
+	5,  // 11: vietgara.tenant.v1.ListGaragesResponse.data:type_name -> vietgara.tenant.v1.Garage
+	5,  // 12: vietgara.tenant.v1.CreateGarageRequest.garage:type_name -> vietgara.tenant.v1.Garage
+	5,  // 13: vietgara.tenant.v1.CreateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	5,  // 14: vietgara.tenant.v1.GetGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	5,  // 15: vietgara.tenant.v1.UpdateGarageRequest.garage:type_name -> vietgara.tenant.v1.Garage
+	23, // 16: vietgara.tenant.v1.UpdateGarageRequest.update_mask:type_name -> google.protobuf.FieldMask
+	5,  // 17: vietgara.tenant.v1.UpdateGarageResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	5,  // 18: vietgara.tenant.v1.UploadGarageLogoResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	5,  // 19: vietgara.tenant.v1.DeleteGarageLogoResponse.garage:type_name -> vietgara.tenant.v1.Garage
+	6,  // 20: vietgara.tenant.v1.GarageService.ListGarages:input_type -> vietgara.tenant.v1.ListGaragesRequest
+	8,  // 21: vietgara.tenant.v1.GarageService.CreateGarage:input_type -> vietgara.tenant.v1.CreateGarageRequest
+	10, // 22: vietgara.tenant.v1.GarageService.GetGarage:input_type -> vietgara.tenant.v1.GetGarageRequest
+	12, // 23: vietgara.tenant.v1.GarageService.UpdateGarage:input_type -> vietgara.tenant.v1.UpdateGarageRequest
+	14, // 24: vietgara.tenant.v1.GarageService.UploadGarageLogo:input_type -> vietgara.tenant.v1.UploadGarageLogoRequest
+	16, // 25: vietgara.tenant.v1.GarageService.DeleteGarageLogo:input_type -> vietgara.tenant.v1.DeleteGarageLogoRequest
+	7,  // 26: vietgara.tenant.v1.GarageService.ListGarages:output_type -> vietgara.tenant.v1.ListGaragesResponse
+	9,  // 27: vietgara.tenant.v1.GarageService.CreateGarage:output_type -> vietgara.tenant.v1.CreateGarageResponse
+	11, // 28: vietgara.tenant.v1.GarageService.GetGarage:output_type -> vietgara.tenant.v1.GetGarageResponse
+	13, // 29: vietgara.tenant.v1.GarageService.UpdateGarage:output_type -> vietgara.tenant.v1.UpdateGarageResponse
+	15, // 30: vietgara.tenant.v1.GarageService.UploadGarageLogo:output_type -> vietgara.tenant.v1.UploadGarageLogoResponse
+	17, // 31: vietgara.tenant.v1.GarageService.DeleteGarageLogo:output_type -> vietgara.tenant.v1.DeleteGarageLogoResponse
+	26, // [26:32] is the sub-list for method output_type
+	20, // [20:26] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_tenant_v1_garage_proto_init() }
@@ -1233,7 +1322,7 @@ func file_vietgara_tenant_v1_garage_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_tenant_v1_garage_proto_rawDesc), len(file_vietgara_tenant_v1_garage_proto_rawDesc)),
-			NumEnums:      1,
+			NumEnums:      2,
 			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
