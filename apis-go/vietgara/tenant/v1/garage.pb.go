@@ -378,7 +378,8 @@ type Garage struct {
 	Representative *string         `protobuf:"bytes,20,opt,name=representative,proto3,oneof" json:"representative,omitempty"`
 	Bank           *v1.BankDetails `protobuf:"bytes,21,opt,name=bank,proto3" json:"bank,omitempty"`
 	// When a repair order's draft stock issue posts (FR-INV-20, Release
-	// 7.0). Default ON_CLOSE.
+	// 7.0). Default ON_CLOSE. Changing it needs the same permission as other
+	// garage settings (PERMISSION_GARAGE_WRITE).
 	StockIssueMode StockIssueMode `protobuf:"varint,22,opt,name=stock_issue_mode,json=stockIssueMode,proto3,enum=vietgara.tenant.v1.StockIssueMode" json:"stock_issue_mode,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache

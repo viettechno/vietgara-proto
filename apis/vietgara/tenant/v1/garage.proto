@@ -95,7 +95,8 @@ message Garage {
   optional string representative = 20;
   vietgara.common.v1.BankDetails bank = 21;
   // When a repair order's draft stock issue posts (FR-INV-20, Release
-  // 7.0). Default ON_CLOSE.
+  // 7.0). Default ON_CLOSE. Changing it needs the same permission as other
+  // garage settings (PERMISSION_GARAGE_WRITE).
   StockIssueMode stock_issue_mode = 22;
 }
 

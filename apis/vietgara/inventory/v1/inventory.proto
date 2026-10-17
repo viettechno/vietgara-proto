@@ -171,10 +171,12 @@ message GoodsReceiptLine {
   string supplier_id = 10;
   string supplier_name = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
   // VND per entered unit, as typed; stored per base unit. Zero means "not
-  // recorded".
-  int64 unit_cost = 12;
-  // entered_quantity times unit_cost, whole VND (running total).
-  int64 line_amount = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // recorded". Omitted from answers when the caller lacks
+  // PERMISSION_INVENTORY_COST_READ; such a caller cannot set it either.
+  optional int64 unit_cost = 12;
+  // entered_quantity times unit_cost, whole VND, rounded half-up per line
+  // (running total). Omitted without PERMISSION_INVENTORY_COST_READ.
+  optional int64 line_amount = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // GoodsReceipt is a numbered multi-line document recording a delivery
@@ -197,8 +199,9 @@ message GoodsReceipt {
   string delivery_note_number = 8;
   string notes = 9;
   repeated GoodsReceiptLine lines = 10;
-  // Sum of the lines' amounts, whole VND.
-  int64 total_amount = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Sum of the lines' amounts, whole VND. Omitted without
+  // PERMISSION_INVENTORY_COST_READ.
+  optional int64 total_amount = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Set when the receipt is completed / cancelled.
   google.protobuf.Timestamp completed_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp cancelled_at = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -244,8 +247,11 @@ message UpdateGoodsReceiptRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string goods_receipt_id = 2 [(google.api.field_behavior) = REQUIRED];
   GoodsReceipt goods_receipt = 3 [(google.api.field_behavior) = REQUIRED];
-  // Fields of the receipt and of its lines to replace; filled from the
-  // JSON body when omitted.
+  // Fields of the receipt to replace; filled from the JSON body when
+  // omitted. Only a DRAFT receipt can be updated (otherwise
+  // GOODS_RECEIPT_NOT_DRAFT). "lines" replaces the whole list: lines are
+  // matched by id, a line without an id is added and an existing line left
+  // out is removed; partial line masks are not supported.
   google.protobuf.FieldMask update_mask = 4;
 }
 
@@ -497,7 +503,8 @@ service InventoryService {
   }
 
   // Completing posts the receipt's stock movements; refused with
-  // SUPPLIER_REQUIRED while a line has no supplier.
+  // SUPPLIER_REQUIRED while a line has no supplier and with
+  // GOODS_RECEIPT_NOT_DRAFT unless the receipt is a draft.
   rpc CompleteGoodsReceipt(CompleteGoodsReceiptRequest) returns (CompleteGoodsReceiptResponse) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}:complete"
@@ -506,7 +513,11 @@ service InventoryService {
     };
   }
 
-  // Cancelling a completed receipt reverses its stock movements.
+  // Cancelling a draft just closes it. Cancelling a completed receipt
+  // reverses its stock movements, and is refused with
+  // INSUFFICIENT_STOCK_TO_REVERSE when the reversal would take a part below
+  // zero. A cancelled receipt cannot be cancelled again
+  // (GOODS_RECEIPT_ALREADY_CANCELLED).
   rpc CancelGoodsReceipt(CancelGoodsReceiptRequest) returns (CancelGoodsReceiptResponse) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}:cancel"
@@ -535,7 +546,8 @@ service InventoryService {
   }
 
   // Posts the issue now ("issue now"); otherwise the repair order's
-  // closing posts it.
+  // closing posts it. A stock issue has no cancel RPC: the repair order
+  // cancels its draft issue.
   rpc PostStockIssue(PostStockIssueRequest) returns (PostStockIssueResponse) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/stock-issues/{stock_issue_id}:post"
@@ -545,13 +557,15 @@ service InventoryService {
   }
 
   // Purchases by supplier and period (FR-INV-19), from completed goods
-  // receipts. Needs PERMISSION_INVENTORY_COST_READ.
+  // receipts. Needs PERMISSION_INVENTORY_COST_READ; without it the whole call
+  // is refused with PERMISSION_DENIED (its cost fields are not omitted).
   rpc GetPurchasesReport(GetPurchasesReportRequest) returns (GetPurchasesReportResponse) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/purchases"};
   }
 
   // Quantity and value per part and category at a date (FR-INV-07). Needs
-  // PERMISSION_INVENTORY_COST_READ.
+  // PERMISSION_INVENTORY_COST_READ; without it the whole call is refused
+  // with PERMISSION_DENIED (its cost fields are not omitted).
   rpc GetStockValuationReport(GetStockValuationReportRequest) returns (GetStockValuationReportResponse) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/stock-valuation"};
   }

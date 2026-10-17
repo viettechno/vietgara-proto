@@ -991,10 +991,12 @@ type GoodsReceiptLine struct {
 	SupplierId   string `protobuf:"bytes,10,opt,name=supplier_id,json=supplierId,proto3" json:"supplier_id,omitempty"`
 	SupplierName string `protobuf:"bytes,11,opt,name=supplier_name,json=supplierName,proto3" json:"supplier_name,omitempty"`
 	// VND per entered unit, as typed; stored per base unit. Zero means "not
-	// recorded".
-	UnitCost int64 `protobuf:"varint,12,opt,name=unit_cost,json=unitCost,proto3" json:"unit_cost,omitempty"`
-	// entered_quantity times unit_cost, whole VND (running total).
-	LineAmount    int64 `protobuf:"varint,13,opt,name=line_amount,json=lineAmount,proto3" json:"line_amount,omitempty"`
+	// recorded". Omitted from answers when the caller lacks
+	// PERMISSION_INVENTORY_COST_READ; such a caller cannot set it either.
+	UnitCost *int64 `protobuf:"varint,12,opt,name=unit_cost,json=unitCost,proto3,oneof" json:"unit_cost,omitempty"`
+	// entered_quantity times unit_cost, whole VND, rounded half-up per line
+	// (running total). Omitted without PERMISSION_INVENTORY_COST_READ.
+	LineAmount    *int64 `protobuf:"varint,13,opt,name=line_amount,json=lineAmount,proto3,oneof" json:"line_amount,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1107,15 +1109,15 @@ func (x *GoodsReceiptLine) GetSupplierName() string {
 }
 
 func (x *GoodsReceiptLine) GetUnitCost() int64 {
-	if x != nil {
-		return x.UnitCost
+	if x != nil && x.UnitCost != nil {
+		return *x.UnitCost
 	}
 	return 0
 }
 
 func (x *GoodsReceiptLine) GetLineAmount() int64 {
-	if x != nil {
-		return x.LineAmount
+	if x != nil && x.LineAmount != nil {
+		return *x.LineAmount
 	}
 	return 0
 }
@@ -1141,8 +1143,9 @@ type GoodsReceipt struct {
 	DeliveryNoteNumber string              `protobuf:"bytes,8,opt,name=delivery_note_number,json=deliveryNoteNumber,proto3" json:"delivery_note_number,omitempty"`
 	Notes              string              `protobuf:"bytes,9,opt,name=notes,proto3" json:"notes,omitempty"`
 	Lines              []*GoodsReceiptLine `protobuf:"bytes,10,rep,name=lines,proto3" json:"lines,omitempty"`
-	// Sum of the lines' amounts, whole VND.
-	TotalAmount int64 `protobuf:"varint,11,opt,name=total_amount,json=totalAmount,proto3" json:"total_amount,omitempty"`
+	// Sum of the lines' amounts, whole VND. Omitted without
+	// PERMISSION_INVENTORY_COST_READ.
+	TotalAmount *int64 `protobuf:"varint,11,opt,name=total_amount,json=totalAmount,proto3,oneof" json:"total_amount,omitempty"`
 	// Set when the receipt is completed / cancelled.
 	CompletedAt   *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
 	CancelledAt   *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=cancelled_at,json=cancelledAt,proto3" json:"cancelled_at,omitempty"`
@@ -1253,8 +1256,8 @@ func (x *GoodsReceipt) GetLines() []*GoodsReceiptLine {
 }
 
 func (x *GoodsReceipt) GetTotalAmount() int64 {
-	if x != nil {
-		return x.TotalAmount
+	if x != nil && x.TotalAmount != nil {
+		return *x.TotalAmount
 	}
 	return 0
 }
@@ -1622,8 +1625,11 @@ type UpdateGoodsReceiptRequest struct {
 	GarageId       string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	GoodsReceiptId string                 `protobuf:"bytes,2,opt,name=goods_receipt_id,json=goodsReceiptId,proto3" json:"goods_receipt_id,omitempty"`
 	GoodsReceipt   *GoodsReceipt          `protobuf:"bytes,3,opt,name=goods_receipt,json=goodsReceipt,proto3" json:"goods_receipt,omitempty"`
-	// Fields of the receipt and of its lines to replace; filled from the
-	// JSON body when omitted.
+	// Fields of the receipt to replace; filled from the JSON body when
+	// omitted. Only a DRAFT receipt can be updated (otherwise
+	// GOODS_RECEIPT_NOT_DRAFT). "lines" replaces the whole list: lines are
+	// matched by id, a line without an id is added and an existing line left
+	// out is removed; partial line masks are not supported.
 	UpdateMask    *fieldmaskpb.FieldMask `protobuf:"bytes,4,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -3292,7 +3298,7 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\x04data\x18\x01 \x03(\v2'.vietgara.inventory.v1.StockTransactionR\x04data\x12>\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1e.vietgara.common.v1.PaginationR\n" +
-	"pagination\"\xf8\x03\n" +
+	"pagination\"\xa0\x04\n" +
 	"\x10GoodsReceiptLine\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x1c\n" +
 	"\aitem_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06itemId\x12\x1e\n" +
@@ -3306,12 +3312,15 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\vsupplier_id\x18\n" +
 	" \x01(\tR\n" +
 	"supplierId\x12(\n" +
-	"\rsupplier_name\x18\v \x01(\tB\x03\xe0A\x03R\fsupplierName\x12\x1b\n" +
-	"\tunit_cost\x18\f \x01(\x03R\bunitCost\x12$\n" +
-	"\vline_amount\x18\r \x01(\x03B\x03\xe0A\x03R\n" +
-	"lineAmountB\n" +
+	"\rsupplier_name\x18\v \x01(\tB\x03\xe0A\x03R\fsupplierName\x12 \n" +
+	"\tunit_cost\x18\f \x01(\x03H\x01R\bunitCost\x88\x01\x01\x12)\n" +
+	"\vline_amount\x18\r \x01(\x03B\x03\xe0A\x03H\x02R\n" +
+	"lineAmount\x88\x01\x01B\n" +
 	"\n" +
-	"\b_unit_id\"\x8a\x06\n" +
+	"\b_unit_idB\f\n" +
+	"\n" +
+	"_unit_costB\x0e\n" +
+	"\f_line_amount\"\xa0\x06\n" +
 	"\fGoodsReceipt\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
 	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\x1b\n" +
@@ -3323,15 +3332,16 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\x14delivery_note_number\x18\b \x01(\tR\x12deliveryNoteNumber\x12\x14\n" +
 	"\x05notes\x18\t \x01(\tR\x05notes\x12=\n" +
 	"\x05lines\x18\n" +
-	" \x03(\v2'.vietgara.inventory.v1.GoodsReceiptLineR\x05lines\x12&\n" +
-	"\ftotal_amount\x18\v \x01(\x03B\x03\xe0A\x03R\vtotalAmount\x12B\n" +
+	" \x03(\v2'.vietgara.inventory.v1.GoodsReceiptLineR\x05lines\x12+\n" +
+	"\ftotal_amount\x18\v \x01(\x03B\x03\xe0A\x03H\x01R\vtotalAmount\x88\x01\x01\x12B\n" +
 	"\fcompleted_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\vcompletedAt\x12B\n" +
 	"\fcancelled_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\vcancelledAt\x12>\n" +
 	"\n" +
 	"created_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
 	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\x16\n" +
-	"\x14_default_supplier_id\"\xe7\x01\n" +
+	"\x14_default_supplier_idB\x0f\n" +
+	"\r_total_amount\"\xe7\x01\n" +
 	"\x18ListGoodsReceiptsRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x14\n" +
 	"\x05query\x18\x02 \x01(\tR\x05query\x12\x1f\n" +

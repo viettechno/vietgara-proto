@@ -57,9 +57,14 @@ type InventoryServiceClient interface {
 	CreateGoodsReceipt(ctx context.Context, in *CreateGoodsReceiptRequest, opts ...grpc.CallOption) (*CreateGoodsReceiptResponse, error)
 	UpdateGoodsReceipt(ctx context.Context, in *UpdateGoodsReceiptRequest, opts ...grpc.CallOption) (*UpdateGoodsReceiptResponse, error)
 	// Completing posts the receipt's stock movements; refused with
-	// SUPPLIER_REQUIRED while a line has no supplier.
+	// SUPPLIER_REQUIRED while a line has no supplier and with
+	// GOODS_RECEIPT_NOT_DRAFT unless the receipt is a draft.
 	CompleteGoodsReceipt(ctx context.Context, in *CompleteGoodsReceiptRequest, opts ...grpc.CallOption) (*CompleteGoodsReceiptResponse, error)
-	// Cancelling a completed receipt reverses its stock movements.
+	// Cancelling a draft just closes it. Cancelling a completed receipt
+	// reverses its stock movements, and is refused with
+	// INSUFFICIENT_STOCK_TO_REVERSE when the reversal would take a part below
+	// zero. A cancelled receipt cannot be cancelled again
+	// (GOODS_RECEIPT_ALREADY_CANCELLED).
 	CancelGoodsReceipt(ctx context.Context, in *CancelGoodsReceiptRequest, opts ...grpc.CallOption) (*CancelGoodsReceiptResponse, error)
 	// The usual suppliers of a part with their code, last cost and default
 	// (FR-INV-19, Release 7.0).
@@ -69,13 +74,16 @@ type InventoryServiceClient interface {
 	// created with the order and, while a draft, following its part lines.
 	GetRepairOrderStockIssue(ctx context.Context, in *GetRepairOrderStockIssueRequest, opts ...grpc.CallOption) (*GetRepairOrderStockIssueResponse, error)
 	// Posts the issue now ("issue now"); otherwise the repair order's
-	// closing posts it.
+	// closing posts it. A stock issue has no cancel RPC: the repair order
+	// cancels its draft issue.
 	PostStockIssue(ctx context.Context, in *PostStockIssueRequest, opts ...grpc.CallOption) (*PostStockIssueResponse, error)
 	// Purchases by supplier and period (FR-INV-19), from completed goods
-	// receipts. Needs PERMISSION_INVENTORY_COST_READ.
+	// receipts. Needs PERMISSION_INVENTORY_COST_READ; without it the whole call
+	// is refused with PERMISSION_DENIED (its cost fields are not omitted).
 	GetPurchasesReport(ctx context.Context, in *GetPurchasesReportRequest, opts ...grpc.CallOption) (*GetPurchasesReportResponse, error)
 	// Quantity and value per part and category at a date (FR-INV-07). Needs
-	// PERMISSION_INVENTORY_COST_READ.
+	// PERMISSION_INVENTORY_COST_READ; without it the whole call is refused
+	// with PERMISSION_DENIED (its cost fields are not omitted).
 	GetStockValuationReport(ctx context.Context, in *GetStockValuationReportRequest, opts ...grpc.CallOption) (*GetStockValuationReportResponse, error)
 }
 
@@ -258,9 +266,14 @@ type InventoryServiceServer interface {
 	CreateGoodsReceipt(context.Context, *CreateGoodsReceiptRequest) (*CreateGoodsReceiptResponse, error)
 	UpdateGoodsReceipt(context.Context, *UpdateGoodsReceiptRequest) (*UpdateGoodsReceiptResponse, error)
 	// Completing posts the receipt's stock movements; refused with
-	// SUPPLIER_REQUIRED while a line has no supplier.
+	// SUPPLIER_REQUIRED while a line has no supplier and with
+	// GOODS_RECEIPT_NOT_DRAFT unless the receipt is a draft.
 	CompleteGoodsReceipt(context.Context, *CompleteGoodsReceiptRequest) (*CompleteGoodsReceiptResponse, error)
-	// Cancelling a completed receipt reverses its stock movements.
+	// Cancelling a draft just closes it. Cancelling a completed receipt
+	// reverses its stock movements, and is refused with
+	// INSUFFICIENT_STOCK_TO_REVERSE when the reversal would take a part below
+	// zero. A cancelled receipt cannot be cancelled again
+	// (GOODS_RECEIPT_ALREADY_CANCELLED).
 	CancelGoodsReceipt(context.Context, *CancelGoodsReceiptRequest) (*CancelGoodsReceiptResponse, error)
 	// The usual suppliers of a part with their code, last cost and default
 	// (FR-INV-19, Release 7.0).
@@ -270,13 +283,16 @@ type InventoryServiceServer interface {
 	// created with the order and, while a draft, following its part lines.
 	GetRepairOrderStockIssue(context.Context, *GetRepairOrderStockIssueRequest) (*GetRepairOrderStockIssueResponse, error)
 	// Posts the issue now ("issue now"); otherwise the repair order's
-	// closing posts it.
+	// closing posts it. A stock issue has no cancel RPC: the repair order
+	// cancels its draft issue.
 	PostStockIssue(context.Context, *PostStockIssueRequest) (*PostStockIssueResponse, error)
 	// Purchases by supplier and period (FR-INV-19), from completed goods
-	// receipts. Needs PERMISSION_INVENTORY_COST_READ.
+	// receipts. Needs PERMISSION_INVENTORY_COST_READ; without it the whole call
+	// is refused with PERMISSION_DENIED (its cost fields are not omitted).
 	GetPurchasesReport(context.Context, *GetPurchasesReportRequest) (*GetPurchasesReportResponse, error)
 	// Quantity and value per part and category at a date (FR-INV-07). Needs
-	// PERMISSION_INVENTORY_COST_READ.
+	// PERMISSION_INVENTORY_COST_READ; without it the whole call is refused
+	// with PERMISSION_DENIED (its cost fields are not omitted).
 	GetStockValuationReport(context.Context, *GetStockValuationReportRequest) (*GetStockValuationReportResponse, error)
 	mustEmbedUnimplementedInventoryServiceServer()
 }

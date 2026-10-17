@@ -471,8 +471,10 @@ type ExportPurchasesExcelRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	// Same optional filters as InventoryService.GetPurchasesReport.
-	SupplierId    string `protobuf:"bytes,2,opt,name=supplier_id,json=supplierId,proto3" json:"supplier_id,omitempty"`
-	From          string `protobuf:"bytes,3,opt,name=from,proto3" json:"from,omitempty"`
+	SupplierId string `protobuf:"bytes,2,opt,name=supplier_id,json=supplierId,proto3" json:"supplier_id,omitempty"`
+	// Inclusive, "YYYY-MM-DD" in the garage's timezone.
+	From string `protobuf:"bytes,3,opt,name=from,proto3" json:"from,omitempty"`
+	// Exclusive, "YYYY-MM-DD".
 	To            string `protobuf:"bytes,4,opt,name=to,proto3" json:"to,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

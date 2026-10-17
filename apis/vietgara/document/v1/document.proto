@@ -59,7 +59,9 @@ message ExportPurchasesExcelRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   // Same optional filters as InventoryService.GetPurchasesReport.
   string supplier_id = 2;
+  // Inclusive, "YYYY-MM-DD" in the garage's timezone.
   string from = 3;
+  // Exclusive, "YYYY-MM-DD".
   string to = 4;
 }
 

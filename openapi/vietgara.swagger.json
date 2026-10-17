@@ -2220,7 +2220,7 @@
     },
     "/api/v1/garages/{garageId}/goods-receipts/{goodsReceiptId}:cancel": {
       "post": {
-        "summary": "Cancelling a completed receipt reverses its stock movements.",
+        "summary": "Cancelling a draft just closes it. Cancelling a completed receipt\nreverses its stock movements, and is refused with\nINSUFFICIENT_STOCK_TO_REVERSE when the reversal would take a part below\nzero. A cancelled receipt cannot be cancelled again\n(GOODS_RECEIPT_ALREADY_CANCELLED).",
         "operationId": "InventoryService_CancelGoodsReceipt",
         "responses": {
           "200": {
@@ -2265,7 +2265,7 @@
     },
     "/api/v1/garages/{garageId}/goods-receipts/{goodsReceiptId}:complete": {
       "post": {
-        "summary": "Completing posts the receipt's stock movements; refused with\nSUPPLIER_REQUIRED while a line has no supplier.",
+        "summary": "Completing posts the receipt's stock movements; refused with\nSUPPLIER_REQUIRED while a line has no supplier and with\nGOODS_RECEIPT_NOT_DRAFT unless the receipt is a draft.",
         "operationId": "InventoryService_CompleteGoodsReceipt",
         "responses": {
           "200": {
@@ -4001,7 +4001,7 @@
     },
     "/api/v1/garages/{garageId}/reports/purchases": {
       "get": {
-        "summary": "Purchases by supplier and period (FR-INV-19), from completed goods\nreceipts. Needs PERMISSION_INVENTORY_COST_READ.",
+        "summary": "Purchases by supplier and period (FR-INV-19), from completed goods\nreceipts. Needs PERMISSION_INVENTORY_COST_READ; without it the whole call\nis refused with PERMISSION_DENIED (its cost fields are not omitted).",
         "operationId": "InventoryService_GetPurchasesReport",
         "responses": {
           "200": {
@@ -4084,12 +4084,14 @@
           },
           {
             "name": "from",
+            "description": "Inclusive, \"YYYY-MM-DD\" in the garage's timezone.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "to",
+            "description": "Exclusive, \"YYYY-MM-DD\".",
             "in": "query",
             "required": false,
             "type": "string"
@@ -4314,7 +4316,7 @@
     },
     "/api/v1/garages/{garageId}/reports/stock-valuation": {
       "get": {
-        "summary": "Quantity and value per part and category at a date (FR-INV-07). Needs\nPERMISSION_INVENTORY_COST_READ.",
+        "summary": "Quantity and value per part and category at a date (FR-INV-07). Needs\nPERMISSION_INVENTORY_COST_READ; without it the whole call is refused\nwith PERMISSION_DENIED (its cost fields are not omitted).",
         "operationId": "InventoryService_GetStockValuationReport",
         "responses": {
           "200": {
@@ -5041,7 +5043,7 @@
     },
     "/api/v1/garages/{garageId}/stock-issues/{stockIssueId}:post": {
       "post": {
-        "summary": "Posts the issue now (\"issue now\"); otherwise the repair order's\nclosing posts it.",
+        "summary": "Posts the issue now (\"issue now\"); otherwise the repair order's\nclosing posts it. A stock issue has no cancel RPC: the repair order\ncancels its draft issue.",
         "operationId": "InventoryService_PostStockIssue",
         "responses": {
           "200": {
@@ -8407,7 +8409,7 @@
         },
         "stockIssueMode": {
           "$ref": "#/definitions/v1StockIssueMode",
-          "description": "When a repair order's draft stock issue posts (FR-INV-20, Release\n7.0). Default ON_CLOSE."
+          "description": "When a repair order's draft stock issue posts (FR-INV-20, Release\n7.0). Default ON_CLOSE. Changing it needs the same permission as other\ngarage settings (PERMISSION_GARAGE_WRITE)."
         }
       },
       "description": "Garage is one tenant (branch) owned by a user (FR-TEN-01/02).",
@@ -8839,7 +8841,7 @@
         "totalAmount": {
           "type": "string",
           "format": "int64",
-          "description": "Sum of the lines' amounts, whole VND.",
+          "description": "Sum of the lines' amounts, whole VND. Omitted without\nPERMISSION_INVENTORY_COST_READ.",
           "readOnly": true
         },
         "completedAt": {
@@ -8918,12 +8920,12 @@
         "unitCost": {
           "type": "string",
           "format": "int64",
-          "description": "VND per entered unit, as typed; stored per base unit. Zero means \"not\nrecorded\"."
+          "description": "VND per entered unit, as typed; stored per base unit. Zero means \"not\nrecorded\". Omitted from answers when the caller lacks\nPERMISSION_INVENTORY_COST_READ; such a caller cannot set it either."
         },
         "lineAmount": {
           "type": "string",
           "format": "int64",
-          "description": "entered_quantity times unit_cost, whole VND (running total).",
+          "description": "entered_quantity times unit_cost, whole VND, rounded half-up per line\n(running total). Omitted without PERMISSION_INVENTORY_COST_READ.",
           "readOnly": true
         }
       },
