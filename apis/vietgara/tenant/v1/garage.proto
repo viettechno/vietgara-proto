@@ -45,6 +45,12 @@ message NumberingTemplates {
   string goods_receipt = 5;
   // Stock issue (phiếu xuất kho) numbers (FR-INV-20, Release 7.0).
   string stock_issue = 6;
+  // Stock count numbers (FR-INV-12, Release 7.1).
+  string stock_count = 7;
+  // Write-off numbers (FR-INV-09, Release 7.1).
+  string write_off = 8;
+  // Return to supplier numbers (FR-INV-10, Release 7.1).
+  string supplier_return = 9;
 }
 
 // StockIssueMode is when a repair order's draft stock issue posts

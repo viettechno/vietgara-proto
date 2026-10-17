@@ -213,9 +213,15 @@ type NumberingTemplates struct {
 	// Goods receipt numbers (FR-INV-06, Release 7.0).
 	GoodsReceipt string `protobuf:"bytes,5,opt,name=goods_receipt,json=goodsReceipt,proto3" json:"goods_receipt,omitempty"`
 	// Stock issue (phiếu xuất kho) numbers (FR-INV-20, Release 7.0).
-	StockIssue    string `protobuf:"bytes,6,opt,name=stock_issue,json=stockIssue,proto3" json:"stock_issue,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	StockIssue string `protobuf:"bytes,6,opt,name=stock_issue,json=stockIssue,proto3" json:"stock_issue,omitempty"`
+	// Stock count numbers (FR-INV-12, Release 7.1).
+	StockCount string `protobuf:"bytes,7,opt,name=stock_count,json=stockCount,proto3" json:"stock_count,omitempty"`
+	// Write-off numbers (FR-INV-09, Release 7.1).
+	WriteOff string `protobuf:"bytes,8,opt,name=write_off,json=writeOff,proto3" json:"write_off,omitempty"`
+	// Return to supplier numbers (FR-INV-10, Release 7.1).
+	SupplierReturn string `protobuf:"bytes,9,opt,name=supplier_return,json=supplierReturn,proto3" json:"supplier_return,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *NumberingTemplates) Reset() {
@@ -286,6 +292,27 @@ func (x *NumberingTemplates) GetGoodsReceipt() string {
 func (x *NumberingTemplates) GetStockIssue() string {
 	if x != nil {
 		return x.StockIssue
+	}
+	return ""
+}
+
+func (x *NumberingTemplates) GetStockCount() string {
+	if x != nil {
+		return x.StockCount
+	}
+	return ""
+}
+
+func (x *NumberingTemplates) GetWriteOff() string {
+	if x != nil {
+		return x.WriteOff
+	}
+	return ""
+}
+
+func (x *NumberingTemplates) GetSupplierReturn() string {
+	if x != nil {
+		return x.SupplierReturn
 	}
 	return ""
 }
@@ -1137,7 +1164,7 @@ const file_vietgara_tenant_v1_garage_proto_rawDesc = "" +
 	"\x03day\x18\x01 \x01(\x0e2\x16.google.type.DayOfWeekR\x03day\x12\x16\n" +
 	"\x06closed\x18\x02 \x01(\bR\x06closed\x12\x12\n" +
 	"\x04open\x18\x03 \x01(\tR\x04open\x12\x14\n" +
-	"\x05close\x18\x04 \x01(\tR\x05close\"\xdc\x01\n" +
+	"\x05close\x18\x04 \x01(\tR\x05close\"\xc3\x02\n" +
 	"\x12NumberingTemplates\x12\x14\n" +
 	"\x05quote\x18\x01 \x01(\tR\x05quote\x12!\n" +
 	"\frepair_order\x18\x02 \x01(\tR\vrepairOrder\x12\x1e\n" +
@@ -1147,7 +1174,11 @@ const file_vietgara_tenant_v1_garage_proto_rawDesc = "" +
 	"\x0fpayment_voucher\x18\x04 \x01(\tR\x0epaymentVoucher\x12#\n" +
 	"\rgoods_receipt\x18\x05 \x01(\tR\fgoodsReceipt\x12\x1f\n" +
 	"\vstock_issue\x18\x06 \x01(\tR\n" +
-	"stockIssue\"f\n" +
+	"stockIssue\x12\x1f\n" +
+	"\vstock_count\x18\a \x01(\tR\n" +
+	"stockCount\x12\x1b\n" +
+	"\twrite_off\x18\b \x01(\tR\bwriteOff\x12'\n" +
+	"\x0fsupplier_return\x18\t \x01(\tR\x0esupplierReturn\"f\n" +
 	"\fGarageAccess\x12\x14\n" +
 	"\x05owner\x18\x01 \x01(\bR\x05owner\x12@\n" +
 	"\vpermissions\x18\x02 \x03(\x0e2\x1e.vietgara.tenant.v1.PermissionR\vpermissions\"\x8b\t\n" +

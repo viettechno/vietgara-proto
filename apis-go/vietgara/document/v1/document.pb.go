@@ -467,6 +467,58 @@ func (x *ExportStockIssuePdfRequest) GetRepairOrderId() string {
 	return ""
 }
 
+type ExportStockCountExcelRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	StockCountId  string                 `protobuf:"bytes,2,opt,name=stock_count_id,json=stockCountId,proto3" json:"stock_count_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExportStockCountExcelRequest) Reset() {
+	*x = ExportStockCountExcelRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExportStockCountExcelRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExportStockCountExcelRequest) ProtoMessage() {}
+
+func (x *ExportStockCountExcelRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExportStockCountExcelRequest.ProtoReflect.Descriptor instead.
+func (*ExportStockCountExcelRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ExportStockCountExcelRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *ExportStockCountExcelRequest) GetStockCountId() string {
+	if x != nil {
+		return x.StockCountId
+	}
+	return ""
+}
+
 type ExportPurchasesExcelRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
@@ -482,7 +534,7 @@ type ExportPurchasesExcelRequest struct {
 
 func (x *ExportPurchasesExcelRequest) Reset() {
 	*x = ExportPurchasesExcelRequest{}
-	mi := &file_vietgara_document_v1_document_proto_msgTypes[8]
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -494,7 +546,7 @@ func (x *ExportPurchasesExcelRequest) String() string {
 func (*ExportPurchasesExcelRequest) ProtoMessage() {}
 
 func (x *ExportPurchasesExcelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_document_v1_document_proto_msgTypes[8]
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -507,7 +559,7 @@ func (x *ExportPurchasesExcelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExportPurchasesExcelRequest.ProtoReflect.Descriptor instead.
 func (*ExportPurchasesExcelRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{8}
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ExportPurchasesExcelRequest) GetGarageId() string {
@@ -549,7 +601,7 @@ type ExportStockValuationExcelRequest struct {
 
 func (x *ExportStockValuationExcelRequest) Reset() {
 	*x = ExportStockValuationExcelRequest{}
-	mi := &file_vietgara_document_v1_document_proto_msgTypes[9]
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -561,7 +613,7 @@ func (x *ExportStockValuationExcelRequest) String() string {
 func (*ExportStockValuationExcelRequest) ProtoMessage() {}
 
 func (x *ExportStockValuationExcelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_document_v1_document_proto_msgTypes[9]
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -574,7 +626,7 @@ func (x *ExportStockValuationExcelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExportStockValuationExcelRequest.ProtoReflect.Descriptor instead.
 func (*ExportStockValuationExcelRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{9}
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ExportStockValuationExcelRequest) GetGarageId() string {
@@ -623,7 +675,10 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\x10goods_receipt_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0egoodsReceiptId\"k\n" +
 	"\x1aExportStockIssuePdfRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12+\n" +
-	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\"\x84\x01\n" +
+	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\"k\n" +
+	"\x1cExportStockCountExcelRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12)\n" +
+	"\x0estock_count_id\x18\x02 \x01(\tB\x03\xe0A\x02R\fstockCountId\"\x84\x01\n" +
 	"\x1bExportPurchasesExcelRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1f\n" +
 	"\vsupplier_id\x18\x02 \x01(\tR\n" +
@@ -632,7 +687,7 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\x02to\x18\x04 \x01(\tR\x02to\"T\n" +
 	" ExportStockValuationExcelRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x0e\n" +
-	"\x02at\x18\x02 \x01(\tR\x02at2\xcd\r\n" +
+	"\x02at\x18\x02 \x01(\tR\x02at2\xfa\x0e\n" +
 	"\x0fDocumentService\x12\x8e\x01\n" +
 	"\x0eExportQuotePdf\x12+.vietgara.document.v1.ExportQuotePdfRequest\x1a\x14.google.api.HttpBody\"9\x82\xd3\xe4\x93\x023\x121/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf\x12\xa8\x01\n" +
 	"\x14ExportRepairOrderPdf\x121.vietgara.document.v1.ExportRepairOrderPdfRequest\x1a\x14.google.api.HttpBody\"G\x82\xd3\xe4\x93\x02A\x12?/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/pdf\x12\xb8\x01\n" +
@@ -641,7 +696,8 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\x19ExportStockMovementsExcel\x126.vietgara.document.v1.ExportStockMovementsExcelRequest\x1a\x14.google.api.HttpBody\"A\x82\xd3\xe4\x93\x02;\x129/api/v1/garages/{garage_id}/reports/stock-movements/excel\x12\x96\x01\n" +
 	"\x12ExportRevenueExcel\x12/.vietgara.document.v1.ExportRevenueExcelRequest\x1a\x14.google.api.HttpBody\"9\x82\xd3\xe4\x93\x023\x121/api/v1/garages/{garage_id}/reports/revenue/excel\x12\xac\x01\n" +
 	"\x15ExportGoodsReceiptPdf\x122.vietgara.document.v1.ExportGoodsReceiptPdfRequest\x1a\x14.google.api.HttpBody\"I\x82\xd3\xe4\x93\x02C\x12A/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}/pdf\x12\xb2\x01\n" +
-	"\x13ExportStockIssuePdf\x120.vietgara.document.v1.ExportStockIssuePdfRequest\x1a\x14.google.api.HttpBody\"S\x82\xd3\xe4\x93\x02M\x12K/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue/pdf\x12\x9c\x01\n" +
+	"\x13ExportStockIssuePdf\x120.vietgara.document.v1.ExportStockIssuePdfRequest\x1a\x14.google.api.HttpBody\"S\x82\xd3\xe4\x93\x02M\x12K/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue/pdf\x12\xaa\x01\n" +
+	"\x15ExportStockCountExcel\x122.vietgara.document.v1.ExportStockCountExcelRequest\x1a\x14.google.api.HttpBody\"G\x82\xd3\xe4\x93\x02A\x12?/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}/excel\x12\x9c\x01\n" +
 	"\x14ExportPurchasesExcel\x121.vietgara.document.v1.ExportPurchasesExcelRequest\x1a\x14.google.api.HttpBody\";\x82\xd3\xe4\x93\x025\x123/api/v1/garages/{garage_id}/reports/purchases/excel\x12\xac\x01\n" +
 	"\x19ExportStockValuationExcel\x126.vietgara.document.v1.ExportStockValuationExcelRequest\x1a\x14.google.api.HttpBody\"A\x82\xd3\xe4\x93\x02;\x129/api/v1/garages/{garage_id}/reports/stock-valuation/excelBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/document/v1;documentv1b\x06proto3"
 
@@ -657,7 +713,7 @@ func file_vietgara_document_v1_document_proto_rawDescGZIP() []byte {
 	return file_vietgara_document_v1_document_proto_rawDescData
 }
 
-var file_vietgara_document_v1_document_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_vietgara_document_v1_document_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_vietgara_document_v1_document_proto_goTypes = []any{
 	(*ExportQuotePdfRequest)(nil),             // 0: vietgara.document.v1.ExportQuotePdfRequest
 	(*ExportRepairOrderPdfRequest)(nil),       // 1: vietgara.document.v1.ExportRepairOrderPdfRequest
@@ -667,13 +723,14 @@ var file_vietgara_document_v1_document_proto_goTypes = []any{
 	(*ExportRevenueExcelRequest)(nil),         // 5: vietgara.document.v1.ExportRevenueExcelRequest
 	(*ExportGoodsReceiptPdfRequest)(nil),      // 6: vietgara.document.v1.ExportGoodsReceiptPdfRequest
 	(*ExportStockIssuePdfRequest)(nil),        // 7: vietgara.document.v1.ExportStockIssuePdfRequest
-	(*ExportPurchasesExcelRequest)(nil),       // 8: vietgara.document.v1.ExportPurchasesExcelRequest
-	(*ExportStockValuationExcelRequest)(nil),  // 9: vietgara.document.v1.ExportStockValuationExcelRequest
-	(v1.RevenuePeriod)(0),                     // 10: vietgara.reporting.v1.RevenuePeriod
-	(*httpbody.HttpBody)(nil),                 // 11: google.api.HttpBody
+	(*ExportStockCountExcelRequest)(nil),      // 8: vietgara.document.v1.ExportStockCountExcelRequest
+	(*ExportPurchasesExcelRequest)(nil),       // 9: vietgara.document.v1.ExportPurchasesExcelRequest
+	(*ExportStockValuationExcelRequest)(nil),  // 10: vietgara.document.v1.ExportStockValuationExcelRequest
+	(v1.RevenuePeriod)(0),                     // 11: vietgara.reporting.v1.RevenuePeriod
+	(*httpbody.HttpBody)(nil),                 // 12: google.api.HttpBody
 }
 var file_vietgara_document_v1_document_proto_depIdxs = []int32{
-	10, // 0: vietgara.document.v1.ExportRevenueExcelRequest.period:type_name -> vietgara.reporting.v1.RevenuePeriod
+	11, // 0: vietgara.document.v1.ExportRevenueExcelRequest.period:type_name -> vietgara.reporting.v1.RevenuePeriod
 	0,  // 1: vietgara.document.v1.DocumentService.ExportQuotePdf:input_type -> vietgara.document.v1.ExportQuotePdfRequest
 	1,  // 2: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:input_type -> vietgara.document.v1.ExportRepairOrderPdfRequest
 	2,  // 3: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:input_type -> vietgara.document.v1.ExportSettlementReceiptPdfRequest
@@ -682,20 +739,22 @@ var file_vietgara_document_v1_document_proto_depIdxs = []int32{
 	5,  // 6: vietgara.document.v1.DocumentService.ExportRevenueExcel:input_type -> vietgara.document.v1.ExportRevenueExcelRequest
 	6,  // 7: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:input_type -> vietgara.document.v1.ExportGoodsReceiptPdfRequest
 	7,  // 8: vietgara.document.v1.DocumentService.ExportStockIssuePdf:input_type -> vietgara.document.v1.ExportStockIssuePdfRequest
-	8,  // 9: vietgara.document.v1.DocumentService.ExportPurchasesExcel:input_type -> vietgara.document.v1.ExportPurchasesExcelRequest
-	9,  // 10: vietgara.document.v1.DocumentService.ExportStockValuationExcel:input_type -> vietgara.document.v1.ExportStockValuationExcelRequest
-	11, // 11: vietgara.document.v1.DocumentService.ExportQuotePdf:output_type -> google.api.HttpBody
-	11, // 12: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:output_type -> google.api.HttpBody
-	11, // 13: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:output_type -> google.api.HttpBody
-	11, // 14: vietgara.document.v1.DocumentService.ExportPaymentVoucherPdf:output_type -> google.api.HttpBody
-	11, // 15: vietgara.document.v1.DocumentService.ExportStockMovementsExcel:output_type -> google.api.HttpBody
-	11, // 16: vietgara.document.v1.DocumentService.ExportRevenueExcel:output_type -> google.api.HttpBody
-	11, // 17: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:output_type -> google.api.HttpBody
-	11, // 18: vietgara.document.v1.DocumentService.ExportStockIssuePdf:output_type -> google.api.HttpBody
-	11, // 19: vietgara.document.v1.DocumentService.ExportPurchasesExcel:output_type -> google.api.HttpBody
-	11, // 20: vietgara.document.v1.DocumentService.ExportStockValuationExcel:output_type -> google.api.HttpBody
-	11, // [11:21] is the sub-list for method output_type
-	1,  // [1:11] is the sub-list for method input_type
+	8,  // 9: vietgara.document.v1.DocumentService.ExportStockCountExcel:input_type -> vietgara.document.v1.ExportStockCountExcelRequest
+	9,  // 10: vietgara.document.v1.DocumentService.ExportPurchasesExcel:input_type -> vietgara.document.v1.ExportPurchasesExcelRequest
+	10, // 11: vietgara.document.v1.DocumentService.ExportStockValuationExcel:input_type -> vietgara.document.v1.ExportStockValuationExcelRequest
+	12, // 12: vietgara.document.v1.DocumentService.ExportQuotePdf:output_type -> google.api.HttpBody
+	12, // 13: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:output_type -> google.api.HttpBody
+	12, // 14: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:output_type -> google.api.HttpBody
+	12, // 15: vietgara.document.v1.DocumentService.ExportPaymentVoucherPdf:output_type -> google.api.HttpBody
+	12, // 16: vietgara.document.v1.DocumentService.ExportStockMovementsExcel:output_type -> google.api.HttpBody
+	12, // 17: vietgara.document.v1.DocumentService.ExportRevenueExcel:output_type -> google.api.HttpBody
+	12, // 18: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:output_type -> google.api.HttpBody
+	12, // 19: vietgara.document.v1.DocumentService.ExportStockIssuePdf:output_type -> google.api.HttpBody
+	12, // 20: vietgara.document.v1.DocumentService.ExportStockCountExcel:output_type -> google.api.HttpBody
+	12, // 21: vietgara.document.v1.DocumentService.ExportPurchasesExcel:output_type -> google.api.HttpBody
+	12, // 22: vietgara.document.v1.DocumentService.ExportStockValuationExcel:output_type -> google.api.HttpBody
+	12, // [12:23] is the sub-list for method output_type
+	1,  // [1:12] is the sub-list for method input_type
 	1,  // [1:1] is the sub-list for extension type_name
 	1,  // [1:1] is the sub-list for extension extendee
 	0,  // [0:1] is the sub-list for field type_name
@@ -712,7 +771,7 @@ func file_vietgara_document_v1_document_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_document_v1_document_proto_rawDesc), len(file_vietgara_document_v1_document_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

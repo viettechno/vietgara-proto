@@ -65,6 +65,13 @@ const (
 	// Release 7.0). Held by managers and accountants by default; advisors and
 	// technicians see quantities only.
 	Permission_PERMISSION_INVENTORY_COST_READ Permission = 21
+	// Post stock adjustments other than counts: write-offs, returns to
+	// supplier and returns of unused parts from a repair order (FR-INV-09/10/11,
+	// Release 7.1). Held by managers and inventory staff by default.
+	Permission_PERMISSION_INVENTORY_ADJUST Permission = 22
+	// Create, merge, complete and cancel stock counts (FR-INV-12, Release 7.1).
+	// Held by managers and inventory staff by default.
+	Permission_PERMISSION_INVENTORY_COUNT Permission = 23
 )
 
 // Enum value maps for Permission.
@@ -92,6 +99,8 @@ var (
 		19: "PERMISSION_CATALOGUE_READ",
 		20: "PERMISSION_CATALOGUE_WRITE",
 		21: "PERMISSION_INVENTORY_COST_READ",
+		22: "PERMISSION_INVENTORY_ADJUST",
+		23: "PERMISSION_INVENTORY_COUNT",
 	}
 	Permission_value = map[string]int32{
 		"PERMISSION_UNSPECIFIED":         0,
@@ -116,6 +125,8 @@ var (
 		"PERMISSION_CATALOGUE_READ":      19,
 		"PERMISSION_CATALOGUE_WRITE":     20,
 		"PERMISSION_INVENTORY_COST_READ": 21,
+		"PERMISSION_INVENTORY_ADJUST":    22,
+		"PERMISSION_INVENTORY_COUNT":     23,
 	}
 )
 
@@ -1423,7 +1434,7 @@ const file_vietgara_tenant_v1_access_proto_rawDesc = "" +
 	"\x17DeleteStaffGroupRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1e\n" +
 	"\bgroup_id\x18\x02 \x01(\tB\x03\xe0A\x02R\agroupId\"\x1a\n" +
-	"\x18DeleteStaffGroupResponse*\xae\x05\n" +
+	"\x18DeleteStaffGroupResponse*\xef\x05\n" +
 	"\n" +
 	"Permission\x12\x1a\n" +
 	"\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x1b\n" +
@@ -1448,7 +1459,9 @@ const file_vietgara_tenant_v1_access_proto_rawDesc = "" +
 	"\x1bPERMISSION_CUSTOMER_CORRECT\x10\x12\x12\x1d\n" +
 	"\x19PERMISSION_CATALOGUE_READ\x10\x13\x12\x1e\n" +
 	"\x1aPERMISSION_CATALOGUE_WRITE\x10\x14\x12\"\n" +
-	"\x1ePERMISSION_INVENTORY_COST_READ\x10\x152\x8c\x06\n" +
+	"\x1ePERMISSION_INVENTORY_COST_READ\x10\x15\x12\x1f\n" +
+	"\x1bPERMISSION_INVENTORY_ADJUST\x10\x16\x12\x1e\n" +
+	"\x1aPERMISSION_INVENTORY_COUNT\x10\x172\x8c\x06\n" +
 	"\vRoleService\x12\x87\x01\n" +
 	"\x0fListPermissions\x12*.vietgara.tenant.v1.ListPermissionsRequest\x1a+.vietgara.tenant.v1.ListPermissionsResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/permissions\x12o\n" +
 	"\tListRoles\x12$.vietgara.tenant.v1.ListRolesRequest\x1a%.vietgara.tenant.v1.ListRolesResponse\"\x15\x82\xd3\xe4\x93\x02\x0f\x12\r/api/v1/roles\x12y\n" +

@@ -55,6 +55,11 @@ message ExportStockIssuePdfRequest {
   string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
+message ExportStockCountExcelRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string stock_count_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
 message ExportPurchasesExcelRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   // Same optional filters as InventoryService.GetPurchasesReport.
@@ -125,6 +130,13 @@ service DocumentService {
   // (phiếu xuất kho) as a PDF.
   rpc ExportStockIssuePdf(ExportStockIssuePdfRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue/pdf"};
+  }
+
+  // FR-INV-12 (Release 7.1): a stock count as an Excel workbook for review
+  // (counted against system quantity per line, with the value of the
+  // difference when the caller has inventory.cost.read).
+  rpc ExportStockCountExcel(ExportStockCountExcelRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}/excel"};
   }
 
   // FR-INV-19 (Release 7.0): the purchases-by-supplier report

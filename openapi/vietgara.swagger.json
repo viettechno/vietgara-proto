@@ -60,7 +60,7 @@
     },
     {
       "name": "InventoryService",
-      "description": "InventoryService manages how many of each part a garage has (FRD 3.7).\nReads need PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE.\nThe parts themselves are managed by CatalogueService."
+      "description": "InventoryService manages how many of each part a garage has (FRD 3.7).\nReads need PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE\n(stock counts need PERMISSION_INVENTORY_COUNT, write-offs, supplier\nreturns and repair order part returns PERMISSION_INVENTORY_ADJUST).\nThe parts themselves are managed by CatalogueService."
     },
     {
       "name": "LicenseService",
@@ -3774,6 +3774,86 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/part-returns": {
+      "get": {
+        "operationId": "InventoryService_ListRepairOrderPartReturns",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListRepairOrderPartReturnsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      },
+      "post": {
+        "summary": "Returns unused parts of a repair order to stock (FR-INV-11, Release\n7.1); needs PERMISSION_INVENTORY_ADJUST. The order's stock issue must be\nposted (STOCK_ISSUE_NOT_POSTED: until then the draft just follows the\norder's lines), and the total returned from a line cannot exceed what\nwas issued (RETURN_EXCEEDS_ISSUED).",
+        "operationId": "InventoryService_ReturnRepairOrderPart",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1RepairOrderPartReturn"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partReturn",
+            "description": "Only repair_order_line_id, unit_id, entered_quantity and reason are read.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RepairOrderPartReturn"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/pdf": {
       "get": {
         "summary": "FR-DOC-01: the repair order as a PDF, using the garage's standard\nlayout.",
@@ -4155,6 +4235,23 @@
             "required": false,
             "type": "integer",
             "format": "int32"
+          },
+          {
+            "name": "refType",
+            "description": "Release 7.1: only movements caused by this kind of document.\n\n - STOCK_TRANSACTION_REF_TYPE_PURCHASE: A manual stock receipt from a supplier (FR-INV-01). Superseded in\nRelease 7.0 by GOODS_RECEIPT, kept for movements recorded before it.\n - STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER: Automatic deduction when a repair order with part lines closes\n(FR-INV-02). Superseded in Release 7.0 by STOCK_ISSUE.\n - STOCK_TRANSACTION_REF_TYPE_GOODS_RECEIPT: A completed goods receipt document (FR-INV-06, Release 7.0).\n - STOCK_TRANSACTION_REF_TYPE_STOCK_ISSUE: A posted stock issue document (phiếu xuất kho, FR-INV-20, Release 7.0).\n - STOCK_TRANSACTION_REF_TYPE_STOCK_COUNT: A completed stock count: the adjustment that makes stock equal the\ncount, or the reversal of a cancelled count (FR-INV-12, Release 7.1).\n - STOCK_TRANSACTION_REF_TYPE_WRITE_OFF: A write-off document, or the reversal of a cancelled one (FR-INV-09,\nRelease 7.1).\n - STOCK_TRANSACTION_REF_TYPE_SUPPLIER_RETURN: A return to supplier document, or the reversal of a cancelled one\n(FR-INV-10, Release 7.1).\n - STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER_RETURN: Unused parts returned from a repair order (FR-INV-11, Release 7.1);\nref_id is the repair order part return.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "STOCK_TRANSACTION_REF_TYPE_PURCHASE",
+              "STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER",
+              "STOCK_TRANSACTION_REF_TYPE_GOODS_RECEIPT",
+              "STOCK_TRANSACTION_REF_TYPE_STOCK_ISSUE",
+              "STOCK_TRANSACTION_REF_TYPE_STOCK_COUNT",
+              "STOCK_TRANSACTION_REF_TYPE_WRITE_OFF",
+              "STOCK_TRANSACTION_REF_TYPE_SUPPLIER_RETURN",
+              "STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER_RETURN"
+            ]
           }
         ],
         "tags": [
@@ -4927,6 +5024,484 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/stock-counts": {
+      "get": {
+        "summary": "Stock counts (FR-INV-12, Release 7.1). Reads need PERMISSION_INVENTORY_READ,\nevery change PERMISSION_INVENTORY_COUNT. Reasons: STOCK_COUNT_NOT_DRAFT,\nSTOCK_COUNT_ALREADY_CANCELLED, STOCK_COUNT_HAS_UNCOUNTED_LINES (complete),\nINSUFFICIENT_STOCK_TO_REVERSE (cancel of a completed count).",
+        "operationId": "InventoryService_ListStockCounts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListStockCountsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "query",
+            "description": "Matches the number, name or notes.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "STOCK_COUNT_STATUS_DRAFT",
+              "STOCK_COUNT_STATUS_COMPLETED",
+              "STOCK_COUNT_STATUS_CANCELLED"
+            ]
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      },
+      "post": {
+        "operationId": "InventoryService_CreateStockCount",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1StockCount"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "stockCount",
+            "description": "Only name and notes are read; lines are added with AddStockCountLines.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1StockCount"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/stock-counts/{stockCountId}": {
+      "get": {
+        "operationId": "InventoryService_GetStockCount",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1StockCount"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "stockCountId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      },
+      "patch": {
+        "operationId": "InventoryService_UpdateStockCount",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1StockCount"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "stockCountId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "stockCount",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1StockCount"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/stock-counts/{stockCountId}/excel": {
+      "get": {
+        "summary": "FR-INV-12 (Release 7.1): a stock count as an Excel workbook for review\n(counted against system quantity per line, with the value of the\ndifference when the caller has inventory.cost.read).",
+        "operationId": "DocumentService_ExportStockCountExcel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "stockCountId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/stock-counts/{stockCountId}/lines": {
+      "post": {
+        "operationId": "InventoryService_AddStockCountLines",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1StockCount"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "stockCountId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InventoryServiceAddStockCountLinesBody"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/stock-counts/{stockCountId}/lines/{lineId}": {
+      "delete": {
+        "operationId": "InventoryService_DeleteStockCountLine",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1StockCount"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "stockCountId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lineId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      },
+      "patch": {
+        "operationId": "InventoryService_UpdateStockCountLine",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1StockCount"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "stockCountId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lineId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "line",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1StockCountLine"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/stock-counts/{stockCountId}:cancel": {
+      "post": {
+        "summary": "Cancelling a draft just closes it; cancelling a completed count posts\nthe reversal of its adjustments.",
+        "operationId": "InventoryService_CancelStockCount",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1StockCount"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "stockCountId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InventoryServiceCancelStockCountBody"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/stock-counts/{stockCountId}:complete": {
+      "post": {
+        "summary": "Posts one adjustment movement per counted line that differs, so that\nstock equals the count; the count can no longer be edited.",
+        "operationId": "InventoryService_CompleteStockCount",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1StockCount"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "stockCountId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InventoryServiceCompleteStockCountBody"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/stock-counts:merge": {
+      "post": {
+        "summary": "Folds several drafts into the first one; the others become cancelled.",
+        "operationId": "InventoryService_MergeStockCounts",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1StockCount"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InventoryServiceMergeStockCountsBody"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/stock-issues/{stockIssueId}:post": {
       "post": {
         "summary": "Posts the issue now (\"issue now\"); otherwise the repair order's\nclosing posts it. A stock issue has no cancel RPC: the repair order\ncancels its draft issue.",
@@ -5079,6 +5654,190 @@
             "in": "path",
             "required": true,
             "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/supplier-returns": {
+      "get": {
+        "summary": "Returns to supplier (FR-INV-10, Release 7.1). Reads need\nPERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_ADJUST. Creating\none posts it (INSUFFICIENT_STOCK when a part is short; the linked goods\nreceipt must be completed, else GOODS_RECEIPT_NOT_COMPLETED).\nCancelling restores the stock (SUPPLIER_RETURN_ALREADY_CANCELLED when\nrepeated).",
+        "operationId": "InventoryService_ListSupplierReturns",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListSupplierReturnsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "query",
+            "description": "Matches the number, credit note number or notes.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "supplierId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "ADJUSTMENT_STATUS_COMPLETED",
+              "ADJUSTMENT_STATUS_CANCELLED"
+            ]
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      },
+      "post": {
+        "operationId": "InventoryService_CreateSupplierReturn",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1SupplierReturn"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supplierReturn",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SupplierReturn"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/supplier-returns/{supplierReturnId}": {
+      "get": {
+        "operationId": "InventoryService_GetSupplierReturn",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1SupplierReturn"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supplierReturnId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/supplier-returns/{supplierReturnId}:cancel": {
+      "post": {
+        "operationId": "InventoryService_CancelSupplierReturn",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1SupplierReturn"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supplierReturnId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InventoryServiceCancelSupplierReturnBody"
+            }
           }
         ],
         "tags": [
@@ -5907,6 +6666,197 @@
         ],
         "tags": [
           "VehicleService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/write-offs": {
+      "get": {
+        "summary": "Write-offs (FR-INV-09, Release 7.1). Reads need PERMISSION_INVENTORY_READ,\nchanges PERMISSION_INVENTORY_ADJUST. Creating one posts it; it is\nrefused with INSUFFICIENT_STOCK when a part is not on hand in that\nquantity. Cancelling restores the stock (WRITE_OFF_ALREADY_CANCELLED\nwhen repeated).",
+        "operationId": "InventoryService_ListWriteOffs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListWriteOffsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "query",
+            "description": "Matches the number or notes.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "reason",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "WRITE_OFF_REASON_DAMAGED",
+              "WRITE_OFF_REASON_LOST",
+              "WRITE_OFF_REASON_EXPIRED",
+              "WRITE_OFF_REASON_INTERNAL_USE",
+              "WRITE_OFF_REASON_WARRANTY_REPLACEMENT"
+            ]
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "ADJUSTMENT_STATUS_COMPLETED",
+              "ADJUSTMENT_STATUS_CANCELLED"
+            ]
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      },
+      "post": {
+        "operationId": "InventoryService_CreateWriteOff",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1WriteOff"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "writeOff",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1WriteOff"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/write-offs/{writeOffId}": {
+      "get": {
+        "operationId": "InventoryService_GetWriteOff",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1WriteOff"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "writeOffId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/write-offs/{writeOffId}:cancel": {
+      "post": {
+        "operationId": "InventoryService_CancelWriteOff",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1WriteOff"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "writeOffId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InventoryServiceCancelWriteOffBody"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
         ]
       }
     },
@@ -7039,11 +7989,62 @@
         "contentType"
       ]
     },
+    "InventoryServiceAddStockCountLinesBody": {
+      "type": "object",
+      "properties": {
+        "partIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Parts picked one by one (search, scan)."
+        },
+        "categoryId": {
+          "type": "string",
+          "description": "Adds every active part of this category and its sub-categories that has\na stock balance or a reservation."
+        }
+      },
+      "description": "AddStockCountLinesRequest adds parts to a draft count, taking the system\nquantity snapshot of each. Parts already on the count are skipped. The\nscan, search and category pickers of the screen all end here; the Excel\nimport and barcodes of Release 7.2 will too."
+    },
     "InventoryServiceCancelGoodsReceiptBody": {
+      "type": "object"
+    },
+    "InventoryServiceCancelStockCountBody": {
+      "type": "object"
+    },
+    "InventoryServiceCancelSupplierReturnBody": {
+      "type": "object"
+    },
+    "InventoryServiceCancelWriteOffBody": {
       "type": "object"
     },
     "InventoryServiceCompleteGoodsReceiptBody": {
       "type": "object"
+    },
+    "InventoryServiceCompleteStockCountBody": {
+      "type": "object",
+      "properties": {
+        "skipUncounted": {
+          "type": "boolean",
+          "description": "Drop the lines that were never counted instead of refusing\n(STOCK_COUNT_HAS_UNCOUNTED_LINES)."
+        }
+      }
+    },
+    "InventoryServiceMergeStockCountsBody": {
+      "type": "object",
+      "properties": {
+        "stockCountIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "At least two draft counts; the first is kept and returned."
+        }
+      },
+      "description": "MergeStockCountsRequest folds several draft counts into the first one.\nA part that is on more than one of them keeps one line whose counted\nquantity is the sum of the counted quantities (two people counted\ndifferent places); an uncounted line gives way to a counted one. The\nother counts become CANCELLED and their lines move to the first.",
+      "required": [
+        "stockCountIds"
+      ]
     },
     "InventoryServicePostStockIssueBody": {
       "type": "object"
@@ -7425,6 +8426,14 @@
         }
       }
     },
+    "v1AddStockCountLinesResponse": {
+      "type": "object",
+      "properties": {
+        "stockCount": {
+          "$ref": "#/definitions/v1StockCount"
+        }
+      }
+    },
     "v1AdjustCreditResponse": {
       "type": "object",
       "properties": {
@@ -7432,6 +8441,14 @@
           "$ref": "#/definitions/v1CreditLedgerEntry"
         }
       }
+    },
+    "v1AdjustmentStatus": {
+      "type": "string",
+      "enum": [
+        "ADJUSTMENT_STATUS_COMPLETED",
+        "ADJUSTMENT_STATUS_CANCELLED"
+      ],
+      "description": "AdjustmentStatus is the lifecycle of a write-off or a supplier return:\ncreated already posted, cancelled by a reversing movement."
     },
     "v1AdminPlanPaymentRequest": {
       "type": "object",
@@ -7544,6 +8561,30 @@
         }
       }
     },
+    "v1CancelStockCountResponse": {
+      "type": "object",
+      "properties": {
+        "stockCount": {
+          "$ref": "#/definitions/v1StockCount"
+        }
+      }
+    },
+    "v1CancelSupplierReturnResponse": {
+      "type": "object",
+      "properties": {
+        "supplierReturn": {
+          "$ref": "#/definitions/v1SupplierReturn"
+        }
+      }
+    },
+    "v1CancelWriteOffResponse": {
+      "type": "object",
+      "properties": {
+        "writeOff": {
+          "$ref": "#/definitions/v1WriteOff"
+        }
+      }
+    },
     "v1CandidateMembership": {
       "type": "string",
       "enum": [
@@ -7574,6 +8615,14 @@
       "properties": {
         "goodsReceipt": {
           "$ref": "#/definitions/v1GoodsReceipt"
+        }
+      }
+    },
+    "v1CompleteStockCountResponse": {
+      "type": "object",
+      "properties": {
+        "stockCount": {
+          "$ref": "#/definitions/v1StockCount"
         }
       }
     },
@@ -7756,11 +8805,27 @@
         }
       }
     },
+    "v1CreateStockCountResponse": {
+      "type": "object",
+      "properties": {
+        "stockCount": {
+          "$ref": "#/definitions/v1StockCount"
+        }
+      }
+    },
     "v1CreateSupplierResponse": {
       "type": "object",
       "properties": {
         "supplier": {
           "$ref": "#/definitions/v1Supplier"
+        }
+      }
+    },
+    "v1CreateSupplierReturnResponse": {
+      "type": "object",
+      "properties": {
+        "supplierReturn": {
+          "$ref": "#/definitions/v1SupplierReturn"
         }
       }
     },
@@ -7777,6 +8842,14 @@
       "properties": {
         "vehicle": {
           "$ref": "#/definitions/v1Vehicle"
+        }
+      }
+    },
+    "v1CreateWriteOffResponse": {
+      "type": "object",
+      "properties": {
+        "writeOff": {
+          "$ref": "#/definitions/v1WriteOff"
         }
       }
     },
@@ -8107,6 +9180,14 @@
     },
     "v1DeleteStaffResponse": {
       "type": "object"
+    },
+    "v1DeleteStockCountLineResponse": {
+      "type": "object",
+      "properties": {
+        "stockCount": {
+          "$ref": "#/definitions/v1StockCount"
+        }
+      }
     },
     "v1DeleteSupplierResponse": {
       "type": "object",
@@ -8728,6 +9809,14 @@
         }
       }
     },
+    "v1GetStockCountResponse": {
+      "type": "object",
+      "properties": {
+        "stockCount": {
+          "$ref": "#/definitions/v1StockCount"
+        }
+      }
+    },
     "v1GetStockLevelResponse": {
       "type": "object",
       "properties": {
@@ -8772,6 +9861,14 @@
         }
       }
     },
+    "v1GetSupplierReturnResponse": {
+      "type": "object",
+      "properties": {
+        "supplierReturn": {
+          "$ref": "#/definitions/v1SupplierReturn"
+        }
+      }
+    },
     "v1GetVehicleHistoryResponse": {
       "type": "object",
       "properties": {
@@ -8789,6 +9886,14 @@
       "properties": {
         "vehicle": {
           "$ref": "#/definitions/v1Vehicle"
+        }
+      }
+    },
+    "v1GetWriteOffResponse": {
+      "type": "object",
+      "properties": {
+        "writeOff": {
+          "$ref": "#/definitions/v1WriteOff"
         }
       }
     },
@@ -9248,6 +10353,18 @@
         }
       }
     },
+    "v1ListRepairOrderPartReturnsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RepairOrderPartReturn"
+          }
+        }
+      }
+    },
     "v1ListRepairOrdersResponse": {
       "type": "object",
       "properties": {
@@ -9314,6 +10431,21 @@
         }
       }
     },
+    "v1ListStockCountsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1StockCount"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
     "v1ListStockLevelsResponse": {
       "type": "object",
       "properties": {
@@ -9359,6 +10491,21 @@
         }
       }
     },
+    "v1ListSupplierReturnsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SupplierReturn"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
     "v1ListSuppliersResponse": {
       "type": "object",
       "properties": {
@@ -9397,6 +10544,21 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1Vehicle"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1ListWriteOffsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1WriteOff"
           }
         },
         "pagination": {
@@ -9474,6 +10636,14 @@
         }
       }
     },
+    "v1MergeStockCountsResponse": {
+      "type": "object",
+      "properties": {
+        "stockCount": {
+          "$ref": "#/definitions/v1StockCount"
+        }
+      }
+    },
     "v1MyGarage": {
       "type": "object",
       "properties": {
@@ -9538,6 +10708,18 @@
         "stockIssue": {
           "type": "string",
           "description": "Stock issue (phiếu xuất kho) numbers (FR-INV-20, Release 7.0)."
+        },
+        "stockCount": {
+          "type": "string",
+          "description": "Stock count numbers (FR-INV-12, Release 7.1)."
+        },
+        "writeOff": {
+          "type": "string",
+          "description": "Write-off numbers (FR-INV-09, Release 7.1)."
+        },
+        "supplierReturn": {
+          "type": "string",
+          "description": "Return to supplier numbers (FR-INV-10, Release 7.1)."
         }
       },
       "description": "NumberingTemplates configures document numbers (FR-TEN-05). Placeholders:\n{YYYY}, {YY}, {MM}, {DD} and {SEQ:n} (sequence padded to n digits),\ne.g. \"BG-{YYYY}{MM}-{SEQ:4}\"."
@@ -9853,9 +11035,11 @@
         "PERMISSION_CUSTOMER_CORRECT",
         "PERMISSION_CATALOGUE_READ",
         "PERMISSION_CATALOGUE_WRITE",
-        "PERMISSION_INVENTORY_COST_READ"
+        "PERMISSION_INVENTORY_COST_READ",
+        "PERMISSION_INVENTORY_ADJUST",
+        "PERMISSION_INVENTORY_COUNT"
       ],
-      "description": "Permission is one action a staff member may perform in a garage\n(FR-IAM-03). The catalog is fixed by the platform and grouped by module,\neach module offering a read and/or a write action; garage owners combine\npermissions into roles. A write permission includes the read permission\nof its module. Owners always hold every permission; every active member\nmay read the garage profile.\n\n - PERMISSION_GARAGE_WRITE: Edit the garage profile, configuration and logo.\n - PERMISSION_STAFF_WRITE: Invite, activate/deactivate and remove staff, and change their groups.\n - PERMISSION_CUSTOMER_READ: Customers and their vehicles.\n - PERMISSION_SUPPLIER_READ: The garage's suppliers (FR-SUP-01).\n - PERMISSION_CUSTOMER_CORRECT: Correct a locked vehicle identity field and move a vehicle to another\ncustomer (FR-CUS-09). Held by the manager role by default.\n - PERMISSION_CATALOGUE_READ: Parts, units, packaging, categories, prices and images (Release 6.0).\n - PERMISSION_INVENTORY_COST_READ: See a part's cost, average cost and the valuation report (FR-INV-08,\nRelease 7.0). Held by managers and accountants by default; advisors and\ntechnicians see quantities only."
+      "description": "Permission is one action a staff member may perform in a garage\n(FR-IAM-03). The catalog is fixed by the platform and grouped by module,\neach module offering a read and/or a write action; garage owners combine\npermissions into roles. A write permission includes the read permission\nof its module. Owners always hold every permission; every active member\nmay read the garage profile.\n\n - PERMISSION_GARAGE_WRITE: Edit the garage profile, configuration and logo.\n - PERMISSION_STAFF_WRITE: Invite, activate/deactivate and remove staff, and change their groups.\n - PERMISSION_CUSTOMER_READ: Customers and their vehicles.\n - PERMISSION_SUPPLIER_READ: The garage's suppliers (FR-SUP-01).\n - PERMISSION_CUSTOMER_CORRECT: Correct a locked vehicle identity field and move a vehicle to another\ncustomer (FR-CUS-09). Held by the manager role by default.\n - PERMISSION_CATALOGUE_READ: Parts, units, packaging, categories, prices and images (Release 6.0).\n - PERMISSION_INVENTORY_COST_READ: See a part's cost, average cost and the valuation report (FR-INV-08,\nRelease 7.0). Held by managers and accountants by default; advisors and\ntechnicians see quantities only.\n - PERMISSION_INVENTORY_ADJUST: Post stock adjustments other than counts: write-offs, returns to\nsupplier and returns of unused parts from a repair order (FR-INV-09/10/11,\nRelease 7.1). Held by managers and inventory staff by default.\n - PERMISSION_INVENTORY_COUNT: Create, merge, complete and cancel stock counts (FR-INV-12, Release 7.1).\nHeld by managers and inventory staff by default."
     },
     "v1PermissionInfo": {
       "type": "object",
@@ -10684,6 +11868,92 @@
       ],
       "description": "RepairOrderLineStatus is one line's own progress (FR-REP-03), tracked\nseparately from the repair order's overall status."
     },
+    "v1RepairOrderPartReturn": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "repairOrderId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "repairOrderNumber": {
+          "type": "string",
+          "readOnly": true
+        },
+        "stockIssueId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "repairOrderLineId": {
+          "type": "string",
+          "description": "The repair order part line the parts are returned from."
+        },
+        "partId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partSku": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "baseUnitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "unitId": {
+          "type": "string",
+          "description": "The packaging unit the quantity is typed in; unset means the base unit."
+        },
+        "unitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "enteredQuantity": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "string",
+          "description": "The base-unit amount, derived.",
+          "readOnly": true
+        },
+        "reason": {
+          "type": "string",
+          "description": "Why the parts came back; required."
+        },
+        "unitCost": {
+          "type": "string",
+          "format": "int64",
+          "description": "The cost per base unit the parts are restored at (the line's cost\nsnapshot), whole VND; omitted without PERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        },
+        "createdByName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "RepairOrderPartReturn records unused parts of a repair order coming back\nto stock (FR-INV-11): the stock is restored at the cost they left with.\nIt is immutable. It does not change the repair order's lines or what the\ncustomer is billed.",
+      "required": [
+        "repairOrderLineId",
+        "enteredQuantity",
+        "reason"
+      ]
+    },
     "v1RepairOrderStatus": {
       "type": "string",
       "enum": [
@@ -10740,6 +12010,14 @@
     },
     "v1ResetPasswordResponse": {
       "type": "object"
+    },
+    "v1ReturnRepairOrderPartResponse": {
+      "type": "object",
+      "properties": {
+        "partReturn": {
+          "$ref": "#/definitions/v1RepairOrderPartReturn"
+        }
+      }
     },
     "v1RevenuePeriod": {
       "type": "string",
@@ -11213,6 +12491,194 @@
       ],
       "description": "StaffStatus: inactive staff keep their record but lose access."
     },
+    "v1StockCount": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "number": {
+          "type": "string",
+          "description": "Rendered from the garage's stock_count numbering template (FR-TEN-05).",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1StockCountStatus",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "description": "A label for the people counting, for example \"Shelf A\"."
+        },
+        "notes": {
+          "type": "string"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1StockCountLine"
+          },
+          "description": "Not included in list answers.",
+          "readOnly": true
+        },
+        "uncountedLines": {
+          "type": "integer",
+          "format": "int32",
+          "description": "How many lines are in each result; included in list answers too.",
+          "readOnly": true
+        },
+        "matchedLines": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true
+        },
+        "overLines": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true
+        },
+        "shortLines": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true
+        },
+        "totalDifferenceValue": {
+          "type": "string",
+          "format": "int64",
+          "description": "Sum of the lines' difference_value, whole VND, signed. Omitted without\nPERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "completedByName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "cancelledAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "createdByName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "StockCount is a numbered stock count document (FR-INV-12)."
+    },
+    "v1StockCountLine": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partSku": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "baseUnitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "unitId": {
+          "type": "string",
+          "description": "The packaging unit the counted quantity was typed in; unset means the\nbase unit."
+        },
+        "unitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "enteredCountedQuantity": {
+          "type": "string",
+          "description": "The counted quantity as typed, in unit_id (or the base unit). Empty\nmeans not counted yet; \"0\" is a real count of none."
+        },
+        "countedQuantity": {
+          "type": "string",
+          "description": "The counted quantity in the base unit, derived; empty while uncounted.",
+          "readOnly": true
+        },
+        "systemQuantity": {
+          "type": "string",
+          "description": "The stock on hand in the base unit when the line was last counted.",
+          "readOnly": true
+        },
+        "differenceQuantity": {
+          "type": "string",
+          "description": "counted_quantity minus system_quantity, base unit, signed (for example\n\"-2\"); empty while uncounted.",
+          "readOnly": true
+        },
+        "result": {
+          "$ref": "#/definitions/v1StockCountLineResult",
+          "readOnly": true
+        },
+        "averageCost": {
+          "type": "string",
+          "format": "int64",
+          "description": "The weighted-average cost per base unit the difference is valued at,\nwhole VND: the live average while a draft, the value used at completion\nafterwards. Omitted without PERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        },
+        "differenceValue": {
+          "type": "string",
+          "format": "int64",
+          "description": "difference_quantity times average_cost, whole VND, signed (a shortage is\nnegative); omitted without PERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        },
+        "countedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the counted quantity was last typed.",
+          "readOnly": true
+        }
+      },
+      "description": "StockCountLine is one part of a stock count. system_quantity is a\nsnapshot of the stock on hand taken when the line is added and again each\ntime the counted quantity is typed (\"the system quantity at the time of\ncounting\"); completing the count takes a final snapshot of every counted\nline, so that stock equals the count afterwards."
+    },
+    "v1StockCountLineResult": {
+      "type": "string",
+      "enum": [
+        "STOCK_COUNT_LINE_RESULT_UNCOUNTED",
+        "STOCK_COUNT_LINE_RESULT_MATCHED",
+        "STOCK_COUNT_LINE_RESULT_OVER",
+        "STOCK_COUNT_LINE_RESULT_SHORT"
+      ],
+      "description": "StockCountLineResult compares a line's counted quantity with the system\nquantity.\n\n - STOCK_COUNT_LINE_RESULT_UNCOUNTED: No counted quantity typed yet.\n - STOCK_COUNT_LINE_RESULT_MATCHED: Counted equals the system quantity.\n - STOCK_COUNT_LINE_RESULT_OVER: Counted is more than the system quantity.\n - STOCK_COUNT_LINE_RESULT_SHORT: Counted is less than the system quantity."
+    },
+    "v1StockCountStatus": {
+      "type": "string",
+      "enum": [
+        "STOCK_COUNT_STATUS_DRAFT",
+        "STOCK_COUNT_STATUS_COMPLETED",
+        "STOCK_COUNT_STATUS_CANCELLED"
+      ],
+      "description": "StockCountStatus is the lifecycle of a stock count (FR-INV-12): a draft\nis counted line by line and can be merged with other drafts; completing it\nposts the adjustments and freezes it; cancelling a draft just closes it,\ncancelling a completed count posts the reversal."
+    },
     "v1StockIssue": {
       "type": "object",
       "properties": {
@@ -11319,6 +12785,11 @@
           "type": "string",
           "format": "int64",
           "description": "The cost snapshot per base unit, whole VND; omitted without\nPERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        },
+        "returnedQuantity": {
+          "type": "string",
+          "description": "Release 7.1: the base-unit amount already returned to stock from this\nline (FR-INV-11); what can still be returned is quantity minus this.",
           "readOnly": true
         }
       },
@@ -11487,6 +12958,26 @@
           "type": "string",
           "description": "The abbreviation of the part's base unit, the unit `quantity` is in.",
           "readOnly": true
+        },
+        "refNumber": {
+          "type": "string",
+          "description": "Release 7.1: the number of the document behind the movement (goods\nreceipt, stock issue, stock count, write-off or supplier return); empty\nfor a repair order part return and for movements without a document.",
+          "readOnly": true
+        },
+        "reason": {
+          "type": "string",
+          "description": "Release 7.1: why the movement happened, for adjustments (the write-off\nreason, the repair order return reason; empty otherwise).",
+          "readOnly": true
+        },
+        "createdByName": {
+          "type": "string",
+          "description": "Release 7.1: the user who caused the movement; empty for system\nmovements (an automatic posting).",
+          "readOnly": true
+        },
+        "quantityAfter": {
+          "type": "string",
+          "description": "Release 7.1: the part's quantity on hand right after the movement, in\nthe base unit (the running balance of the stock card).",
+          "readOnly": true
         }
       },
       "description": "StockTransaction is one recorded stock movement."
@@ -11497,9 +12988,13 @@
         "STOCK_TRANSACTION_REF_TYPE_PURCHASE",
         "STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER",
         "STOCK_TRANSACTION_REF_TYPE_GOODS_RECEIPT",
-        "STOCK_TRANSACTION_REF_TYPE_STOCK_ISSUE"
+        "STOCK_TRANSACTION_REF_TYPE_STOCK_ISSUE",
+        "STOCK_TRANSACTION_REF_TYPE_STOCK_COUNT",
+        "STOCK_TRANSACTION_REF_TYPE_WRITE_OFF",
+        "STOCK_TRANSACTION_REF_TYPE_SUPPLIER_RETURN",
+        "STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER_RETURN"
       ],
-      "description": "StockTransactionRefType names what caused a stock movement.\n\n - STOCK_TRANSACTION_REF_TYPE_PURCHASE: A manual stock receipt from a supplier (FR-INV-01). Superseded in\nRelease 7.0 by GOODS_RECEIPT, kept for movements recorded before it.\n - STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER: Automatic deduction when a repair order with part lines closes\n(FR-INV-02). Superseded in Release 7.0 by STOCK_ISSUE.\n - STOCK_TRANSACTION_REF_TYPE_GOODS_RECEIPT: A completed goods receipt document (FR-INV-06, Release 7.0).\n - STOCK_TRANSACTION_REF_TYPE_STOCK_ISSUE: A posted stock issue document (phiếu xuất kho, FR-INV-20, Release 7.0)."
+      "description": "StockTransactionRefType names what caused a stock movement.\n\n - STOCK_TRANSACTION_REF_TYPE_PURCHASE: A manual stock receipt from a supplier (FR-INV-01). Superseded in\nRelease 7.0 by GOODS_RECEIPT, kept for movements recorded before it.\n - STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER: Automatic deduction when a repair order with part lines closes\n(FR-INV-02). Superseded in Release 7.0 by STOCK_ISSUE.\n - STOCK_TRANSACTION_REF_TYPE_GOODS_RECEIPT: A completed goods receipt document (FR-INV-06, Release 7.0).\n - STOCK_TRANSACTION_REF_TYPE_STOCK_ISSUE: A posted stock issue document (phiếu xuất kho, FR-INV-20, Release 7.0).\n - STOCK_TRANSACTION_REF_TYPE_STOCK_COUNT: A completed stock count: the adjustment that makes stock equal the\ncount, or the reversal of a cancelled count (FR-INV-12, Release 7.1).\n - STOCK_TRANSACTION_REF_TYPE_WRITE_OFF: A write-off document, or the reversal of a cancelled one (FR-INV-09,\nRelease 7.1).\n - STOCK_TRANSACTION_REF_TYPE_SUPPLIER_RETURN: A return to supplier document, or the reversal of a cancelled one\n(FR-INV-10, Release 7.1).\n - STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER_RETURN: Unused parts returned from a repair order (FR-INV-11, Release 7.1);\nref_id is the repair order part return."
     },
     "v1StockTransactionType": {
       "type": "string",
@@ -11736,6 +13231,141 @@
         }
       }
     },
+    "v1SupplierReturn": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "number": {
+          "type": "string",
+          "description": "Rendered from the garage's supplier_return numbering template.",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1AdjustmentStatus",
+          "readOnly": true
+        },
+        "supplierId": {
+          "type": "string"
+        },
+        "supplierName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "goodsReceiptId": {
+          "type": "string",
+          "description": "The completed goods receipt the parts came from, when known."
+        },
+        "goodsReceiptNumber": {
+          "type": "string",
+          "readOnly": true
+        },
+        "creditNoteNumber": {
+          "type": "string",
+          "description": "The supplier's own credit note number, when they have issued one."
+        },
+        "notes": {
+          "type": "string"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SupplierReturnLine"
+          }
+        },
+        "creditAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "The credit recorded against the supplier: the sum of the lines'\namounts, whole VND. Omitted without PERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        },
+        "cancelledAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "createdByName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "SupplierReturn is a numbered document that reduces stock and records the\ncredit owed by the supplier (FR-INV-10). It is posted when created;\ncancelling it puts the parts back.",
+      "required": [
+        "supplierId"
+      ]
+    },
+    "v1SupplierReturnLine": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partId": {
+          "type": "string"
+        },
+        "partSku": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "baseUnitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "unitId": {
+          "type": "string"
+        },
+        "unitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "enteredQuantity": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "string",
+          "description": "The base-unit amount, derived.",
+          "readOnly": true
+        },
+        "unitCost": {
+          "type": "string",
+          "format": "int64",
+          "description": "The credit the supplier gives, VND per entered unit, as typed. Zero or\nunset takes the cost of the same part on the linked goods receipt when\nthere is one, else the part's average cost. Omitted from answers, and\nignored on input, without PERMISSION_INVENTORY_COST_READ."
+        },
+        "lineAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "entered_quantity times unit_cost, whole VND, rounded half-up per line.\nOmitted without PERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        }
+      },
+      "description": "SupplierReturnLine is one part of a return to a supplier.",
+      "required": [
+        "partId",
+        "enteredQuantity"
+      ]
+    },
     "v1TaxProfileKind": {
       "type": "string",
       "enum": [
@@ -11914,6 +13544,22 @@
       "properties": {
         "staff": {
           "$ref": "#/definitions/v1Staff"
+        }
+      }
+    },
+    "v1UpdateStockCountLineResponse": {
+      "type": "object",
+      "properties": {
+        "stockCount": {
+          "$ref": "#/definitions/v1StockCount"
+        }
+      }
+    },
+    "v1UpdateStockCountResponse": {
+      "type": "object",
+      "properties": {
+        "stockCount": {
+          "$ref": "#/definitions/v1StockCount"
         }
       }
     },
@@ -12319,6 +13965,139 @@
         }
       },
       "description": "WorkOrder is a repair order with the lines assigned to the signed-in\ntechnician (FR-TAPP-01)."
+    },
+    "v1WriteOff": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "number": {
+          "type": "string",
+          "description": "Rendered from the garage's write_off numbering template (FR-TEN-05).",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1AdjustmentStatus",
+          "readOnly": true
+        },
+        "reason": {
+          "$ref": "#/definitions/v1WriteOffReason"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1WriteOffLine"
+          }
+        },
+        "totalValue": {
+          "type": "string",
+          "format": "int64",
+          "description": "Sum of the lines' value, whole VND. Omitted without\nPERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        },
+        "cancelledAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "createdByName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "WriteOff is a numbered document that reduces stock at average cost\n(FR-INV-09). It is posted when created; mistakes are undone by cancelling\nit, which puts the parts back.",
+      "required": [
+        "reason"
+      ]
+    },
+    "v1WriteOffLine": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partId": {
+          "type": "string"
+        },
+        "partSku": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "baseUnitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "unitId": {
+          "type": "string",
+          "description": "The packaging unit the quantity is typed in; unset means the base unit."
+        },
+        "unitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "enteredQuantity": {
+          "type": "string",
+          "description": "In unit_id, or the base unit; must be positive."
+        },
+        "quantity": {
+          "type": "string",
+          "description": "The base-unit amount, derived.",
+          "readOnly": true
+        },
+        "unitCost": {
+          "type": "string",
+          "format": "int64",
+          "description": "The average cost per base unit at the moment of the write-off, whole\nVND. Omitted without PERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        },
+        "lineValue": {
+          "type": "string",
+          "format": "int64",
+          "description": "quantity times unit_cost, whole VND. Omitted without\nPERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        }
+      },
+      "description": "WriteOffLine is one part of a write-off.",
+      "required": [
+        "partId",
+        "enteredQuantity"
+      ]
+    },
+    "v1WriteOffReason": {
+      "type": "string",
+      "enum": [
+        "WRITE_OFF_REASON_DAMAGED",
+        "WRITE_OFF_REASON_LOST",
+        "WRITE_OFF_REASON_EXPIRED",
+        "WRITE_OFF_REASON_INTERNAL_USE",
+        "WRITE_OFF_REASON_WARRANTY_REPLACEMENT"
+      ],
+      "description": "WriteOffReason is why stock is written off (FR-INV-09)."
     }
   },
   "securityDefinitions": {

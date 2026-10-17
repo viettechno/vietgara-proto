@@ -19,21 +19,41 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	InventoryService_ListStockLevels_FullMethodName          = "/vietgara.inventory.v1.InventoryService/ListStockLevels"
-	InventoryService_GetStockLevel_FullMethodName            = "/vietgara.inventory.v1.InventoryService/GetStockLevel"
-	InventoryService_ListStockTransactions_FullMethodName    = "/vietgara.inventory.v1.InventoryService/ListStockTransactions"
-	InventoryService_ListGoodsReceipts_FullMethodName        = "/vietgara.inventory.v1.InventoryService/ListGoodsReceipts"
-	InventoryService_GetGoodsReceipt_FullMethodName          = "/vietgara.inventory.v1.InventoryService/GetGoodsReceipt"
-	InventoryService_CreateGoodsReceipt_FullMethodName       = "/vietgara.inventory.v1.InventoryService/CreateGoodsReceipt"
-	InventoryService_UpdateGoodsReceipt_FullMethodName       = "/vietgara.inventory.v1.InventoryService/UpdateGoodsReceipt"
-	InventoryService_CompleteGoodsReceipt_FullMethodName     = "/vietgara.inventory.v1.InventoryService/CompleteGoodsReceipt"
-	InventoryService_CancelGoodsReceipt_FullMethodName       = "/vietgara.inventory.v1.InventoryService/CancelGoodsReceipt"
-	InventoryService_GetPartSuppliers_FullMethodName         = "/vietgara.inventory.v1.InventoryService/GetPartSuppliers"
-	InventoryService_PutPartSuppliers_FullMethodName         = "/vietgara.inventory.v1.InventoryService/PutPartSuppliers"
-	InventoryService_GetRepairOrderStockIssue_FullMethodName = "/vietgara.inventory.v1.InventoryService/GetRepairOrderStockIssue"
-	InventoryService_PostStockIssue_FullMethodName           = "/vietgara.inventory.v1.InventoryService/PostStockIssue"
-	InventoryService_GetPurchasesReport_FullMethodName       = "/vietgara.inventory.v1.InventoryService/GetPurchasesReport"
-	InventoryService_GetStockValuationReport_FullMethodName  = "/vietgara.inventory.v1.InventoryService/GetStockValuationReport"
+	InventoryService_ListStockLevels_FullMethodName            = "/vietgara.inventory.v1.InventoryService/ListStockLevels"
+	InventoryService_GetStockLevel_FullMethodName              = "/vietgara.inventory.v1.InventoryService/GetStockLevel"
+	InventoryService_ListStockTransactions_FullMethodName      = "/vietgara.inventory.v1.InventoryService/ListStockTransactions"
+	InventoryService_ListGoodsReceipts_FullMethodName          = "/vietgara.inventory.v1.InventoryService/ListGoodsReceipts"
+	InventoryService_GetGoodsReceipt_FullMethodName            = "/vietgara.inventory.v1.InventoryService/GetGoodsReceipt"
+	InventoryService_CreateGoodsReceipt_FullMethodName         = "/vietgara.inventory.v1.InventoryService/CreateGoodsReceipt"
+	InventoryService_UpdateGoodsReceipt_FullMethodName         = "/vietgara.inventory.v1.InventoryService/UpdateGoodsReceipt"
+	InventoryService_CompleteGoodsReceipt_FullMethodName       = "/vietgara.inventory.v1.InventoryService/CompleteGoodsReceipt"
+	InventoryService_CancelGoodsReceipt_FullMethodName         = "/vietgara.inventory.v1.InventoryService/CancelGoodsReceipt"
+	InventoryService_GetPartSuppliers_FullMethodName           = "/vietgara.inventory.v1.InventoryService/GetPartSuppliers"
+	InventoryService_PutPartSuppliers_FullMethodName           = "/vietgara.inventory.v1.InventoryService/PutPartSuppliers"
+	InventoryService_GetRepairOrderStockIssue_FullMethodName   = "/vietgara.inventory.v1.InventoryService/GetRepairOrderStockIssue"
+	InventoryService_PostStockIssue_FullMethodName             = "/vietgara.inventory.v1.InventoryService/PostStockIssue"
+	InventoryService_ListStockCounts_FullMethodName            = "/vietgara.inventory.v1.InventoryService/ListStockCounts"
+	InventoryService_GetStockCount_FullMethodName              = "/vietgara.inventory.v1.InventoryService/GetStockCount"
+	InventoryService_CreateStockCount_FullMethodName           = "/vietgara.inventory.v1.InventoryService/CreateStockCount"
+	InventoryService_UpdateStockCount_FullMethodName           = "/vietgara.inventory.v1.InventoryService/UpdateStockCount"
+	InventoryService_AddStockCountLines_FullMethodName         = "/vietgara.inventory.v1.InventoryService/AddStockCountLines"
+	InventoryService_UpdateStockCountLine_FullMethodName       = "/vietgara.inventory.v1.InventoryService/UpdateStockCountLine"
+	InventoryService_DeleteStockCountLine_FullMethodName       = "/vietgara.inventory.v1.InventoryService/DeleteStockCountLine"
+	InventoryService_MergeStockCounts_FullMethodName           = "/vietgara.inventory.v1.InventoryService/MergeStockCounts"
+	InventoryService_CompleteStockCount_FullMethodName         = "/vietgara.inventory.v1.InventoryService/CompleteStockCount"
+	InventoryService_CancelStockCount_FullMethodName           = "/vietgara.inventory.v1.InventoryService/CancelStockCount"
+	InventoryService_ListWriteOffs_FullMethodName              = "/vietgara.inventory.v1.InventoryService/ListWriteOffs"
+	InventoryService_GetWriteOff_FullMethodName                = "/vietgara.inventory.v1.InventoryService/GetWriteOff"
+	InventoryService_CreateWriteOff_FullMethodName             = "/vietgara.inventory.v1.InventoryService/CreateWriteOff"
+	InventoryService_CancelWriteOff_FullMethodName             = "/vietgara.inventory.v1.InventoryService/CancelWriteOff"
+	InventoryService_ListSupplierReturns_FullMethodName        = "/vietgara.inventory.v1.InventoryService/ListSupplierReturns"
+	InventoryService_GetSupplierReturn_FullMethodName          = "/vietgara.inventory.v1.InventoryService/GetSupplierReturn"
+	InventoryService_CreateSupplierReturn_FullMethodName       = "/vietgara.inventory.v1.InventoryService/CreateSupplierReturn"
+	InventoryService_CancelSupplierReturn_FullMethodName       = "/vietgara.inventory.v1.InventoryService/CancelSupplierReturn"
+	InventoryService_ReturnRepairOrderPart_FullMethodName      = "/vietgara.inventory.v1.InventoryService/ReturnRepairOrderPart"
+	InventoryService_ListRepairOrderPartReturns_FullMethodName = "/vietgara.inventory.v1.InventoryService/ListRepairOrderPartReturns"
+	InventoryService_GetPurchasesReport_FullMethodName         = "/vietgara.inventory.v1.InventoryService/GetPurchasesReport"
+	InventoryService_GetStockValuationReport_FullMethodName    = "/vietgara.inventory.v1.InventoryService/GetStockValuationReport"
 )
 
 // InventoryServiceClient is the client API for InventoryService service.
@@ -41,7 +61,9 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
 // InventoryService manages how many of each part a garage has (FRD 3.7).
-// Reads need PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE.
+// Reads need PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE
+// (stock counts need PERMISSION_INVENTORY_COUNT, write-offs, supplier
+// returns and repair order part returns PERMISSION_INVENTORY_ADJUST).
 // The parts themselves are managed by CatalogueService.
 type InventoryServiceClient interface {
 	// The stock-on-hand list (FR-INV-03): parts with their balances.
@@ -77,6 +99,51 @@ type InventoryServiceClient interface {
 	// closing posts it. A stock issue has no cancel RPC: the repair order
 	// cancels its draft issue.
 	PostStockIssue(ctx context.Context, in *PostStockIssueRequest, opts ...grpc.CallOption) (*PostStockIssueResponse, error)
+	// Stock counts (FR-INV-12, Release 7.1). Reads need PERMISSION_INVENTORY_READ,
+	// every change PERMISSION_INVENTORY_COUNT. Reasons: STOCK_COUNT_NOT_DRAFT,
+	// STOCK_COUNT_ALREADY_CANCELLED, STOCK_COUNT_HAS_UNCOUNTED_LINES (complete),
+	// INSUFFICIENT_STOCK_TO_REVERSE (cancel of a completed count).
+	ListStockCounts(ctx context.Context, in *ListStockCountsRequest, opts ...grpc.CallOption) (*ListStockCountsResponse, error)
+	GetStockCount(ctx context.Context, in *GetStockCountRequest, opts ...grpc.CallOption) (*GetStockCountResponse, error)
+	CreateStockCount(ctx context.Context, in *CreateStockCountRequest, opts ...grpc.CallOption) (*CreateStockCountResponse, error)
+	UpdateStockCount(ctx context.Context, in *UpdateStockCountRequest, opts ...grpc.CallOption) (*UpdateStockCountResponse, error)
+	AddStockCountLines(ctx context.Context, in *AddStockCountLinesRequest, opts ...grpc.CallOption) (*AddStockCountLinesResponse, error)
+	UpdateStockCountLine(ctx context.Context, in *UpdateStockCountLineRequest, opts ...grpc.CallOption) (*UpdateStockCountLineResponse, error)
+	DeleteStockCountLine(ctx context.Context, in *DeleteStockCountLineRequest, opts ...grpc.CallOption) (*DeleteStockCountLineResponse, error)
+	// Folds several drafts into the first one; the others become cancelled.
+	MergeStockCounts(ctx context.Context, in *MergeStockCountsRequest, opts ...grpc.CallOption) (*MergeStockCountsResponse, error)
+	// Posts one adjustment movement per counted line that differs, so that
+	// stock equals the count; the count can no longer be edited.
+	CompleteStockCount(ctx context.Context, in *CompleteStockCountRequest, opts ...grpc.CallOption) (*CompleteStockCountResponse, error)
+	// Cancelling a draft just closes it; cancelling a completed count posts
+	// the reversal of its adjustments.
+	CancelStockCount(ctx context.Context, in *CancelStockCountRequest, opts ...grpc.CallOption) (*CancelStockCountResponse, error)
+	// Write-offs (FR-INV-09, Release 7.1). Reads need PERMISSION_INVENTORY_READ,
+	// changes PERMISSION_INVENTORY_ADJUST. Creating one posts it; it is
+	// refused with INSUFFICIENT_STOCK when a part is not on hand in that
+	// quantity. Cancelling restores the stock (WRITE_OFF_ALREADY_CANCELLED
+	// when repeated).
+	ListWriteOffs(ctx context.Context, in *ListWriteOffsRequest, opts ...grpc.CallOption) (*ListWriteOffsResponse, error)
+	GetWriteOff(ctx context.Context, in *GetWriteOffRequest, opts ...grpc.CallOption) (*GetWriteOffResponse, error)
+	CreateWriteOff(ctx context.Context, in *CreateWriteOffRequest, opts ...grpc.CallOption) (*CreateWriteOffResponse, error)
+	CancelWriteOff(ctx context.Context, in *CancelWriteOffRequest, opts ...grpc.CallOption) (*CancelWriteOffResponse, error)
+	// Returns to supplier (FR-INV-10, Release 7.1). Reads need
+	// PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_ADJUST. Creating
+	// one posts it (INSUFFICIENT_STOCK when a part is short; the linked goods
+	// receipt must be completed, else GOODS_RECEIPT_NOT_COMPLETED).
+	// Cancelling restores the stock (SUPPLIER_RETURN_ALREADY_CANCELLED when
+	// repeated).
+	ListSupplierReturns(ctx context.Context, in *ListSupplierReturnsRequest, opts ...grpc.CallOption) (*ListSupplierReturnsResponse, error)
+	GetSupplierReturn(ctx context.Context, in *GetSupplierReturnRequest, opts ...grpc.CallOption) (*GetSupplierReturnResponse, error)
+	CreateSupplierReturn(ctx context.Context, in *CreateSupplierReturnRequest, opts ...grpc.CallOption) (*CreateSupplierReturnResponse, error)
+	CancelSupplierReturn(ctx context.Context, in *CancelSupplierReturnRequest, opts ...grpc.CallOption) (*CancelSupplierReturnResponse, error)
+	// Returns unused parts of a repair order to stock (FR-INV-11, Release
+	// 7.1); needs PERMISSION_INVENTORY_ADJUST. The order's stock issue must be
+	// posted (STOCK_ISSUE_NOT_POSTED: until then the draft just follows the
+	// order's lines), and the total returned from a line cannot exceed what
+	// was issued (RETURN_EXCEEDS_ISSUED).
+	ReturnRepairOrderPart(ctx context.Context, in *ReturnRepairOrderPartRequest, opts ...grpc.CallOption) (*ReturnRepairOrderPartResponse, error)
+	ListRepairOrderPartReturns(ctx context.Context, in *ListRepairOrderPartReturnsRequest, opts ...grpc.CallOption) (*ListRepairOrderPartReturnsResponse, error)
 	// Purchases by supplier and period (FR-INV-19), from completed goods
 	// receipts. Needs PERMISSION_INVENTORY_COST_READ; without it the whole call
 	// is refused with PERMISSION_DENIED (its cost fields are not omitted).
@@ -225,6 +292,206 @@ func (c *inventoryServiceClient) PostStockIssue(ctx context.Context, in *PostSto
 	return out, nil
 }
 
+func (c *inventoryServiceClient) ListStockCounts(ctx context.Context, in *ListStockCountsRequest, opts ...grpc.CallOption) (*ListStockCountsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListStockCountsResponse)
+	err := c.cc.Invoke(ctx, InventoryService_ListStockCounts_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) GetStockCount(ctx context.Context, in *GetStockCountRequest, opts ...grpc.CallOption) (*GetStockCountResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetStockCountResponse)
+	err := c.cc.Invoke(ctx, InventoryService_GetStockCount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) CreateStockCount(ctx context.Context, in *CreateStockCountRequest, opts ...grpc.CallOption) (*CreateStockCountResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateStockCountResponse)
+	err := c.cc.Invoke(ctx, InventoryService_CreateStockCount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) UpdateStockCount(ctx context.Context, in *UpdateStockCountRequest, opts ...grpc.CallOption) (*UpdateStockCountResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateStockCountResponse)
+	err := c.cc.Invoke(ctx, InventoryService_UpdateStockCount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) AddStockCountLines(ctx context.Context, in *AddStockCountLinesRequest, opts ...grpc.CallOption) (*AddStockCountLinesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddStockCountLinesResponse)
+	err := c.cc.Invoke(ctx, InventoryService_AddStockCountLines_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) UpdateStockCountLine(ctx context.Context, in *UpdateStockCountLineRequest, opts ...grpc.CallOption) (*UpdateStockCountLineResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateStockCountLineResponse)
+	err := c.cc.Invoke(ctx, InventoryService_UpdateStockCountLine_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) DeleteStockCountLine(ctx context.Context, in *DeleteStockCountLineRequest, opts ...grpc.CallOption) (*DeleteStockCountLineResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteStockCountLineResponse)
+	err := c.cc.Invoke(ctx, InventoryService_DeleteStockCountLine_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) MergeStockCounts(ctx context.Context, in *MergeStockCountsRequest, opts ...grpc.CallOption) (*MergeStockCountsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MergeStockCountsResponse)
+	err := c.cc.Invoke(ctx, InventoryService_MergeStockCounts_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) CompleteStockCount(ctx context.Context, in *CompleteStockCountRequest, opts ...grpc.CallOption) (*CompleteStockCountResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CompleteStockCountResponse)
+	err := c.cc.Invoke(ctx, InventoryService_CompleteStockCount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) CancelStockCount(ctx context.Context, in *CancelStockCountRequest, opts ...grpc.CallOption) (*CancelStockCountResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelStockCountResponse)
+	err := c.cc.Invoke(ctx, InventoryService_CancelStockCount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) ListWriteOffs(ctx context.Context, in *ListWriteOffsRequest, opts ...grpc.CallOption) (*ListWriteOffsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListWriteOffsResponse)
+	err := c.cc.Invoke(ctx, InventoryService_ListWriteOffs_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) GetWriteOff(ctx context.Context, in *GetWriteOffRequest, opts ...grpc.CallOption) (*GetWriteOffResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetWriteOffResponse)
+	err := c.cc.Invoke(ctx, InventoryService_GetWriteOff_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) CreateWriteOff(ctx context.Context, in *CreateWriteOffRequest, opts ...grpc.CallOption) (*CreateWriteOffResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateWriteOffResponse)
+	err := c.cc.Invoke(ctx, InventoryService_CreateWriteOff_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) CancelWriteOff(ctx context.Context, in *CancelWriteOffRequest, opts ...grpc.CallOption) (*CancelWriteOffResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelWriteOffResponse)
+	err := c.cc.Invoke(ctx, InventoryService_CancelWriteOff_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) ListSupplierReturns(ctx context.Context, in *ListSupplierReturnsRequest, opts ...grpc.CallOption) (*ListSupplierReturnsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSupplierReturnsResponse)
+	err := c.cc.Invoke(ctx, InventoryService_ListSupplierReturns_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) GetSupplierReturn(ctx context.Context, in *GetSupplierReturnRequest, opts ...grpc.CallOption) (*GetSupplierReturnResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetSupplierReturnResponse)
+	err := c.cc.Invoke(ctx, InventoryService_GetSupplierReturn_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) CreateSupplierReturn(ctx context.Context, in *CreateSupplierReturnRequest, opts ...grpc.CallOption) (*CreateSupplierReturnResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateSupplierReturnResponse)
+	err := c.cc.Invoke(ctx, InventoryService_CreateSupplierReturn_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) CancelSupplierReturn(ctx context.Context, in *CancelSupplierReturnRequest, opts ...grpc.CallOption) (*CancelSupplierReturnResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelSupplierReturnResponse)
+	err := c.cc.Invoke(ctx, InventoryService_CancelSupplierReturn_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) ReturnRepairOrderPart(ctx context.Context, in *ReturnRepairOrderPartRequest, opts ...grpc.CallOption) (*ReturnRepairOrderPartResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReturnRepairOrderPartResponse)
+	err := c.cc.Invoke(ctx, InventoryService_ReturnRepairOrderPart_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) ListRepairOrderPartReturns(ctx context.Context, in *ListRepairOrderPartReturnsRequest, opts ...grpc.CallOption) (*ListRepairOrderPartReturnsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListRepairOrderPartReturnsResponse)
+	err := c.cc.Invoke(ctx, InventoryService_ListRepairOrderPartReturns_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *inventoryServiceClient) GetPurchasesReport(ctx context.Context, in *GetPurchasesReportRequest, opts ...grpc.CallOption) (*GetPurchasesReportResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetPurchasesReportResponse)
@@ -250,7 +517,9 @@ func (c *inventoryServiceClient) GetStockValuationReport(ctx context.Context, in
 // for forward compatibility.
 //
 // InventoryService manages how many of each part a garage has (FRD 3.7).
-// Reads need PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE.
+// Reads need PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE
+// (stock counts need PERMISSION_INVENTORY_COUNT, write-offs, supplier
+// returns and repair order part returns PERMISSION_INVENTORY_ADJUST).
 // The parts themselves are managed by CatalogueService.
 type InventoryServiceServer interface {
 	// The stock-on-hand list (FR-INV-03): parts with their balances.
@@ -286,6 +555,51 @@ type InventoryServiceServer interface {
 	// closing posts it. A stock issue has no cancel RPC: the repair order
 	// cancels its draft issue.
 	PostStockIssue(context.Context, *PostStockIssueRequest) (*PostStockIssueResponse, error)
+	// Stock counts (FR-INV-12, Release 7.1). Reads need PERMISSION_INVENTORY_READ,
+	// every change PERMISSION_INVENTORY_COUNT. Reasons: STOCK_COUNT_NOT_DRAFT,
+	// STOCK_COUNT_ALREADY_CANCELLED, STOCK_COUNT_HAS_UNCOUNTED_LINES (complete),
+	// INSUFFICIENT_STOCK_TO_REVERSE (cancel of a completed count).
+	ListStockCounts(context.Context, *ListStockCountsRequest) (*ListStockCountsResponse, error)
+	GetStockCount(context.Context, *GetStockCountRequest) (*GetStockCountResponse, error)
+	CreateStockCount(context.Context, *CreateStockCountRequest) (*CreateStockCountResponse, error)
+	UpdateStockCount(context.Context, *UpdateStockCountRequest) (*UpdateStockCountResponse, error)
+	AddStockCountLines(context.Context, *AddStockCountLinesRequest) (*AddStockCountLinesResponse, error)
+	UpdateStockCountLine(context.Context, *UpdateStockCountLineRequest) (*UpdateStockCountLineResponse, error)
+	DeleteStockCountLine(context.Context, *DeleteStockCountLineRequest) (*DeleteStockCountLineResponse, error)
+	// Folds several drafts into the first one; the others become cancelled.
+	MergeStockCounts(context.Context, *MergeStockCountsRequest) (*MergeStockCountsResponse, error)
+	// Posts one adjustment movement per counted line that differs, so that
+	// stock equals the count; the count can no longer be edited.
+	CompleteStockCount(context.Context, *CompleteStockCountRequest) (*CompleteStockCountResponse, error)
+	// Cancelling a draft just closes it; cancelling a completed count posts
+	// the reversal of its adjustments.
+	CancelStockCount(context.Context, *CancelStockCountRequest) (*CancelStockCountResponse, error)
+	// Write-offs (FR-INV-09, Release 7.1). Reads need PERMISSION_INVENTORY_READ,
+	// changes PERMISSION_INVENTORY_ADJUST. Creating one posts it; it is
+	// refused with INSUFFICIENT_STOCK when a part is not on hand in that
+	// quantity. Cancelling restores the stock (WRITE_OFF_ALREADY_CANCELLED
+	// when repeated).
+	ListWriteOffs(context.Context, *ListWriteOffsRequest) (*ListWriteOffsResponse, error)
+	GetWriteOff(context.Context, *GetWriteOffRequest) (*GetWriteOffResponse, error)
+	CreateWriteOff(context.Context, *CreateWriteOffRequest) (*CreateWriteOffResponse, error)
+	CancelWriteOff(context.Context, *CancelWriteOffRequest) (*CancelWriteOffResponse, error)
+	// Returns to supplier (FR-INV-10, Release 7.1). Reads need
+	// PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_ADJUST. Creating
+	// one posts it (INSUFFICIENT_STOCK when a part is short; the linked goods
+	// receipt must be completed, else GOODS_RECEIPT_NOT_COMPLETED).
+	// Cancelling restores the stock (SUPPLIER_RETURN_ALREADY_CANCELLED when
+	// repeated).
+	ListSupplierReturns(context.Context, *ListSupplierReturnsRequest) (*ListSupplierReturnsResponse, error)
+	GetSupplierReturn(context.Context, *GetSupplierReturnRequest) (*GetSupplierReturnResponse, error)
+	CreateSupplierReturn(context.Context, *CreateSupplierReturnRequest) (*CreateSupplierReturnResponse, error)
+	CancelSupplierReturn(context.Context, *CancelSupplierReturnRequest) (*CancelSupplierReturnResponse, error)
+	// Returns unused parts of a repair order to stock (FR-INV-11, Release
+	// 7.1); needs PERMISSION_INVENTORY_ADJUST. The order's stock issue must be
+	// posted (STOCK_ISSUE_NOT_POSTED: until then the draft just follows the
+	// order's lines), and the total returned from a line cannot exceed what
+	// was issued (RETURN_EXCEEDS_ISSUED).
+	ReturnRepairOrderPart(context.Context, *ReturnRepairOrderPartRequest) (*ReturnRepairOrderPartResponse, error)
+	ListRepairOrderPartReturns(context.Context, *ListRepairOrderPartReturnsRequest) (*ListRepairOrderPartReturnsResponse, error)
 	// Purchases by supplier and period (FR-INV-19), from completed goods
 	// receipts. Needs PERMISSION_INVENTORY_COST_READ; without it the whole call
 	// is refused with PERMISSION_DENIED (its cost fields are not omitted).
@@ -342,6 +656,66 @@ func (UnimplementedInventoryServiceServer) GetRepairOrderStockIssue(context.Cont
 }
 func (UnimplementedInventoryServiceServer) PostStockIssue(context.Context, *PostStockIssueRequest) (*PostStockIssueResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method PostStockIssue not implemented")
+}
+func (UnimplementedInventoryServiceServer) ListStockCounts(context.Context, *ListStockCountsRequest) (*ListStockCountsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListStockCounts not implemented")
+}
+func (UnimplementedInventoryServiceServer) GetStockCount(context.Context, *GetStockCountRequest) (*GetStockCountResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetStockCount not implemented")
+}
+func (UnimplementedInventoryServiceServer) CreateStockCount(context.Context, *CreateStockCountRequest) (*CreateStockCountResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateStockCount not implemented")
+}
+func (UnimplementedInventoryServiceServer) UpdateStockCount(context.Context, *UpdateStockCountRequest) (*UpdateStockCountResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateStockCount not implemented")
+}
+func (UnimplementedInventoryServiceServer) AddStockCountLines(context.Context, *AddStockCountLinesRequest) (*AddStockCountLinesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddStockCountLines not implemented")
+}
+func (UnimplementedInventoryServiceServer) UpdateStockCountLine(context.Context, *UpdateStockCountLineRequest) (*UpdateStockCountLineResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateStockCountLine not implemented")
+}
+func (UnimplementedInventoryServiceServer) DeleteStockCountLine(context.Context, *DeleteStockCountLineRequest) (*DeleteStockCountLineResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteStockCountLine not implemented")
+}
+func (UnimplementedInventoryServiceServer) MergeStockCounts(context.Context, *MergeStockCountsRequest) (*MergeStockCountsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method MergeStockCounts not implemented")
+}
+func (UnimplementedInventoryServiceServer) CompleteStockCount(context.Context, *CompleteStockCountRequest) (*CompleteStockCountResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteStockCount not implemented")
+}
+func (UnimplementedInventoryServiceServer) CancelStockCount(context.Context, *CancelStockCountRequest) (*CancelStockCountResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelStockCount not implemented")
+}
+func (UnimplementedInventoryServiceServer) ListWriteOffs(context.Context, *ListWriteOffsRequest) (*ListWriteOffsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListWriteOffs not implemented")
+}
+func (UnimplementedInventoryServiceServer) GetWriteOff(context.Context, *GetWriteOffRequest) (*GetWriteOffResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetWriteOff not implemented")
+}
+func (UnimplementedInventoryServiceServer) CreateWriteOff(context.Context, *CreateWriteOffRequest) (*CreateWriteOffResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateWriteOff not implemented")
+}
+func (UnimplementedInventoryServiceServer) CancelWriteOff(context.Context, *CancelWriteOffRequest) (*CancelWriteOffResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelWriteOff not implemented")
+}
+func (UnimplementedInventoryServiceServer) ListSupplierReturns(context.Context, *ListSupplierReturnsRequest) (*ListSupplierReturnsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListSupplierReturns not implemented")
+}
+func (UnimplementedInventoryServiceServer) GetSupplierReturn(context.Context, *GetSupplierReturnRequest) (*GetSupplierReturnResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSupplierReturn not implemented")
+}
+func (UnimplementedInventoryServiceServer) CreateSupplierReturn(context.Context, *CreateSupplierReturnRequest) (*CreateSupplierReturnResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateSupplierReturn not implemented")
+}
+func (UnimplementedInventoryServiceServer) CancelSupplierReturn(context.Context, *CancelSupplierReturnRequest) (*CancelSupplierReturnResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelSupplierReturn not implemented")
+}
+func (UnimplementedInventoryServiceServer) ReturnRepairOrderPart(context.Context, *ReturnRepairOrderPartRequest) (*ReturnRepairOrderPartResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReturnRepairOrderPart not implemented")
+}
+func (UnimplementedInventoryServiceServer) ListRepairOrderPartReturns(context.Context, *ListRepairOrderPartReturnsRequest) (*ListRepairOrderPartReturnsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListRepairOrderPartReturns not implemented")
 }
 func (UnimplementedInventoryServiceServer) GetPurchasesReport(context.Context, *GetPurchasesReportRequest) (*GetPurchasesReportResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetPurchasesReport not implemented")
@@ -604,6 +978,366 @@ func _InventoryService_PostStockIssue_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _InventoryService_ListStockCounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListStockCountsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).ListStockCounts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_ListStockCounts_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).ListStockCounts(ctx, req.(*ListStockCountsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_GetStockCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStockCountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).GetStockCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_GetStockCount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).GetStockCount(ctx, req.(*GetStockCountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_CreateStockCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateStockCountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).CreateStockCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_CreateStockCount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).CreateStockCount(ctx, req.(*CreateStockCountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_UpdateStockCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateStockCountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).UpdateStockCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_UpdateStockCount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).UpdateStockCount(ctx, req.(*UpdateStockCountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_AddStockCountLines_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddStockCountLinesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).AddStockCountLines(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_AddStockCountLines_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).AddStockCountLines(ctx, req.(*AddStockCountLinesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_UpdateStockCountLine_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateStockCountLineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).UpdateStockCountLine(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_UpdateStockCountLine_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).UpdateStockCountLine(ctx, req.(*UpdateStockCountLineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_DeleteStockCountLine_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteStockCountLineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).DeleteStockCountLine(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_DeleteStockCountLine_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).DeleteStockCountLine(ctx, req.(*DeleteStockCountLineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_MergeStockCounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MergeStockCountsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).MergeStockCounts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_MergeStockCounts_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).MergeStockCounts(ctx, req.(*MergeStockCountsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_CompleteStockCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompleteStockCountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).CompleteStockCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_CompleteStockCount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).CompleteStockCount(ctx, req.(*CompleteStockCountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_CancelStockCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelStockCountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).CancelStockCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_CancelStockCount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).CancelStockCount(ctx, req.(*CancelStockCountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_ListWriteOffs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListWriteOffsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).ListWriteOffs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_ListWriteOffs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).ListWriteOffs(ctx, req.(*ListWriteOffsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_GetWriteOff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWriteOffRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).GetWriteOff(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_GetWriteOff_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).GetWriteOff(ctx, req.(*GetWriteOffRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_CreateWriteOff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateWriteOffRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).CreateWriteOff(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_CreateWriteOff_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).CreateWriteOff(ctx, req.(*CreateWriteOffRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_CancelWriteOff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelWriteOffRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).CancelWriteOff(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_CancelWriteOff_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).CancelWriteOff(ctx, req.(*CancelWriteOffRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_ListSupplierReturns_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSupplierReturnsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).ListSupplierReturns(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_ListSupplierReturns_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).ListSupplierReturns(ctx, req.(*ListSupplierReturnsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_GetSupplierReturn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSupplierReturnRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).GetSupplierReturn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_GetSupplierReturn_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).GetSupplierReturn(ctx, req.(*GetSupplierReturnRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_CreateSupplierReturn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSupplierReturnRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).CreateSupplierReturn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_CreateSupplierReturn_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).CreateSupplierReturn(ctx, req.(*CreateSupplierReturnRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_CancelSupplierReturn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelSupplierReturnRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).CancelSupplierReturn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_CancelSupplierReturn_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).CancelSupplierReturn(ctx, req.(*CancelSupplierReturnRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_ReturnRepairOrderPart_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReturnRepairOrderPartRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).ReturnRepairOrderPart(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_ReturnRepairOrderPart_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).ReturnRepairOrderPart(ctx, req.(*ReturnRepairOrderPartRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_ListRepairOrderPartReturns_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRepairOrderPartReturnsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).ListRepairOrderPartReturns(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_ListRepairOrderPartReturns_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).ListRepairOrderPartReturns(ctx, req.(*ListRepairOrderPartReturnsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _InventoryService_GetPurchasesReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetPurchasesReportRequest)
 	if err := dec(in); err != nil {
@@ -698,6 +1432,86 @@ var InventoryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PostStockIssue",
 			Handler:    _InventoryService_PostStockIssue_Handler,
+		},
+		{
+			MethodName: "ListStockCounts",
+			Handler:    _InventoryService_ListStockCounts_Handler,
+		},
+		{
+			MethodName: "GetStockCount",
+			Handler:    _InventoryService_GetStockCount_Handler,
+		},
+		{
+			MethodName: "CreateStockCount",
+			Handler:    _InventoryService_CreateStockCount_Handler,
+		},
+		{
+			MethodName: "UpdateStockCount",
+			Handler:    _InventoryService_UpdateStockCount_Handler,
+		},
+		{
+			MethodName: "AddStockCountLines",
+			Handler:    _InventoryService_AddStockCountLines_Handler,
+		},
+		{
+			MethodName: "UpdateStockCountLine",
+			Handler:    _InventoryService_UpdateStockCountLine_Handler,
+		},
+		{
+			MethodName: "DeleteStockCountLine",
+			Handler:    _InventoryService_DeleteStockCountLine_Handler,
+		},
+		{
+			MethodName: "MergeStockCounts",
+			Handler:    _InventoryService_MergeStockCounts_Handler,
+		},
+		{
+			MethodName: "CompleteStockCount",
+			Handler:    _InventoryService_CompleteStockCount_Handler,
+		},
+		{
+			MethodName: "CancelStockCount",
+			Handler:    _InventoryService_CancelStockCount_Handler,
+		},
+		{
+			MethodName: "ListWriteOffs",
+			Handler:    _InventoryService_ListWriteOffs_Handler,
+		},
+		{
+			MethodName: "GetWriteOff",
+			Handler:    _InventoryService_GetWriteOff_Handler,
+		},
+		{
+			MethodName: "CreateWriteOff",
+			Handler:    _InventoryService_CreateWriteOff_Handler,
+		},
+		{
+			MethodName: "CancelWriteOff",
+			Handler:    _InventoryService_CancelWriteOff_Handler,
+		},
+		{
+			MethodName: "ListSupplierReturns",
+			Handler:    _InventoryService_ListSupplierReturns_Handler,
+		},
+		{
+			MethodName: "GetSupplierReturn",
+			Handler:    _InventoryService_GetSupplierReturn_Handler,
+		},
+		{
+			MethodName: "CreateSupplierReturn",
+			Handler:    _InventoryService_CreateSupplierReturn_Handler,
+		},
+		{
+			MethodName: "CancelSupplierReturn",
+			Handler:    _InventoryService_CancelSupplierReturn_Handler,
+		},
+		{
+			MethodName: "ReturnRepairOrderPart",
+			Handler:    _InventoryService_ReturnRepairOrderPart_Handler,
+		},
+		{
+			MethodName: "ListRepairOrderPartReturns",
+			Handler:    _InventoryService_ListRepairOrderPartReturns_Handler,
 		},
 		{
 			MethodName: "GetPurchasesReport",
