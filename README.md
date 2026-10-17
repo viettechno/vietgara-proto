@@ -50,8 +50,9 @@ Protocol Buffers. The same `.proto` files describe:
 
 | Proto package | Module | Services |
 | --- | --- | --- |
-| `vietgara.identity.v1` | Identity & Access (HLD #1) | `AuthService`: Register, Login, RefreshToken, Logout, SendEmailVerificationOtp, VerifyEmail, RequestPasswordReset, VerifyPasswordResetOtp, ResetPassword |
+| `vietgara.identity.v1` | Identity & Access (HLD #1) | `AuthService`: Register, Login, VerifyMfaChallenge, RefreshToken, Logout, SendEmailVerificationOtp, VerifyEmail, RequestPasswordReset, VerifyPasswordResetOtp, ResetPassword |
 | | | `UserService`: GetMe, UpdateMe |
+| | | `MfaService`: GetMfaStatus, EnrollMfa, ConfirmMfaEnrollment, RegenerateRecoveryCodes, DisableMfa |
 | `vietgara.tenant.v1` | Tenant/Garage (HLD #2) | `GarageService`: ListGarages, CreateGarage, GetGarage, UpdateGarage, UploadGarageLogo, DeleteGarageLogo |
 | | | `StaffService`: ListStaff, UpdateStaff, DeleteStaff, LookupStaffCandidate |
 | | | `InvitationService`: CreateInvitation, ListInvitations, RevokeInvitation, ListMyInvitations, GetMyInvitation, AcceptInvitation, DeclineInvitation |

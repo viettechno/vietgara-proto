@@ -48,6 +48,8 @@ message User {
   bool platform_admin = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp created_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp updated_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // True when the user has turned on a TOTP second factor (FR-IAM-09).
+  bool mfa_enabled = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message GetMeRequest {}

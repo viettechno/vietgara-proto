@@ -55,6 +55,10 @@
       "description": "AuthService handles sign-up, sign-in, sessions, e-mail verification and\npassword reset (FRD 3.1). Google sign-in uses the OAuth redirect routes\nGET /api/v1/auth/google/login and /callback, which are plain HTTP handlers."
     },
     {
+      "name": "MfaService",
+      "description": "MfaService lets a signed-in user manage their own TOTP second factor\n(FR-IAM-09, NFR-SE-04). MFA is optional for every user and applies only to\ne-mail and password sign-in. Resetting a password does not disable it."
+    },
+    {
       "name": "InventoryService",
       "description": "InventoryService manages how many of each part a garage has (FRD 3.7).\nReads need PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE.\nThe parts themselves are managed by CatalogueService."
     },
@@ -753,6 +757,39 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/v1LogoutRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/challenge": {
+      "post": {
+        "summary": "Completes a sign-in that answered mfa_required (FR-IAM-09): exchanges the\nchallenge token and a TOTP code or an unused recovery code for the\nsession. Five wrong codes lock the challenge for 15 minutes.",
+        "operationId": "AuthService_VerifyMfaChallenge",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Session"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1VerifyMfaChallengeRequest"
             }
           }
         ],
@@ -5563,6 +5600,161 @@
         ]
       }
     },
+    "/api/v1/me/mfa": {
+      "get": {
+        "summary": "Returns whether MFA is on and how many recovery codes are left.",
+        "operationId": "MfaService_GetMfaStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetMfaStatusResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "MfaService"
+        ]
+      }
+    },
+    "/api/v1/me/mfa/enroll": {
+      "post": {
+        "summary": "Starts enrolment: creates a pending TOTP secret (replacing an earlier\npending one). MFA is not on until EnrollMfaConfirm succeeds. Refused for\nGoogle-only users and when MFA is already on.",
+        "operationId": "MfaService_EnrollMfa",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1EnrollMfaResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1EnrollMfaRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MfaService"
+        ]
+      }
+    },
+    "/api/v1/me/mfa/enroll:confirm": {
+      "post": {
+        "summary": "Confirms enrolment with a code from the authenticator app, turns MFA on\nand returns the recovery codes. They are shown only once.",
+        "operationId": "MfaService_ConfirmMfaEnrollment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ConfirmMfaEnrollmentResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ConfirmMfaEnrollmentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MfaService"
+        ]
+      }
+    },
+    "/api/v1/me/mfa/recovery-codes": {
+      "post": {
+        "summary": "Replaces the recovery codes with a new set; the old ones stop working.\nNeeds a current TOTP code.",
+        "operationId": "MfaService_RegenerateRecoveryCodes",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RegenerateRecoveryCodesResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RegenerateRecoveryCodesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MfaService"
+        ]
+      }
+    },
+    "/api/v1/me/mfa:disable": {
+      "post": {
+        "summary": "Turns MFA off. Needs a TOTP code or a recovery code.",
+        "operationId": "MfaService_DisableMfa",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DisableMfaResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1DisableMfaRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MfaService"
+        ]
+      }
+    },
     "/api/v1/me/subscription": {
       "get": {
         "summary": "The signed-in owner's subscription and usage.",
@@ -6731,6 +6923,30 @@
         }
       }
     },
+    "v1ConfirmMfaEnrollmentRequest": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "A 6-digit code from the authenticator app."
+        }
+      },
+      "required": [
+        "code"
+      ]
+    },
+    "v1ConfirmMfaEnrollmentResponse": {
+      "type": "object",
+      "properties": {
+        "recoveryCodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One-time recovery codes, shown only once."
+        }
+      }
+    },
     "v1ConvertQuoteResponse": {
       "type": "object",
       "properties": {
@@ -7258,6 +7474,37 @@
         }
       }
     },
+    "v1DisableMfaRequest": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "A 6-digit TOTP code or an unused recovery code."
+        }
+      },
+      "required": [
+        "code"
+      ]
+    },
+    "v1DisableMfaResponse": {
+      "type": "object"
+    },
+    "v1EnrollMfaRequest": {
+      "type": "object"
+    },
+    "v1EnrollMfaResponse": {
+      "type": "object",
+      "properties": {
+        "secret": {
+          "type": "string",
+          "description": "Base32 secret for manual entry."
+        },
+        "otpauthUri": {
+          "type": "string",
+          "description": "otpauth:// URI; clients draw it as a QR code."
+        }
+      }
+    },
     "v1Entitlements": {
       "type": "object",
       "properties": {
@@ -7629,6 +7876,22 @@
       "properties": {
         "user": {
           "$ref": "#/definitions/v1User"
+        }
+      }
+    },
+    "v1GetMfaStatusResponse": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "enabledAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "recoveryCodesRemaining": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -9183,6 +9446,29 @@
         }
       }
     },
+    "v1RegenerateRecoveryCodesRequest": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "A current 6-digit TOTP code."
+        }
+      },
+      "required": [
+        "code"
+      ]
+    },
+    "v1RegenerateRecoveryCodesResponse": {
+      "type": "object",
+      "properties": {
+        "recoveryCodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "v1RegisterRequest": {
       "type": "object",
       "properties": {
@@ -9573,9 +9859,21 @@
         },
         "user": {
           "$ref": "#/definitions/v1User"
+        },
+        "mfaRequired": {
+          "type": "boolean",
+          "description": "True when the sign-in is not complete: ask for the second factor."
+        },
+        "challengeToken": {
+          "type": "string",
+          "description": "Single-use token for VerifyMfaChallenge; valid for 5 minutes."
+        },
+        "challengeExpiresAt": {
+          "type": "string",
+          "format": "date-time"
         }
       },
-      "description": "Session is what every successful sign-in returns."
+      "description": "Session is what every successful sign-in returns. When the user has MFA\nenabled and signs in with e-mail and password, the sign-in answers with\nmfa_required = true and a challenge_token instead of tokens (access_token\nand refresh_token are empty); the client then calls VerifyMfaChallenge.\nGoogle sign-in never asks for the second factor."
     },
     "v1SetPartUnitsResponse": {
       "type": "object",
@@ -10506,6 +10804,11 @@
           "type": "string",
           "format": "date-time",
           "readOnly": true
+        },
+        "mfaEnabled": {
+          "type": "boolean",
+          "description": "True when the user has turned on a TOTP second factor (FR-IAM-09).",
+          "readOnly": true
         }
       },
       "description": "User is a person who can sign in to VietGara."
@@ -10657,6 +10960,30 @@
       ]
     },
     "v1VerifyEmailResponse": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/v1Session"
+        }
+      }
+    },
+    "v1VerifyMfaChallengeRequest": {
+      "type": "object",
+      "properties": {
+        "challengeToken": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string",
+          "description": "A 6-digit TOTP code, or a recovery code (which works once)."
+        }
+      },
+      "required": [
+        "challengeToken",
+        "code"
+      ]
+    },
+    "v1VerifyMfaChallengeResponse": {
       "type": "object",
       "properties": {
         "session": {

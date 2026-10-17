@@ -45,6 +45,17 @@ service AuthService {
     };
   }
 
+  // Completes a sign-in that answered mfa_required (FR-IAM-09): exchanges the
+  // challenge token and a TOTP code or an unused recovery code for the
+  // session. Five wrong codes lock the challenge for 15 minutes.
+  rpc VerifyMfaChallenge(VerifyMfaChallengeRequest) returns (VerifyMfaChallengeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/mfa/challenge"
+      body: "*"
+      response_body: "session"
+    };
+  }
+
   // Exchanges a refresh token for a new session; the old token is revoked
   // (rotation).
   rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {
@@ -110,7 +121,11 @@ service AuthService {
   }
 }
 
-// Session is what every successful sign-in returns.
+// Session is what every successful sign-in returns. When the user has MFA
+// enabled and signs in with e-mail and password, the sign-in answers with
+// mfa_required = true and a challenge_token instead of tokens (access_token
+// and refresh_token are empty); the client then calls VerifyMfaChallenge.
+// Google sign-in never asks for the second factor.
 message Session {
   string access_token = 1;
   string refresh_token = 2;
@@ -119,6 +134,11 @@ message Session {
   // Access token lifetime in seconds.
   int64 expires_in = 4;
   User user = 5;
+  // True when the sign-in is not complete: ask for the second factor.
+  bool mfa_required = 6;
+  // Single-use token for VerifyMfaChallenge; valid for 5 minutes.
+  string challenge_token = 7;
+  google.protobuf.Timestamp challenge_expires_at = 8;
 }
 
 // OtpChallenge tells the client how long the e-mailed OTP is valid.
@@ -159,6 +179,16 @@ message SignInWithGoogleIdTokenRequest {
 }
 
 message SignInWithGoogleIdTokenResponse {
+  Session session = 1;
+}
+
+message VerifyMfaChallengeRequest {
+  string challenge_token = 1 [(google.api.field_behavior) = REQUIRED];
+  // A 6-digit TOTP code, or a recovery code (which works once).
+  string code = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message VerifyMfaChallengeResponse {
   Session session = 1;
 }
 
