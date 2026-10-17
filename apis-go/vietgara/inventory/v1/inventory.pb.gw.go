@@ -568,9 +568,9 @@ func local_request_InventoryService_CancelGoodsReceipt_0(ctx context.Context, ma
 	return msg, metadata, err
 }
 
-func request_InventoryService_GetItemSuppliers_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_InventoryService_GetPartSuppliers_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq GetItemSuppliersRequest
+		protoReq GetPartSuppliersRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -582,24 +582,24 @@ func request_InventoryService_GetItemSuppliers_0(ctx context.Context, marshaler 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
 	}
-	val, ok = pathParams["item_id"]
+	val, ok = pathParams["part_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "item_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "part_id")
 	}
-	protoReq.ItemId, err = runtime.String(val)
+	protoReq.PartId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "item_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "part_id", err)
 	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
 	}
-	msg, err := client.GetItemSuppliers(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetPartSuppliers(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 }
 
-func local_request_InventoryService_GetItemSuppliers_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_InventoryService_GetPartSuppliers_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq GetItemSuppliersRequest
+		protoReq GetPartSuppliersRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -611,21 +611,21 @@ func local_request_InventoryService_GetItemSuppliers_0(ctx context.Context, mars
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
 	}
-	val, ok = pathParams["item_id"]
+	val, ok = pathParams["part_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "item_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "part_id")
 	}
-	protoReq.ItemId, err = runtime.String(val)
+	protoReq.PartId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "item_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "part_id", err)
 	}
-	msg, err := server.GetItemSuppliers(ctx, &protoReq)
+	msg, err := server.GetPartSuppliers(ctx, &protoReq)
 	return msg, metadata, err
 }
 
-func request_InventoryService_PutItemSuppliers_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_InventoryService_PutPartSuppliers_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq PutItemSuppliersRequest
+		protoReq PutPartSuppliersRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -640,24 +640,24 @@ func request_InventoryService_PutItemSuppliers_0(ctx context.Context, marshaler 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
 	}
-	val, ok = pathParams["item_id"]
+	val, ok = pathParams["part_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "item_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "part_id")
 	}
-	protoReq.ItemId, err = runtime.String(val)
+	protoReq.PartId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "item_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "part_id", err)
 	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
 	}
-	msg, err := client.PutItemSuppliers(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.PutPartSuppliers(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 }
 
-func local_request_InventoryService_PutItemSuppliers_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_InventoryService_PutPartSuppliers_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq PutItemSuppliersRequest
+		protoReq PutPartSuppliersRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -672,15 +672,15 @@ func local_request_InventoryService_PutItemSuppliers_0(ctx context.Context, mars
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
 	}
-	val, ok = pathParams["item_id"]
+	val, ok = pathParams["part_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "item_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "part_id")
 	}
-	protoReq.ItemId, err = runtime.String(val)
+	protoReq.PartId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "item_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "part_id", err)
 	}
-	msg, err := server.PutItemSuppliers(ctx, &protoReq)
+	msg, err := server.PutPartSuppliers(ctx, &protoReq)
 	return msg, metadata, err
 }
 
@@ -918,7 +918,7 @@ func RegisterInventoryServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/ListStockLevels", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/inventory-items"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/ListStockLevels", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-levels"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -938,7 +938,7 @@ func RegisterInventoryServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/GetStockLevel", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/inventory-items/{part_id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/GetStockLevel", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-levels/{part_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1092,45 +1092,45 @@ func RegisterInventoryServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		}
 		forward_InventoryService_CancelGoodsReceipt_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CancelGoodsReceipt_0{resp.(*CancelGoodsReceiptResponse)}, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodGet, pattern_InventoryService_GetItemSuppliers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_InventoryService_GetPartSuppliers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/GetItemSuppliers", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/inventory-items/{item_id}/suppliers"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/GetPartSuppliers", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/parts/{part_id}/suppliers"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_InventoryService_GetItemSuppliers_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_InventoryService_GetPartSuppliers_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_InventoryService_GetItemSuppliers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_InventoryService_GetPartSuppliers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPut, pattern_InventoryService_PutItemSuppliers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPut, pattern_InventoryService_PutPartSuppliers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/PutItemSuppliers", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/inventory-items/{item_id}/suppliers"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/PutPartSuppliers", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/parts/{part_id}/suppliers"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_InventoryService_PutItemSuppliers_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_InventoryService_PutPartSuppliers_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_InventoryService_PutItemSuppliers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_InventoryService_PutPartSuppliers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 	mux.Handle(http.MethodGet, pattern_InventoryService_GetRepairOrderStockIssue_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -1256,7 +1256,7 @@ func RegisterInventoryServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/ListStockLevels", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/inventory-items"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/ListStockLevels", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-levels"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1273,7 +1273,7 @@ func RegisterInventoryServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/GetStockLevel", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/inventory-items/{part_id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/GetStockLevel", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-levels/{part_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1405,39 +1405,39 @@ func RegisterInventoryServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 		}
 		forward_InventoryService_CancelGoodsReceipt_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CancelGoodsReceipt_0{resp.(*CancelGoodsReceiptResponse)}, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodGet, pattern_InventoryService_GetItemSuppliers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_InventoryService_GetPartSuppliers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/GetItemSuppliers", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/inventory-items/{item_id}/suppliers"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/GetPartSuppliers", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/parts/{part_id}/suppliers"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_InventoryService_GetItemSuppliers_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_InventoryService_GetPartSuppliers_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_InventoryService_GetItemSuppliers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_InventoryService_GetPartSuppliers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPut, pattern_InventoryService_PutItemSuppliers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPut, pattern_InventoryService_PutPartSuppliers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/PutItemSuppliers", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/inventory-items/{item_id}/suppliers"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/PutPartSuppliers", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/parts/{part_id}/suppliers"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_InventoryService_PutItemSuppliers_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_InventoryService_PutPartSuppliers_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_InventoryService_PutItemSuppliers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_InventoryService_PutPartSuppliers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 	mux.Handle(http.MethodGet, pattern_InventoryService_GetRepairOrderStockIssue_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -1574,8 +1574,8 @@ func (m response_InventoryService_PostStockIssue_0) XXX_ResponseBody() interface
 }
 
 var (
-	pattern_InventoryService_ListStockLevels_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "inventory-items"}, ""))
-	pattern_InventoryService_GetStockLevel_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "inventory-items", "part_id"}, ""))
+	pattern_InventoryService_ListStockLevels_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "stock-levels"}, ""))
+	pattern_InventoryService_GetStockLevel_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "stock-levels", "part_id"}, ""))
 	pattern_InventoryService_ListStockTransactions_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5}, []string{"api", "v1", "garages", "garage_id", "reports", "stock-movements"}, ""))
 	pattern_InventoryService_ListGoodsReceipts_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "goods-receipts"}, ""))
 	pattern_InventoryService_GetGoodsReceipt_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id"}, ""))
@@ -1583,8 +1583,8 @@ var (
 	pattern_InventoryService_UpdateGoodsReceipt_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id"}, ""))
 	pattern_InventoryService_CompleteGoodsReceipt_0     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id"}, "complete"))
 	pattern_InventoryService_CancelGoodsReceipt_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id"}, "cancel"))
-	pattern_InventoryService_GetItemSuppliers_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "inventory-items", "item_id", "suppliers"}, ""))
-	pattern_InventoryService_PutItemSuppliers_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "inventory-items", "item_id", "suppliers"}, ""))
+	pattern_InventoryService_GetPartSuppliers_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id", "suppliers"}, ""))
+	pattern_InventoryService_PutPartSuppliers_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id", "suppliers"}, ""))
 	pattern_InventoryService_GetRepairOrderStockIssue_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "repair-orders", "repair_order_id", "stock-issue"}, ""))
 	pattern_InventoryService_PostStockIssue_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "stock-issues", "stock_issue_id"}, "post"))
 	pattern_InventoryService_GetPurchasesReport_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5}, []string{"api", "v1", "garages", "garage_id", "reports", "purchases"}, ""))
@@ -1601,8 +1601,8 @@ var (
 	forward_InventoryService_UpdateGoodsReceipt_0       = runtime.ForwardResponseMessage
 	forward_InventoryService_CompleteGoodsReceipt_0     = runtime.ForwardResponseMessage
 	forward_InventoryService_CancelGoodsReceipt_0       = runtime.ForwardResponseMessage
-	forward_InventoryService_GetItemSuppliers_0         = runtime.ForwardResponseMessage
-	forward_InventoryService_PutItemSuppliers_0         = runtime.ForwardResponseMessage
+	forward_InventoryService_GetPartSuppliers_0         = runtime.ForwardResponseMessage
+	forward_InventoryService_PutPartSuppliers_0         = runtime.ForwardResponseMessage
 	forward_InventoryService_GetRepairOrderStockIssue_0 = runtime.ForwardResponseMessage
 	forward_InventoryService_PostStockIssue_0           = runtime.ForwardResponseMessage
 	forward_InventoryService_GetPurchasesReport_0       = runtime.ForwardResponseMessage

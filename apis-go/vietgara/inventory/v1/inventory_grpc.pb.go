@@ -28,8 +28,8 @@ const (
 	InventoryService_UpdateGoodsReceipt_FullMethodName       = "/vietgara.inventory.v1.InventoryService/UpdateGoodsReceipt"
 	InventoryService_CompleteGoodsReceipt_FullMethodName     = "/vietgara.inventory.v1.InventoryService/CompleteGoodsReceipt"
 	InventoryService_CancelGoodsReceipt_FullMethodName       = "/vietgara.inventory.v1.InventoryService/CancelGoodsReceipt"
-	InventoryService_GetItemSuppliers_FullMethodName         = "/vietgara.inventory.v1.InventoryService/GetItemSuppliers"
-	InventoryService_PutItemSuppliers_FullMethodName         = "/vietgara.inventory.v1.InventoryService/PutItemSuppliers"
+	InventoryService_GetPartSuppliers_FullMethodName         = "/vietgara.inventory.v1.InventoryService/GetPartSuppliers"
+	InventoryService_PutPartSuppliers_FullMethodName         = "/vietgara.inventory.v1.InventoryService/PutPartSuppliers"
 	InventoryService_GetRepairOrderStockIssue_FullMethodName = "/vietgara.inventory.v1.InventoryService/GetRepairOrderStockIssue"
 	InventoryService_PostStockIssue_FullMethodName           = "/vietgara.inventory.v1.InventoryService/PostStockIssue"
 	InventoryService_GetPurchasesReport_FullMethodName       = "/vietgara.inventory.v1.InventoryService/GetPurchasesReport"
@@ -68,8 +68,8 @@ type InventoryServiceClient interface {
 	CancelGoodsReceipt(ctx context.Context, in *CancelGoodsReceiptRequest, opts ...grpc.CallOption) (*CancelGoodsReceiptResponse, error)
 	// The usual suppliers of a part with their code, last cost and default
 	// (FR-INV-19, Release 7.0).
-	GetItemSuppliers(ctx context.Context, in *GetItemSuppliersRequest, opts ...grpc.CallOption) (*GetItemSuppliersResponse, error)
-	PutItemSuppliers(ctx context.Context, in *PutItemSuppliersRequest, opts ...grpc.CallOption) (*PutItemSuppliersResponse, error)
+	GetPartSuppliers(ctx context.Context, in *GetPartSuppliersRequest, opts ...grpc.CallOption) (*GetPartSuppliersResponse, error)
+	PutPartSuppliers(ctx context.Context, in *PutPartSuppliersRequest, opts ...grpc.CallOption) (*PutPartSuppliersResponse, error)
 	// The repair order's stock issue document (FR-INV-20, Release 7.0),
 	// created with the order and, while a draft, following its part lines.
 	GetRepairOrderStockIssue(ctx context.Context, in *GetRepairOrderStockIssueRequest, opts ...grpc.CallOption) (*GetRepairOrderStockIssueResponse, error)
@@ -185,20 +185,20 @@ func (c *inventoryServiceClient) CancelGoodsReceipt(ctx context.Context, in *Can
 	return out, nil
 }
 
-func (c *inventoryServiceClient) GetItemSuppliers(ctx context.Context, in *GetItemSuppliersRequest, opts ...grpc.CallOption) (*GetItemSuppliersResponse, error) {
+func (c *inventoryServiceClient) GetPartSuppliers(ctx context.Context, in *GetPartSuppliersRequest, opts ...grpc.CallOption) (*GetPartSuppliersResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetItemSuppliersResponse)
-	err := c.cc.Invoke(ctx, InventoryService_GetItemSuppliers_FullMethodName, in, out, cOpts...)
+	out := new(GetPartSuppliersResponse)
+	err := c.cc.Invoke(ctx, InventoryService_GetPartSuppliers_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *inventoryServiceClient) PutItemSuppliers(ctx context.Context, in *PutItemSuppliersRequest, opts ...grpc.CallOption) (*PutItemSuppliersResponse, error) {
+func (c *inventoryServiceClient) PutPartSuppliers(ctx context.Context, in *PutPartSuppliersRequest, opts ...grpc.CallOption) (*PutPartSuppliersResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PutItemSuppliersResponse)
-	err := c.cc.Invoke(ctx, InventoryService_PutItemSuppliers_FullMethodName, in, out, cOpts...)
+	out := new(PutPartSuppliersResponse)
+	err := c.cc.Invoke(ctx, InventoryService_PutPartSuppliers_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -277,8 +277,8 @@ type InventoryServiceServer interface {
 	CancelGoodsReceipt(context.Context, *CancelGoodsReceiptRequest) (*CancelGoodsReceiptResponse, error)
 	// The usual suppliers of a part with their code, last cost and default
 	// (FR-INV-19, Release 7.0).
-	GetItemSuppliers(context.Context, *GetItemSuppliersRequest) (*GetItemSuppliersResponse, error)
-	PutItemSuppliers(context.Context, *PutItemSuppliersRequest) (*PutItemSuppliersResponse, error)
+	GetPartSuppliers(context.Context, *GetPartSuppliersRequest) (*GetPartSuppliersResponse, error)
+	PutPartSuppliers(context.Context, *PutPartSuppliersRequest) (*PutPartSuppliersResponse, error)
 	// The repair order's stock issue document (FR-INV-20, Release 7.0),
 	// created with the order and, while a draft, following its part lines.
 	GetRepairOrderStockIssue(context.Context, *GetRepairOrderStockIssueRequest) (*GetRepairOrderStockIssueResponse, error)
@@ -331,11 +331,11 @@ func (UnimplementedInventoryServiceServer) CompleteGoodsReceipt(context.Context,
 func (UnimplementedInventoryServiceServer) CancelGoodsReceipt(context.Context, *CancelGoodsReceiptRequest) (*CancelGoodsReceiptResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CancelGoodsReceipt not implemented")
 }
-func (UnimplementedInventoryServiceServer) GetItemSuppliers(context.Context, *GetItemSuppliersRequest) (*GetItemSuppliersResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetItemSuppliers not implemented")
+func (UnimplementedInventoryServiceServer) GetPartSuppliers(context.Context, *GetPartSuppliersRequest) (*GetPartSuppliersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPartSuppliers not implemented")
 }
-func (UnimplementedInventoryServiceServer) PutItemSuppliers(context.Context, *PutItemSuppliersRequest) (*PutItemSuppliersResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method PutItemSuppliers not implemented")
+func (UnimplementedInventoryServiceServer) PutPartSuppliers(context.Context, *PutPartSuppliersRequest) (*PutPartSuppliersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method PutPartSuppliers not implemented")
 }
 func (UnimplementedInventoryServiceServer) GetRepairOrderStockIssue(context.Context, *GetRepairOrderStockIssueRequest) (*GetRepairOrderStockIssueResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetRepairOrderStockIssue not implemented")
@@ -532,38 +532,38 @@ func _InventoryService_CancelGoodsReceipt_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
-func _InventoryService_GetItemSuppliers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetItemSuppliersRequest)
+func _InventoryService_GetPartSuppliers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPartSuppliersRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(InventoryServiceServer).GetItemSuppliers(ctx, in)
+		return srv.(InventoryServiceServer).GetPartSuppliers(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: InventoryService_GetItemSuppliers_FullMethodName,
+		FullMethod: InventoryService_GetPartSuppliers_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InventoryServiceServer).GetItemSuppliers(ctx, req.(*GetItemSuppliersRequest))
+		return srv.(InventoryServiceServer).GetPartSuppliers(ctx, req.(*GetPartSuppliersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _InventoryService_PutItemSuppliers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PutItemSuppliersRequest)
+func _InventoryService_PutPartSuppliers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutPartSuppliersRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(InventoryServiceServer).PutItemSuppliers(ctx, in)
+		return srv.(InventoryServiceServer).PutPartSuppliers(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: InventoryService_PutItemSuppliers_FullMethodName,
+		FullMethod: InventoryService_PutPartSuppliers_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InventoryServiceServer).PutItemSuppliers(ctx, req.(*PutItemSuppliersRequest))
+		return srv.(InventoryServiceServer).PutPartSuppliers(ctx, req.(*PutPartSuppliersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -684,12 +684,12 @@ var InventoryService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _InventoryService_CancelGoodsReceipt_Handler,
 		},
 		{
-			MethodName: "GetItemSuppliers",
-			Handler:    _InventoryService_GetItemSuppliers_Handler,
+			MethodName: "GetPartSuppliers",
+			Handler:    _InventoryService_GetPartSuppliers_Handler,
 		},
 		{
-			MethodName: "PutItemSuppliers",
-			Handler:    _InventoryService_PutItemSuppliers_Handler,
+			MethodName: "PutPartSuppliers",
+			Handler:    _InventoryService_PutPartSuppliers_Handler,
 		},
 		{
 			MethodName: "GetRepairOrderStockIssue",

@@ -100,9 +100,9 @@ message GetStockLevelResponse {
 // StockTransaction is one recorded stock movement.
 message StockTransaction {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string item_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string item_sku = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string item_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_sku = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
   StockTransactionType type = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Decimal string, always positive; type says the direction.
   string quantity = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -124,7 +124,7 @@ message StockTransaction {
 
 message ListStockTransactionsRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
-  string item_id = 2;
+  string part_id = 2;
   StockTransactionType type = 3;
   int32 page = 4;
   int32 page_size = 5;
@@ -150,10 +150,9 @@ enum GoodsReceiptStatus {
 // and the part's default supplier (FR-INV-19) pre-fills it.
 message GoodsReceiptLine {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // The part's id (the JSON field keeps the name item_id).
-  string item_id = 2 [(google.api.field_behavior) = REQUIRED];
-  string item_sku = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string item_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string part_sku = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
   string base_unit_abbreviation = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The packaging unit the user typed the quantity in; unset means the base
   // unit.
@@ -277,10 +276,10 @@ message CancelGoodsReceiptResponse {
   GoodsReceipt goods_receipt = 1;
 }
 
-// ItemSupplier is one usual supplier of a part with the supplier's own code
+// PartSupplier is one usual supplier of a part with the supplier's own code
 // and the last cost paid (FR-INV-19). One of them is the default that
 // pre-fills a receipt line's supplier.
-message ItemSupplier {
+message PartSupplier {
   string supplier_id = 1 [(google.api.field_behavior) = REQUIRED];
   string supplier_name = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The supplier's own code for the part.
@@ -290,24 +289,24 @@ message ItemSupplier {
   bool is_default = 5;
 }
 
-message GetItemSuppliersRequest {
+message GetPartSuppliersRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
-  string item_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-message GetItemSuppliersResponse {
-  repeated ItemSupplier data = 1;
+message GetPartSuppliersResponse {
+  repeated PartSupplier data = 1;
 }
 
-message PutItemSuppliersRequest {
+message PutPartSuppliersRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
-  string item_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
   // Replaces the part's list as a whole; at most one default.
-  repeated ItemSupplier data = 3;
+  repeated PartSupplier data = 3;
 }
 
-message PutItemSuppliersResponse {
-  repeated ItemSupplier data = 1;
+message PutPartSuppliersResponse {
+  repeated PartSupplier data = 1;
 }
 
 // StockIssueStatus is the lifecycle of a stock issue document (phiếu xuất
@@ -325,9 +324,9 @@ enum StockIssueStatus {
 message StockIssueLine {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   string repair_order_line_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string item_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string item_sku = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string item_name = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_sku = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_name = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
   string base_unit_abbreviation = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   optional string unit_id = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
   string unit_abbreviation = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -384,9 +383,9 @@ message PurchaseLine {
   string receipt_date = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
   string supplier_id = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
   string supplier_name = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string item_id = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string item_sku = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string item_name = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_id = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_sku = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_name = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The base-unit amount.
   string quantity = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
   string base_unit_abbreviation = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -414,9 +413,9 @@ message GetPurchasesReportResponse {
 // StockValuationLine is one part's quantity and value at a date
 // (FR-INV-07). Only callers with PERMISSION_INVENTORY_COST_READ see it.
 message StockValuationLine {
-  string item_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string item_sku = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string item_name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_sku = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
   string category_id = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
   string category_name = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The base-unit amount on hand.
@@ -457,12 +456,12 @@ message GetStockValuationReportResponse {
 service InventoryService {
   // The stock-on-hand list (FR-INV-03): parts with their balances.
   rpc ListStockLevels(ListStockLevelsRequest) returns (ListStockLevelsResponse) {
-    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/inventory-items"};
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/stock-levels"};
   }
 
   rpc GetStockLevel(GetStockLevelRequest) returns (GetStockLevelResponse) {
     option (google.api.http) = {
-      get: "/api/v1/garages/{garage_id}/inventory-items/{part_id}"
+      get: "/api/v1/garages/{garage_id}/stock-levels/{part_id}"
       response_body: "stock_level"
     };
   }
@@ -528,13 +527,13 @@ service InventoryService {
 
   // The usual suppliers of a part with their code, last cost and default
   // (FR-INV-19, Release 7.0).
-  rpc GetItemSuppliers(GetItemSuppliersRequest) returns (GetItemSuppliersResponse) {
-    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/inventory-items/{item_id}/suppliers"};
+  rpc GetPartSuppliers(GetPartSuppliersRequest) returns (GetPartSuppliersResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/parts/{part_id}/suppliers"};
   }
 
-  rpc PutItemSuppliers(PutItemSuppliersRequest) returns (PutItemSuppliersResponse) {
+  rpc PutPartSuppliers(PutPartSuppliersRequest) returns (PutPartSuppliersResponse) {
     option (google.api.http) = {
-      put: "/api/v1/garages/{garage_id}/inventory-items/{item_id}/suppliers"
+      put: "/api/v1/garages/{garage_id}/parts/{part_id}/suppliers"
       body: "*"
     };
   }

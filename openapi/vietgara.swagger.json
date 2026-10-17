@@ -2308,199 +2308,6 @@
         ]
       }
     },
-    "/api/v1/garages/{garageId}/inventory-items": {
-      "get": {
-        "summary": "The stock-on-hand list (FR-INV-03): parts with their balances.",
-        "operationId": "InventoryService_ListStockLevels",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1ListStockLevelsResponse"
-            }
-          },
-          "default": {
-            "description": "Error (API Specification Section 1.1).",
-            "schema": {
-              "$ref": "#/definitions/v1ErrorResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "garageId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "query",
-            "description": "Matches SKU, name or brand (answered by Catalogue).",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "categoryId",
-            "description": "Also matches the sub-categories of this category.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "brand",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "lowStock",
-            "description": "Only parts at or below their reorder threshold.",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "includeInactive",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
-        "tags": [
-          "InventoryService"
-        ]
-      }
-    },
-    "/api/v1/garages/{garageId}/inventory-items/{itemId}/suppliers": {
-      "get": {
-        "summary": "The usual suppliers of a part with their code, last cost and default\n(FR-INV-19, Release 7.0).",
-        "operationId": "InventoryService_GetItemSuppliers",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1GetItemSuppliersResponse"
-            }
-          },
-          "default": {
-            "description": "Error (API Specification Section 1.1).",
-            "schema": {
-              "$ref": "#/definitions/v1ErrorResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "garageId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "itemId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "InventoryService"
-        ]
-      },
-      "put": {
-        "operationId": "InventoryService_PutItemSuppliers",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1PutItemSuppliersResponse"
-            }
-          },
-          "default": {
-            "description": "Error (API Specification Section 1.1).",
-            "schema": {
-              "$ref": "#/definitions/v1ErrorResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "garageId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "itemId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/InventoryServicePutItemSuppliersBody"
-            }
-          }
-        ],
-        "tags": [
-          "InventoryService"
-        ]
-      }
-    },
-    "/api/v1/garages/{garageId}/inventory-items/{partId}": {
-      "get": {
-        "operationId": "InventoryService_GetStockLevel",
-        "responses": {
-          "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/v1StockLevel"
-            }
-          },
-          "default": {
-            "description": "Error (API Specification Section 1.1).",
-            "schema": {
-              "$ref": "#/definitions/v1ErrorResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "garageId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "partId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "InventoryService"
-        ]
-      }
-    },
     "/api/v1/garages/{garageId}/invitations": {
       "get": {
         "operationId": "InvitationService_ListInvitations",
@@ -3161,6 +2968,85 @@
         ],
         "tags": [
           "CatalogueService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/parts/{partId}/suppliers": {
+      "get": {
+        "summary": "The usual suppliers of a part with their code, last cost and default\n(FR-INV-19, Release 7.0).",
+        "operationId": "InventoryService_GetPartSuppliers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetPartSuppliersResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      },
+      "put": {
+        "operationId": "InventoryService_PutPartSuppliers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PutPartSuppliersResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InventoryServicePutPartSuppliersBody"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
         ]
       }
     },
@@ -4241,7 +4127,7 @@
             "type": "string"
           },
           {
-            "name": "itemId",
+            "name": "partId",
             "in": "query",
             "required": false,
             "type": "string"
@@ -4302,7 +4188,7 @@
             "type": "string"
           },
           {
-            "name": "itemId",
+            "name": "partId",
             "description": "Same optional filter as InventoryService.ListStockTransactions.",
             "in": "query",
             "required": false,
@@ -5079,6 +4965,120 @@
             "schema": {
               "$ref": "#/definitions/InventoryServicePostStockIssueBody"
             }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/stock-levels": {
+      "get": {
+        "summary": "The stock-on-hand list (FR-INV-03): parts with their balances.",
+        "operationId": "InventoryService_ListStockLevels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListStockLevelsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "query",
+            "description": "Matches SKU, name or brand (answered by Catalogue).",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "categoryId",
+            "description": "Also matches the sub-categories of this category.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "lowStock",
+            "description": "Only parts at or below their reorder threshold.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "includeInactive",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/stock-levels/{partId}": {
+      "get": {
+        "operationId": "InventoryService_GetStockLevel",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1StockLevel"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partId",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "tags": [
@@ -7048,14 +7048,14 @@
     "InventoryServicePostStockIssueBody": {
       "type": "object"
     },
-    "InventoryServicePutItemSuppliersBody": {
+    "InventoryServicePutPartSuppliersBody": {
       "type": "object",
       "properties": {
         "data": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1ItemSupplier"
+            "$ref": "#/definitions/v1PartSupplier"
           },
           "description": "Replaces the part's list as a whole; at most one default."
         }
@@ -8541,18 +8541,6 @@
         }
       }
     },
-    "v1GetItemSuppliersResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1ItemSupplier"
-          }
-        }
-      }
-    },
     "v1GetMeResponse": {
       "type": "object",
       "properties": {
@@ -8619,6 +8607,18 @@
       "properties": {
         "part": {
           "$ref": "#/definitions/v1Part"
+        }
+      }
+    },
+    "v1GetPartSuppliersResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PartSupplier"
+          }
         }
       }
     },
@@ -8875,15 +8875,14 @@
           "type": "string",
           "readOnly": true
         },
-        "itemId": {
-          "type": "string",
-          "description": "The part's id (the JSON field keeps the name item_id)."
+        "partId": {
+          "type": "string"
         },
-        "itemSku": {
+        "partSku": {
           "type": "string",
           "readOnly": true
         },
-        "itemName": {
+        "partName": {
           "type": "string",
           "readOnly": true
         },
@@ -8931,7 +8930,7 @@
       },
       "description": "GoodsReceiptLine is one part on a goods receipt. Every line carries its\nsupplier: the header's default_supplier_id is inherited by new lines,\nand the part's default supplier (FR-INV-19) pre-fills it.",
       "required": [
-        "itemId"
+        "partId"
       ]
     },
     "v1GoodsReceiptStatus": {
@@ -9010,35 +9009,6 @@
         "INVITATION_STATUS_DECLINED",
         "INVITATION_STATUS_REVOKED",
         "INVITATION_STATUS_EXPIRED"
-      ]
-    },
-    "v1ItemSupplier": {
-      "type": "object",
-      "properties": {
-        "supplierId": {
-          "type": "string"
-        },
-        "supplierName": {
-          "type": "string",
-          "readOnly": true
-        },
-        "supplierSku": {
-          "type": "string",
-          "description": "The supplier's own code for the part."
-        },
-        "lastUnitCost": {
-          "type": "string",
-          "format": "int64",
-          "description": "The last cost paid per base unit, whole VND; omitted when never paid.",
-          "readOnly": true
-        },
-        "isDefault": {
-          "type": "boolean"
-        }
-      },
-      "description": "ItemSupplier is one usual supplier of a part with the supplier's own code\nand the last cost paid (FR-INV-19). One of them is the default that\npre-fills a receipt line's supplier.",
-      "required": [
-        "supplierId"
       ]
     },
     "v1ListAllPlansResponse": {
@@ -9778,6 +9748,35 @@
       },
       "description": "PartImage is one image of a part (FR-CAT-04), a file of kind part_image."
     },
+    "v1PartSupplier": {
+      "type": "object",
+      "properties": {
+        "supplierId": {
+          "type": "string"
+        },
+        "supplierName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "supplierSku": {
+          "type": "string",
+          "description": "The supplier's own code for the part."
+        },
+        "lastUnitCost": {
+          "type": "string",
+          "format": "int64",
+          "description": "The last cost paid per base unit, whole VND; omitted when never paid.",
+          "readOnly": true
+        },
+        "isDefault": {
+          "type": "boolean"
+        }
+      },
+      "description": "PartSupplier is one usual supplier of a part with the supplier's own code\nand the last cost paid (FR-INV-19). One of them is the default that\npre-fills a receipt line's supplier.",
+      "required": [
+        "supplierId"
+      ]
+    },
     "v1PaymentEvidence": {
       "type": "object",
       "properties": {
@@ -10187,15 +10186,15 @@
           "type": "string",
           "readOnly": true
         },
-        "itemId": {
+        "partId": {
           "type": "string",
           "readOnly": true
         },
-        "itemSku": {
+        "partSku": {
           "type": "string",
           "readOnly": true
         },
-        "itemName": {
+        "partName": {
           "type": "string",
           "readOnly": true
         },
@@ -10223,14 +10222,14 @@
       },
       "description": "PurchaseLine is one line of a completed goods receipt in the purchases\nreport (FR-INV-19)."
     },
-    "v1PutItemSuppliersResponse": {
+    "v1PutPartSuppliersResponse": {
       "type": "object",
       "properties": {
         "data": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1ItemSupplier"
+            "$ref": "#/definitions/v1PartSupplier"
           }
         }
       }
@@ -11283,15 +11282,15 @@
           "type": "string",
           "readOnly": true
         },
-        "itemId": {
+        "partId": {
           "type": "string",
           "readOnly": true
         },
-        "itemSku": {
+        "partSku": {
           "type": "string",
           "readOnly": true
         },
-        "itemName": {
+        "partName": {
           "type": "string",
           "readOnly": true
         },
@@ -11429,15 +11428,15 @@
           "type": "string",
           "readOnly": true
         },
-        "itemId": {
+        "partId": {
           "type": "string",
           "readOnly": true
         },
-        "itemSku": {
+        "partSku": {
           "type": "string",
           "readOnly": true
         },
-        "itemName": {
+        "partName": {
           "type": "string",
           "readOnly": true
         },
@@ -11532,15 +11531,15 @@
     "v1StockValuationLine": {
       "type": "object",
       "properties": {
-        "itemId": {
+        "partId": {
           "type": "string",
           "readOnly": true
         },
-        "itemSku": {
+        "partSku": {
           "type": "string",
           "readOnly": true
         },
-        "itemName": {
+        "partName": {
           "type": "string",
           "readOnly": true
         },

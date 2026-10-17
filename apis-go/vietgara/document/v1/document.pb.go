@@ -244,7 +244,7 @@ type ExportStockMovementsExcelRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	// Same optional filter as InventoryService.ListStockTransactions.
-	ItemId        string `protobuf:"bytes,2,opt,name=item_id,json=itemId,proto3" json:"item_id,omitempty"`
+	PartId        string `protobuf:"bytes,2,opt,name=part_id,json=partId,proto3" json:"part_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -286,9 +286,9 @@ func (x *ExportStockMovementsExcelRequest) GetGarageId() string {
 	return ""
 }
 
-func (x *ExportStockMovementsExcelRequest) GetItemId() string {
+func (x *ExportStockMovementsExcelRequest) GetPartId() string {
 	if x != nil {
-		return x.ItemId
+		return x.PartId
 	}
 	return ""
 }
@@ -612,7 +612,7 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"payment_id\x18\x03 \x01(\tB\x03\xe0A\x02R\tpaymentId\"]\n" +
 	" ExportStockMovementsExcelRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x17\n" +
-	"\aitem_id\x18\x02 \x01(\tR\x06itemId\"\xae\x01\n" +
+	"\apart_id\x18\x02 \x01(\tR\x06partId\"\xae\x01\n" +
 	"\x19ExportRevenueExcelRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12A\n" +
 	"\x06period\x18\x02 \x01(\x0e2$.vietgara.reporting.v1.RevenuePeriodB\x03\xe0A\x02R\x06period\x12\x17\n" +
