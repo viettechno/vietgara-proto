@@ -19,10 +19,21 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	InventoryService_ListStockLevels_FullMethodName       = "/vietgara.inventory.v1.InventoryService/ListStockLevels"
-	InventoryService_GetStockLevel_FullMethodName         = "/vietgara.inventory.v1.InventoryService/GetStockLevel"
-	InventoryService_CreateStockReceipt_FullMethodName    = "/vietgara.inventory.v1.InventoryService/CreateStockReceipt"
-	InventoryService_ListStockTransactions_FullMethodName = "/vietgara.inventory.v1.InventoryService/ListStockTransactions"
+	InventoryService_ListStockLevels_FullMethodName          = "/vietgara.inventory.v1.InventoryService/ListStockLevels"
+	InventoryService_GetStockLevel_FullMethodName            = "/vietgara.inventory.v1.InventoryService/GetStockLevel"
+	InventoryService_ListStockTransactions_FullMethodName    = "/vietgara.inventory.v1.InventoryService/ListStockTransactions"
+	InventoryService_ListGoodsReceipts_FullMethodName        = "/vietgara.inventory.v1.InventoryService/ListGoodsReceipts"
+	InventoryService_GetGoodsReceipt_FullMethodName          = "/vietgara.inventory.v1.InventoryService/GetGoodsReceipt"
+	InventoryService_CreateGoodsReceipt_FullMethodName       = "/vietgara.inventory.v1.InventoryService/CreateGoodsReceipt"
+	InventoryService_UpdateGoodsReceipt_FullMethodName       = "/vietgara.inventory.v1.InventoryService/UpdateGoodsReceipt"
+	InventoryService_CompleteGoodsReceipt_FullMethodName     = "/vietgara.inventory.v1.InventoryService/CompleteGoodsReceipt"
+	InventoryService_CancelGoodsReceipt_FullMethodName       = "/vietgara.inventory.v1.InventoryService/CancelGoodsReceipt"
+	InventoryService_GetPartSuppliers_FullMethodName         = "/vietgara.inventory.v1.InventoryService/GetPartSuppliers"
+	InventoryService_PutPartSuppliers_FullMethodName         = "/vietgara.inventory.v1.InventoryService/PutPartSuppliers"
+	InventoryService_GetRepairOrderStockIssue_FullMethodName = "/vietgara.inventory.v1.InventoryService/GetRepairOrderStockIssue"
+	InventoryService_PostStockIssue_FullMethodName           = "/vietgara.inventory.v1.InventoryService/PostStockIssue"
+	InventoryService_GetPurchasesReport_FullMethodName       = "/vietgara.inventory.v1.InventoryService/GetPurchasesReport"
+	InventoryService_GetStockValuationReport_FullMethodName  = "/vietgara.inventory.v1.InventoryService/GetStockValuationReport"
 )
 
 // InventoryServiceClient is the client API for InventoryService service.
@@ -36,11 +47,44 @@ type InventoryServiceClient interface {
 	// The stock-on-hand list (FR-INV-03): parts with their balances.
 	ListStockLevels(ctx context.Context, in *ListStockLevelsRequest, opts ...grpc.CallOption) (*ListStockLevelsResponse, error)
 	GetStockLevel(ctx context.Context, in *GetStockLevelRequest, opts ...grpc.CallOption) (*GetStockLevelResponse, error)
-	// Records a goods-receipt note from a supplier (FR-INV-01), increasing
-	// stock on hand.
-	CreateStockReceipt(ctx context.Context, in *CreateStockReceiptRequest, opts ...grpc.CallOption) (*CreateStockReceiptResponse, error)
 	// The stock in/out/on-hand movement report (FR-INV-05).
 	ListStockTransactions(ctx context.Context, in *ListStockTransactionsRequest, opts ...grpc.CallOption) (*ListStockTransactionsResponse, error)
+	// Goods receipt documents (FR-INV-06, Release 7.0): a multi-line receipt
+	// with a supplier per line. Reads need PERMISSION_INVENTORY_READ,
+	// changes PERMISSION_INVENTORY_WRITE.
+	ListGoodsReceipts(ctx context.Context, in *ListGoodsReceiptsRequest, opts ...grpc.CallOption) (*ListGoodsReceiptsResponse, error)
+	GetGoodsReceipt(ctx context.Context, in *GetGoodsReceiptRequest, opts ...grpc.CallOption) (*GetGoodsReceiptResponse, error)
+	CreateGoodsReceipt(ctx context.Context, in *CreateGoodsReceiptRequest, opts ...grpc.CallOption) (*CreateGoodsReceiptResponse, error)
+	UpdateGoodsReceipt(ctx context.Context, in *UpdateGoodsReceiptRequest, opts ...grpc.CallOption) (*UpdateGoodsReceiptResponse, error)
+	// Completing posts the receipt's stock movements; refused with
+	// SUPPLIER_REQUIRED while a line has no supplier and with
+	// GOODS_RECEIPT_NOT_DRAFT unless the receipt is a draft.
+	CompleteGoodsReceipt(ctx context.Context, in *CompleteGoodsReceiptRequest, opts ...grpc.CallOption) (*CompleteGoodsReceiptResponse, error)
+	// Cancelling a draft just closes it. Cancelling a completed receipt
+	// reverses its stock movements, and is refused with
+	// INSUFFICIENT_STOCK_TO_REVERSE when the reversal would take a part below
+	// zero. A cancelled receipt cannot be cancelled again
+	// (GOODS_RECEIPT_ALREADY_CANCELLED).
+	CancelGoodsReceipt(ctx context.Context, in *CancelGoodsReceiptRequest, opts ...grpc.CallOption) (*CancelGoodsReceiptResponse, error)
+	// The usual suppliers of a part with their code, last cost and default
+	// (FR-INV-19, Release 7.0).
+	GetPartSuppliers(ctx context.Context, in *GetPartSuppliersRequest, opts ...grpc.CallOption) (*GetPartSuppliersResponse, error)
+	PutPartSuppliers(ctx context.Context, in *PutPartSuppliersRequest, opts ...grpc.CallOption) (*PutPartSuppliersResponse, error)
+	// The repair order's stock issue document (FR-INV-20, Release 7.0),
+	// created with the order and, while a draft, following its part lines.
+	GetRepairOrderStockIssue(ctx context.Context, in *GetRepairOrderStockIssueRequest, opts ...grpc.CallOption) (*GetRepairOrderStockIssueResponse, error)
+	// Posts the issue now ("issue now"); otherwise the repair order's
+	// closing posts it. A stock issue has no cancel RPC: the repair order
+	// cancels its draft issue.
+	PostStockIssue(ctx context.Context, in *PostStockIssueRequest, opts ...grpc.CallOption) (*PostStockIssueResponse, error)
+	// Purchases by supplier and period (FR-INV-19), from completed goods
+	// receipts. Needs PERMISSION_INVENTORY_COST_READ; without it the whole call
+	// is refused with PERMISSION_DENIED (its cost fields are not omitted).
+	GetPurchasesReport(ctx context.Context, in *GetPurchasesReportRequest, opts ...grpc.CallOption) (*GetPurchasesReportResponse, error)
+	// Quantity and value per part and category at a date (FR-INV-07). Needs
+	// PERMISSION_INVENTORY_COST_READ; without it the whole call is refused
+	// with PERMISSION_DENIED (its cost fields are not omitted).
+	GetStockValuationReport(ctx context.Context, in *GetStockValuationReportRequest, opts ...grpc.CallOption) (*GetStockValuationReportResponse, error)
 }
 
 type inventoryServiceClient struct {
@@ -71,20 +115,130 @@ func (c *inventoryServiceClient) GetStockLevel(ctx context.Context, in *GetStock
 	return out, nil
 }
 
-func (c *inventoryServiceClient) CreateStockReceipt(ctx context.Context, in *CreateStockReceiptRequest, opts ...grpc.CallOption) (*CreateStockReceiptResponse, error) {
+func (c *inventoryServiceClient) ListStockTransactions(ctx context.Context, in *ListStockTransactionsRequest, opts ...grpc.CallOption) (*ListStockTransactionsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateStockReceiptResponse)
-	err := c.cc.Invoke(ctx, InventoryService_CreateStockReceipt_FullMethodName, in, out, cOpts...)
+	out := new(ListStockTransactionsResponse)
+	err := c.cc.Invoke(ctx, InventoryService_ListStockTransactions_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *inventoryServiceClient) ListStockTransactions(ctx context.Context, in *ListStockTransactionsRequest, opts ...grpc.CallOption) (*ListStockTransactionsResponse, error) {
+func (c *inventoryServiceClient) ListGoodsReceipts(ctx context.Context, in *ListGoodsReceiptsRequest, opts ...grpc.CallOption) (*ListGoodsReceiptsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListStockTransactionsResponse)
-	err := c.cc.Invoke(ctx, InventoryService_ListStockTransactions_FullMethodName, in, out, cOpts...)
+	out := new(ListGoodsReceiptsResponse)
+	err := c.cc.Invoke(ctx, InventoryService_ListGoodsReceipts_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) GetGoodsReceipt(ctx context.Context, in *GetGoodsReceiptRequest, opts ...grpc.CallOption) (*GetGoodsReceiptResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetGoodsReceiptResponse)
+	err := c.cc.Invoke(ctx, InventoryService_GetGoodsReceipt_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) CreateGoodsReceipt(ctx context.Context, in *CreateGoodsReceiptRequest, opts ...grpc.CallOption) (*CreateGoodsReceiptResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateGoodsReceiptResponse)
+	err := c.cc.Invoke(ctx, InventoryService_CreateGoodsReceipt_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) UpdateGoodsReceipt(ctx context.Context, in *UpdateGoodsReceiptRequest, opts ...grpc.CallOption) (*UpdateGoodsReceiptResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateGoodsReceiptResponse)
+	err := c.cc.Invoke(ctx, InventoryService_UpdateGoodsReceipt_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) CompleteGoodsReceipt(ctx context.Context, in *CompleteGoodsReceiptRequest, opts ...grpc.CallOption) (*CompleteGoodsReceiptResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CompleteGoodsReceiptResponse)
+	err := c.cc.Invoke(ctx, InventoryService_CompleteGoodsReceipt_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) CancelGoodsReceipt(ctx context.Context, in *CancelGoodsReceiptRequest, opts ...grpc.CallOption) (*CancelGoodsReceiptResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelGoodsReceiptResponse)
+	err := c.cc.Invoke(ctx, InventoryService_CancelGoodsReceipt_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) GetPartSuppliers(ctx context.Context, in *GetPartSuppliersRequest, opts ...grpc.CallOption) (*GetPartSuppliersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPartSuppliersResponse)
+	err := c.cc.Invoke(ctx, InventoryService_GetPartSuppliers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) PutPartSuppliers(ctx context.Context, in *PutPartSuppliersRequest, opts ...grpc.CallOption) (*PutPartSuppliersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PutPartSuppliersResponse)
+	err := c.cc.Invoke(ctx, InventoryService_PutPartSuppliers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) GetRepairOrderStockIssue(ctx context.Context, in *GetRepairOrderStockIssueRequest, opts ...grpc.CallOption) (*GetRepairOrderStockIssueResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRepairOrderStockIssueResponse)
+	err := c.cc.Invoke(ctx, InventoryService_GetRepairOrderStockIssue_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) PostStockIssue(ctx context.Context, in *PostStockIssueRequest, opts ...grpc.CallOption) (*PostStockIssueResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PostStockIssueResponse)
+	err := c.cc.Invoke(ctx, InventoryService_PostStockIssue_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) GetPurchasesReport(ctx context.Context, in *GetPurchasesReportRequest, opts ...grpc.CallOption) (*GetPurchasesReportResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPurchasesReportResponse)
+	err := c.cc.Invoke(ctx, InventoryService_GetPurchasesReport_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) GetStockValuationReport(ctx context.Context, in *GetStockValuationReportRequest, opts ...grpc.CallOption) (*GetStockValuationReportResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetStockValuationReportResponse)
+	err := c.cc.Invoke(ctx, InventoryService_GetStockValuationReport_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -102,11 +256,44 @@ type InventoryServiceServer interface {
 	// The stock-on-hand list (FR-INV-03): parts with their balances.
 	ListStockLevels(context.Context, *ListStockLevelsRequest) (*ListStockLevelsResponse, error)
 	GetStockLevel(context.Context, *GetStockLevelRequest) (*GetStockLevelResponse, error)
-	// Records a goods-receipt note from a supplier (FR-INV-01), increasing
-	// stock on hand.
-	CreateStockReceipt(context.Context, *CreateStockReceiptRequest) (*CreateStockReceiptResponse, error)
 	// The stock in/out/on-hand movement report (FR-INV-05).
 	ListStockTransactions(context.Context, *ListStockTransactionsRequest) (*ListStockTransactionsResponse, error)
+	// Goods receipt documents (FR-INV-06, Release 7.0): a multi-line receipt
+	// with a supplier per line. Reads need PERMISSION_INVENTORY_READ,
+	// changes PERMISSION_INVENTORY_WRITE.
+	ListGoodsReceipts(context.Context, *ListGoodsReceiptsRequest) (*ListGoodsReceiptsResponse, error)
+	GetGoodsReceipt(context.Context, *GetGoodsReceiptRequest) (*GetGoodsReceiptResponse, error)
+	CreateGoodsReceipt(context.Context, *CreateGoodsReceiptRequest) (*CreateGoodsReceiptResponse, error)
+	UpdateGoodsReceipt(context.Context, *UpdateGoodsReceiptRequest) (*UpdateGoodsReceiptResponse, error)
+	// Completing posts the receipt's stock movements; refused with
+	// SUPPLIER_REQUIRED while a line has no supplier and with
+	// GOODS_RECEIPT_NOT_DRAFT unless the receipt is a draft.
+	CompleteGoodsReceipt(context.Context, *CompleteGoodsReceiptRequest) (*CompleteGoodsReceiptResponse, error)
+	// Cancelling a draft just closes it. Cancelling a completed receipt
+	// reverses its stock movements, and is refused with
+	// INSUFFICIENT_STOCK_TO_REVERSE when the reversal would take a part below
+	// zero. A cancelled receipt cannot be cancelled again
+	// (GOODS_RECEIPT_ALREADY_CANCELLED).
+	CancelGoodsReceipt(context.Context, *CancelGoodsReceiptRequest) (*CancelGoodsReceiptResponse, error)
+	// The usual suppliers of a part with their code, last cost and default
+	// (FR-INV-19, Release 7.0).
+	GetPartSuppliers(context.Context, *GetPartSuppliersRequest) (*GetPartSuppliersResponse, error)
+	PutPartSuppliers(context.Context, *PutPartSuppliersRequest) (*PutPartSuppliersResponse, error)
+	// The repair order's stock issue document (FR-INV-20, Release 7.0),
+	// created with the order and, while a draft, following its part lines.
+	GetRepairOrderStockIssue(context.Context, *GetRepairOrderStockIssueRequest) (*GetRepairOrderStockIssueResponse, error)
+	// Posts the issue now ("issue now"); otherwise the repair order's
+	// closing posts it. A stock issue has no cancel RPC: the repair order
+	// cancels its draft issue.
+	PostStockIssue(context.Context, *PostStockIssueRequest) (*PostStockIssueResponse, error)
+	// Purchases by supplier and period (FR-INV-19), from completed goods
+	// receipts. Needs PERMISSION_INVENTORY_COST_READ; without it the whole call
+	// is refused with PERMISSION_DENIED (its cost fields are not omitted).
+	GetPurchasesReport(context.Context, *GetPurchasesReportRequest) (*GetPurchasesReportResponse, error)
+	// Quantity and value per part and category at a date (FR-INV-07). Needs
+	// PERMISSION_INVENTORY_COST_READ; without it the whole call is refused
+	// with PERMISSION_DENIED (its cost fields are not omitted).
+	GetStockValuationReport(context.Context, *GetStockValuationReportRequest) (*GetStockValuationReportResponse, error)
 	mustEmbedUnimplementedInventoryServiceServer()
 }
 
@@ -123,11 +310,44 @@ func (UnimplementedInventoryServiceServer) ListStockLevels(context.Context, *Lis
 func (UnimplementedInventoryServiceServer) GetStockLevel(context.Context, *GetStockLevelRequest) (*GetStockLevelResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetStockLevel not implemented")
 }
-func (UnimplementedInventoryServiceServer) CreateStockReceipt(context.Context, *CreateStockReceiptRequest) (*CreateStockReceiptResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method CreateStockReceipt not implemented")
-}
 func (UnimplementedInventoryServiceServer) ListStockTransactions(context.Context, *ListStockTransactionsRequest) (*ListStockTransactionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListStockTransactions not implemented")
+}
+func (UnimplementedInventoryServiceServer) ListGoodsReceipts(context.Context, *ListGoodsReceiptsRequest) (*ListGoodsReceiptsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListGoodsReceipts not implemented")
+}
+func (UnimplementedInventoryServiceServer) GetGoodsReceipt(context.Context, *GetGoodsReceiptRequest) (*GetGoodsReceiptResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetGoodsReceipt not implemented")
+}
+func (UnimplementedInventoryServiceServer) CreateGoodsReceipt(context.Context, *CreateGoodsReceiptRequest) (*CreateGoodsReceiptResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateGoodsReceipt not implemented")
+}
+func (UnimplementedInventoryServiceServer) UpdateGoodsReceipt(context.Context, *UpdateGoodsReceiptRequest) (*UpdateGoodsReceiptResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateGoodsReceipt not implemented")
+}
+func (UnimplementedInventoryServiceServer) CompleteGoodsReceipt(context.Context, *CompleteGoodsReceiptRequest) (*CompleteGoodsReceiptResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteGoodsReceipt not implemented")
+}
+func (UnimplementedInventoryServiceServer) CancelGoodsReceipt(context.Context, *CancelGoodsReceiptRequest) (*CancelGoodsReceiptResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelGoodsReceipt not implemented")
+}
+func (UnimplementedInventoryServiceServer) GetPartSuppliers(context.Context, *GetPartSuppliersRequest) (*GetPartSuppliersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPartSuppliers not implemented")
+}
+func (UnimplementedInventoryServiceServer) PutPartSuppliers(context.Context, *PutPartSuppliersRequest) (*PutPartSuppliersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method PutPartSuppliers not implemented")
+}
+func (UnimplementedInventoryServiceServer) GetRepairOrderStockIssue(context.Context, *GetRepairOrderStockIssueRequest) (*GetRepairOrderStockIssueResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRepairOrderStockIssue not implemented")
+}
+func (UnimplementedInventoryServiceServer) PostStockIssue(context.Context, *PostStockIssueRequest) (*PostStockIssueResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method PostStockIssue not implemented")
+}
+func (UnimplementedInventoryServiceServer) GetPurchasesReport(context.Context, *GetPurchasesReportRequest) (*GetPurchasesReportResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPurchasesReport not implemented")
+}
+func (UnimplementedInventoryServiceServer) GetStockValuationReport(context.Context, *GetStockValuationReportRequest) (*GetStockValuationReportResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetStockValuationReport not implemented")
 }
 func (UnimplementedInventoryServiceServer) mustEmbedUnimplementedInventoryServiceServer() {}
 func (UnimplementedInventoryServiceServer) testEmbeddedByValue()                          {}
@@ -186,24 +406,6 @@ func _InventoryService_GetStockLevel_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _InventoryService_CreateStockReceipt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateStockReceiptRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(InventoryServiceServer).CreateStockReceipt(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: InventoryService_CreateStockReceipt_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InventoryServiceServer).CreateStockReceipt(ctx, req.(*CreateStockReceiptRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _InventoryService_ListStockTransactions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListStockTransactionsRequest)
 	if err := dec(in); err != nil {
@@ -218,6 +420,222 @@ func _InventoryService_ListStockTransactions_Handler(srv interface{}, ctx contex
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(InventoryServiceServer).ListStockTransactions(ctx, req.(*ListStockTransactionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_ListGoodsReceipts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListGoodsReceiptsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).ListGoodsReceipts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_ListGoodsReceipts_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).ListGoodsReceipts(ctx, req.(*ListGoodsReceiptsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_GetGoodsReceipt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGoodsReceiptRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).GetGoodsReceipt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_GetGoodsReceipt_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).GetGoodsReceipt(ctx, req.(*GetGoodsReceiptRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_CreateGoodsReceipt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateGoodsReceiptRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).CreateGoodsReceipt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_CreateGoodsReceipt_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).CreateGoodsReceipt(ctx, req.(*CreateGoodsReceiptRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_UpdateGoodsReceipt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateGoodsReceiptRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).UpdateGoodsReceipt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_UpdateGoodsReceipt_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).UpdateGoodsReceipt(ctx, req.(*UpdateGoodsReceiptRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_CompleteGoodsReceipt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompleteGoodsReceiptRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).CompleteGoodsReceipt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_CompleteGoodsReceipt_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).CompleteGoodsReceipt(ctx, req.(*CompleteGoodsReceiptRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_CancelGoodsReceipt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelGoodsReceiptRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).CancelGoodsReceipt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_CancelGoodsReceipt_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).CancelGoodsReceipt(ctx, req.(*CancelGoodsReceiptRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_GetPartSuppliers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPartSuppliersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).GetPartSuppliers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_GetPartSuppliers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).GetPartSuppliers(ctx, req.(*GetPartSuppliersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_PutPartSuppliers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutPartSuppliersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).PutPartSuppliers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_PutPartSuppliers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).PutPartSuppliers(ctx, req.(*PutPartSuppliersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_GetRepairOrderStockIssue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRepairOrderStockIssueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).GetRepairOrderStockIssue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_GetRepairOrderStockIssue_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).GetRepairOrderStockIssue(ctx, req.(*GetRepairOrderStockIssueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_PostStockIssue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PostStockIssueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).PostStockIssue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_PostStockIssue_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).PostStockIssue(ctx, req.(*PostStockIssueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_GetPurchasesReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPurchasesReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).GetPurchasesReport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_GetPurchasesReport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).GetPurchasesReport(ctx, req.(*GetPurchasesReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_GetStockValuationReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStockValuationReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).GetStockValuationReport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_GetStockValuationReport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).GetStockValuationReport(ctx, req.(*GetStockValuationReportRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -238,12 +656,56 @@ var InventoryService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _InventoryService_GetStockLevel_Handler,
 		},
 		{
-			MethodName: "CreateStockReceipt",
-			Handler:    _InventoryService_CreateStockReceipt_Handler,
-		},
-		{
 			MethodName: "ListStockTransactions",
 			Handler:    _InventoryService_ListStockTransactions_Handler,
+		},
+		{
+			MethodName: "ListGoodsReceipts",
+			Handler:    _InventoryService_ListGoodsReceipts_Handler,
+		},
+		{
+			MethodName: "GetGoodsReceipt",
+			Handler:    _InventoryService_GetGoodsReceipt_Handler,
+		},
+		{
+			MethodName: "CreateGoodsReceipt",
+			Handler:    _InventoryService_CreateGoodsReceipt_Handler,
+		},
+		{
+			MethodName: "UpdateGoodsReceipt",
+			Handler:    _InventoryService_UpdateGoodsReceipt_Handler,
+		},
+		{
+			MethodName: "CompleteGoodsReceipt",
+			Handler:    _InventoryService_CompleteGoodsReceipt_Handler,
+		},
+		{
+			MethodName: "CancelGoodsReceipt",
+			Handler:    _InventoryService_CancelGoodsReceipt_Handler,
+		},
+		{
+			MethodName: "GetPartSuppliers",
+			Handler:    _InventoryService_GetPartSuppliers_Handler,
+		},
+		{
+			MethodName: "PutPartSuppliers",
+			Handler:    _InventoryService_PutPartSuppliers_Handler,
+		},
+		{
+			MethodName: "GetRepairOrderStockIssue",
+			Handler:    _InventoryService_GetRepairOrderStockIssue_Handler,
+		},
+		{
+			MethodName: "PostStockIssue",
+			Handler:    _InventoryService_PostStockIssue_Handler,
+		},
+		{
+			MethodName: "GetPurchasesReport",
+			Handler:    _InventoryService_GetPurchasesReport_Handler,
+		},
+		{
+			MethodName: "GetStockValuationReport",
+			Handler:    _InventoryService_GetStockValuationReport_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

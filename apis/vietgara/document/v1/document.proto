@@ -33,7 +33,7 @@ message ExportPaymentVoucherPdfRequest {
 message ExportStockMovementsExcelRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   // Same optional filter as InventoryService.ListStockTransactions.
-  string item_id = 2;
+  string part_id = 2;
 }
 
 message ExportRevenueExcelRequest {
@@ -43,6 +43,32 @@ message ExportRevenueExcelRequest {
   string from = 3 [(google.api.field_behavior) = REQUIRED];
   // Exclusive, "YYYY-MM-DD".
   string to = 4 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ExportGoodsReceiptPdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string goods_receipt_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ExportStockIssuePdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ExportPurchasesExcelRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Same optional filters as InventoryService.GetPurchasesReport.
+  string supplier_id = 2;
+  // Inclusive, "YYYY-MM-DD" in the garage's timezone.
+  string from = 3;
+  // Exclusive, "YYYY-MM-DD".
+  string to = 4;
+}
+
+message ExportStockValuationExcelRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // The date to value at, "YYYY-MM-DD"; empty means today.
+  string at = 2;
 }
 
 // DocumentService renders PDFs and Excel reports on request (FRD 3.13).
@@ -88,5 +114,30 @@ service DocumentService {
   // (ReportingService.GetRevenueReport) as an Excel workbook.
   rpc ExportRevenueExcel(ExportRevenueExcelRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/revenue/excel"};
+  }
+
+  // FR-INV-06 (Release 7.0): a goods receipt document as a PDF.
+  rpc ExportGoodsReceiptPdf(ExportGoodsReceiptPdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}/pdf"};
+  }
+
+  // FR-INV-20 (Release 7.0): the repair order's stock issue document
+  // (phiếu xuất kho) as a PDF.
+  rpc ExportStockIssuePdf(ExportStockIssuePdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue/pdf"};
+  }
+
+  // FR-INV-19 (Release 7.0): the purchases-by-supplier report
+  // (InventoryService.GetPurchasesReport) as an Excel workbook. Needs
+  // inventory.cost.read.
+  rpc ExportPurchasesExcel(ExportPurchasesExcelRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/purchases/excel"};
+  }
+
+  // FR-INV-07 (Release 7.0): the stock valuation report
+  // (InventoryService.GetStockValuationReport) as an Excel workbook. Needs
+  // inventory.cost.read.
+  rpc ExportStockValuationExcel(ExportStockValuationExcelRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/stock-valuation/excel"};
   }
 }

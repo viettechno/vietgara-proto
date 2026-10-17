@@ -1997,15 +1997,15 @@
         ]
       }
     },
-    "/api/v1/garages/{garageId}/inventory-items": {
+    "/api/v1/garages/{garageId}/goods-receipts": {
       "get": {
-        "summary": "The stock-on-hand list (FR-INV-03): parts with their balances.",
-        "operationId": "InventoryService_ListStockLevels",
+        "summary": "Goods receipt documents (FR-INV-06, Release 7.0): a multi-line receipt\nwith a supplier per line. Reads need PERMISSION_INVENTORY_READ,\nchanges PERMISSION_INVENTORY_WRITE.",
+        "operationId": "InventoryService_ListGoodsReceipts",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ListStockLevelsResponse"
+              "$ref": "#/definitions/v1ListGoodsReceiptsResponse"
             }
           },
           "default": {
@@ -2024,36 +2024,28 @@
           },
           {
             "name": "query",
-            "description": "Matches SKU, name or brand (answered by Catalogue).",
+            "description": "Matches the number, delivery note number or notes.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
-            "name": "categoryId",
-            "description": "Also matches the sub-categories of this category.",
+            "name": "supplierId",
+            "description": "Only receipts with a line from this supplier.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
-            "name": "brand",
+            "name": "status",
             "in": "query",
             "required": false,
-            "type": "string"
-          },
-          {
-            "name": "lowStock",
-            "description": "Only parts at or below their reorder threshold.",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "includeInactive",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
+            "type": "string",
+            "enum": [
+              "GOODS_RECEIPT_STATUS_DRAFT",
+              "GOODS_RECEIPT_STATUS_COMPLETED",
+              "GOODS_RECEIPT_STATUS_CANCELLED"
+            ]
           },
           {
             "name": "page",
@@ -2073,16 +2065,14 @@
         "tags": [
           "InventoryService"
         ]
-      }
-    },
-    "/api/v1/garages/{garageId}/inventory-items/{partId}": {
-      "get": {
-        "operationId": "InventoryService_GetStockLevel",
+      },
+      "post": {
+        "operationId": "InventoryService_CreateGoodsReceipt",
         "responses": {
           "200": {
             "description": "",
             "schema": {
-              "$ref": "#/definitions/v1StockLevel"
+              "$ref": "#/definitions/v1GoodsReceipt"
             }
           },
           "default": {
@@ -2100,10 +2090,217 @@
             "type": "string"
           },
           {
-            "name": "partId",
+            "name": "goodsReceipt",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1GoodsReceipt"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/goods-receipts/{goodsReceiptId}": {
+      "get": {
+        "operationId": "InventoryService_GetGoodsReceipt",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1GoodsReceipt"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "goodsReceiptId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      },
+      "patch": {
+        "operationId": "InventoryService_UpdateGoodsReceipt",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1GoodsReceipt"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "goodsReceiptId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "goodsReceipt",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1GoodsReceipt"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/goods-receipts/{goodsReceiptId}/pdf": {
+      "get": {
+        "summary": "FR-INV-06 (Release 7.0): a goods receipt document as a PDF.",
+        "operationId": "DocumentService_ExportGoodsReceiptPdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "goodsReceiptId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/goods-receipts/{goodsReceiptId}:cancel": {
+      "post": {
+        "summary": "Cancelling a draft just closes it. Cancelling a completed receipt\nreverses its stock movements, and is refused with\nINSUFFICIENT_STOCK_TO_REVERSE when the reversal would take a part below\nzero. A cancelled receipt cannot be cancelled again\n(GOODS_RECEIPT_ALREADY_CANCELLED).",
+        "operationId": "InventoryService_CancelGoodsReceipt",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1GoodsReceipt"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "goodsReceiptId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InventoryServiceCancelGoodsReceiptBody"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/goods-receipts/{goodsReceiptId}:complete": {
+      "post": {
+        "summary": "Completing posts the receipt's stock movements; refused with\nSUPPLIER_REQUIRED while a line has no supplier and with\nGOODS_RECEIPT_NOT_DRAFT unless the receipt is a draft.",
+        "operationId": "InventoryService_CompleteGoodsReceipt",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1GoodsReceipt"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "goodsReceiptId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InventoryServiceCompleteGoodsReceiptBody"
+            }
           }
         ],
         "tags": [
@@ -2771,6 +2968,85 @@
         ],
         "tags": [
           "CatalogueService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/parts/{partId}/suppliers": {
+      "get": {
+        "summary": "The usual suppliers of a part with their code, last cost and default\n(FR-INV-19, Release 7.0).",
+        "operationId": "InventoryService_GetPartSuppliers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetPartSuppliersResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      },
+      "put": {
+        "operationId": "InventoryService_PutPartSuppliers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PutPartSuppliersResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InventoryServicePutPartSuppliersBody"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
         ]
       }
     },
@@ -3535,6 +3811,183 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/stock-issue": {
+      "get": {
+        "summary": "The repair order's stock issue document (FR-INV-20, Release 7.0),\ncreated with the order and, while a draft, following its part lines.",
+        "operationId": "InventoryService_GetRepairOrderStockIssue",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetRepairOrderStockIssueResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/stock-issue/pdf": {
+      "get": {
+        "summary": "FR-INV-20 (Release 7.0): the repair order's stock issue document\n(phiếu xuất kho) as a PDF.",
+        "operationId": "DocumentService_ExportStockIssuePdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/reports/purchases": {
+      "get": {
+        "summary": "Purchases by supplier and period (FR-INV-19), from completed goods\nreceipts. Needs PERMISSION_INVENTORY_COST_READ; without it the whole call\nis refused with PERMISSION_DENIED (its cost fields are not omitted).",
+        "operationId": "InventoryService_GetPurchasesReport",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetPurchasesReportResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supplierId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "description": "Inclusive, \"YYYY-MM-DD\" in the garage's timezone.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "to",
+            "description": "Exclusive, \"YYYY-MM-DD\".",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/reports/purchases/excel": {
+      "get": {
+        "summary": "FR-INV-19 (Release 7.0): the purchases-by-supplier report\n(InventoryService.GetPurchasesReport) as an Excel workbook. Needs\ninventory.cost.read.",
+        "operationId": "DocumentService_ExportPurchasesExcel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supplierId",
+            "description": "Same optional filters as InventoryService.GetPurchasesReport.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "description": "Inclusive, \"YYYY-MM-DD\" in the garage's timezone.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "to",
+            "description": "Exclusive, \"YYYY-MM-DD\".",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/reports/revenue": {
       "get": {
         "operationId": "ReportingService_GetRevenueReport",
@@ -3674,7 +4127,7 @@
             "type": "string"
           },
           {
-            "name": "itemId",
+            "name": "partId",
             "in": "query",
             "required": false,
             "type": "string"
@@ -3735,8 +4188,84 @@
             "type": "string"
           },
           {
-            "name": "itemId",
+            "name": "partId",
             "description": "Same optional filter as InventoryService.ListStockTransactions.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/reports/stock-valuation": {
+      "get": {
+        "summary": "Quantity and value per part and category at a date (FR-INV-07). Needs\nPERMISSION_INVENTORY_COST_READ; without it the whole call is refused\nwith PERMISSION_DENIED (its cost fields are not omitted).",
+        "operationId": "InventoryService_GetStockValuationReport",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetStockValuationReportResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "at",
+            "description": "The date to value at, \"YYYY-MM-DD\" in the garage's timezone; empty\nmeans today.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/reports/stock-valuation/excel": {
+      "get": {
+        "summary": "FR-INV-07 (Release 7.0): the stock valuation report\n(InventoryService.GetStockValuationReport) as an Excel workbook. Needs\ninventory.cost.read.",
+        "operationId": "DocumentService_ExportStockValuationExcel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "at",
+            "description": "The date to value at, \"YYYY-MM-DD\"; empty means today.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -4398,15 +4927,15 @@
         ]
       }
     },
-    "/api/v1/garages/{garageId}/stock-receipts": {
+    "/api/v1/garages/{garageId}/stock-issues/{stockIssueId}:post": {
       "post": {
-        "summary": "Records a goods-receipt note from a supplier (FR-INV-01), increasing\nstock on hand.",
-        "operationId": "InventoryService_CreateStockReceipt",
+        "summary": "Posts the issue now (\"issue now\"); otherwise the repair order's\nclosing posts it. A stock issue has no cancel RPC: the repair order\ncancels its draft issue.",
+        "operationId": "InventoryService_PostStockIssue",
         "responses": {
           "200": {
-            "description": "A successful response.",
+            "description": "",
             "schema": {
-              "$ref": "#/definitions/v1CreateStockReceiptResponse"
+              "$ref": "#/definitions/v1StockIssue"
             }
           },
           "default": {
@@ -4424,12 +4953,132 @@
             "type": "string"
           },
           {
+            "name": "stockIssueId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/InventoryServiceCreateStockReceiptBody"
+              "$ref": "#/definitions/InventoryServicePostStockIssueBody"
             }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/stock-levels": {
+      "get": {
+        "summary": "The stock-on-hand list (FR-INV-03): parts with their balances.",
+        "operationId": "InventoryService_ListStockLevels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListStockLevelsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "query",
+            "description": "Matches SKU, name or brand (answered by Catalogue).",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "categoryId",
+            "description": "Also matches the sub-categories of this category.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "lowStock",
+            "description": "Only parts at or below their reorder threshold.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "includeInactive",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/stock-levels/{partId}": {
+      "get": {
+        "operationId": "InventoryService_GetStockLevel",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1StockLevel"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "partId",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "tags": [
@@ -6390,30 +7039,27 @@
         "contentType"
       ]
     },
-    "InventoryServiceCreateStockReceiptBody": {
+    "InventoryServiceCancelGoodsReceiptBody": {
+      "type": "object"
+    },
+    "InventoryServiceCompleteGoodsReceiptBody": {
+      "type": "object"
+    },
+    "InventoryServicePostStockIssueBody": {
+      "type": "object"
+    },
+    "InventoryServicePutPartSuppliersBody": {
       "type": "object",
       "properties": {
-        "itemId": {
-          "type": "string",
-          "description": "The part's id (the JSON field keeps the name item_id)."
-        },
-        "quantity": {
-          "type": "string",
-          "description": "In the base unit unless unit_id names a packaging unit of the part, in\nwhich case it is converted on save (FR-CAT-02)."
-        },
-        "unitCost": {
-          "type": "string",
-          "format": "int64",
-          "description": "VND per entered unit; stored per base unit. Zero means \"not recorded\"."
-        },
-        "unitId": {
-          "type": "string"
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PartSupplier"
+          },
+          "description": "Replaces the part's list as a whole; at most one default."
         }
-      },
-      "required": [
-        "itemId",
-        "quantity"
-      ]
+      }
     },
     "InvitationServiceAcceptInvitationBody": {
       "type": "object"
@@ -6882,6 +7528,14 @@
       },
       "description": "BillingParty is who a quote or settlement is billed to (FR-CUS-07). A\nclient sends only tax_profile_id; the other fields are the snapshot kept\non the document, so later edits of the profile never change a document\nalready issued. Without a tax_profile_id the customer is billed under\ntheir own name as a retail receipt."
     },
+    "v1CancelGoodsReceiptResponse": {
+      "type": "object",
+      "properties": {
+        "goodsReceipt": {
+          "$ref": "#/definitions/v1GoodsReceipt"
+        }
+      }
+    },
     "v1CancelPlanPaymentResponse": {
       "type": "object",
       "properties": {
@@ -6912,6 +7566,14 @@
       "properties": {
         "repairOrder": {
           "$ref": "#/definitions/v1RepairOrder"
+        }
+      }
+    },
+    "v1CompleteGoodsReceiptResponse": {
+      "type": "object",
+      "properties": {
+        "goodsReceipt": {
+          "$ref": "#/definitions/v1GoodsReceipt"
         }
       }
     },
@@ -6988,6 +7650,14 @@
       "properties": {
         "garage": {
           "$ref": "#/definitions/v1Garage"
+        }
+      }
+    },
+    "v1CreateGoodsReceiptResponse": {
+      "type": "object",
+      "properties": {
+        "goodsReceipt": {
+          "$ref": "#/definitions/v1GoodsReceipt"
         }
       }
     },
@@ -7083,18 +7753,6 @@
       "properties": {
         "group": {
           "$ref": "#/definitions/v1StaffGroup"
-        }
-      }
-    },
-    "v1CreateStockReceiptResponse": {
-      "type": "object",
-      "properties": {
-        "transaction": {
-          "$ref": "#/definitions/v1StockTransaction"
-        },
-        "stockLevel": {
-          "$ref": "#/definitions/v1StockLevel",
-          "description": "The part's stock level after this receipt."
         }
       }
     },
@@ -7748,6 +8406,10 @@
         },
         "bank": {
           "$ref": "#/definitions/v1BankDetails"
+        },
+        "stockIssueMode": {
+          "$ref": "#/definitions/v1StockIssueMode",
+          "description": "When a repair order's draft stock issue posts (FR-INV-20, Release\n7.0). Default ON_CLOSE. Changing it needs the same permission as other\ngarage settings (PERMISSION_GARAGE_WRITE)."
         }
       },
       "description": "Garage is one tenant (branch) owned by a user (FR-TEN-01/02).",
@@ -7871,6 +8533,14 @@
         }
       }
     },
+    "v1GetGoodsReceiptResponse": {
+      "type": "object",
+      "properties": {
+        "goodsReceipt": {
+          "$ref": "#/definitions/v1GoodsReceipt"
+        }
+      }
+    },
     "v1GetMeResponse": {
       "type": "object",
       "properties": {
@@ -7940,6 +8610,18 @@
         }
       }
     },
+    "v1GetPartSuppliersResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PartSupplier"
+          }
+        }
+      }
+    },
     "v1GetPaymentInstructionsResponse": {
       "type": "object",
       "properties": {
@@ -7972,6 +8654,23 @@
         }
       }
     },
+    "v1GetPurchasesReportResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PurchaseLine"
+          }
+        },
+        "totalAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Sum of every line's amount, over the requested range."
+        }
+      }
+    },
     "v1GetQuoteResponse": {
       "type": "object",
       "properties": {
@@ -7985,6 +8684,14 @@
       "properties": {
         "repairOrder": {
           "$ref": "#/definitions/v1RepairOrder"
+        }
+      }
+    },
+    "v1GetRepairOrderStockIssueResponse": {
+      "type": "object",
+      "properties": {
+        "stockIssue": {
+          "$ref": "#/definitions/v1StockIssue"
         }
       }
     },
@@ -8029,6 +8736,34 @@
         }
       }
     },
+    "v1GetStockValuationReportResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1StockValuationLine"
+          }
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1StockValuationCategory"
+          }
+        },
+        "totalValue": {
+          "type": "string",
+          "format": "int64"
+        },
+        "at": {
+          "type": "string",
+          "description": "The date valued at, \"YYYY-MM-DD\"; today when the request left it\nempty.",
+          "readOnly": true
+        }
+      }
+    },
     "v1GetSupplierResponse": {
       "type": "object",
       "properties": {
@@ -8056,6 +8791,156 @@
           "$ref": "#/definitions/v1Vehicle"
         }
       }
+    },
+    "v1GoodsReceipt": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "number": {
+          "type": "string",
+          "description": "Rendered from the garage's goods_receipt numbering template\n(FR-TEN-05); assigned when the document is created.",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1GoodsReceiptStatus",
+          "readOnly": true
+        },
+        "defaultSupplierId": {
+          "type": "string",
+          "description": "The default supplier new lines inherit and may override."
+        },
+        "defaultSupplierName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "receiptDate": {
+          "type": "string",
+          "description": "The receipt date, \"YYYY-MM-DD\" in the garage's timezone."
+        },
+        "deliveryNoteNumber": {
+          "type": "string",
+          "description": "The supplier's own delivery note number."
+        },
+        "notes": {
+          "type": "string"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1GoodsReceiptLine"
+          }
+        },
+        "totalAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Sum of the lines' amounts, whole VND. Omitted without\nPERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Set when the receipt is completed / cancelled.",
+          "readOnly": true
+        },
+        "cancelledAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "GoodsReceipt is a numbered multi-line document recording a delivery\n(FR-INV-06): header number, date, supplier delivery note and notes,\nstatus draft -\u003e completed -\u003e cancelled. One delivery from several\nsuppliers is a single document whose lines name their supplier."
+    },
+    "v1GoodsReceiptLine": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partId": {
+          "type": "string"
+        },
+        "partSku": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "baseUnitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "unitId": {
+          "type": "string",
+          "description": "The packaging unit the user typed the quantity in; unset means the base\nunit."
+        },
+        "unitAbbreviation": {
+          "type": "string",
+          "description": "The abbreviation of the entered unit; empty for the base unit.",
+          "readOnly": true
+        },
+        "enteredQuantity": {
+          "type": "string",
+          "description": "In the entered unit unless unit_id is unset (then the base unit). The\nstored base amount is derived on save (quantity)."
+        },
+        "quantity": {
+          "type": "string",
+          "description": "The base-unit amount, derived from entered_quantity on save.",
+          "readOnly": true
+        },
+        "supplierId": {
+          "type": "string",
+          "description": "The line's supplier; inherited from the header's default_supplier_id.\nEmpty is allowed while the receipt is a draft, but completion is\nrefused (SUPPLIER_REQUIRED) while any line has none (FR-INV-06)."
+        },
+        "supplierName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "unitCost": {
+          "type": "string",
+          "format": "int64",
+          "description": "VND per entered unit, as typed; stored per base unit. Zero means \"not\nrecorded\". Omitted from answers when the caller lacks\nPERMISSION_INVENTORY_COST_READ; such a caller cannot set it either."
+        },
+        "lineAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "entered_quantity times unit_cost, whole VND, rounded half-up per line\n(running total). Omitted without PERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        }
+      },
+      "description": "GoodsReceiptLine is one part on a goods receipt. Every line carries its\nsupplier: the header's default_supplier_id is inherited by new lines,\nand the part's default supplier (FR-INV-19) pre-fills it.",
+      "required": [
+        "partId"
+      ]
+    },
+    "v1GoodsReceiptStatus": {
+      "type": "string",
+      "enum": [
+        "GOODS_RECEIPT_STATUS_DRAFT",
+        "GOODS_RECEIPT_STATUS_COMPLETED",
+        "GOODS_RECEIPT_STATUS_CANCELLED"
+      ],
+      "description": "GoodsReceiptStatus is the lifecycle of a goods receipt document\n(FR-INV-06): saved as a draft, then completed (which updates stock and\ncost), or cancelled (which reverses a completed one)."
     },
     "v1Invitation": {
       "type": "object",
@@ -8175,6 +9060,21 @@
             "$ref": "#/definitions/v1Garage"
           },
           "description": "Garages the user owns or is an active member of; staff do not see\ninactive garages."
+        }
+      }
+    },
+    "v1ListGoodsReceiptsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1GoodsReceipt"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
         }
       }
     },
@@ -8630,6 +9530,14 @@
         "paymentVoucher": {
           "type": "string",
           "description": "Payment voucher (phiếu thu) numbers (FR-BIL-05, Release 5.0)."
+        },
+        "goodsReceipt": {
+          "type": "string",
+          "description": "Goods receipt numbers (FR-INV-06, Release 7.0)."
+        },
+        "stockIssue": {
+          "type": "string",
+          "description": "Stock issue (phiếu xuất kho) numbers (FR-INV-20, Release 7.0)."
         }
       },
       "description": "NumberingTemplates configures document numbers (FR-TEN-05). Placeholders:\n{YYYY}, {YY}, {MM}, {DD} and {SEQ:n} (sequence padded to n digits),\ne.g. \"BG-{YYYY}{MM}-{SEQ:4}\"."
@@ -8840,6 +9748,35 @@
       },
       "description": "PartImage is one image of a part (FR-CAT-04), a file of kind part_image."
     },
+    "v1PartSupplier": {
+      "type": "object",
+      "properties": {
+        "supplierId": {
+          "type": "string"
+        },
+        "supplierName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "supplierSku": {
+          "type": "string",
+          "description": "The supplier's own code for the part."
+        },
+        "lastUnitCost": {
+          "type": "string",
+          "format": "int64",
+          "description": "The last cost paid per base unit, whole VND; omitted when never paid.",
+          "readOnly": true
+        },
+        "isDefault": {
+          "type": "boolean"
+        }
+      },
+      "description": "PartSupplier is one usual supplier of a part with the supplier's own code\nand the last cost paid (FR-INV-19). One of them is the default that\npre-fills a receipt line's supplier.",
+      "required": [
+        "supplierId"
+      ]
+    },
     "v1PaymentEvidence": {
       "type": "object",
       "properties": {
@@ -8915,9 +9852,10 @@
         "PERMISSION_REPORT_READ",
         "PERMISSION_CUSTOMER_CORRECT",
         "PERMISSION_CATALOGUE_READ",
-        "PERMISSION_CATALOGUE_WRITE"
+        "PERMISSION_CATALOGUE_WRITE",
+        "PERMISSION_INVENTORY_COST_READ"
       ],
-      "description": "Permission is one action a staff member may perform in a garage\n(FR-IAM-03). The catalog is fixed by the platform and grouped by module,\neach module offering a read and/or a write action; garage owners combine\npermissions into roles. A write permission includes the read permission\nof its module. Owners always hold every permission; every active member\nmay read the garage profile.\n\n - PERMISSION_GARAGE_WRITE: Edit the garage profile, configuration and logo.\n - PERMISSION_STAFF_WRITE: Invite, activate/deactivate and remove staff, and change their groups.\n - PERMISSION_CUSTOMER_READ: Customers and their vehicles.\n - PERMISSION_SUPPLIER_READ: The garage's suppliers (FR-SUP-01).\n - PERMISSION_CUSTOMER_CORRECT: Correct a locked vehicle identity field and move a vehicle to another\ncustomer (FR-CUS-09). Held by the manager role by default.\n - PERMISSION_CATALOGUE_READ: Parts, units, packaging, categories, prices and images (Release 6.0)."
+      "description": "Permission is one action a staff member may perform in a garage\n(FR-IAM-03). The catalog is fixed by the platform and grouped by module,\neach module offering a read and/or a write action; garage owners combine\npermissions into roles. A write permission includes the read permission\nof its module. Owners always hold every permission; every active member\nmay read the garage profile.\n\n - PERMISSION_GARAGE_WRITE: Edit the garage profile, configuration and logo.\n - PERMISSION_STAFF_WRITE: Invite, activate/deactivate and remove staff, and change their groups.\n - PERMISSION_CUSTOMER_READ: Customers and their vehicles.\n - PERMISSION_SUPPLIER_READ: The garage's suppliers (FR-SUP-01).\n - PERMISSION_CUSTOMER_CORRECT: Correct a locked vehicle identity field and move a vehicle to another\ncustomer (FR-CUS-09). Held by the manager role by default.\n - PERMISSION_CATALOGUE_READ: Parts, units, packaging, categories, prices and images (Release 6.0).\n - PERMISSION_INVENTORY_COST_READ: See a part's cost, average cost and the valuation report (FR-INV-08,\nRelease 7.0). Held by managers and accountants by default; advisors and\ntechnicians see quantities only."
     },
     "v1PermissionInfo": {
       "type": "object",
@@ -9176,6 +10114,14 @@
       },
       "description": "PlatformPaymentSettings are the details owners transfer to (FR-LIC-10)."
     },
+    "v1PostStockIssueResponse": {
+      "type": "object",
+      "properties": {
+        "stockIssue": {
+          "$ref": "#/definitions/v1StockIssue"
+        }
+      }
+    },
     "v1PublicQuote": {
       "type": "object",
       "properties": {
@@ -9215,6 +10161,78 @@
         }
       },
       "description": "PublicQuote is what an unauthenticated customer sees through the\napproval link: no internal identifiers, only what they need to decide."
+    },
+    "v1PurchaseLine": {
+      "type": "object",
+      "properties": {
+        "goodsReceiptId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "goodsReceiptNumber": {
+          "type": "string",
+          "readOnly": true
+        },
+        "receiptDate": {
+          "type": "string",
+          "description": "The receipt date, \"YYYY-MM-DD\".",
+          "readOnly": true
+        },
+        "supplierId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "supplierName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partSku": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "quantity": {
+          "type": "string",
+          "description": "The base-unit amount.",
+          "readOnly": true
+        },
+        "baseUnitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "unitCost": {
+          "type": "string",
+          "format": "int64",
+          "description": "The cost per base unit, whole VND.",
+          "readOnly": true
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "description": "quantity times unit_cost, whole VND.",
+          "readOnly": true
+        }
+      },
+      "description": "PurchaseLine is one line of a completed goods receipt in the purchases\nreport (FR-INV-19)."
+    },
+    "v1PutPartSuppliersResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PartSupplier"
+          }
+        }
+      }
     },
     "v1Quote": {
       "type": "object",
@@ -10195,6 +11213,134 @@
       ],
       "description": "StaffStatus: inactive staff keep their record but lose access."
     },
+    "v1StockIssue": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "number": {
+          "type": "string",
+          "description": "Rendered from the garage's stock_issue numbering template (FR-TEN-05).",
+          "readOnly": true
+        },
+        "repairOrderId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "repairOrderNumber": {
+          "type": "string",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1StockIssueStatus",
+          "readOnly": true
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1StockIssueLine"
+          },
+          "readOnly": true
+        },
+        "postedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "postedByName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "StockIssue is the numbered stock-out document of a repair order\n(FR-INV-20). It is created as a draft with the repair order and follows\nit until posted; printing it uses the standard document layout."
+    },
+    "v1StockIssueLine": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "repairOrderLineId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partSku": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "baseUnitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "unitId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "unitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "enteredQuantity": {
+          "type": "string",
+          "readOnly": true
+        },
+        "quantity": {
+          "type": "string",
+          "description": "The base-unit amount posted on the issue.",
+          "readOnly": true
+        },
+        "unitCost": {
+          "type": "string",
+          "format": "int64",
+          "description": "The cost snapshot per base unit, whole VND; omitted without\nPERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        }
+      },
+      "description": "StockIssueLine is one part line of a stock issue, derived from the\nmatching part line of the repair order while it is a draft."
+    },
+    "v1StockIssueMode": {
+      "type": "string",
+      "enum": [
+        "STOCK_ISSUE_MODE_ON_CLOSE",
+        "STOCK_ISSUE_MODE_ON_START"
+      ],
+      "description": "StockIssueMode is when a repair order's draft stock issue posts\n(FR-INV-20): on close by default, or when the order starts."
+    },
+    "v1StockIssueStatus": {
+      "type": "string",
+      "enum": [
+        "STOCK_ISSUE_STATUS_DRAFT",
+        "STOCK_ISSUE_STATUS_POSTED",
+        "STOCK_ISSUE_STATUS_CANCELLED"
+      ],
+      "description": "StockIssueStatus is the lifecycle of a stock issue document (phiếu xuất\nkho, FR-INV-20): a draft follows its repair order (the draft is the\nreservation), then it is posted (stock movements written) or cancelled."
+    },
     "v1StockLevel": {
       "type": "object",
       "properties": {
@@ -10249,6 +11395,28 @@
           "type": "boolean",
           "description": "True at or below the reorder threshold.",
           "readOnly": true
+        },
+        "quantityReserved": {
+          "type": "string",
+          "description": "Decimal string in the base unit held by the part's draft stock issues\n(Release 7.0, FR-INV-20): on hand minus this is what a new order can\nreserve.",
+          "readOnly": true
+        },
+        "quantityAvailable": {
+          "type": "string",
+          "description": "quantity_on_hand minus quantity_reserved, in the base unit.",
+          "readOnly": true
+        },
+        "averageCost": {
+          "type": "string",
+          "format": "int64",
+          "description": "Weighted-average cost per base unit, whole VND, rounded for display\n(FR-INV-07). Omitted from answers when the caller lacks\nPERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        },
+        "stockValue": {
+          "type": "string",
+          "format": "int64",
+          "description": "average_cost times quantity_on_hand, whole VND. Omitted without\nPERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
         }
       },
       "description": "StockLevel is one part with how many of it the garage has (FR-INV-03).\nThe part itself (SKU, name, units, category, brand, price, images) is\nowned by the Catalogue module (vietgara.catalogue.v1); this is the\nstock-on-hand view that joins it with the balance."
@@ -10260,15 +11428,15 @@
           "type": "string",
           "readOnly": true
         },
-        "itemId": {
+        "partId": {
           "type": "string",
           "readOnly": true
         },
-        "itemSku": {
+        "partSku": {
           "type": "string",
           "readOnly": true
         },
-        "itemName": {
+        "partName": {
           "type": "string",
           "readOnly": true
         },
@@ -10327,9 +11495,11 @@
       "type": "string",
       "enum": [
         "STOCK_TRANSACTION_REF_TYPE_PURCHASE",
-        "STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER"
+        "STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER",
+        "STOCK_TRANSACTION_REF_TYPE_GOODS_RECEIPT",
+        "STOCK_TRANSACTION_REF_TYPE_STOCK_ISSUE"
       ],
-      "description": "StockTransactionRefType names what caused a stock movement.\n\n - STOCK_TRANSACTION_REF_TYPE_PURCHASE: A manual stock receipt from a supplier (FR-INV-01).\n - STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER: Automatic deduction when a repair order with part lines closes\n(FR-INV-02)."
+      "description": "StockTransactionRefType names what caused a stock movement.\n\n - STOCK_TRANSACTION_REF_TYPE_PURCHASE: A manual stock receipt from a supplier (FR-INV-01). Superseded in\nRelease 7.0 by GOODS_RECEIPT, kept for movements recorded before it.\n - STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER: Automatic deduction when a repair order with part lines closes\n(FR-INV-02). Superseded in Release 7.0 by STOCK_ISSUE.\n - STOCK_TRANSACTION_REF_TYPE_GOODS_RECEIPT: A completed goods receipt document (FR-INV-06, Release 7.0).\n - STOCK_TRANSACTION_REF_TYPE_STOCK_ISSUE: A posted stock issue document (phiếu xuất kho, FR-INV-20, Release 7.0)."
     },
     "v1StockTransactionType": {
       "type": "string",
@@ -10338,6 +11508,72 @@
         "STOCK_TRANSACTION_TYPE_OUT"
       ],
       "description": "StockTransactionType: a movement either adds to stock or removes from it."
+    },
+    "v1StockValuationCategory": {
+      "type": "object",
+      "properties": {
+        "categoryId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "categoryName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "value": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        }
+      },
+      "description": "StockValuationCategory is one category's total value."
+    },
+    "v1StockValuationLine": {
+      "type": "object",
+      "properties": {
+        "partId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partSku": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "categoryId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "categoryName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "quantityOnHand": {
+          "type": "string",
+          "description": "The base-unit amount on hand.",
+          "readOnly": true
+        },
+        "baseUnitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "averageCost": {
+          "type": "string",
+          "format": "int64",
+          "description": "The weighted-average cost per base unit, whole VND.",
+          "readOnly": true
+        },
+        "value": {
+          "type": "string",
+          "format": "int64",
+          "description": "quantity_on_hand times average_cost, whole VND.",
+          "readOnly": true
+        }
+      },
+      "description": "StockValuationLine is one part's quantity and value at a date\n(FR-INV-07). Only callers with PERMISSION_INVENTORY_COST_READ see it."
     },
     "v1SubmitPlanPaymentResponse": {
       "type": "object",
@@ -10582,6 +11818,14 @@
       "properties": {
         "garage": {
           "$ref": "#/definitions/v1Garage"
+        }
+      }
+    },
+    "v1UpdateGoodsReceiptResponse": {
+      "type": "object",
+      "properties": {
+        "goodsReceipt": {
+          "$ref": "#/definitions/v1GoodsReceipt"
         }
       }
     },

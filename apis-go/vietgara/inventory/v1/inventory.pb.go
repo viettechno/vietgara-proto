@@ -11,6 +11,7 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -79,11 +80,16 @@ type StockTransactionRefType int32
 
 const (
 	StockTransactionRefType_STOCK_TRANSACTION_REF_TYPE_UNSPECIFIED StockTransactionRefType = 0
-	// A manual stock receipt from a supplier (FR-INV-01).
+	// A manual stock receipt from a supplier (FR-INV-01). Superseded in
+	// Release 7.0 by GOODS_RECEIPT, kept for movements recorded before it.
 	StockTransactionRefType_STOCK_TRANSACTION_REF_TYPE_PURCHASE StockTransactionRefType = 1
 	// Automatic deduction when a repair order with part lines closes
-	// (FR-INV-02).
+	// (FR-INV-02). Superseded in Release 7.0 by STOCK_ISSUE.
 	StockTransactionRefType_STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER StockTransactionRefType = 2
+	// A completed goods receipt document (FR-INV-06, Release 7.0).
+	StockTransactionRefType_STOCK_TRANSACTION_REF_TYPE_GOODS_RECEIPT StockTransactionRefType = 3
+	// A posted stock issue document (phiếu xuất kho, FR-INV-20, Release 7.0).
+	StockTransactionRefType_STOCK_TRANSACTION_REF_TYPE_STOCK_ISSUE StockTransactionRefType = 4
 )
 
 // Enum value maps for StockTransactionRefType.
@@ -92,11 +98,15 @@ var (
 		0: "STOCK_TRANSACTION_REF_TYPE_UNSPECIFIED",
 		1: "STOCK_TRANSACTION_REF_TYPE_PURCHASE",
 		2: "STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER",
+		3: "STOCK_TRANSACTION_REF_TYPE_GOODS_RECEIPT",
+		4: "STOCK_TRANSACTION_REF_TYPE_STOCK_ISSUE",
 	}
 	StockTransactionRefType_value = map[string]int32{
-		"STOCK_TRANSACTION_REF_TYPE_UNSPECIFIED":  0,
-		"STOCK_TRANSACTION_REF_TYPE_PURCHASE":     1,
-		"STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER": 2,
+		"STOCK_TRANSACTION_REF_TYPE_UNSPECIFIED":   0,
+		"STOCK_TRANSACTION_REF_TYPE_PURCHASE":      1,
+		"STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER":  2,
+		"STOCK_TRANSACTION_REF_TYPE_GOODS_RECEIPT": 3,
+		"STOCK_TRANSACTION_REF_TYPE_STOCK_ISSUE":   4,
 	}
 )
 
@@ -127,6 +137,116 @@ func (StockTransactionRefType) EnumDescriptor() ([]byte, []int) {
 	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{1}
 }
 
+// GoodsReceiptStatus is the lifecycle of a goods receipt document
+// (FR-INV-06): saved as a draft, then completed (which updates stock and
+// cost), or cancelled (which reverses a completed one).
+type GoodsReceiptStatus int32
+
+const (
+	GoodsReceiptStatus_GOODS_RECEIPT_STATUS_UNSPECIFIED GoodsReceiptStatus = 0
+	GoodsReceiptStatus_GOODS_RECEIPT_STATUS_DRAFT       GoodsReceiptStatus = 1
+	GoodsReceiptStatus_GOODS_RECEIPT_STATUS_COMPLETED   GoodsReceiptStatus = 2
+	GoodsReceiptStatus_GOODS_RECEIPT_STATUS_CANCELLED   GoodsReceiptStatus = 3
+)
+
+// Enum value maps for GoodsReceiptStatus.
+var (
+	GoodsReceiptStatus_name = map[int32]string{
+		0: "GOODS_RECEIPT_STATUS_UNSPECIFIED",
+		1: "GOODS_RECEIPT_STATUS_DRAFT",
+		2: "GOODS_RECEIPT_STATUS_COMPLETED",
+		3: "GOODS_RECEIPT_STATUS_CANCELLED",
+	}
+	GoodsReceiptStatus_value = map[string]int32{
+		"GOODS_RECEIPT_STATUS_UNSPECIFIED": 0,
+		"GOODS_RECEIPT_STATUS_DRAFT":       1,
+		"GOODS_RECEIPT_STATUS_COMPLETED":   2,
+		"GOODS_RECEIPT_STATUS_CANCELLED":   3,
+	}
+)
+
+func (x GoodsReceiptStatus) Enum() *GoodsReceiptStatus {
+	p := new(GoodsReceiptStatus)
+	*p = x
+	return p
+}
+
+func (x GoodsReceiptStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (GoodsReceiptStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_inventory_v1_inventory_proto_enumTypes[2].Descriptor()
+}
+
+func (GoodsReceiptStatus) Type() protoreflect.EnumType {
+	return &file_vietgara_inventory_v1_inventory_proto_enumTypes[2]
+}
+
+func (x GoodsReceiptStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use GoodsReceiptStatus.Descriptor instead.
+func (GoodsReceiptStatus) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{2}
+}
+
+// StockIssueStatus is the lifecycle of a stock issue document (phiếu xuất
+// kho, FR-INV-20): a draft follows its repair order (the draft is the
+// reservation), then it is posted (stock movements written) or cancelled.
+type StockIssueStatus int32
+
+const (
+	StockIssueStatus_STOCK_ISSUE_STATUS_UNSPECIFIED StockIssueStatus = 0
+	StockIssueStatus_STOCK_ISSUE_STATUS_DRAFT       StockIssueStatus = 1
+	StockIssueStatus_STOCK_ISSUE_STATUS_POSTED      StockIssueStatus = 2
+	StockIssueStatus_STOCK_ISSUE_STATUS_CANCELLED   StockIssueStatus = 3
+)
+
+// Enum value maps for StockIssueStatus.
+var (
+	StockIssueStatus_name = map[int32]string{
+		0: "STOCK_ISSUE_STATUS_UNSPECIFIED",
+		1: "STOCK_ISSUE_STATUS_DRAFT",
+		2: "STOCK_ISSUE_STATUS_POSTED",
+		3: "STOCK_ISSUE_STATUS_CANCELLED",
+	}
+	StockIssueStatus_value = map[string]int32{
+		"STOCK_ISSUE_STATUS_UNSPECIFIED": 0,
+		"STOCK_ISSUE_STATUS_DRAFT":       1,
+		"STOCK_ISSUE_STATUS_POSTED":      2,
+		"STOCK_ISSUE_STATUS_CANCELLED":   3,
+	}
+)
+
+func (x StockIssueStatus) Enum() *StockIssueStatus {
+	p := new(StockIssueStatus)
+	*p = x
+	return p
+}
+
+func (x StockIssueStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (StockIssueStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_inventory_v1_inventory_proto_enumTypes[3].Descriptor()
+}
+
+func (StockIssueStatus) Type() protoreflect.EnumType {
+	return &file_vietgara_inventory_v1_inventory_proto_enumTypes[3]
+}
+
+func (x StockIssueStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use StockIssueStatus.Descriptor instead.
+func (StockIssueStatus) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{3}
+}
+
 // StockLevel is one part with how many of it the garage has (FR-INV-03).
 // The part itself (SKU, name, units, category, brand, price, images) is
 // owned by the Catalogue module (vietgara.catalogue.v1); this is the
@@ -149,7 +269,20 @@ type StockLevel struct {
 	// Decimal string in the base unit.
 	ReorderThreshold string `protobuf:"bytes,11,opt,name=reorder_threshold,json=reorderThreshold,proto3" json:"reorder_threshold,omitempty"`
 	// True at or below the reorder threshold.
-	LowStock      bool `protobuf:"varint,12,opt,name=low_stock,json=lowStock,proto3" json:"low_stock,omitempty"`
+	LowStock bool `protobuf:"varint,12,opt,name=low_stock,json=lowStock,proto3" json:"low_stock,omitempty"`
+	// Decimal string in the base unit held by the part's draft stock issues
+	// (Release 7.0, FR-INV-20): on hand minus this is what a new order can
+	// reserve.
+	QuantityReserved string `protobuf:"bytes,13,opt,name=quantity_reserved,json=quantityReserved,proto3" json:"quantity_reserved,omitempty"`
+	// quantity_on_hand minus quantity_reserved, in the base unit.
+	QuantityAvailable string `protobuf:"bytes,14,opt,name=quantity_available,json=quantityAvailable,proto3" json:"quantity_available,omitempty"`
+	// Weighted-average cost per base unit, whole VND, rounded for display
+	// (FR-INV-07). Omitted from answers when the caller lacks
+	// PERMISSION_INVENTORY_COST_READ.
+	AverageCost *int64 `protobuf:"varint,15,opt,name=average_cost,json=averageCost,proto3,oneof" json:"average_cost,omitempty"`
+	// average_cost times quantity_on_hand, whole VND. Omitted without
+	// PERMISSION_INVENTORY_COST_READ.
+	StockValue    *int64 `protobuf:"varint,16,opt,name=stock_value,json=stockValue,proto3,oneof" json:"stock_value,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -266,6 +399,34 @@ func (x *StockLevel) GetLowStock() bool {
 		return x.LowStock
 	}
 	return false
+}
+
+func (x *StockLevel) GetQuantityReserved() string {
+	if x != nil {
+		return x.QuantityReserved
+	}
+	return ""
+}
+
+func (x *StockLevel) GetQuantityAvailable() string {
+	if x != nil {
+		return x.QuantityAvailable
+	}
+	return ""
+}
+
+func (x *StockLevel) GetAverageCost() int64 {
+	if x != nil && x.AverageCost != nil {
+		return *x.AverageCost
+	}
+	return 0
+}
+
+func (x *StockLevel) GetStockValue() int64 {
+	if x != nil && x.StockValue != nil {
+		return *x.StockValue
+	}
+	return 0
 }
 
 type ListStockLevelsRequest struct {
@@ -523,9 +684,9 @@ func (x *GetStockLevelResponse) GetStockLevel() *StockLevel {
 type StockTransaction struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	Id       string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ItemId   string                 `protobuf:"bytes,2,opt,name=item_id,json=itemId,proto3" json:"item_id,omitempty"`
-	ItemSku  string                 `protobuf:"bytes,3,opt,name=item_sku,json=itemSku,proto3" json:"item_sku,omitempty"`
-	ItemName string                 `protobuf:"bytes,4,opt,name=item_name,json=itemName,proto3" json:"item_name,omitempty"`
+	PartId   string                 `protobuf:"bytes,2,opt,name=part_id,json=partId,proto3" json:"part_id,omitempty"`
+	PartSku  string                 `protobuf:"bytes,3,opt,name=part_sku,json=partSku,proto3" json:"part_sku,omitempty"`
+	PartName string                 `protobuf:"bytes,4,opt,name=part_name,json=partName,proto3" json:"part_name,omitempty"`
 	Type     StockTransactionType   `protobuf:"varint,5,opt,name=type,proto3,enum=vietgara.inventory.v1.StockTransactionType" json:"type,omitempty"`
 	// Decimal string, always positive; type says the direction.
 	Quantity string `protobuf:"bytes,6,opt,name=quantity,proto3" json:"quantity,omitempty"`
@@ -584,23 +745,23 @@ func (x *StockTransaction) GetId() string {
 	return ""
 }
 
-func (x *StockTransaction) GetItemId() string {
+func (x *StockTransaction) GetPartId() string {
 	if x != nil {
-		return x.ItemId
+		return x.PartId
 	}
 	return ""
 }
 
-func (x *StockTransaction) GetItemSku() string {
+func (x *StockTransaction) GetPartSku() string {
 	if x != nil {
-		return x.ItemSku
+		return x.PartSku
 	}
 	return ""
 }
 
-func (x *StockTransaction) GetItemName() string {
+func (x *StockTransaction) GetPartName() string {
 	if x != nil {
-		return x.ItemName
+		return x.PartName
 	}
 	return ""
 }
@@ -675,143 +836,10 @@ func (x *StockTransaction) GetBaseUnitAbbreviation() string {
 	return ""
 }
 
-type CreateStockReceiptRequest struct {
-	state    protoimpl.MessageState `protogen:"open.v1"`
-	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// The part's id (the JSON field keeps the name item_id).
-	ItemId string `protobuf:"bytes,2,opt,name=item_id,json=itemId,proto3" json:"item_id,omitempty"`
-	// In the base unit unless unit_id names a packaging unit of the part, in
-	// which case it is converted on save (FR-CAT-02).
-	Quantity string `protobuf:"bytes,3,opt,name=quantity,proto3" json:"quantity,omitempty"`
-	// VND per entered unit; stored per base unit. Zero means "not recorded".
-	UnitCost      int64   `protobuf:"varint,4,opt,name=unit_cost,json=unitCost,proto3" json:"unit_cost,omitempty"`
-	UnitId        *string `protobuf:"bytes,5,opt,name=unit_id,json=unitId,proto3,oneof" json:"unit_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateStockReceiptRequest) Reset() {
-	*x = CreateStockReceiptRequest{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateStockReceiptRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateStockReceiptRequest) ProtoMessage() {}
-
-func (x *CreateStockReceiptRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateStockReceiptRequest.ProtoReflect.Descriptor instead.
-func (*CreateStockReceiptRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *CreateStockReceiptRequest) GetGarageId() string {
-	if x != nil {
-		return x.GarageId
-	}
-	return ""
-}
-
-func (x *CreateStockReceiptRequest) GetItemId() string {
-	if x != nil {
-		return x.ItemId
-	}
-	return ""
-}
-
-func (x *CreateStockReceiptRequest) GetQuantity() string {
-	if x != nil {
-		return x.Quantity
-	}
-	return ""
-}
-
-func (x *CreateStockReceiptRequest) GetUnitCost() int64 {
-	if x != nil {
-		return x.UnitCost
-	}
-	return 0
-}
-
-func (x *CreateStockReceiptRequest) GetUnitId() string {
-	if x != nil && x.UnitId != nil {
-		return *x.UnitId
-	}
-	return ""
-}
-
-type CreateStockReceiptResponse struct {
-	state       protoimpl.MessageState `protogen:"open.v1"`
-	Transaction *StockTransaction      `protobuf:"bytes,1,opt,name=transaction,proto3" json:"transaction,omitempty"`
-	// The part's stock level after this receipt.
-	StockLevel    *StockLevel `protobuf:"bytes,2,opt,name=stock_level,json=stockLevel,proto3" json:"stock_level,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateStockReceiptResponse) Reset() {
-	*x = CreateStockReceiptResponse{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateStockReceiptResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateStockReceiptResponse) ProtoMessage() {}
-
-func (x *CreateStockReceiptResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateStockReceiptResponse.ProtoReflect.Descriptor instead.
-func (*CreateStockReceiptResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *CreateStockReceiptResponse) GetTransaction() *StockTransaction {
-	if x != nil {
-		return x.Transaction
-	}
-	return nil
-}
-
-func (x *CreateStockReceiptResponse) GetStockLevel() *StockLevel {
-	if x != nil {
-		return x.StockLevel
-	}
-	return nil
-}
-
 type ListStockTransactionsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	ItemId        string                 `protobuf:"bytes,2,opt,name=item_id,json=itemId,proto3" json:"item_id,omitempty"`
+	PartId        string                 `protobuf:"bytes,2,opt,name=part_id,json=partId,proto3" json:"part_id,omitempty"`
 	Type          StockTransactionType   `protobuf:"varint,3,opt,name=type,proto3,enum=vietgara.inventory.v1.StockTransactionType" json:"type,omitempty"`
 	Page          int32                  `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      int32                  `protobuf:"varint,5,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
@@ -821,7 +849,7 @@ type ListStockTransactionsRequest struct {
 
 func (x *ListStockTransactionsRequest) Reset() {
 	*x = ListStockTransactionsRequest{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[8]
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -833,7 +861,7 @@ func (x *ListStockTransactionsRequest) String() string {
 func (*ListStockTransactionsRequest) ProtoMessage() {}
 
 func (x *ListStockTransactionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[8]
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -846,7 +874,7 @@ func (x *ListStockTransactionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListStockTransactionsRequest.ProtoReflect.Descriptor instead.
 func (*ListStockTransactionsRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{8}
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ListStockTransactionsRequest) GetGarageId() string {
@@ -856,9 +884,9 @@ func (x *ListStockTransactionsRequest) GetGarageId() string {
 	return ""
 }
 
-func (x *ListStockTransactionsRequest) GetItemId() string {
+func (x *ListStockTransactionsRequest) GetPartId() string {
 	if x != nil {
-		return x.ItemId
+		return x.PartId
 	}
 	return ""
 }
@@ -894,7 +922,7 @@ type ListStockTransactionsResponse struct {
 
 func (x *ListStockTransactionsResponse) Reset() {
 	*x = ListStockTransactionsResponse{}
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[9]
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -906,7 +934,7 @@ func (x *ListStockTransactionsResponse) String() string {
 func (*ListStockTransactionsResponse) ProtoMessage() {}
 
 func (x *ListStockTransactionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[9]
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -919,7 +947,7 @@ func (x *ListStockTransactionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListStockTransactionsResponse.ProtoReflect.Descriptor instead.
 func (*ListStockTransactionsResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{9}
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListStockTransactionsResponse) GetData() []*StockTransaction {
@@ -936,11 +964,2265 @@ func (x *ListStockTransactionsResponse) GetPagination() *v1.Pagination {
 	return nil
 }
 
+// GoodsReceiptLine is one part on a goods receipt. Every line carries its
+// supplier: the header's default_supplier_id is inherited by new lines,
+// and the part's default supplier (FR-INV-19) pre-fills it.
+type GoodsReceiptLine struct {
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	Id                   string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	PartId               string                 `protobuf:"bytes,2,opt,name=part_id,json=partId,proto3" json:"part_id,omitempty"`
+	PartSku              string                 `protobuf:"bytes,3,opt,name=part_sku,json=partSku,proto3" json:"part_sku,omitempty"`
+	PartName             string                 `protobuf:"bytes,4,opt,name=part_name,json=partName,proto3" json:"part_name,omitempty"`
+	BaseUnitAbbreviation string                 `protobuf:"bytes,5,opt,name=base_unit_abbreviation,json=baseUnitAbbreviation,proto3" json:"base_unit_abbreviation,omitempty"`
+	// The packaging unit the user typed the quantity in; unset means the base
+	// unit.
+	UnitId *string `protobuf:"bytes,6,opt,name=unit_id,json=unitId,proto3,oneof" json:"unit_id,omitempty"`
+	// The abbreviation of the entered unit; empty for the base unit.
+	UnitAbbreviation string `protobuf:"bytes,7,opt,name=unit_abbreviation,json=unitAbbreviation,proto3" json:"unit_abbreviation,omitempty"`
+	// In the entered unit unless unit_id is unset (then the base unit). The
+	// stored base amount is derived on save (quantity).
+	EnteredQuantity string `protobuf:"bytes,8,opt,name=entered_quantity,json=enteredQuantity,proto3" json:"entered_quantity,omitempty"`
+	// The base-unit amount, derived from entered_quantity on save.
+	Quantity string `protobuf:"bytes,9,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	// The line's supplier; inherited from the header's default_supplier_id.
+	// Empty is allowed while the receipt is a draft, but completion is
+	// refused (SUPPLIER_REQUIRED) while any line has none (FR-INV-06).
+	SupplierId   string `protobuf:"bytes,10,opt,name=supplier_id,json=supplierId,proto3" json:"supplier_id,omitempty"`
+	SupplierName string `protobuf:"bytes,11,opt,name=supplier_name,json=supplierName,proto3" json:"supplier_name,omitempty"`
+	// VND per entered unit, as typed; stored per base unit. Zero means "not
+	// recorded". Omitted from answers when the caller lacks
+	// PERMISSION_INVENTORY_COST_READ; such a caller cannot set it either.
+	UnitCost *int64 `protobuf:"varint,12,opt,name=unit_cost,json=unitCost,proto3,oneof" json:"unit_cost,omitempty"`
+	// entered_quantity times unit_cost, whole VND, rounded half-up per line
+	// (running total). Omitted without PERMISSION_INVENTORY_COST_READ.
+	LineAmount    *int64 `protobuf:"varint,13,opt,name=line_amount,json=lineAmount,proto3,oneof" json:"line_amount,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GoodsReceiptLine) Reset() {
+	*x = GoodsReceiptLine{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GoodsReceiptLine) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GoodsReceiptLine) ProtoMessage() {}
+
+func (x *GoodsReceiptLine) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GoodsReceiptLine.ProtoReflect.Descriptor instead.
+func (*GoodsReceiptLine) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GoodsReceiptLine) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *GoodsReceiptLine) GetPartId() string {
+	if x != nil {
+		return x.PartId
+	}
+	return ""
+}
+
+func (x *GoodsReceiptLine) GetPartSku() string {
+	if x != nil {
+		return x.PartSku
+	}
+	return ""
+}
+
+func (x *GoodsReceiptLine) GetPartName() string {
+	if x != nil {
+		return x.PartName
+	}
+	return ""
+}
+
+func (x *GoodsReceiptLine) GetBaseUnitAbbreviation() string {
+	if x != nil {
+		return x.BaseUnitAbbreviation
+	}
+	return ""
+}
+
+func (x *GoodsReceiptLine) GetUnitId() string {
+	if x != nil && x.UnitId != nil {
+		return *x.UnitId
+	}
+	return ""
+}
+
+func (x *GoodsReceiptLine) GetUnitAbbreviation() string {
+	if x != nil {
+		return x.UnitAbbreviation
+	}
+	return ""
+}
+
+func (x *GoodsReceiptLine) GetEnteredQuantity() string {
+	if x != nil {
+		return x.EnteredQuantity
+	}
+	return ""
+}
+
+func (x *GoodsReceiptLine) GetQuantity() string {
+	if x != nil {
+		return x.Quantity
+	}
+	return ""
+}
+
+func (x *GoodsReceiptLine) GetSupplierId() string {
+	if x != nil {
+		return x.SupplierId
+	}
+	return ""
+}
+
+func (x *GoodsReceiptLine) GetSupplierName() string {
+	if x != nil {
+		return x.SupplierName
+	}
+	return ""
+}
+
+func (x *GoodsReceiptLine) GetUnitCost() int64 {
+	if x != nil && x.UnitCost != nil {
+		return *x.UnitCost
+	}
+	return 0
+}
+
+func (x *GoodsReceiptLine) GetLineAmount() int64 {
+	if x != nil && x.LineAmount != nil {
+		return *x.LineAmount
+	}
+	return 0
+}
+
+// GoodsReceipt is a numbered multi-line document recording a delivery
+// (FR-INV-06): header number, date, supplier delivery note and notes,
+// status draft -> completed -> cancelled. One delivery from several
+// suppliers is a single document whose lines name their supplier.
+type GoodsReceipt struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Id       string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	GarageId string                 `protobuf:"bytes,2,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	// Rendered from the garage's goods_receipt numbering template
+	// (FR-TEN-05); assigned when the document is created.
+	Number string             `protobuf:"bytes,3,opt,name=number,proto3" json:"number,omitempty"`
+	Status GoodsReceiptStatus `protobuf:"varint,4,opt,name=status,proto3,enum=vietgara.inventory.v1.GoodsReceiptStatus" json:"status,omitempty"`
+	// The default supplier new lines inherit and may override.
+	DefaultSupplierId   *string `protobuf:"bytes,5,opt,name=default_supplier_id,json=defaultSupplierId,proto3,oneof" json:"default_supplier_id,omitempty"`
+	DefaultSupplierName string  `protobuf:"bytes,6,opt,name=default_supplier_name,json=defaultSupplierName,proto3" json:"default_supplier_name,omitempty"`
+	// The receipt date, "YYYY-MM-DD" in the garage's timezone.
+	ReceiptDate string `protobuf:"bytes,7,opt,name=receipt_date,json=receiptDate,proto3" json:"receipt_date,omitempty"`
+	// The supplier's own delivery note number.
+	DeliveryNoteNumber string              `protobuf:"bytes,8,opt,name=delivery_note_number,json=deliveryNoteNumber,proto3" json:"delivery_note_number,omitempty"`
+	Notes              string              `protobuf:"bytes,9,opt,name=notes,proto3" json:"notes,omitempty"`
+	Lines              []*GoodsReceiptLine `protobuf:"bytes,10,rep,name=lines,proto3" json:"lines,omitempty"`
+	// Sum of the lines' amounts, whole VND. Omitted without
+	// PERMISSION_INVENTORY_COST_READ.
+	TotalAmount *int64 `protobuf:"varint,11,opt,name=total_amount,json=totalAmount,proto3,oneof" json:"total_amount,omitempty"`
+	// Set when the receipt is completed / cancelled.
+	CompletedAt   *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
+	CancelledAt   *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=cancelled_at,json=cancelledAt,proto3" json:"cancelled_at,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GoodsReceipt) Reset() {
+	*x = GoodsReceipt{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GoodsReceipt) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GoodsReceipt) ProtoMessage() {}
+
+func (x *GoodsReceipt) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GoodsReceipt.ProtoReflect.Descriptor instead.
+func (*GoodsReceipt) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GoodsReceipt) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *GoodsReceipt) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *GoodsReceipt) GetNumber() string {
+	if x != nil {
+		return x.Number
+	}
+	return ""
+}
+
+func (x *GoodsReceipt) GetStatus() GoodsReceiptStatus {
+	if x != nil {
+		return x.Status
+	}
+	return GoodsReceiptStatus_GOODS_RECEIPT_STATUS_UNSPECIFIED
+}
+
+func (x *GoodsReceipt) GetDefaultSupplierId() string {
+	if x != nil && x.DefaultSupplierId != nil {
+		return *x.DefaultSupplierId
+	}
+	return ""
+}
+
+func (x *GoodsReceipt) GetDefaultSupplierName() string {
+	if x != nil {
+		return x.DefaultSupplierName
+	}
+	return ""
+}
+
+func (x *GoodsReceipt) GetReceiptDate() string {
+	if x != nil {
+		return x.ReceiptDate
+	}
+	return ""
+}
+
+func (x *GoodsReceipt) GetDeliveryNoteNumber() string {
+	if x != nil {
+		return x.DeliveryNoteNumber
+	}
+	return ""
+}
+
+func (x *GoodsReceipt) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
+}
+
+func (x *GoodsReceipt) GetLines() []*GoodsReceiptLine {
+	if x != nil {
+		return x.Lines
+	}
+	return nil
+}
+
+func (x *GoodsReceipt) GetTotalAmount() int64 {
+	if x != nil && x.TotalAmount != nil {
+		return *x.TotalAmount
+	}
+	return 0
+}
+
+func (x *GoodsReceipt) GetCompletedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CompletedAt
+	}
+	return nil
+}
+
+func (x *GoodsReceipt) GetCancelledAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CancelledAt
+	}
+	return nil
+}
+
+func (x *GoodsReceipt) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *GoodsReceipt) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
+type ListGoodsReceiptsRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	// Matches the number, delivery note number or notes.
+	Query string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
+	// Only receipts with a line from this supplier.
+	SupplierId    string             `protobuf:"bytes,3,opt,name=supplier_id,json=supplierId,proto3" json:"supplier_id,omitempty"`
+	Status        GoodsReceiptStatus `protobuf:"varint,4,opt,name=status,proto3,enum=vietgara.inventory.v1.GoodsReceiptStatus" json:"status,omitempty"`
+	Page          int32              `protobuf:"varint,5,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32              `protobuf:"varint,6,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListGoodsReceiptsRequest) Reset() {
+	*x = ListGoodsReceiptsRequest{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListGoodsReceiptsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListGoodsReceiptsRequest) ProtoMessage() {}
+
+func (x *ListGoodsReceiptsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListGoodsReceiptsRequest.ProtoReflect.Descriptor instead.
+func (*ListGoodsReceiptsRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ListGoodsReceiptsRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *ListGoodsReceiptsRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+func (x *ListGoodsReceiptsRequest) GetSupplierId() string {
+	if x != nil {
+		return x.SupplierId
+	}
+	return ""
+}
+
+func (x *ListGoodsReceiptsRequest) GetStatus() GoodsReceiptStatus {
+	if x != nil {
+		return x.Status
+	}
+	return GoodsReceiptStatus_GOODS_RECEIPT_STATUS_UNSPECIFIED
+}
+
+func (x *ListGoodsReceiptsRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListGoodsReceiptsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+type ListGoodsReceiptsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []*GoodsReceipt        `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	Pagination    *v1.Pagination         `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListGoodsReceiptsResponse) Reset() {
+	*x = ListGoodsReceiptsResponse{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListGoodsReceiptsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListGoodsReceiptsResponse) ProtoMessage() {}
+
+func (x *ListGoodsReceiptsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListGoodsReceiptsResponse.ProtoReflect.Descriptor instead.
+func (*ListGoodsReceiptsResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ListGoodsReceiptsResponse) GetData() []*GoodsReceipt {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *ListGoodsReceiptsResponse) GetPagination() *v1.Pagination {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
+type GetGoodsReceiptRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	GarageId       string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	GoodsReceiptId string                 `protobuf:"bytes,2,opt,name=goods_receipt_id,json=goodsReceiptId,proto3" json:"goods_receipt_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GetGoodsReceiptRequest) Reset() {
+	*x = GetGoodsReceiptRequest{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetGoodsReceiptRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetGoodsReceiptRequest) ProtoMessage() {}
+
+func (x *GetGoodsReceiptRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetGoodsReceiptRequest.ProtoReflect.Descriptor instead.
+func (*GetGoodsReceiptRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *GetGoodsReceiptRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *GetGoodsReceiptRequest) GetGoodsReceiptId() string {
+	if x != nil {
+		return x.GoodsReceiptId
+	}
+	return ""
+}
+
+type GetGoodsReceiptResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GoodsReceipt  *GoodsReceipt          `protobuf:"bytes,1,opt,name=goods_receipt,json=goodsReceipt,proto3" json:"goods_receipt,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetGoodsReceiptResponse) Reset() {
+	*x = GetGoodsReceiptResponse{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetGoodsReceiptResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetGoodsReceiptResponse) ProtoMessage() {}
+
+func (x *GetGoodsReceiptResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetGoodsReceiptResponse.ProtoReflect.Descriptor instead.
+func (*GetGoodsReceiptResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *GetGoodsReceiptResponse) GetGoodsReceipt() *GoodsReceipt {
+	if x != nil {
+		return x.GoodsReceipt
+	}
+	return nil
+}
+
+type CreateGoodsReceiptRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	GoodsReceipt  *GoodsReceipt          `protobuf:"bytes,2,opt,name=goods_receipt,json=goodsReceipt,proto3" json:"goods_receipt,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateGoodsReceiptRequest) Reset() {
+	*x = CreateGoodsReceiptRequest{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateGoodsReceiptRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateGoodsReceiptRequest) ProtoMessage() {}
+
+func (x *CreateGoodsReceiptRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateGoodsReceiptRequest.ProtoReflect.Descriptor instead.
+func (*CreateGoodsReceiptRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *CreateGoodsReceiptRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *CreateGoodsReceiptRequest) GetGoodsReceipt() *GoodsReceipt {
+	if x != nil {
+		return x.GoodsReceipt
+	}
+	return nil
+}
+
+type CreateGoodsReceiptResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GoodsReceipt  *GoodsReceipt          `protobuf:"bytes,1,opt,name=goods_receipt,json=goodsReceipt,proto3" json:"goods_receipt,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateGoodsReceiptResponse) Reset() {
+	*x = CreateGoodsReceiptResponse{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateGoodsReceiptResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateGoodsReceiptResponse) ProtoMessage() {}
+
+func (x *CreateGoodsReceiptResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateGoodsReceiptResponse.ProtoReflect.Descriptor instead.
+func (*CreateGoodsReceiptResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *CreateGoodsReceiptResponse) GetGoodsReceipt() *GoodsReceipt {
+	if x != nil {
+		return x.GoodsReceipt
+	}
+	return nil
+}
+
+type UpdateGoodsReceiptRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	GarageId       string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	GoodsReceiptId string                 `protobuf:"bytes,2,opt,name=goods_receipt_id,json=goodsReceiptId,proto3" json:"goods_receipt_id,omitempty"`
+	GoodsReceipt   *GoodsReceipt          `protobuf:"bytes,3,opt,name=goods_receipt,json=goodsReceipt,proto3" json:"goods_receipt,omitempty"`
+	// Fields of the receipt to replace; filled from the JSON body when
+	// omitted. Only a DRAFT receipt can be updated (otherwise
+	// GOODS_RECEIPT_NOT_DRAFT). "lines" replaces the whole list: lines are
+	// matched by id, a line without an id is added and an existing line left
+	// out is removed; partial line masks are not supported.
+	UpdateMask    *fieldmaskpb.FieldMask `protobuf:"bytes,4,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateGoodsReceiptRequest) Reset() {
+	*x = UpdateGoodsReceiptRequest{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateGoodsReceiptRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateGoodsReceiptRequest) ProtoMessage() {}
+
+func (x *UpdateGoodsReceiptRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateGoodsReceiptRequest.ProtoReflect.Descriptor instead.
+func (*UpdateGoodsReceiptRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *UpdateGoodsReceiptRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *UpdateGoodsReceiptRequest) GetGoodsReceiptId() string {
+	if x != nil {
+		return x.GoodsReceiptId
+	}
+	return ""
+}
+
+func (x *UpdateGoodsReceiptRequest) GetGoodsReceipt() *GoodsReceipt {
+	if x != nil {
+		return x.GoodsReceipt
+	}
+	return nil
+}
+
+func (x *UpdateGoodsReceiptRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
+	if x != nil {
+		return x.UpdateMask
+	}
+	return nil
+}
+
+type UpdateGoodsReceiptResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GoodsReceipt  *GoodsReceipt          `protobuf:"bytes,1,opt,name=goods_receipt,json=goodsReceipt,proto3" json:"goods_receipt,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateGoodsReceiptResponse) Reset() {
+	*x = UpdateGoodsReceiptResponse{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateGoodsReceiptResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateGoodsReceiptResponse) ProtoMessage() {}
+
+func (x *UpdateGoodsReceiptResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateGoodsReceiptResponse.ProtoReflect.Descriptor instead.
+func (*UpdateGoodsReceiptResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *UpdateGoodsReceiptResponse) GetGoodsReceipt() *GoodsReceipt {
+	if x != nil {
+		return x.GoodsReceipt
+	}
+	return nil
+}
+
+type CompleteGoodsReceiptRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	GarageId       string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	GoodsReceiptId string                 `protobuf:"bytes,2,opt,name=goods_receipt_id,json=goodsReceiptId,proto3" json:"goods_receipt_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *CompleteGoodsReceiptRequest) Reset() {
+	*x = CompleteGoodsReceiptRequest{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteGoodsReceiptRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteGoodsReceiptRequest) ProtoMessage() {}
+
+func (x *CompleteGoodsReceiptRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteGoodsReceiptRequest.ProtoReflect.Descriptor instead.
+func (*CompleteGoodsReceiptRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *CompleteGoodsReceiptRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *CompleteGoodsReceiptRequest) GetGoodsReceiptId() string {
+	if x != nil {
+		return x.GoodsReceiptId
+	}
+	return ""
+}
+
+type CompleteGoodsReceiptResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GoodsReceipt  *GoodsReceipt          `protobuf:"bytes,1,opt,name=goods_receipt,json=goodsReceipt,proto3" json:"goods_receipt,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CompleteGoodsReceiptResponse) Reset() {
+	*x = CompleteGoodsReceiptResponse{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteGoodsReceiptResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteGoodsReceiptResponse) ProtoMessage() {}
+
+func (x *CompleteGoodsReceiptResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteGoodsReceiptResponse.ProtoReflect.Descriptor instead.
+func (*CompleteGoodsReceiptResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *CompleteGoodsReceiptResponse) GetGoodsReceipt() *GoodsReceipt {
+	if x != nil {
+		return x.GoodsReceipt
+	}
+	return nil
+}
+
+type CancelGoodsReceiptRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	GarageId       string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	GoodsReceiptId string                 `protobuf:"bytes,2,opt,name=goods_receipt_id,json=goodsReceiptId,proto3" json:"goods_receipt_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *CancelGoodsReceiptRequest) Reset() {
+	*x = CancelGoodsReceiptRequest{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelGoodsReceiptRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelGoodsReceiptRequest) ProtoMessage() {}
+
+func (x *CancelGoodsReceiptRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelGoodsReceiptRequest.ProtoReflect.Descriptor instead.
+func (*CancelGoodsReceiptRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *CancelGoodsReceiptRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *CancelGoodsReceiptRequest) GetGoodsReceiptId() string {
+	if x != nil {
+		return x.GoodsReceiptId
+	}
+	return ""
+}
+
+type CancelGoodsReceiptResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GoodsReceipt  *GoodsReceipt          `protobuf:"bytes,1,opt,name=goods_receipt,json=goodsReceipt,proto3" json:"goods_receipt,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelGoodsReceiptResponse) Reset() {
+	*x = CancelGoodsReceiptResponse{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelGoodsReceiptResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelGoodsReceiptResponse) ProtoMessage() {}
+
+func (x *CancelGoodsReceiptResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelGoodsReceiptResponse.ProtoReflect.Descriptor instead.
+func (*CancelGoodsReceiptResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *CancelGoodsReceiptResponse) GetGoodsReceipt() *GoodsReceipt {
+	if x != nil {
+		return x.GoodsReceipt
+	}
+	return nil
+}
+
+// PartSupplier is one usual supplier of a part with the supplier's own code
+// and the last cost paid (FR-INV-19). One of them is the default that
+// pre-fills a receipt line's supplier.
+type PartSupplier struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	SupplierId   string                 `protobuf:"bytes,1,opt,name=supplier_id,json=supplierId,proto3" json:"supplier_id,omitempty"`
+	SupplierName string                 `protobuf:"bytes,2,opt,name=supplier_name,json=supplierName,proto3" json:"supplier_name,omitempty"`
+	// The supplier's own code for the part.
+	SupplierSku string `protobuf:"bytes,3,opt,name=supplier_sku,json=supplierSku,proto3" json:"supplier_sku,omitempty"`
+	// The last cost paid per base unit, whole VND; omitted when never paid.
+	LastUnitCost  *int64 `protobuf:"varint,4,opt,name=last_unit_cost,json=lastUnitCost,proto3,oneof" json:"last_unit_cost,omitempty"`
+	IsDefault     bool   `protobuf:"varint,5,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PartSupplier) Reset() {
+	*x = PartSupplier{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PartSupplier) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PartSupplier) ProtoMessage() {}
+
+func (x *PartSupplier) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PartSupplier.ProtoReflect.Descriptor instead.
+func (*PartSupplier) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *PartSupplier) GetSupplierId() string {
+	if x != nil {
+		return x.SupplierId
+	}
+	return ""
+}
+
+func (x *PartSupplier) GetSupplierName() string {
+	if x != nil {
+		return x.SupplierName
+	}
+	return ""
+}
+
+func (x *PartSupplier) GetSupplierSku() string {
+	if x != nil {
+		return x.SupplierSku
+	}
+	return ""
+}
+
+func (x *PartSupplier) GetLastUnitCost() int64 {
+	if x != nil && x.LastUnitCost != nil {
+		return *x.LastUnitCost
+	}
+	return 0
+}
+
+func (x *PartSupplier) GetIsDefault() bool {
+	if x != nil {
+		return x.IsDefault
+	}
+	return false
+}
+
+type GetPartSuppliersRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	PartId        string                 `protobuf:"bytes,2,opt,name=part_id,json=partId,proto3" json:"part_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPartSuppliersRequest) Reset() {
+	*x = GetPartSuppliersRequest{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPartSuppliersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPartSuppliersRequest) ProtoMessage() {}
+
+func (x *GetPartSuppliersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPartSuppliersRequest.ProtoReflect.Descriptor instead.
+func (*GetPartSuppliersRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *GetPartSuppliersRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *GetPartSuppliersRequest) GetPartId() string {
+	if x != nil {
+		return x.PartId
+	}
+	return ""
+}
+
+type GetPartSuppliersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []*PartSupplier        `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPartSuppliersResponse) Reset() {
+	*x = GetPartSuppliersResponse{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPartSuppliersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPartSuppliersResponse) ProtoMessage() {}
+
+func (x *GetPartSuppliersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPartSuppliersResponse.ProtoReflect.Descriptor instead.
+func (*GetPartSuppliersResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *GetPartSuppliersResponse) GetData() []*PartSupplier {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type PutPartSuppliersRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	PartId   string                 `protobuf:"bytes,2,opt,name=part_id,json=partId,proto3" json:"part_id,omitempty"`
+	// Replaces the part's list as a whole; at most one default.
+	Data          []*PartSupplier `protobuf:"bytes,3,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PutPartSuppliersRequest) Reset() {
+	*x = PutPartSuppliersRequest{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PutPartSuppliersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PutPartSuppliersRequest) ProtoMessage() {}
+
+func (x *PutPartSuppliersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PutPartSuppliersRequest.ProtoReflect.Descriptor instead.
+func (*PutPartSuppliersRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *PutPartSuppliersRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *PutPartSuppliersRequest) GetPartId() string {
+	if x != nil {
+		return x.PartId
+	}
+	return ""
+}
+
+func (x *PutPartSuppliersRequest) GetData() []*PartSupplier {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type PutPartSuppliersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []*PartSupplier        `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PutPartSuppliersResponse) Reset() {
+	*x = PutPartSuppliersResponse{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PutPartSuppliersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PutPartSuppliersResponse) ProtoMessage() {}
+
+func (x *PutPartSuppliersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PutPartSuppliersResponse.ProtoReflect.Descriptor instead.
+func (*PutPartSuppliersResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *PutPartSuppliersResponse) GetData() []*PartSupplier {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+// StockIssueLine is one part line of a stock issue, derived from the
+// matching part line of the repair order while it is a draft.
+type StockIssueLine struct {
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	Id                   string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	RepairOrderLineId    string                 `protobuf:"bytes,2,opt,name=repair_order_line_id,json=repairOrderLineId,proto3" json:"repair_order_line_id,omitempty"`
+	PartId               string                 `protobuf:"bytes,3,opt,name=part_id,json=partId,proto3" json:"part_id,omitempty"`
+	PartSku              string                 `protobuf:"bytes,4,opt,name=part_sku,json=partSku,proto3" json:"part_sku,omitempty"`
+	PartName             string                 `protobuf:"bytes,5,opt,name=part_name,json=partName,proto3" json:"part_name,omitempty"`
+	BaseUnitAbbreviation string                 `protobuf:"bytes,6,opt,name=base_unit_abbreviation,json=baseUnitAbbreviation,proto3" json:"base_unit_abbreviation,omitempty"`
+	UnitId               *string                `protobuf:"bytes,7,opt,name=unit_id,json=unitId,proto3,oneof" json:"unit_id,omitempty"`
+	UnitAbbreviation     string                 `protobuf:"bytes,8,opt,name=unit_abbreviation,json=unitAbbreviation,proto3" json:"unit_abbreviation,omitempty"`
+	EnteredQuantity      string                 `protobuf:"bytes,9,opt,name=entered_quantity,json=enteredQuantity,proto3" json:"entered_quantity,omitempty"`
+	// The base-unit amount posted on the issue.
+	Quantity string `protobuf:"bytes,10,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	// The cost snapshot per base unit, whole VND; omitted without
+	// PERMISSION_INVENTORY_COST_READ.
+	UnitCost      *int64 `protobuf:"varint,11,opt,name=unit_cost,json=unitCost,proto3,oneof" json:"unit_cost,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StockIssueLine) Reset() {
+	*x = StockIssueLine{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StockIssueLine) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StockIssueLine) ProtoMessage() {}
+
+func (x *StockIssueLine) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StockIssueLine.ProtoReflect.Descriptor instead.
+func (*StockIssueLine) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *StockIssueLine) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *StockIssueLine) GetRepairOrderLineId() string {
+	if x != nil {
+		return x.RepairOrderLineId
+	}
+	return ""
+}
+
+func (x *StockIssueLine) GetPartId() string {
+	if x != nil {
+		return x.PartId
+	}
+	return ""
+}
+
+func (x *StockIssueLine) GetPartSku() string {
+	if x != nil {
+		return x.PartSku
+	}
+	return ""
+}
+
+func (x *StockIssueLine) GetPartName() string {
+	if x != nil {
+		return x.PartName
+	}
+	return ""
+}
+
+func (x *StockIssueLine) GetBaseUnitAbbreviation() string {
+	if x != nil {
+		return x.BaseUnitAbbreviation
+	}
+	return ""
+}
+
+func (x *StockIssueLine) GetUnitId() string {
+	if x != nil && x.UnitId != nil {
+		return *x.UnitId
+	}
+	return ""
+}
+
+func (x *StockIssueLine) GetUnitAbbreviation() string {
+	if x != nil {
+		return x.UnitAbbreviation
+	}
+	return ""
+}
+
+func (x *StockIssueLine) GetEnteredQuantity() string {
+	if x != nil {
+		return x.EnteredQuantity
+	}
+	return ""
+}
+
+func (x *StockIssueLine) GetQuantity() string {
+	if x != nil {
+		return x.Quantity
+	}
+	return ""
+}
+
+func (x *StockIssueLine) GetUnitCost() int64 {
+	if x != nil && x.UnitCost != nil {
+		return *x.UnitCost
+	}
+	return 0
+}
+
+// StockIssue is the numbered stock-out document of a repair order
+// (FR-INV-20). It is created as a draft with the repair order and follows
+// it until posted; printing it uses the standard document layout.
+type StockIssue struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Id       string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	GarageId string                 `protobuf:"bytes,2,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	// Rendered from the garage's stock_issue numbering template (FR-TEN-05).
+	Number            string                 `protobuf:"bytes,3,opt,name=number,proto3" json:"number,omitempty"`
+	RepairOrderId     string                 `protobuf:"bytes,4,opt,name=repair_order_id,json=repairOrderId,proto3" json:"repair_order_id,omitempty"`
+	RepairOrderNumber string                 `protobuf:"bytes,5,opt,name=repair_order_number,json=repairOrderNumber,proto3" json:"repair_order_number,omitempty"`
+	Status            StockIssueStatus       `protobuf:"varint,6,opt,name=status,proto3,enum=vietgara.inventory.v1.StockIssueStatus" json:"status,omitempty"`
+	Lines             []*StockIssueLine      `protobuf:"bytes,7,rep,name=lines,proto3" json:"lines,omitempty"`
+	PostedAt          *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=posted_at,json=postedAt,proto3" json:"posted_at,omitempty"`
+	PostedByName      string                 `protobuf:"bytes,9,opt,name=posted_by_name,json=postedByName,proto3" json:"posted_by_name,omitempty"`
+	CreatedAt         *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt         *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *StockIssue) Reset() {
+	*x = StockIssue{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StockIssue) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StockIssue) ProtoMessage() {}
+
+func (x *StockIssue) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StockIssue.ProtoReflect.Descriptor instead.
+func (*StockIssue) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *StockIssue) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *StockIssue) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *StockIssue) GetNumber() string {
+	if x != nil {
+		return x.Number
+	}
+	return ""
+}
+
+func (x *StockIssue) GetRepairOrderId() string {
+	if x != nil {
+		return x.RepairOrderId
+	}
+	return ""
+}
+
+func (x *StockIssue) GetRepairOrderNumber() string {
+	if x != nil {
+		return x.RepairOrderNumber
+	}
+	return ""
+}
+
+func (x *StockIssue) GetStatus() StockIssueStatus {
+	if x != nil {
+		return x.Status
+	}
+	return StockIssueStatus_STOCK_ISSUE_STATUS_UNSPECIFIED
+}
+
+func (x *StockIssue) GetLines() []*StockIssueLine {
+	if x != nil {
+		return x.Lines
+	}
+	return nil
+}
+
+func (x *StockIssue) GetPostedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.PostedAt
+	}
+	return nil
+}
+
+func (x *StockIssue) GetPostedByName() string {
+	if x != nil {
+		return x.PostedByName
+	}
+	return ""
+}
+
+func (x *StockIssue) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *StockIssue) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
+type GetRepairOrderStockIssueRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	RepairOrderId string                 `protobuf:"bytes,2,opt,name=repair_order_id,json=repairOrderId,proto3" json:"repair_order_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRepairOrderStockIssueRequest) Reset() {
+	*x = GetRepairOrderStockIssueRequest{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRepairOrderStockIssueRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRepairOrderStockIssueRequest) ProtoMessage() {}
+
+func (x *GetRepairOrderStockIssueRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRepairOrderStockIssueRequest.ProtoReflect.Descriptor instead.
+func (*GetRepairOrderStockIssueRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *GetRepairOrderStockIssueRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *GetRepairOrderStockIssueRequest) GetRepairOrderId() string {
+	if x != nil {
+		return x.RepairOrderId
+	}
+	return ""
+}
+
+type GetRepairOrderStockIssueResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StockIssue    *StockIssue            `protobuf:"bytes,1,opt,name=stock_issue,json=stockIssue,proto3" json:"stock_issue,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRepairOrderStockIssueResponse) Reset() {
+	*x = GetRepairOrderStockIssueResponse{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRepairOrderStockIssueResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRepairOrderStockIssueResponse) ProtoMessage() {}
+
+func (x *GetRepairOrderStockIssueResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRepairOrderStockIssueResponse.ProtoReflect.Descriptor instead.
+func (*GetRepairOrderStockIssueResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *GetRepairOrderStockIssueResponse) GetStockIssue() *StockIssue {
+	if x != nil {
+		return x.StockIssue
+	}
+	return nil
+}
+
+type PostStockIssueRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	StockIssueId  string                 `protobuf:"bytes,2,opt,name=stock_issue_id,json=stockIssueId,proto3" json:"stock_issue_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PostStockIssueRequest) Reset() {
+	*x = PostStockIssueRequest{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PostStockIssueRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PostStockIssueRequest) ProtoMessage() {}
+
+func (x *PostStockIssueRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PostStockIssueRequest.ProtoReflect.Descriptor instead.
+func (*PostStockIssueRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *PostStockIssueRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *PostStockIssueRequest) GetStockIssueId() string {
+	if x != nil {
+		return x.StockIssueId
+	}
+	return ""
+}
+
+type PostStockIssueResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StockIssue    *StockIssue            `protobuf:"bytes,1,opt,name=stock_issue,json=stockIssue,proto3" json:"stock_issue,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PostStockIssueResponse) Reset() {
+	*x = PostStockIssueResponse{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PostStockIssueResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PostStockIssueResponse) ProtoMessage() {}
+
+func (x *PostStockIssueResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PostStockIssueResponse.ProtoReflect.Descriptor instead.
+func (*PostStockIssueResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *PostStockIssueResponse) GetStockIssue() *StockIssue {
+	if x != nil {
+		return x.StockIssue
+	}
+	return nil
+}
+
+// PurchaseLine is one line of a completed goods receipt in the purchases
+// report (FR-INV-19).
+type PurchaseLine struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	GoodsReceiptId     string                 `protobuf:"bytes,1,opt,name=goods_receipt_id,json=goodsReceiptId,proto3" json:"goods_receipt_id,omitempty"`
+	GoodsReceiptNumber string                 `protobuf:"bytes,2,opt,name=goods_receipt_number,json=goodsReceiptNumber,proto3" json:"goods_receipt_number,omitempty"`
+	// The receipt date, "YYYY-MM-DD".
+	ReceiptDate  string `protobuf:"bytes,3,opt,name=receipt_date,json=receiptDate,proto3" json:"receipt_date,omitempty"`
+	SupplierId   string `protobuf:"bytes,4,opt,name=supplier_id,json=supplierId,proto3" json:"supplier_id,omitempty"`
+	SupplierName string `protobuf:"bytes,5,opt,name=supplier_name,json=supplierName,proto3" json:"supplier_name,omitempty"`
+	PartId       string `protobuf:"bytes,6,opt,name=part_id,json=partId,proto3" json:"part_id,omitempty"`
+	PartSku      string `protobuf:"bytes,7,opt,name=part_sku,json=partSku,proto3" json:"part_sku,omitempty"`
+	PartName     string `protobuf:"bytes,8,opt,name=part_name,json=partName,proto3" json:"part_name,omitempty"`
+	// The base-unit amount.
+	Quantity             string `protobuf:"bytes,9,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	BaseUnitAbbreviation string `protobuf:"bytes,10,opt,name=base_unit_abbreviation,json=baseUnitAbbreviation,proto3" json:"base_unit_abbreviation,omitempty"`
+	// The cost per base unit, whole VND.
+	UnitCost int64 `protobuf:"varint,11,opt,name=unit_cost,json=unitCost,proto3" json:"unit_cost,omitempty"`
+	// quantity times unit_cost, whole VND.
+	Amount        int64 `protobuf:"varint,12,opt,name=amount,proto3" json:"amount,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PurchaseLine) Reset() {
+	*x = PurchaseLine{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PurchaseLine) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PurchaseLine) ProtoMessage() {}
+
+func (x *PurchaseLine) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PurchaseLine.ProtoReflect.Descriptor instead.
+func (*PurchaseLine) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *PurchaseLine) GetGoodsReceiptId() string {
+	if x != nil {
+		return x.GoodsReceiptId
+	}
+	return ""
+}
+
+func (x *PurchaseLine) GetGoodsReceiptNumber() string {
+	if x != nil {
+		return x.GoodsReceiptNumber
+	}
+	return ""
+}
+
+func (x *PurchaseLine) GetReceiptDate() string {
+	if x != nil {
+		return x.ReceiptDate
+	}
+	return ""
+}
+
+func (x *PurchaseLine) GetSupplierId() string {
+	if x != nil {
+		return x.SupplierId
+	}
+	return ""
+}
+
+func (x *PurchaseLine) GetSupplierName() string {
+	if x != nil {
+		return x.SupplierName
+	}
+	return ""
+}
+
+func (x *PurchaseLine) GetPartId() string {
+	if x != nil {
+		return x.PartId
+	}
+	return ""
+}
+
+func (x *PurchaseLine) GetPartSku() string {
+	if x != nil {
+		return x.PartSku
+	}
+	return ""
+}
+
+func (x *PurchaseLine) GetPartName() string {
+	if x != nil {
+		return x.PartName
+	}
+	return ""
+}
+
+func (x *PurchaseLine) GetQuantity() string {
+	if x != nil {
+		return x.Quantity
+	}
+	return ""
+}
+
+func (x *PurchaseLine) GetBaseUnitAbbreviation() string {
+	if x != nil {
+		return x.BaseUnitAbbreviation
+	}
+	return ""
+}
+
+func (x *PurchaseLine) GetUnitCost() int64 {
+	if x != nil {
+		return x.UnitCost
+	}
+	return 0
+}
+
+func (x *PurchaseLine) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+type GetPurchasesReportRequest struct {
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	GarageId   string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	SupplierId string                 `protobuf:"bytes,2,opt,name=supplier_id,json=supplierId,proto3" json:"supplier_id,omitempty"`
+	// Inclusive, "YYYY-MM-DD" in the garage's timezone.
+	From string `protobuf:"bytes,3,opt,name=from,proto3" json:"from,omitempty"`
+	// Exclusive, "YYYY-MM-DD".
+	To            string `protobuf:"bytes,4,opt,name=to,proto3" json:"to,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPurchasesReportRequest) Reset() {
+	*x = GetPurchasesReportRequest{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPurchasesReportRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPurchasesReportRequest) ProtoMessage() {}
+
+func (x *GetPurchasesReportRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPurchasesReportRequest.ProtoReflect.Descriptor instead.
+func (*GetPurchasesReportRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *GetPurchasesReportRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *GetPurchasesReportRequest) GetSupplierId() string {
+	if x != nil {
+		return x.SupplierId
+	}
+	return ""
+}
+
+func (x *GetPurchasesReportRequest) GetFrom() string {
+	if x != nil {
+		return x.From
+	}
+	return ""
+}
+
+func (x *GetPurchasesReportRequest) GetTo() string {
+	if x != nil {
+		return x.To
+	}
+	return ""
+}
+
+type GetPurchasesReportResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Data  []*PurchaseLine        `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	// Sum of every line's amount, over the requested range.
+	TotalAmount   int64 `protobuf:"varint,2,opt,name=total_amount,json=totalAmount,proto3" json:"total_amount,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPurchasesReportResponse) Reset() {
+	*x = GetPurchasesReportResponse{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPurchasesReportResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPurchasesReportResponse) ProtoMessage() {}
+
+func (x *GetPurchasesReportResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPurchasesReportResponse.ProtoReflect.Descriptor instead.
+func (*GetPurchasesReportResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *GetPurchasesReportResponse) GetData() []*PurchaseLine {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *GetPurchasesReportResponse) GetTotalAmount() int64 {
+	if x != nil {
+		return x.TotalAmount
+	}
+	return 0
+}
+
+// StockValuationLine is one part's quantity and value at a date
+// (FR-INV-07). Only callers with PERMISSION_INVENTORY_COST_READ see it.
+type StockValuationLine struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	PartId       string                 `protobuf:"bytes,1,opt,name=part_id,json=partId,proto3" json:"part_id,omitempty"`
+	PartSku      string                 `protobuf:"bytes,2,opt,name=part_sku,json=partSku,proto3" json:"part_sku,omitempty"`
+	PartName     string                 `protobuf:"bytes,3,opt,name=part_name,json=partName,proto3" json:"part_name,omitempty"`
+	CategoryId   string                 `protobuf:"bytes,4,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	CategoryName string                 `protobuf:"bytes,5,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
+	// The base-unit amount on hand.
+	QuantityOnHand       string `protobuf:"bytes,6,opt,name=quantity_on_hand,json=quantityOnHand,proto3" json:"quantity_on_hand,omitempty"`
+	BaseUnitAbbreviation string `protobuf:"bytes,7,opt,name=base_unit_abbreviation,json=baseUnitAbbreviation,proto3" json:"base_unit_abbreviation,omitempty"`
+	// The weighted-average cost per base unit, whole VND.
+	AverageCost int64 `protobuf:"varint,8,opt,name=average_cost,json=averageCost,proto3" json:"average_cost,omitempty"`
+	// quantity_on_hand times average_cost, whole VND.
+	Value         int64 `protobuf:"varint,9,opt,name=value,proto3" json:"value,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StockValuationLine) Reset() {
+	*x = StockValuationLine{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StockValuationLine) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StockValuationLine) ProtoMessage() {}
+
+func (x *StockValuationLine) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StockValuationLine.ProtoReflect.Descriptor instead.
+func (*StockValuationLine) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *StockValuationLine) GetPartId() string {
+	if x != nil {
+		return x.PartId
+	}
+	return ""
+}
+
+func (x *StockValuationLine) GetPartSku() string {
+	if x != nil {
+		return x.PartSku
+	}
+	return ""
+}
+
+func (x *StockValuationLine) GetPartName() string {
+	if x != nil {
+		return x.PartName
+	}
+	return ""
+}
+
+func (x *StockValuationLine) GetCategoryId() string {
+	if x != nil {
+		return x.CategoryId
+	}
+	return ""
+}
+
+func (x *StockValuationLine) GetCategoryName() string {
+	if x != nil {
+		return x.CategoryName
+	}
+	return ""
+}
+
+func (x *StockValuationLine) GetQuantityOnHand() string {
+	if x != nil {
+		return x.QuantityOnHand
+	}
+	return ""
+}
+
+func (x *StockValuationLine) GetBaseUnitAbbreviation() string {
+	if x != nil {
+		return x.BaseUnitAbbreviation
+	}
+	return ""
+}
+
+func (x *StockValuationLine) GetAverageCost() int64 {
+	if x != nil {
+		return x.AverageCost
+	}
+	return 0
+}
+
+func (x *StockValuationLine) GetValue() int64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+// StockValuationCategory is one category's total value.
+type StockValuationCategory struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CategoryId    string                 `protobuf:"bytes,1,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	CategoryName  string                 `protobuf:"bytes,2,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
+	Value         int64                  `protobuf:"varint,3,opt,name=value,proto3" json:"value,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StockValuationCategory) Reset() {
+	*x = StockValuationCategory{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StockValuationCategory) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StockValuationCategory) ProtoMessage() {}
+
+func (x *StockValuationCategory) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StockValuationCategory.ProtoReflect.Descriptor instead.
+func (*StockValuationCategory) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *StockValuationCategory) GetCategoryId() string {
+	if x != nil {
+		return x.CategoryId
+	}
+	return ""
+}
+
+func (x *StockValuationCategory) GetCategoryName() string {
+	if x != nil {
+		return x.CategoryName
+	}
+	return ""
+}
+
+func (x *StockValuationCategory) GetValue() int64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+type GetStockValuationReportRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	// The date to value at, "YYYY-MM-DD" in the garage's timezone; empty
+	// means today.
+	At            string `protobuf:"bytes,2,opt,name=at,proto3" json:"at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetStockValuationReportRequest) Reset() {
+	*x = GetStockValuationReportRequest{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetStockValuationReportRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetStockValuationReportRequest) ProtoMessage() {}
+
+func (x *GetStockValuationReportRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetStockValuationReportRequest.ProtoReflect.Descriptor instead.
+func (*GetStockValuationReportRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *GetStockValuationReportRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *GetStockValuationReportRequest) GetAt() string {
+	if x != nil {
+		return x.At
+	}
+	return ""
+}
+
+type GetStockValuationReportResponse struct {
+	state      protoimpl.MessageState    `protogen:"open.v1"`
+	Data       []*StockValuationLine     `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	Categories []*StockValuationCategory `protobuf:"bytes,2,rep,name=categories,proto3" json:"categories,omitempty"`
+	TotalValue int64                     `protobuf:"varint,3,opt,name=total_value,json=totalValue,proto3" json:"total_value,omitempty"`
+	// The date valued at, "YYYY-MM-DD"; today when the request left it
+	// empty.
+	At            string `protobuf:"bytes,4,opt,name=at,proto3" json:"at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetStockValuationReportResponse) Reset() {
+	*x = GetStockValuationReportResponse{}
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetStockValuationReportResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetStockValuationReportResponse) ProtoMessage() {}
+
+func (x *GetStockValuationReportResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_inventory_v1_inventory_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetStockValuationReportResponse.ProtoReflect.Descriptor instead.
+func (*GetStockValuationReportResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_inventory_v1_inventory_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *GetStockValuationReportResponse) GetData() []*StockValuationLine {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *GetStockValuationReportResponse) GetCategories() []*StockValuationCategory {
+	if x != nil {
+		return x.Categories
+	}
+	return nil
+}
+
+func (x *GetStockValuationReportResponse) GetTotalValue() int64 {
+	if x != nil {
+		return x.TotalValue
+	}
+	return 0
+}
+
+func (x *GetStockValuationReportResponse) GetAt() string {
+	if x != nil {
+		return x.At
+	}
+	return ""
+}
+
 var File_vietgara_inventory_v1_inventory_proto protoreflect.FileDescriptor
 
 const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\n" +
-	"%vietgara/inventory/v1/inventory.proto\x12\x15vietgara.inventory.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xd4\x03\n" +
+	"%vietgara/inventory/v1/inventory.proto\x12\x15vietgara.inventory.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xb3\x05\n" +
 	"\n" +
 	"StockLevel\x12\x1c\n" +
 	"\apart_id\x18\x01 \x01(\tB\x03\xe0A\x03R\x06partId\x12\x15\n" +
@@ -955,7 +3237,14 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\x10quantity_on_hand\x18\n" +
 	" \x01(\tB\x03\xe0A\x03R\x0equantityOnHand\x120\n" +
 	"\x11reorder_threshold\x18\v \x01(\tB\x03\xe0A\x03R\x10reorderThreshold\x12 \n" +
-	"\tlow_stock\x18\f \x01(\bB\x03\xe0A\x03R\blowStock\"\x80\x02\n" +
+	"\tlow_stock\x18\f \x01(\bB\x03\xe0A\x03R\blowStock\x120\n" +
+	"\x11quantity_reserved\x18\r \x01(\tB\x03\xe0A\x03R\x10quantityReserved\x122\n" +
+	"\x12quantity_available\x18\x0e \x01(\tB\x03\xe0A\x03R\x11quantityAvailable\x12+\n" +
+	"\faverage_cost\x18\x0f \x01(\x03B\x03\xe0A\x03H\x00R\vaverageCost\x88\x01\x01\x12)\n" +
+	"\vstock_value\x18\x10 \x01(\x03B\x03\xe0A\x03H\x01R\n" +
+	"stockValue\x88\x01\x01B\x0f\n" +
+	"\r_average_costB\x0e\n" +
+	"\f_stock_value\"\x80\x02\n" +
 	"\x16ListStockLevelsRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x14\n" +
 	"\x05query\x18\x02 \x01(\tR\x05query\x12\x1f\n" +
@@ -979,9 +3268,9 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"stockLevel\"\x9b\x05\n" +
 	"\x10StockTransaction\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x1c\n" +
-	"\aitem_id\x18\x02 \x01(\tB\x03\xe0A\x03R\x06itemId\x12\x1e\n" +
-	"\bitem_sku\x18\x03 \x01(\tB\x03\xe0A\x03R\aitemSku\x12 \n" +
-	"\titem_name\x18\x04 \x01(\tB\x03\xe0A\x03R\bitemName\x12D\n" +
+	"\apart_id\x18\x02 \x01(\tB\x03\xe0A\x03R\x06partId\x12\x1e\n" +
+	"\bpart_sku\x18\x03 \x01(\tB\x03\xe0A\x03R\apartSku\x12 \n" +
+	"\tpart_name\x18\x04 \x01(\tB\x03\xe0A\x03R\bpartName\x12D\n" +
 	"\x04type\x18\x05 \x01(\x0e2+.vietgara.inventory.v1.StockTransactionTypeB\x03\xe0A\x03R\x04type\x12\x1f\n" +
 	"\bquantity\x18\x06 \x01(\tB\x03\xe0A\x03R\bquantity\x12%\n" +
 	"\tunit_cost\x18\a \x01(\x03B\x03\xe0A\x03H\x00R\bunitCost\x88\x01\x01\x12N\n" +
@@ -997,22 +3286,10 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\n" +
 	"_unit_costB\n" +
 	"\n" +
-	"\b_unit_id\"\xc3\x01\n" +
-	"\x19CreateStockReceiptRequest\x12 \n" +
-	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1c\n" +
-	"\aitem_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06itemId\x12\x1f\n" +
-	"\bquantity\x18\x03 \x01(\tB\x03\xe0A\x02R\bquantity\x12\x1b\n" +
-	"\tunit_cost\x18\x04 \x01(\x03R\bunitCost\x12\x1c\n" +
-	"\aunit_id\x18\x05 \x01(\tH\x00R\x06unitId\x88\x01\x01B\n" +
-	"\n" +
-	"\b_unit_id\"\xab\x01\n" +
-	"\x1aCreateStockReceiptResponse\x12I\n" +
-	"\vtransaction\x18\x01 \x01(\v2'.vietgara.inventory.v1.StockTransactionR\vtransaction\x12B\n" +
-	"\vstock_level\x18\x02 \x01(\v2!.vietgara.inventory.v1.StockLevelR\n" +
-	"stockLevel\"\xcb\x01\n" +
+	"\b_unit_id\"\xcb\x01\n" +
 	"\x1cListStockTransactionsRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x17\n" +
-	"\aitem_id\x18\x02 \x01(\tR\x06itemId\x12?\n" +
+	"\apart_id\x18\x02 \x01(\tR\x06partId\x12?\n" +
 	"\x04type\x18\x03 \x01(\x0e2+.vietgara.inventory.v1.StockTransactionTypeR\x04type\x12\x12\n" +
 	"\x04page\x18\x04 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x05 \x01(\x05R\bpageSize\"\x9c\x01\n" +
@@ -1020,20 +3297,243 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\x04data\x18\x01 \x03(\v2'.vietgara.inventory.v1.StockTransactionR\x04data\x12>\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1e.vietgara.common.v1.PaginationR\n" +
-	"pagination*}\n" +
+	"pagination\"\xa0\x04\n" +
+	"\x10GoodsReceiptLine\x12\x13\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x1c\n" +
+	"\apart_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06partId\x12\x1e\n" +
+	"\bpart_sku\x18\x03 \x01(\tB\x03\xe0A\x03R\apartSku\x12 \n" +
+	"\tpart_name\x18\x04 \x01(\tB\x03\xe0A\x03R\bpartName\x129\n" +
+	"\x16base_unit_abbreviation\x18\x05 \x01(\tB\x03\xe0A\x03R\x14baseUnitAbbreviation\x12\x1c\n" +
+	"\aunit_id\x18\x06 \x01(\tH\x00R\x06unitId\x88\x01\x01\x120\n" +
+	"\x11unit_abbreviation\x18\a \x01(\tB\x03\xe0A\x03R\x10unitAbbreviation\x12)\n" +
+	"\x10entered_quantity\x18\b \x01(\tR\x0fenteredQuantity\x12\x1f\n" +
+	"\bquantity\x18\t \x01(\tB\x03\xe0A\x03R\bquantity\x12\x1f\n" +
+	"\vsupplier_id\x18\n" +
+	" \x01(\tR\n" +
+	"supplierId\x12(\n" +
+	"\rsupplier_name\x18\v \x01(\tB\x03\xe0A\x03R\fsupplierName\x12 \n" +
+	"\tunit_cost\x18\f \x01(\x03H\x01R\bunitCost\x88\x01\x01\x12)\n" +
+	"\vline_amount\x18\r \x01(\x03B\x03\xe0A\x03H\x02R\n" +
+	"lineAmount\x88\x01\x01B\n" +
+	"\n" +
+	"\b_unit_idB\f\n" +
+	"\n" +
+	"_unit_costB\x0e\n" +
+	"\f_line_amount\"\xa0\x06\n" +
+	"\fGoodsReceipt\x12\x13\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
+	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\x1b\n" +
+	"\x06number\x18\x03 \x01(\tB\x03\xe0A\x03R\x06number\x12F\n" +
+	"\x06status\x18\x04 \x01(\x0e2).vietgara.inventory.v1.GoodsReceiptStatusB\x03\xe0A\x03R\x06status\x123\n" +
+	"\x13default_supplier_id\x18\x05 \x01(\tH\x00R\x11defaultSupplierId\x88\x01\x01\x127\n" +
+	"\x15default_supplier_name\x18\x06 \x01(\tB\x03\xe0A\x03R\x13defaultSupplierName\x12!\n" +
+	"\freceipt_date\x18\a \x01(\tR\vreceiptDate\x120\n" +
+	"\x14delivery_note_number\x18\b \x01(\tR\x12deliveryNoteNumber\x12\x14\n" +
+	"\x05notes\x18\t \x01(\tR\x05notes\x12=\n" +
+	"\x05lines\x18\n" +
+	" \x03(\v2'.vietgara.inventory.v1.GoodsReceiptLineR\x05lines\x12+\n" +
+	"\ftotal_amount\x18\v \x01(\x03B\x03\xe0A\x03H\x01R\vtotalAmount\x88\x01\x01\x12B\n" +
+	"\fcompleted_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\vcompletedAt\x12B\n" +
+	"\fcancelled_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\vcancelledAt\x12>\n" +
+	"\n" +
+	"created_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
+	"\n" +
+	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\x16\n" +
+	"\x14_default_supplier_idB\x0f\n" +
+	"\r_total_amount\"\xe7\x01\n" +
+	"\x18ListGoodsReceiptsRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x14\n" +
+	"\x05query\x18\x02 \x01(\tR\x05query\x12\x1f\n" +
+	"\vsupplier_id\x18\x03 \x01(\tR\n" +
+	"supplierId\x12A\n" +
+	"\x06status\x18\x04 \x01(\x0e2).vietgara.inventory.v1.GoodsReceiptStatusR\x06status\x12\x12\n" +
+	"\x04page\x18\x05 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x06 \x01(\x05R\bpageSize\"\x94\x01\n" +
+	"\x19ListGoodsReceiptsResponse\x127\n" +
+	"\x04data\x18\x01 \x03(\v2#.vietgara.inventory.v1.GoodsReceiptR\x04data\x12>\n" +
+	"\n" +
+	"pagination\x18\x02 \x01(\v2\x1e.vietgara.common.v1.PaginationR\n" +
+	"pagination\"i\n" +
+	"\x16GetGoodsReceiptRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12-\n" +
+	"\x10goods_receipt_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0egoodsReceiptId\"c\n" +
+	"\x17GetGoodsReceiptResponse\x12H\n" +
+	"\rgoods_receipt\x18\x01 \x01(\v2#.vietgara.inventory.v1.GoodsReceiptR\fgoodsReceipt\"\x8c\x01\n" +
+	"\x19CreateGoodsReceiptRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12M\n" +
+	"\rgoods_receipt\x18\x02 \x01(\v2#.vietgara.inventory.v1.GoodsReceiptB\x03\xe0A\x02R\fgoodsReceipt\"f\n" +
+	"\x1aCreateGoodsReceiptResponse\x12H\n" +
+	"\rgoods_receipt\x18\x01 \x01(\v2#.vietgara.inventory.v1.GoodsReceiptR\fgoodsReceipt\"\xf8\x01\n" +
+	"\x19UpdateGoodsReceiptRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12-\n" +
+	"\x10goods_receipt_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0egoodsReceiptId\x12M\n" +
+	"\rgoods_receipt\x18\x03 \x01(\v2#.vietgara.inventory.v1.GoodsReceiptB\x03\xe0A\x02R\fgoodsReceipt\x12;\n" +
+	"\vupdate_mask\x18\x04 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
+	"updateMask\"f\n" +
+	"\x1aUpdateGoodsReceiptResponse\x12H\n" +
+	"\rgoods_receipt\x18\x01 \x01(\v2#.vietgara.inventory.v1.GoodsReceiptR\fgoodsReceipt\"n\n" +
+	"\x1bCompleteGoodsReceiptRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12-\n" +
+	"\x10goods_receipt_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0egoodsReceiptId\"h\n" +
+	"\x1cCompleteGoodsReceiptResponse\x12H\n" +
+	"\rgoods_receipt\x18\x01 \x01(\v2#.vietgara.inventory.v1.GoodsReceiptR\fgoodsReceipt\"l\n" +
+	"\x19CancelGoodsReceiptRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12-\n" +
+	"\x10goods_receipt_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0egoodsReceiptId\"f\n" +
+	"\x1aCancelGoodsReceiptResponse\x12H\n" +
+	"\rgoods_receipt\x18\x01 \x01(\v2#.vietgara.inventory.v1.GoodsReceiptR\fgoodsReceipt\"\xe3\x01\n" +
+	"\fPartSupplier\x12$\n" +
+	"\vsupplier_id\x18\x01 \x01(\tB\x03\xe0A\x02R\n" +
+	"supplierId\x12(\n" +
+	"\rsupplier_name\x18\x02 \x01(\tB\x03\xe0A\x03R\fsupplierName\x12!\n" +
+	"\fsupplier_sku\x18\x03 \x01(\tR\vsupplierSku\x12.\n" +
+	"\x0elast_unit_cost\x18\x04 \x01(\x03B\x03\xe0A\x03H\x00R\flastUnitCost\x88\x01\x01\x12\x1d\n" +
+	"\n" +
+	"is_default\x18\x05 \x01(\bR\tisDefaultB\x11\n" +
+	"\x0f_last_unit_cost\"Y\n" +
+	"\x17GetPartSuppliersRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1c\n" +
+	"\apart_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06partId\"S\n" +
+	"\x18GetPartSuppliersResponse\x127\n" +
+	"\x04data\x18\x01 \x03(\v2#.vietgara.inventory.v1.PartSupplierR\x04data\"\x92\x01\n" +
+	"\x17PutPartSuppliersRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1c\n" +
+	"\apart_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06partId\x127\n" +
+	"\x04data\x18\x03 \x03(\v2#.vietgara.inventory.v1.PartSupplierR\x04data\"S\n" +
+	"\x18PutPartSuppliersResponse\x127\n" +
+	"\x04data\x18\x01 \x03(\v2#.vietgara.inventory.v1.PartSupplierR\x04data\"\xdd\x03\n" +
+	"\x0eStockIssueLine\x12\x13\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x124\n" +
+	"\x14repair_order_line_id\x18\x02 \x01(\tB\x03\xe0A\x03R\x11repairOrderLineId\x12\x1c\n" +
+	"\apart_id\x18\x03 \x01(\tB\x03\xe0A\x03R\x06partId\x12\x1e\n" +
+	"\bpart_sku\x18\x04 \x01(\tB\x03\xe0A\x03R\apartSku\x12 \n" +
+	"\tpart_name\x18\x05 \x01(\tB\x03\xe0A\x03R\bpartName\x129\n" +
+	"\x16base_unit_abbreviation\x18\x06 \x01(\tB\x03\xe0A\x03R\x14baseUnitAbbreviation\x12!\n" +
+	"\aunit_id\x18\a \x01(\tB\x03\xe0A\x03H\x00R\x06unitId\x88\x01\x01\x120\n" +
+	"\x11unit_abbreviation\x18\b \x01(\tB\x03\xe0A\x03R\x10unitAbbreviation\x12.\n" +
+	"\x10entered_quantity\x18\t \x01(\tB\x03\xe0A\x03R\x0fenteredQuantity\x12\x1f\n" +
+	"\bquantity\x18\n" +
+	" \x01(\tB\x03\xe0A\x03R\bquantity\x12%\n" +
+	"\tunit_cost\x18\v \x01(\x03B\x03\xe0A\x03H\x01R\bunitCost\x88\x01\x01B\n" +
+	"\n" +
+	"\b_unit_idB\f\n" +
+	"\n" +
+	"_unit_cost\"\xb3\x04\n" +
+	"\n" +
+	"StockIssue\x12\x13\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
+	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\x1b\n" +
+	"\x06number\x18\x03 \x01(\tB\x03\xe0A\x03R\x06number\x12+\n" +
+	"\x0frepair_order_id\x18\x04 \x01(\tB\x03\xe0A\x03R\rrepairOrderId\x123\n" +
+	"\x13repair_order_number\x18\x05 \x01(\tB\x03\xe0A\x03R\x11repairOrderNumber\x12D\n" +
+	"\x06status\x18\x06 \x01(\x0e2'.vietgara.inventory.v1.StockIssueStatusB\x03\xe0A\x03R\x06status\x12@\n" +
+	"\x05lines\x18\a \x03(\v2%.vietgara.inventory.v1.StockIssueLineB\x03\xe0A\x03R\x05lines\x12<\n" +
+	"\tposted_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\bpostedAt\x12)\n" +
+	"\x0eposted_by_name\x18\t \x01(\tB\x03\xe0A\x03R\fpostedByName\x12>\n" +
+	"\n" +
+	"created_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
+	"\n" +
+	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\"p\n" +
+	"\x1fGetRepairOrderStockIssueRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12+\n" +
+	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\"f\n" +
+	" GetRepairOrderStockIssueResponse\x12B\n" +
+	"\vstock_issue\x18\x01 \x01(\v2!.vietgara.inventory.v1.StockIssueR\n" +
+	"stockIssue\"d\n" +
+	"\x15PostStockIssueRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12)\n" +
+	"\x0estock_issue_id\x18\x02 \x01(\tB\x03\xe0A\x02R\fstockIssueId\"\\\n" +
+	"\x16PostStockIssueResponse\x12B\n" +
+	"\vstock_issue\x18\x01 \x01(\v2!.vietgara.inventory.v1.StockIssueR\n" +
+	"stockIssue\"\xe7\x03\n" +
+	"\fPurchaseLine\x12-\n" +
+	"\x10goods_receipt_id\x18\x01 \x01(\tB\x03\xe0A\x03R\x0egoodsReceiptId\x125\n" +
+	"\x14goods_receipt_number\x18\x02 \x01(\tB\x03\xe0A\x03R\x12goodsReceiptNumber\x12&\n" +
+	"\freceipt_date\x18\x03 \x01(\tB\x03\xe0A\x03R\vreceiptDate\x12$\n" +
+	"\vsupplier_id\x18\x04 \x01(\tB\x03\xe0A\x03R\n" +
+	"supplierId\x12(\n" +
+	"\rsupplier_name\x18\x05 \x01(\tB\x03\xe0A\x03R\fsupplierName\x12\x1c\n" +
+	"\apart_id\x18\x06 \x01(\tB\x03\xe0A\x03R\x06partId\x12\x1e\n" +
+	"\bpart_sku\x18\a \x01(\tB\x03\xe0A\x03R\apartSku\x12 \n" +
+	"\tpart_name\x18\b \x01(\tB\x03\xe0A\x03R\bpartName\x12\x1f\n" +
+	"\bquantity\x18\t \x01(\tB\x03\xe0A\x03R\bquantity\x129\n" +
+	"\x16base_unit_abbreviation\x18\n" +
+	" \x01(\tB\x03\xe0A\x03R\x14baseUnitAbbreviation\x12 \n" +
+	"\tunit_cost\x18\v \x01(\x03B\x03\xe0A\x03R\bunitCost\x12\x1b\n" +
+	"\x06amount\x18\f \x01(\x03B\x03\xe0A\x03R\x06amount\"\x82\x01\n" +
+	"\x19GetPurchasesReportRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1f\n" +
+	"\vsupplier_id\x18\x02 \x01(\tR\n" +
+	"supplierId\x12\x12\n" +
+	"\x04from\x18\x03 \x01(\tR\x04from\x12\x0e\n" +
+	"\x02to\x18\x04 \x01(\tR\x02to\"x\n" +
+	"\x1aGetPurchasesReportResponse\x127\n" +
+	"\x04data\x18\x01 \x03(\v2#.vietgara.inventory.v1.PurchaseLineR\x04data\x12!\n" +
+	"\ftotal_amount\x18\x02 \x01(\x03R\vtotalAmount\"\xf1\x02\n" +
+	"\x12StockValuationLine\x12\x1c\n" +
+	"\apart_id\x18\x01 \x01(\tB\x03\xe0A\x03R\x06partId\x12\x1e\n" +
+	"\bpart_sku\x18\x02 \x01(\tB\x03\xe0A\x03R\apartSku\x12 \n" +
+	"\tpart_name\x18\x03 \x01(\tB\x03\xe0A\x03R\bpartName\x12$\n" +
+	"\vcategory_id\x18\x04 \x01(\tB\x03\xe0A\x03R\n" +
+	"categoryId\x12(\n" +
+	"\rcategory_name\x18\x05 \x01(\tB\x03\xe0A\x03R\fcategoryName\x12-\n" +
+	"\x10quantity_on_hand\x18\x06 \x01(\tB\x03\xe0A\x03R\x0equantityOnHand\x129\n" +
+	"\x16base_unit_abbreviation\x18\a \x01(\tB\x03\xe0A\x03R\x14baseUnitAbbreviation\x12&\n" +
+	"\faverage_cost\x18\b \x01(\x03B\x03\xe0A\x03R\vaverageCost\x12\x19\n" +
+	"\x05value\x18\t \x01(\x03B\x03\xe0A\x03R\x05value\"\x83\x01\n" +
+	"\x16StockValuationCategory\x12$\n" +
+	"\vcategory_id\x18\x01 \x01(\tB\x03\xe0A\x03R\n" +
+	"categoryId\x12(\n" +
+	"\rcategory_name\x18\x02 \x01(\tB\x03\xe0A\x03R\fcategoryName\x12\x19\n" +
+	"\x05value\x18\x03 \x01(\x03B\x03\xe0A\x03R\x05value\"R\n" +
+	"\x1eGetStockValuationReportRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x0e\n" +
+	"\x02at\x18\x02 \x01(\tR\x02at\"\xe5\x01\n" +
+	"\x1fGetStockValuationReportResponse\x12=\n" +
+	"\x04data\x18\x01 \x03(\v2).vietgara.inventory.v1.StockValuationLineR\x04data\x12M\n" +
+	"\n" +
+	"categories\x18\x02 \x03(\v2-.vietgara.inventory.v1.StockValuationCategoryR\n" +
+	"categories\x12\x1f\n" +
+	"\vtotal_value\x18\x03 \x01(\x03R\n" +
+	"totalValue\x12\x13\n" +
+	"\x02at\x18\x04 \x01(\tB\x03\xe0A\x03R\x02at*}\n" +
 	"\x14StockTransactionType\x12&\n" +
 	"\"STOCK_TRANSACTION_TYPE_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19STOCK_TRANSACTION_TYPE_IN\x10\x01\x12\x1e\n" +
-	"\x1aSTOCK_TRANSACTION_TYPE_OUT\x10\x02*\x9b\x01\n" +
+	"\x1aSTOCK_TRANSACTION_TYPE_OUT\x10\x02*\xf5\x01\n" +
 	"\x17StockTransactionRefType\x12*\n" +
 	"&STOCK_TRANSACTION_REF_TYPE_UNSPECIFIED\x10\x00\x12'\n" +
 	"#STOCK_TRANSACTION_REF_TYPE_PURCHASE\x10\x01\x12+\n" +
-	"'STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER\x10\x022\xe8\x05\n" +
-	"\x10InventoryService\x12\xa5\x01\n" +
-	"\x0fListStockLevels\x12-.vietgara.inventory.v1.ListStockLevelsRequest\x1a..vietgara.inventory.v1.ListStockLevelsResponse\"3\x82\xd3\xe4\x93\x02-\x12+/api/v1/garages/{garage_id}/inventory-items\x12\xb6\x01\n" +
-	"\rGetStockLevel\x12+.vietgara.inventory.v1.GetStockLevelRequest\x1a,.vietgara.inventory.v1.GetStockLevelResponse\"J\x82\xd3\xe4\x93\x02Db\vstock_level\x125/api/v1/garages/{garage_id}/inventory-items/{part_id}\x12\xb0\x01\n" +
-	"\x12CreateStockReceipt\x120.vietgara.inventory.v1.CreateStockReceiptRequest\x1a1.vietgara.inventory.v1.CreateStockReceiptResponse\"5\x82\xd3\xe4\x93\x02/:\x01*\"*/api/v1/garages/{garage_id}/stock-receipts\x12\xbf\x01\n" +
-	"\x15ListStockTransactions\x123.vietgara.inventory.v1.ListStockTransactionsRequest\x1a4.vietgara.inventory.v1.ListStockTransactionsResponse\";\x82\xd3\xe4\x93\x025\x123/api/v1/garages/{garage_id}/reports/stock-movementsBPZNgithub.com/viettechno/vietgara-proto/apis-go/vietgara/inventory/v1;inventoryv1b\x06proto3"
+	"'STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER\x10\x02\x12,\n" +
+	"(STOCK_TRANSACTION_REF_TYPE_GOODS_RECEIPT\x10\x03\x12*\n" +
+	"&STOCK_TRANSACTION_REF_TYPE_STOCK_ISSUE\x10\x04*\xa2\x01\n" +
+	"\x12GoodsReceiptStatus\x12$\n" +
+	" GOODS_RECEIPT_STATUS_UNSPECIFIED\x10\x00\x12\x1e\n" +
+	"\x1aGOODS_RECEIPT_STATUS_DRAFT\x10\x01\x12\"\n" +
+	"\x1eGOODS_RECEIPT_STATUS_COMPLETED\x10\x02\x12\"\n" +
+	"\x1eGOODS_RECEIPT_STATUS_CANCELLED\x10\x03*\x95\x01\n" +
+	"\x10StockIssueStatus\x12\"\n" +
+	"\x1eSTOCK_ISSUE_STATUS_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18STOCK_ISSUE_STATUS_DRAFT\x10\x01\x12\x1d\n" +
+	"\x19STOCK_ISSUE_STATUS_POSTED\x10\x02\x12 \n" +
+	"\x1cSTOCK_ISSUE_STATUS_CANCELLED\x10\x032\xa3\x17\n" +
+	"\x10InventoryService\x12\xa2\x01\n" +
+	"\x0fListStockLevels\x12-.vietgara.inventory.v1.ListStockLevelsRequest\x1a..vietgara.inventory.v1.ListStockLevelsResponse\"0\x82\xd3\xe4\x93\x02*\x12(/api/v1/garages/{garage_id}/stock-levels\x12\xb3\x01\n" +
+	"\rGetStockLevel\x12+.vietgara.inventory.v1.GetStockLevelRequest\x1a,.vietgara.inventory.v1.GetStockLevelResponse\"G\x82\xd3\xe4\x93\x02Ab\vstock_level\x122/api/v1/garages/{garage_id}/stock-levels/{part_id}\x12\xbf\x01\n" +
+	"\x15ListStockTransactions\x123.vietgara.inventory.v1.ListStockTransactionsRequest\x1a4.vietgara.inventory.v1.ListStockTransactionsResponse\";\x82\xd3\xe4\x93\x025\x123/api/v1/garages/{garage_id}/reports/stock-movements\x12\xaa\x01\n" +
+	"\x11ListGoodsReceipts\x12/.vietgara.inventory.v1.ListGoodsReceiptsRequest\x1a0.vietgara.inventory.v1.ListGoodsReceiptsResponse\"2\x82\xd3\xe4\x93\x02,\x12*/api/v1/garages/{garage_id}/goods-receipts\x12\xc6\x01\n" +
+	"\x0fGetGoodsReceipt\x12-.vietgara.inventory.v1.GetGoodsReceiptRequest\x1a..vietgara.inventory.v1.GetGoodsReceiptResponse\"T\x82\xd3\xe4\x93\x02Nb\rgoods_receipt\x12=/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}\x12\xcb\x01\n" +
+	"\x12CreateGoodsReceipt\x120.vietgara.inventory.v1.CreateGoodsReceiptRequest\x1a1.vietgara.inventory.v1.CreateGoodsReceiptResponse\"P\x82\xd3\xe4\x93\x02J:\rgoods_receiptb\rgoods_receipt\"*/api/v1/garages/{garage_id}/goods-receipts\x12\xde\x01\n" +
+	"\x12UpdateGoodsReceipt\x120.vietgara.inventory.v1.UpdateGoodsReceiptRequest\x1a1.vietgara.inventory.v1.UpdateGoodsReceiptResponse\"c\x82\xd3\xe4\x93\x02]:\rgoods_receiptb\rgoods_receipt2=/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}\x12\xe1\x01\n" +
+	"\x14CompleteGoodsReceipt\x122.vietgara.inventory.v1.CompleteGoodsReceiptRequest\x1a3.vietgara.inventory.v1.CompleteGoodsReceiptResponse\"`\x82\xd3\xe4\x93\x02Z:\x01*b\rgoods_receipt\"F/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}:complete\x12\xd9\x01\n" +
+	"\x12CancelGoodsReceipt\x120.vietgara.inventory.v1.CancelGoodsReceiptRequest\x1a1.vietgara.inventory.v1.CancelGoodsReceiptResponse\"^\x82\xd3\xe4\x93\x02X:\x01*b\rgoods_receipt\"D/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}:cancel\x12\xb2\x01\n" +
+	"\x10GetPartSuppliers\x12..vietgara.inventory.v1.GetPartSuppliersRequest\x1a/.vietgara.inventory.v1.GetPartSuppliersResponse\"=\x82\xd3\xe4\x93\x027\x125/api/v1/garages/{garage_id}/parts/{part_id}/suppliers\x12\xb5\x01\n" +
+	"\x10PutPartSuppliers\x12..vietgara.inventory.v1.PutPartSuppliersRequest\x1a/.vietgara.inventory.v1.PutPartSuppliersResponse\"@\x82\xd3\xe4\x93\x02::\x01*\x1a5/api/v1/garages/{garage_id}/parts/{part_id}/suppliers\x12\xdc\x01\n" +
+	"\x18GetRepairOrderStockIssue\x126.vietgara.inventory.v1.GetRepairOrderStockIssueRequest\x1a7.vietgara.inventory.v1.GetRepairOrderStockIssueResponse\"O\x82\xd3\xe4\x93\x02I\x12G/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue\x12\xc5\x01\n" +
+	"\x0ePostStockIssue\x12,.vietgara.inventory.v1.PostStockIssueRequest\x1a-.vietgara.inventory.v1.PostStockIssueResponse\"V\x82\xd3\xe4\x93\x02P:\x01*b\vstock_issue\">/api/v1/garages/{garage_id}/stock-issues/{stock_issue_id}:post\x12\xb0\x01\n" +
+	"\x12GetPurchasesReport\x120.vietgara.inventory.v1.GetPurchasesReportRequest\x1a1.vietgara.inventory.v1.GetPurchasesReportResponse\"5\x82\xd3\xe4\x93\x02/\x12-/api/v1/garages/{garage_id}/reports/purchases\x12\xc5\x01\n" +
+	"\x17GetStockValuationReport\x125.vietgara.inventory.v1.GetStockValuationReportRequest\x1a6.vietgara.inventory.v1.GetStockValuationReportResponse\";\x82\xd3\xe4\x93\x025\x123/api/v1/garages/{garage_id}/reports/stock-valuationBPZNgithub.com/viettechno/vietgara-proto/apis-go/vietgara/inventory/v1;inventoryv1b\x06proto3"
 
 var (
 	file_vietgara_inventory_v1_inventory_proto_rawDescOnce sync.Once
@@ -1047,49 +3547,132 @@ func file_vietgara_inventory_v1_inventory_proto_rawDescGZIP() []byte {
 	return file_vietgara_inventory_v1_inventory_proto_rawDescData
 }
 
-var file_vietgara_inventory_v1_inventory_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_vietgara_inventory_v1_inventory_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_vietgara_inventory_v1_inventory_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_vietgara_inventory_v1_inventory_proto_msgTypes = make([]protoimpl.MessageInfo, 40)
 var file_vietgara_inventory_v1_inventory_proto_goTypes = []any{
-	(StockTransactionType)(0),             // 0: vietgara.inventory.v1.StockTransactionType
-	(StockTransactionRefType)(0),          // 1: vietgara.inventory.v1.StockTransactionRefType
-	(*StockLevel)(nil),                    // 2: vietgara.inventory.v1.StockLevel
-	(*ListStockLevelsRequest)(nil),        // 3: vietgara.inventory.v1.ListStockLevelsRequest
-	(*ListStockLevelsResponse)(nil),       // 4: vietgara.inventory.v1.ListStockLevelsResponse
-	(*GetStockLevelRequest)(nil),          // 5: vietgara.inventory.v1.GetStockLevelRequest
-	(*GetStockLevelResponse)(nil),         // 6: vietgara.inventory.v1.GetStockLevelResponse
-	(*StockTransaction)(nil),              // 7: vietgara.inventory.v1.StockTransaction
-	(*CreateStockReceiptRequest)(nil),     // 8: vietgara.inventory.v1.CreateStockReceiptRequest
-	(*CreateStockReceiptResponse)(nil),    // 9: vietgara.inventory.v1.CreateStockReceiptResponse
-	(*ListStockTransactionsRequest)(nil),  // 10: vietgara.inventory.v1.ListStockTransactionsRequest
-	(*ListStockTransactionsResponse)(nil), // 11: vietgara.inventory.v1.ListStockTransactionsResponse
-	(*v1.Pagination)(nil),                 // 12: vietgara.common.v1.Pagination
-	(*timestamppb.Timestamp)(nil),         // 13: google.protobuf.Timestamp
+	(StockTransactionType)(0),                // 0: vietgara.inventory.v1.StockTransactionType
+	(StockTransactionRefType)(0),             // 1: vietgara.inventory.v1.StockTransactionRefType
+	(GoodsReceiptStatus)(0),                  // 2: vietgara.inventory.v1.GoodsReceiptStatus
+	(StockIssueStatus)(0),                    // 3: vietgara.inventory.v1.StockIssueStatus
+	(*StockLevel)(nil),                       // 4: vietgara.inventory.v1.StockLevel
+	(*ListStockLevelsRequest)(nil),           // 5: vietgara.inventory.v1.ListStockLevelsRequest
+	(*ListStockLevelsResponse)(nil),          // 6: vietgara.inventory.v1.ListStockLevelsResponse
+	(*GetStockLevelRequest)(nil),             // 7: vietgara.inventory.v1.GetStockLevelRequest
+	(*GetStockLevelResponse)(nil),            // 8: vietgara.inventory.v1.GetStockLevelResponse
+	(*StockTransaction)(nil),                 // 9: vietgara.inventory.v1.StockTransaction
+	(*ListStockTransactionsRequest)(nil),     // 10: vietgara.inventory.v1.ListStockTransactionsRequest
+	(*ListStockTransactionsResponse)(nil),    // 11: vietgara.inventory.v1.ListStockTransactionsResponse
+	(*GoodsReceiptLine)(nil),                 // 12: vietgara.inventory.v1.GoodsReceiptLine
+	(*GoodsReceipt)(nil),                     // 13: vietgara.inventory.v1.GoodsReceipt
+	(*ListGoodsReceiptsRequest)(nil),         // 14: vietgara.inventory.v1.ListGoodsReceiptsRequest
+	(*ListGoodsReceiptsResponse)(nil),        // 15: vietgara.inventory.v1.ListGoodsReceiptsResponse
+	(*GetGoodsReceiptRequest)(nil),           // 16: vietgara.inventory.v1.GetGoodsReceiptRequest
+	(*GetGoodsReceiptResponse)(nil),          // 17: vietgara.inventory.v1.GetGoodsReceiptResponse
+	(*CreateGoodsReceiptRequest)(nil),        // 18: vietgara.inventory.v1.CreateGoodsReceiptRequest
+	(*CreateGoodsReceiptResponse)(nil),       // 19: vietgara.inventory.v1.CreateGoodsReceiptResponse
+	(*UpdateGoodsReceiptRequest)(nil),        // 20: vietgara.inventory.v1.UpdateGoodsReceiptRequest
+	(*UpdateGoodsReceiptResponse)(nil),       // 21: vietgara.inventory.v1.UpdateGoodsReceiptResponse
+	(*CompleteGoodsReceiptRequest)(nil),      // 22: vietgara.inventory.v1.CompleteGoodsReceiptRequest
+	(*CompleteGoodsReceiptResponse)(nil),     // 23: vietgara.inventory.v1.CompleteGoodsReceiptResponse
+	(*CancelGoodsReceiptRequest)(nil),        // 24: vietgara.inventory.v1.CancelGoodsReceiptRequest
+	(*CancelGoodsReceiptResponse)(nil),       // 25: vietgara.inventory.v1.CancelGoodsReceiptResponse
+	(*PartSupplier)(nil),                     // 26: vietgara.inventory.v1.PartSupplier
+	(*GetPartSuppliersRequest)(nil),          // 27: vietgara.inventory.v1.GetPartSuppliersRequest
+	(*GetPartSuppliersResponse)(nil),         // 28: vietgara.inventory.v1.GetPartSuppliersResponse
+	(*PutPartSuppliersRequest)(nil),          // 29: vietgara.inventory.v1.PutPartSuppliersRequest
+	(*PutPartSuppliersResponse)(nil),         // 30: vietgara.inventory.v1.PutPartSuppliersResponse
+	(*StockIssueLine)(nil),                   // 31: vietgara.inventory.v1.StockIssueLine
+	(*StockIssue)(nil),                       // 32: vietgara.inventory.v1.StockIssue
+	(*GetRepairOrderStockIssueRequest)(nil),  // 33: vietgara.inventory.v1.GetRepairOrderStockIssueRequest
+	(*GetRepairOrderStockIssueResponse)(nil), // 34: vietgara.inventory.v1.GetRepairOrderStockIssueResponse
+	(*PostStockIssueRequest)(nil),            // 35: vietgara.inventory.v1.PostStockIssueRequest
+	(*PostStockIssueResponse)(nil),           // 36: vietgara.inventory.v1.PostStockIssueResponse
+	(*PurchaseLine)(nil),                     // 37: vietgara.inventory.v1.PurchaseLine
+	(*GetPurchasesReportRequest)(nil),        // 38: vietgara.inventory.v1.GetPurchasesReportRequest
+	(*GetPurchasesReportResponse)(nil),       // 39: vietgara.inventory.v1.GetPurchasesReportResponse
+	(*StockValuationLine)(nil),               // 40: vietgara.inventory.v1.StockValuationLine
+	(*StockValuationCategory)(nil),           // 41: vietgara.inventory.v1.StockValuationCategory
+	(*GetStockValuationReportRequest)(nil),   // 42: vietgara.inventory.v1.GetStockValuationReportRequest
+	(*GetStockValuationReportResponse)(nil),  // 43: vietgara.inventory.v1.GetStockValuationReportResponse
+	(*v1.Pagination)(nil),                    // 44: vietgara.common.v1.Pagination
+	(*timestamppb.Timestamp)(nil),            // 45: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),            // 46: google.protobuf.FieldMask
 }
 var file_vietgara_inventory_v1_inventory_proto_depIdxs = []int32{
-	2,  // 0: vietgara.inventory.v1.ListStockLevelsResponse.data:type_name -> vietgara.inventory.v1.StockLevel
-	12, // 1: vietgara.inventory.v1.ListStockLevelsResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	2,  // 2: vietgara.inventory.v1.GetStockLevelResponse.stock_level:type_name -> vietgara.inventory.v1.StockLevel
+	4,  // 0: vietgara.inventory.v1.ListStockLevelsResponse.data:type_name -> vietgara.inventory.v1.StockLevel
+	44, // 1: vietgara.inventory.v1.ListStockLevelsResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	4,  // 2: vietgara.inventory.v1.GetStockLevelResponse.stock_level:type_name -> vietgara.inventory.v1.StockLevel
 	0,  // 3: vietgara.inventory.v1.StockTransaction.type:type_name -> vietgara.inventory.v1.StockTransactionType
 	1,  // 4: vietgara.inventory.v1.StockTransaction.ref_type:type_name -> vietgara.inventory.v1.StockTransactionRefType
-	13, // 5: vietgara.inventory.v1.StockTransaction.created_at:type_name -> google.protobuf.Timestamp
-	7,  // 6: vietgara.inventory.v1.CreateStockReceiptResponse.transaction:type_name -> vietgara.inventory.v1.StockTransaction
-	2,  // 7: vietgara.inventory.v1.CreateStockReceiptResponse.stock_level:type_name -> vietgara.inventory.v1.StockLevel
-	0,  // 8: vietgara.inventory.v1.ListStockTransactionsRequest.type:type_name -> vietgara.inventory.v1.StockTransactionType
-	7,  // 9: vietgara.inventory.v1.ListStockTransactionsResponse.data:type_name -> vietgara.inventory.v1.StockTransaction
-	12, // 10: vietgara.inventory.v1.ListStockTransactionsResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	3,  // 11: vietgara.inventory.v1.InventoryService.ListStockLevels:input_type -> vietgara.inventory.v1.ListStockLevelsRequest
-	5,  // 12: vietgara.inventory.v1.InventoryService.GetStockLevel:input_type -> vietgara.inventory.v1.GetStockLevelRequest
-	8,  // 13: vietgara.inventory.v1.InventoryService.CreateStockReceipt:input_type -> vietgara.inventory.v1.CreateStockReceiptRequest
-	10, // 14: vietgara.inventory.v1.InventoryService.ListStockTransactions:input_type -> vietgara.inventory.v1.ListStockTransactionsRequest
-	4,  // 15: vietgara.inventory.v1.InventoryService.ListStockLevels:output_type -> vietgara.inventory.v1.ListStockLevelsResponse
-	6,  // 16: vietgara.inventory.v1.InventoryService.GetStockLevel:output_type -> vietgara.inventory.v1.GetStockLevelResponse
-	9,  // 17: vietgara.inventory.v1.InventoryService.CreateStockReceipt:output_type -> vietgara.inventory.v1.CreateStockReceiptResponse
-	11, // 18: vietgara.inventory.v1.InventoryService.ListStockTransactions:output_type -> vietgara.inventory.v1.ListStockTransactionsResponse
-	15, // [15:19] is the sub-list for method output_type
-	11, // [11:15] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	45, // 5: vietgara.inventory.v1.StockTransaction.created_at:type_name -> google.protobuf.Timestamp
+	0,  // 6: vietgara.inventory.v1.ListStockTransactionsRequest.type:type_name -> vietgara.inventory.v1.StockTransactionType
+	9,  // 7: vietgara.inventory.v1.ListStockTransactionsResponse.data:type_name -> vietgara.inventory.v1.StockTransaction
+	44, // 8: vietgara.inventory.v1.ListStockTransactionsResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	2,  // 9: vietgara.inventory.v1.GoodsReceipt.status:type_name -> vietgara.inventory.v1.GoodsReceiptStatus
+	12, // 10: vietgara.inventory.v1.GoodsReceipt.lines:type_name -> vietgara.inventory.v1.GoodsReceiptLine
+	45, // 11: vietgara.inventory.v1.GoodsReceipt.completed_at:type_name -> google.protobuf.Timestamp
+	45, // 12: vietgara.inventory.v1.GoodsReceipt.cancelled_at:type_name -> google.protobuf.Timestamp
+	45, // 13: vietgara.inventory.v1.GoodsReceipt.created_at:type_name -> google.protobuf.Timestamp
+	45, // 14: vietgara.inventory.v1.GoodsReceipt.updated_at:type_name -> google.protobuf.Timestamp
+	2,  // 15: vietgara.inventory.v1.ListGoodsReceiptsRequest.status:type_name -> vietgara.inventory.v1.GoodsReceiptStatus
+	13, // 16: vietgara.inventory.v1.ListGoodsReceiptsResponse.data:type_name -> vietgara.inventory.v1.GoodsReceipt
+	44, // 17: vietgara.inventory.v1.ListGoodsReceiptsResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	13, // 18: vietgara.inventory.v1.GetGoodsReceiptResponse.goods_receipt:type_name -> vietgara.inventory.v1.GoodsReceipt
+	13, // 19: vietgara.inventory.v1.CreateGoodsReceiptRequest.goods_receipt:type_name -> vietgara.inventory.v1.GoodsReceipt
+	13, // 20: vietgara.inventory.v1.CreateGoodsReceiptResponse.goods_receipt:type_name -> vietgara.inventory.v1.GoodsReceipt
+	13, // 21: vietgara.inventory.v1.UpdateGoodsReceiptRequest.goods_receipt:type_name -> vietgara.inventory.v1.GoodsReceipt
+	46, // 22: vietgara.inventory.v1.UpdateGoodsReceiptRequest.update_mask:type_name -> google.protobuf.FieldMask
+	13, // 23: vietgara.inventory.v1.UpdateGoodsReceiptResponse.goods_receipt:type_name -> vietgara.inventory.v1.GoodsReceipt
+	13, // 24: vietgara.inventory.v1.CompleteGoodsReceiptResponse.goods_receipt:type_name -> vietgara.inventory.v1.GoodsReceipt
+	13, // 25: vietgara.inventory.v1.CancelGoodsReceiptResponse.goods_receipt:type_name -> vietgara.inventory.v1.GoodsReceipt
+	26, // 26: vietgara.inventory.v1.GetPartSuppliersResponse.data:type_name -> vietgara.inventory.v1.PartSupplier
+	26, // 27: vietgara.inventory.v1.PutPartSuppliersRequest.data:type_name -> vietgara.inventory.v1.PartSupplier
+	26, // 28: vietgara.inventory.v1.PutPartSuppliersResponse.data:type_name -> vietgara.inventory.v1.PartSupplier
+	3,  // 29: vietgara.inventory.v1.StockIssue.status:type_name -> vietgara.inventory.v1.StockIssueStatus
+	31, // 30: vietgara.inventory.v1.StockIssue.lines:type_name -> vietgara.inventory.v1.StockIssueLine
+	45, // 31: vietgara.inventory.v1.StockIssue.posted_at:type_name -> google.protobuf.Timestamp
+	45, // 32: vietgara.inventory.v1.StockIssue.created_at:type_name -> google.protobuf.Timestamp
+	45, // 33: vietgara.inventory.v1.StockIssue.updated_at:type_name -> google.protobuf.Timestamp
+	32, // 34: vietgara.inventory.v1.GetRepairOrderStockIssueResponse.stock_issue:type_name -> vietgara.inventory.v1.StockIssue
+	32, // 35: vietgara.inventory.v1.PostStockIssueResponse.stock_issue:type_name -> vietgara.inventory.v1.StockIssue
+	37, // 36: vietgara.inventory.v1.GetPurchasesReportResponse.data:type_name -> vietgara.inventory.v1.PurchaseLine
+	40, // 37: vietgara.inventory.v1.GetStockValuationReportResponse.data:type_name -> vietgara.inventory.v1.StockValuationLine
+	41, // 38: vietgara.inventory.v1.GetStockValuationReportResponse.categories:type_name -> vietgara.inventory.v1.StockValuationCategory
+	5,  // 39: vietgara.inventory.v1.InventoryService.ListStockLevels:input_type -> vietgara.inventory.v1.ListStockLevelsRequest
+	7,  // 40: vietgara.inventory.v1.InventoryService.GetStockLevel:input_type -> vietgara.inventory.v1.GetStockLevelRequest
+	10, // 41: vietgara.inventory.v1.InventoryService.ListStockTransactions:input_type -> vietgara.inventory.v1.ListStockTransactionsRequest
+	14, // 42: vietgara.inventory.v1.InventoryService.ListGoodsReceipts:input_type -> vietgara.inventory.v1.ListGoodsReceiptsRequest
+	16, // 43: vietgara.inventory.v1.InventoryService.GetGoodsReceipt:input_type -> vietgara.inventory.v1.GetGoodsReceiptRequest
+	18, // 44: vietgara.inventory.v1.InventoryService.CreateGoodsReceipt:input_type -> vietgara.inventory.v1.CreateGoodsReceiptRequest
+	20, // 45: vietgara.inventory.v1.InventoryService.UpdateGoodsReceipt:input_type -> vietgara.inventory.v1.UpdateGoodsReceiptRequest
+	22, // 46: vietgara.inventory.v1.InventoryService.CompleteGoodsReceipt:input_type -> vietgara.inventory.v1.CompleteGoodsReceiptRequest
+	24, // 47: vietgara.inventory.v1.InventoryService.CancelGoodsReceipt:input_type -> vietgara.inventory.v1.CancelGoodsReceiptRequest
+	27, // 48: vietgara.inventory.v1.InventoryService.GetPartSuppliers:input_type -> vietgara.inventory.v1.GetPartSuppliersRequest
+	29, // 49: vietgara.inventory.v1.InventoryService.PutPartSuppliers:input_type -> vietgara.inventory.v1.PutPartSuppliersRequest
+	33, // 50: vietgara.inventory.v1.InventoryService.GetRepairOrderStockIssue:input_type -> vietgara.inventory.v1.GetRepairOrderStockIssueRequest
+	35, // 51: vietgara.inventory.v1.InventoryService.PostStockIssue:input_type -> vietgara.inventory.v1.PostStockIssueRequest
+	38, // 52: vietgara.inventory.v1.InventoryService.GetPurchasesReport:input_type -> vietgara.inventory.v1.GetPurchasesReportRequest
+	42, // 53: vietgara.inventory.v1.InventoryService.GetStockValuationReport:input_type -> vietgara.inventory.v1.GetStockValuationReportRequest
+	6,  // 54: vietgara.inventory.v1.InventoryService.ListStockLevels:output_type -> vietgara.inventory.v1.ListStockLevelsResponse
+	8,  // 55: vietgara.inventory.v1.InventoryService.GetStockLevel:output_type -> vietgara.inventory.v1.GetStockLevelResponse
+	11, // 56: vietgara.inventory.v1.InventoryService.ListStockTransactions:output_type -> vietgara.inventory.v1.ListStockTransactionsResponse
+	15, // 57: vietgara.inventory.v1.InventoryService.ListGoodsReceipts:output_type -> vietgara.inventory.v1.ListGoodsReceiptsResponse
+	17, // 58: vietgara.inventory.v1.InventoryService.GetGoodsReceipt:output_type -> vietgara.inventory.v1.GetGoodsReceiptResponse
+	19, // 59: vietgara.inventory.v1.InventoryService.CreateGoodsReceipt:output_type -> vietgara.inventory.v1.CreateGoodsReceiptResponse
+	21, // 60: vietgara.inventory.v1.InventoryService.UpdateGoodsReceipt:output_type -> vietgara.inventory.v1.UpdateGoodsReceiptResponse
+	23, // 61: vietgara.inventory.v1.InventoryService.CompleteGoodsReceipt:output_type -> vietgara.inventory.v1.CompleteGoodsReceiptResponse
+	25, // 62: vietgara.inventory.v1.InventoryService.CancelGoodsReceipt:output_type -> vietgara.inventory.v1.CancelGoodsReceiptResponse
+	28, // 63: vietgara.inventory.v1.InventoryService.GetPartSuppliers:output_type -> vietgara.inventory.v1.GetPartSuppliersResponse
+	30, // 64: vietgara.inventory.v1.InventoryService.PutPartSuppliers:output_type -> vietgara.inventory.v1.PutPartSuppliersResponse
+	34, // 65: vietgara.inventory.v1.InventoryService.GetRepairOrderStockIssue:output_type -> vietgara.inventory.v1.GetRepairOrderStockIssueResponse
+	36, // 66: vietgara.inventory.v1.InventoryService.PostStockIssue:output_type -> vietgara.inventory.v1.PostStockIssueResponse
+	39, // 67: vietgara.inventory.v1.InventoryService.GetPurchasesReport:output_type -> vietgara.inventory.v1.GetPurchasesReportResponse
+	43, // 68: vietgara.inventory.v1.InventoryService.GetStockValuationReport:output_type -> vietgara.inventory.v1.GetStockValuationReportResponse
+	54, // [54:69] is the sub-list for method output_type
+	39, // [39:54] is the sub-list for method input_type
+	39, // [39:39] is the sub-list for extension type_name
+	39, // [39:39] is the sub-list for extension extendee
+	0,  // [0:39] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_inventory_v1_inventory_proto_init() }
@@ -1097,15 +3680,19 @@ func file_vietgara_inventory_v1_inventory_proto_init() {
 	if File_vietgara_inventory_v1_inventory_proto != nil {
 		return
 	}
+	file_vietgara_inventory_v1_inventory_proto_msgTypes[0].OneofWrappers = []any{}
 	file_vietgara_inventory_v1_inventory_proto_msgTypes[5].OneofWrappers = []any{}
-	file_vietgara_inventory_v1_inventory_proto_msgTypes[6].OneofWrappers = []any{}
+	file_vietgara_inventory_v1_inventory_proto_msgTypes[8].OneofWrappers = []any{}
+	file_vietgara_inventory_v1_inventory_proto_msgTypes[9].OneofWrappers = []any{}
+	file_vietgara_inventory_v1_inventory_proto_msgTypes[22].OneofWrappers = []any{}
+	file_vietgara_inventory_v1_inventory_proto_msgTypes[27].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_inventory_v1_inventory_proto_rawDesc), len(file_vietgara_inventory_v1_inventory_proto_rawDesc)),
-			NumEnums:      2,
-			NumMessages:   10,
+			NumEnums:      4,
+			NumMessages:   40,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

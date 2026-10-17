@@ -41,6 +41,18 @@ message NumberingTemplates {
   string settlement = 3;
   // Payment voucher (phiếu thu) numbers (FR-BIL-05, Release 5.0).
   string payment_voucher = 4;
+  // Goods receipt numbers (FR-INV-06, Release 7.0).
+  string goods_receipt = 5;
+  // Stock issue (phiếu xuất kho) numbers (FR-INV-20, Release 7.0).
+  string stock_issue = 6;
+}
+
+// StockIssueMode is when a repair order's draft stock issue posts
+// (FR-INV-20): on close by default, or when the order starts.
+enum StockIssueMode {
+  STOCK_ISSUE_MODE_UNSPECIFIED = 0;
+  STOCK_ISSUE_MODE_ON_CLOSE = 1;
+  STOCK_ISSUE_MODE_ON_START = 2;
 }
 
 // GarageAccess is what the signed-in user may do in the garage.
@@ -82,6 +94,10 @@ message Garage {
   // The legal representative.
   optional string representative = 20;
   vietgara.common.v1.BankDetails bank = 21;
+  // When a repair order's draft stock issue posts (FR-INV-20, Release
+  // 7.0). Default ON_CLOSE. Changing it needs the same permission as other
+  // garage settings (PERMISSION_GARAGE_WRITE).
+  StockIssueMode stock_issue_mode = 22;
 }
 
 message ListGaragesRequest {}

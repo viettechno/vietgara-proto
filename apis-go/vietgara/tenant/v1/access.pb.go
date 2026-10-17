@@ -61,6 +61,10 @@ const (
 	// Parts, units, packaging, categories, prices and images (Release 6.0).
 	Permission_PERMISSION_CATALOGUE_READ  Permission = 19
 	Permission_PERMISSION_CATALOGUE_WRITE Permission = 20
+	// See a part's cost, average cost and the valuation report (FR-INV-08,
+	// Release 7.0). Held by managers and accountants by default; advisors and
+	// technicians see quantities only.
+	Permission_PERMISSION_INVENTORY_COST_READ Permission = 21
 )
 
 // Enum value maps for Permission.
@@ -87,29 +91,31 @@ var (
 		18: "PERMISSION_CUSTOMER_CORRECT",
 		19: "PERMISSION_CATALOGUE_READ",
 		20: "PERMISSION_CATALOGUE_WRITE",
+		21: "PERMISSION_INVENTORY_COST_READ",
 	}
 	Permission_value = map[string]int32{
-		"PERMISSION_UNSPECIFIED":        0,
-		"PERMISSION_GARAGE_WRITE":       1,
-		"PERMISSION_STAFF_READ":         2,
-		"PERMISSION_STAFF_WRITE":        3,
-		"PERMISSION_CUSTOMER_READ":      4,
-		"PERMISSION_CUSTOMER_WRITE":     5,
-		"PERMISSION_SUPPLIER_READ":      6,
-		"PERMISSION_SUPPLIER_WRITE":     7,
-		"PERMISSION_SUBSCRIPTION_READ":  8,
-		"PERMISSION_QUOTE_READ":         9,
-		"PERMISSION_QUOTE_WRITE":        10,
-		"PERMISSION_REPAIR_ORDER_READ":  11,
-		"PERMISSION_REPAIR_ORDER_WRITE": 12,
-		"PERMISSION_INVENTORY_READ":     13,
-		"PERMISSION_INVENTORY_WRITE":    14,
-		"PERMISSION_BILLING_READ":       15,
-		"PERMISSION_BILLING_WRITE":      16,
-		"PERMISSION_REPORT_READ":        17,
-		"PERMISSION_CUSTOMER_CORRECT":   18,
-		"PERMISSION_CATALOGUE_READ":     19,
-		"PERMISSION_CATALOGUE_WRITE":    20,
+		"PERMISSION_UNSPECIFIED":         0,
+		"PERMISSION_GARAGE_WRITE":        1,
+		"PERMISSION_STAFF_READ":          2,
+		"PERMISSION_STAFF_WRITE":         3,
+		"PERMISSION_CUSTOMER_READ":       4,
+		"PERMISSION_CUSTOMER_WRITE":      5,
+		"PERMISSION_SUPPLIER_READ":       6,
+		"PERMISSION_SUPPLIER_WRITE":      7,
+		"PERMISSION_SUBSCRIPTION_READ":   8,
+		"PERMISSION_QUOTE_READ":          9,
+		"PERMISSION_QUOTE_WRITE":         10,
+		"PERMISSION_REPAIR_ORDER_READ":   11,
+		"PERMISSION_REPAIR_ORDER_WRITE":  12,
+		"PERMISSION_INVENTORY_READ":      13,
+		"PERMISSION_INVENTORY_WRITE":     14,
+		"PERMISSION_BILLING_READ":        15,
+		"PERMISSION_BILLING_WRITE":       16,
+		"PERMISSION_REPORT_READ":         17,
+		"PERMISSION_CUSTOMER_CORRECT":    18,
+		"PERMISSION_CATALOGUE_READ":      19,
+		"PERMISSION_CATALOGUE_WRITE":     20,
+		"PERMISSION_INVENTORY_COST_READ": 21,
 	}
 )
 
@@ -1417,7 +1423,7 @@ const file_vietgara_tenant_v1_access_proto_rawDesc = "" +
 	"\x17DeleteStaffGroupRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1e\n" +
 	"\bgroup_id\x18\x02 \x01(\tB\x03\xe0A\x02R\agroupId\"\x1a\n" +
-	"\x18DeleteStaffGroupResponse*\x8a\x05\n" +
+	"\x18DeleteStaffGroupResponse*\xae\x05\n" +
 	"\n" +
 	"Permission\x12\x1a\n" +
 	"\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x1b\n" +
@@ -1441,7 +1447,8 @@ const file_vietgara_tenant_v1_access_proto_rawDesc = "" +
 	"\x16PERMISSION_REPORT_READ\x10\x11\x12\x1f\n" +
 	"\x1bPERMISSION_CUSTOMER_CORRECT\x10\x12\x12\x1d\n" +
 	"\x19PERMISSION_CATALOGUE_READ\x10\x13\x12\x1e\n" +
-	"\x1aPERMISSION_CATALOGUE_WRITE\x10\x142\x8c\x06\n" +
+	"\x1aPERMISSION_CATALOGUE_WRITE\x10\x14\x12\"\n" +
+	"\x1ePERMISSION_INVENTORY_COST_READ\x10\x152\x8c\x06\n" +
 	"\vRoleService\x12\x87\x01\n" +
 	"\x0fListPermissions\x12*.vietgara.tenant.v1.ListPermissionsRequest\x1a+.vietgara.tenant.v1.ListPermissionsResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/permissions\x12o\n" +
 	"\tListRoles\x12$.vietgara.tenant.v1.ListRolesRequest\x1a%.vietgara.tenant.v1.ListRolesResponse\"\x15\x82\xd3\xe4\x93\x02\x0f\x12\r/api/v1/roles\x12y\n" +
