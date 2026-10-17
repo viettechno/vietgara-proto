@@ -48,6 +48,13 @@ enum Permission {
   // Release 7.0). Held by managers and accountants by default; advisors and
   // technicians see quantities only.
   PERMISSION_INVENTORY_COST_READ = 21;
+  // Post stock adjustments other than counts: write-offs, returns to
+  // supplier and returns of unused parts from a repair order (FR-INV-09/10/11,
+  // Release 7.1). Held by managers and inventory staff by default.
+  PERMISSION_INVENTORY_ADJUST = 22;
+  // Create, merge, complete and cancel stock counts (FR-INV-12, Release 7.1).
+  // Held by managers and inventory staff by default.
+  PERMISSION_INVENTORY_COUNT = 23;
 }
 
 // PermissionInfo describes one catalog entry.

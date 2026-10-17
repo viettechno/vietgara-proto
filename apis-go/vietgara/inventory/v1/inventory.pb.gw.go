@@ -800,6 +800,1176 @@ func local_request_InventoryService_PostStockIssue_0(ctx context.Context, marsha
 	return msg, metadata, err
 }
 
+var filter_InventoryService_ListStockCounts_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+
+func request_InventoryService_ListStockCounts_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListStockCountsRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InventoryService_ListStockCounts_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ListStockCounts(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_ListStockCounts_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListStockCountsRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InventoryService_ListStockCounts_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.ListStockCounts(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_GetStockCount_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetStockCountRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["stock_count_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "stock_count_id")
+	}
+	protoReq.StockCountId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "stock_count_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.GetStockCount(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_GetStockCount_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetStockCountRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["stock_count_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "stock_count_id")
+	}
+	protoReq.StockCountId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "stock_count_id", err)
+	}
+	msg, err := server.GetStockCount(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_CreateStockCount_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CreateStockCountRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.StockCount); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.CreateStockCount(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_CreateStockCount_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CreateStockCountRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.StockCount); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	msg, err := server.CreateStockCount(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+var filter_InventoryService_UpdateStockCount_0 = &utilities.DoubleArray{Encoding: map[string]int{"stock_count": 0, "garage_id": 1, "stock_count_id": 2}, Base: []int{1, 1, 2, 3, 0, 0, 0}, Check: []int{0, 1, 1, 1, 2, 3, 4}}
+
+func request_InventoryService_UpdateStockCount_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UpdateStockCountRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.StockCount); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if protoReq.UpdateMask == nil || len(protoReq.UpdateMask.GetPaths()) == 0 {
+		if fieldMask, err := runtime.FieldMaskFromRequestBody(newReader(), protoReq.StockCount); err != nil {
+			return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+		} else {
+			protoReq.UpdateMask = fieldMask
+		}
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["stock_count_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "stock_count_id")
+	}
+	protoReq.StockCountId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "stock_count_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InventoryService_UpdateStockCount_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.UpdateStockCount(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_UpdateStockCount_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UpdateStockCountRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.StockCount); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if protoReq.UpdateMask == nil || len(protoReq.UpdateMask.GetPaths()) == 0 {
+		if fieldMask, err := runtime.FieldMaskFromRequestBody(newReader(), protoReq.StockCount); err != nil {
+			return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+		} else {
+			protoReq.UpdateMask = fieldMask
+		}
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["stock_count_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "stock_count_id")
+	}
+	protoReq.StockCountId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "stock_count_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InventoryService_UpdateStockCount_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.UpdateStockCount(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_AddStockCountLines_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq AddStockCountLinesRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["stock_count_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "stock_count_id")
+	}
+	protoReq.StockCountId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "stock_count_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.AddStockCountLines(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_AddStockCountLines_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq AddStockCountLinesRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["stock_count_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "stock_count_id")
+	}
+	protoReq.StockCountId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "stock_count_id", err)
+	}
+	msg, err := server.AddStockCountLines(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_UpdateStockCountLine_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UpdateStockCountLineRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.Line); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["stock_count_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "stock_count_id")
+	}
+	protoReq.StockCountId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "stock_count_id", err)
+	}
+	val, ok = pathParams["line_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "line_id")
+	}
+	protoReq.LineId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "line_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.UpdateStockCountLine(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_UpdateStockCountLine_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UpdateStockCountLineRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.Line); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["stock_count_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "stock_count_id")
+	}
+	protoReq.StockCountId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "stock_count_id", err)
+	}
+	val, ok = pathParams["line_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "line_id")
+	}
+	protoReq.LineId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "line_id", err)
+	}
+	msg, err := server.UpdateStockCountLine(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_DeleteStockCountLine_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq DeleteStockCountLineRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["stock_count_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "stock_count_id")
+	}
+	protoReq.StockCountId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "stock_count_id", err)
+	}
+	val, ok = pathParams["line_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "line_id")
+	}
+	protoReq.LineId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "line_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.DeleteStockCountLine(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_DeleteStockCountLine_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq DeleteStockCountLineRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["stock_count_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "stock_count_id")
+	}
+	protoReq.StockCountId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "stock_count_id", err)
+	}
+	val, ok = pathParams["line_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "line_id")
+	}
+	protoReq.LineId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "line_id", err)
+	}
+	msg, err := server.DeleteStockCountLine(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_MergeStockCounts_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq MergeStockCountsRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.MergeStockCounts(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_MergeStockCounts_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq MergeStockCountsRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	msg, err := server.MergeStockCounts(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_CompleteStockCount_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CompleteStockCountRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["stock_count_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "stock_count_id")
+	}
+	protoReq.StockCountId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "stock_count_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.CompleteStockCount(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_CompleteStockCount_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CompleteStockCountRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["stock_count_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "stock_count_id")
+	}
+	protoReq.StockCountId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "stock_count_id", err)
+	}
+	msg, err := server.CompleteStockCount(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_CancelStockCount_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CancelStockCountRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["stock_count_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "stock_count_id")
+	}
+	protoReq.StockCountId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "stock_count_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.CancelStockCount(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_CancelStockCount_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CancelStockCountRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["stock_count_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "stock_count_id")
+	}
+	protoReq.StockCountId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "stock_count_id", err)
+	}
+	msg, err := server.CancelStockCount(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+var filter_InventoryService_ListWriteOffs_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+
+func request_InventoryService_ListWriteOffs_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListWriteOffsRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InventoryService_ListWriteOffs_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ListWriteOffs(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_ListWriteOffs_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListWriteOffsRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InventoryService_ListWriteOffs_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.ListWriteOffs(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_GetWriteOff_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetWriteOffRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["write_off_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "write_off_id")
+	}
+	protoReq.WriteOffId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "write_off_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.GetWriteOff(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_GetWriteOff_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetWriteOffRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["write_off_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "write_off_id")
+	}
+	protoReq.WriteOffId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "write_off_id", err)
+	}
+	msg, err := server.GetWriteOff(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_CreateWriteOff_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CreateWriteOffRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.WriteOff); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.CreateWriteOff(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_CreateWriteOff_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CreateWriteOffRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.WriteOff); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	msg, err := server.CreateWriteOff(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_CancelWriteOff_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CancelWriteOffRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["write_off_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "write_off_id")
+	}
+	protoReq.WriteOffId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "write_off_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.CancelWriteOff(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_CancelWriteOff_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CancelWriteOffRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["write_off_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "write_off_id")
+	}
+	protoReq.WriteOffId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "write_off_id", err)
+	}
+	msg, err := server.CancelWriteOff(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+var filter_InventoryService_ListSupplierReturns_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+
+func request_InventoryService_ListSupplierReturns_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListSupplierReturnsRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InventoryService_ListSupplierReturns_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ListSupplierReturns(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_ListSupplierReturns_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListSupplierReturnsRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InventoryService_ListSupplierReturns_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.ListSupplierReturns(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_GetSupplierReturn_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetSupplierReturnRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["supplier_return_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "supplier_return_id")
+	}
+	protoReq.SupplierReturnId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "supplier_return_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.GetSupplierReturn(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_GetSupplierReturn_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetSupplierReturnRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["supplier_return_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "supplier_return_id")
+	}
+	protoReq.SupplierReturnId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "supplier_return_id", err)
+	}
+	msg, err := server.GetSupplierReturn(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_CreateSupplierReturn_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CreateSupplierReturnRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.SupplierReturn); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.CreateSupplierReturn(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_CreateSupplierReturn_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CreateSupplierReturnRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.SupplierReturn); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	msg, err := server.CreateSupplierReturn(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_CancelSupplierReturn_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CancelSupplierReturnRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["supplier_return_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "supplier_return_id")
+	}
+	protoReq.SupplierReturnId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "supplier_return_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.CancelSupplierReturn(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_CancelSupplierReturn_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CancelSupplierReturnRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["supplier_return_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "supplier_return_id")
+	}
+	protoReq.SupplierReturnId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "supplier_return_id", err)
+	}
+	msg, err := server.CancelSupplierReturn(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_ReturnRepairOrderPart_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ReturnRepairOrderPartRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.PartReturn); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["repair_order_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "repair_order_id")
+	}
+	protoReq.RepairOrderId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "repair_order_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ReturnRepairOrderPart(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_ReturnRepairOrderPart_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ReturnRepairOrderPartRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.PartReturn); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["repair_order_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "repair_order_id")
+	}
+	protoReq.RepairOrderId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "repair_order_id", err)
+	}
+	msg, err := server.ReturnRepairOrderPart(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_InventoryService_ListRepairOrderPartReturns_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListRepairOrderPartReturnsRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["repair_order_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "repair_order_id")
+	}
+	protoReq.RepairOrderId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "repair_order_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ListRepairOrderPartReturns(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_InventoryService_ListRepairOrderPartReturns_0(ctx context.Context, marshaler runtime.Marshaler, server InventoryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListRepairOrderPartReturnsRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["repair_order_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "repair_order_id")
+	}
+	protoReq.RepairOrderId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "repair_order_id", err)
+	}
+	msg, err := server.ListRepairOrderPartReturns(ctx, &protoReq)
+	return msg, metadata, err
+}
+
 var filter_InventoryService_GetPurchasesReport_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 
 func request_InventoryService_GetPurchasesReport_0(ctx context.Context, marshaler runtime.Marshaler, client InventoryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -1172,6 +2342,406 @@ func RegisterInventoryServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		}
 		forward_InventoryService_PostStockIssue_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_PostStockIssue_0{resp.(*PostStockIssueResponse)}, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodGet, pattern_InventoryService_ListStockCounts_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/ListStockCounts", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_ListStockCounts_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_ListStockCounts_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_InventoryService_GetStockCount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/GetStockCount", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_GetStockCount_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_GetStockCount_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_GetStockCount_0{resp.(*GetStockCountResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_CreateStockCount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/CreateStockCount", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_CreateStockCount_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_CreateStockCount_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CreateStockCount_0{resp.(*CreateStockCountResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPatch, pattern_InventoryService_UpdateStockCount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/UpdateStockCount", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_UpdateStockCount_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_UpdateStockCount_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_UpdateStockCount_0{resp.(*UpdateStockCountResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_AddStockCountLines_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/AddStockCountLines", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}/lines"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_AddStockCountLines_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_AddStockCountLines_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_AddStockCountLines_0{resp.(*AddStockCountLinesResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPatch, pattern_InventoryService_UpdateStockCountLine_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/UpdateStockCountLine", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}/lines/{line_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_UpdateStockCountLine_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_UpdateStockCountLine_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_UpdateStockCountLine_0{resp.(*UpdateStockCountLineResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodDelete, pattern_InventoryService_DeleteStockCountLine_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/DeleteStockCountLine", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}/lines/{line_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_DeleteStockCountLine_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_DeleteStockCountLine_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_DeleteStockCountLine_0{resp.(*DeleteStockCountLineResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_MergeStockCounts_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/MergeStockCounts", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts:merge"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_MergeStockCounts_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_MergeStockCounts_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_MergeStockCounts_0{resp.(*MergeStockCountsResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_CompleteStockCount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/CompleteStockCount", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}:complete"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_CompleteStockCount_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_CompleteStockCount_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CompleteStockCount_0{resp.(*CompleteStockCountResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_CancelStockCount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/CancelStockCount", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}:cancel"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_CancelStockCount_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_CancelStockCount_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CancelStockCount_0{resp.(*CancelStockCountResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_InventoryService_ListWriteOffs_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/ListWriteOffs", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/write-offs"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_ListWriteOffs_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_ListWriteOffs_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_InventoryService_GetWriteOff_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/GetWriteOff", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/write-offs/{write_off_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_GetWriteOff_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_GetWriteOff_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_GetWriteOff_0{resp.(*GetWriteOffResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_CreateWriteOff_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/CreateWriteOff", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/write-offs"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_CreateWriteOff_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_CreateWriteOff_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CreateWriteOff_0{resp.(*CreateWriteOffResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_CancelWriteOff_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/CancelWriteOff", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/write-offs/{write_off_id}:cancel"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_CancelWriteOff_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_CancelWriteOff_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CancelWriteOff_0{resp.(*CancelWriteOffResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_InventoryService_ListSupplierReturns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/ListSupplierReturns", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/supplier-returns"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_ListSupplierReturns_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_ListSupplierReturns_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_InventoryService_GetSupplierReturn_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/GetSupplierReturn", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/supplier-returns/{supplier_return_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_GetSupplierReturn_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_GetSupplierReturn_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_GetSupplierReturn_0{resp.(*GetSupplierReturnResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_CreateSupplierReturn_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/CreateSupplierReturn", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/supplier-returns"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_CreateSupplierReturn_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_CreateSupplierReturn_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CreateSupplierReturn_0{resp.(*CreateSupplierReturnResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_CancelSupplierReturn_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/CancelSupplierReturn", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/supplier-returns/{supplier_return_id}:cancel"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_CancelSupplierReturn_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_CancelSupplierReturn_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CancelSupplierReturn_0{resp.(*CancelSupplierReturnResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_ReturnRepairOrderPart_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/ReturnRepairOrderPart", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/part-returns"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_ReturnRepairOrderPart_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_ReturnRepairOrderPart_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_ReturnRepairOrderPart_0{resp.(*ReturnRepairOrderPartResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_InventoryService_ListRepairOrderPartReturns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/ListRepairOrderPartReturns", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/part-returns"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InventoryService_ListRepairOrderPartReturns_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_ListRepairOrderPartReturns_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodGet, pattern_InventoryService_GetPurchasesReport_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1473,6 +3043,346 @@ func RegisterInventoryServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 		}
 		forward_InventoryService_PostStockIssue_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_PostStockIssue_0{resp.(*PostStockIssueResponse)}, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodGet, pattern_InventoryService_ListStockCounts_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/ListStockCounts", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_ListStockCounts_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_ListStockCounts_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_InventoryService_GetStockCount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/GetStockCount", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_GetStockCount_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_GetStockCount_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_GetStockCount_0{resp.(*GetStockCountResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_CreateStockCount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/CreateStockCount", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_CreateStockCount_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_CreateStockCount_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CreateStockCount_0{resp.(*CreateStockCountResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPatch, pattern_InventoryService_UpdateStockCount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/UpdateStockCount", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_UpdateStockCount_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_UpdateStockCount_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_UpdateStockCount_0{resp.(*UpdateStockCountResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_AddStockCountLines_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/AddStockCountLines", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}/lines"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_AddStockCountLines_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_AddStockCountLines_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_AddStockCountLines_0{resp.(*AddStockCountLinesResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPatch, pattern_InventoryService_UpdateStockCountLine_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/UpdateStockCountLine", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}/lines/{line_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_UpdateStockCountLine_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_UpdateStockCountLine_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_UpdateStockCountLine_0{resp.(*UpdateStockCountLineResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodDelete, pattern_InventoryService_DeleteStockCountLine_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/DeleteStockCountLine", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}/lines/{line_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_DeleteStockCountLine_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_DeleteStockCountLine_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_DeleteStockCountLine_0{resp.(*DeleteStockCountLineResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_MergeStockCounts_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/MergeStockCounts", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts:merge"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_MergeStockCounts_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_MergeStockCounts_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_MergeStockCounts_0{resp.(*MergeStockCountsResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_CompleteStockCount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/CompleteStockCount", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}:complete"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_CompleteStockCount_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_CompleteStockCount_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CompleteStockCount_0{resp.(*CompleteStockCountResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_CancelStockCount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/CancelStockCount", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}:cancel"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_CancelStockCount_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_CancelStockCount_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CancelStockCount_0{resp.(*CancelStockCountResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_InventoryService_ListWriteOffs_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/ListWriteOffs", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/write-offs"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_ListWriteOffs_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_ListWriteOffs_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_InventoryService_GetWriteOff_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/GetWriteOff", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/write-offs/{write_off_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_GetWriteOff_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_GetWriteOff_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_GetWriteOff_0{resp.(*GetWriteOffResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_CreateWriteOff_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/CreateWriteOff", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/write-offs"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_CreateWriteOff_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_CreateWriteOff_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CreateWriteOff_0{resp.(*CreateWriteOffResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_CancelWriteOff_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/CancelWriteOff", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/write-offs/{write_off_id}:cancel"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_CancelWriteOff_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_CancelWriteOff_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CancelWriteOff_0{resp.(*CancelWriteOffResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_InventoryService_ListSupplierReturns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/ListSupplierReturns", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/supplier-returns"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_ListSupplierReturns_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_ListSupplierReturns_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_InventoryService_GetSupplierReturn_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/GetSupplierReturn", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/supplier-returns/{supplier_return_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_GetSupplierReturn_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_GetSupplierReturn_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_GetSupplierReturn_0{resp.(*GetSupplierReturnResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_CreateSupplierReturn_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/CreateSupplierReturn", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/supplier-returns"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_CreateSupplierReturn_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_CreateSupplierReturn_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CreateSupplierReturn_0{resp.(*CreateSupplierReturnResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_CancelSupplierReturn_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/CancelSupplierReturn", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/supplier-returns/{supplier_return_id}:cancel"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_CancelSupplierReturn_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_CancelSupplierReturn_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_CancelSupplierReturn_0{resp.(*CancelSupplierReturnResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_InventoryService_ReturnRepairOrderPart_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/ReturnRepairOrderPart", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/part-returns"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_ReturnRepairOrderPart_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_ReturnRepairOrderPart_0(annotatedContext, mux, outboundMarshaler, w, req, response_InventoryService_ReturnRepairOrderPart_0{resp.(*ReturnRepairOrderPartResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_InventoryService_ListRepairOrderPartReturns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.inventory.v1.InventoryService/ListRepairOrderPartReturns", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/part-returns"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InventoryService_ListRepairOrderPartReturns_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_InventoryService_ListRepairOrderPartReturns_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodGet, pattern_InventoryService_GetPurchasesReport_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1573,38 +3483,222 @@ func (m response_InventoryService_PostStockIssue_0) XXX_ResponseBody() interface
 	return response.StockIssue
 }
 
+type response_InventoryService_GetStockCount_0 struct {
+	*GetStockCountResponse
+}
+
+func (m response_InventoryService_GetStockCount_0) XXX_ResponseBody() interface{} {
+	response := m.GetStockCountResponse
+	return response.StockCount
+}
+
+type response_InventoryService_CreateStockCount_0 struct {
+	*CreateStockCountResponse
+}
+
+func (m response_InventoryService_CreateStockCount_0) XXX_ResponseBody() interface{} {
+	response := m.CreateStockCountResponse
+	return response.StockCount
+}
+
+type response_InventoryService_UpdateStockCount_0 struct {
+	*UpdateStockCountResponse
+}
+
+func (m response_InventoryService_UpdateStockCount_0) XXX_ResponseBody() interface{} {
+	response := m.UpdateStockCountResponse
+	return response.StockCount
+}
+
+type response_InventoryService_AddStockCountLines_0 struct {
+	*AddStockCountLinesResponse
+}
+
+func (m response_InventoryService_AddStockCountLines_0) XXX_ResponseBody() interface{} {
+	response := m.AddStockCountLinesResponse
+	return response.StockCount
+}
+
+type response_InventoryService_UpdateStockCountLine_0 struct {
+	*UpdateStockCountLineResponse
+}
+
+func (m response_InventoryService_UpdateStockCountLine_0) XXX_ResponseBody() interface{} {
+	response := m.UpdateStockCountLineResponse
+	return response.StockCount
+}
+
+type response_InventoryService_DeleteStockCountLine_0 struct {
+	*DeleteStockCountLineResponse
+}
+
+func (m response_InventoryService_DeleteStockCountLine_0) XXX_ResponseBody() interface{} {
+	response := m.DeleteStockCountLineResponse
+	return response.StockCount
+}
+
+type response_InventoryService_MergeStockCounts_0 struct {
+	*MergeStockCountsResponse
+}
+
+func (m response_InventoryService_MergeStockCounts_0) XXX_ResponseBody() interface{} {
+	response := m.MergeStockCountsResponse
+	return response.StockCount
+}
+
+type response_InventoryService_CompleteStockCount_0 struct {
+	*CompleteStockCountResponse
+}
+
+func (m response_InventoryService_CompleteStockCount_0) XXX_ResponseBody() interface{} {
+	response := m.CompleteStockCountResponse
+	return response.StockCount
+}
+
+type response_InventoryService_CancelStockCount_0 struct {
+	*CancelStockCountResponse
+}
+
+func (m response_InventoryService_CancelStockCount_0) XXX_ResponseBody() interface{} {
+	response := m.CancelStockCountResponse
+	return response.StockCount
+}
+
+type response_InventoryService_GetWriteOff_0 struct {
+	*GetWriteOffResponse
+}
+
+func (m response_InventoryService_GetWriteOff_0) XXX_ResponseBody() interface{} {
+	response := m.GetWriteOffResponse
+	return response.WriteOff
+}
+
+type response_InventoryService_CreateWriteOff_0 struct {
+	*CreateWriteOffResponse
+}
+
+func (m response_InventoryService_CreateWriteOff_0) XXX_ResponseBody() interface{} {
+	response := m.CreateWriteOffResponse
+	return response.WriteOff
+}
+
+type response_InventoryService_CancelWriteOff_0 struct {
+	*CancelWriteOffResponse
+}
+
+func (m response_InventoryService_CancelWriteOff_0) XXX_ResponseBody() interface{} {
+	response := m.CancelWriteOffResponse
+	return response.WriteOff
+}
+
+type response_InventoryService_GetSupplierReturn_0 struct {
+	*GetSupplierReturnResponse
+}
+
+func (m response_InventoryService_GetSupplierReturn_0) XXX_ResponseBody() interface{} {
+	response := m.GetSupplierReturnResponse
+	return response.SupplierReturn
+}
+
+type response_InventoryService_CreateSupplierReturn_0 struct {
+	*CreateSupplierReturnResponse
+}
+
+func (m response_InventoryService_CreateSupplierReturn_0) XXX_ResponseBody() interface{} {
+	response := m.CreateSupplierReturnResponse
+	return response.SupplierReturn
+}
+
+type response_InventoryService_CancelSupplierReturn_0 struct {
+	*CancelSupplierReturnResponse
+}
+
+func (m response_InventoryService_CancelSupplierReturn_0) XXX_ResponseBody() interface{} {
+	response := m.CancelSupplierReturnResponse
+	return response.SupplierReturn
+}
+
+type response_InventoryService_ReturnRepairOrderPart_0 struct {
+	*ReturnRepairOrderPartResponse
+}
+
+func (m response_InventoryService_ReturnRepairOrderPart_0) XXX_ResponseBody() interface{} {
+	response := m.ReturnRepairOrderPartResponse
+	return response.PartReturn
+}
+
 var (
-	pattern_InventoryService_ListStockLevels_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "stock-levels"}, ""))
-	pattern_InventoryService_GetStockLevel_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "stock-levels", "part_id"}, ""))
-	pattern_InventoryService_ListStockTransactions_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5}, []string{"api", "v1", "garages", "garage_id", "reports", "stock-movements"}, ""))
-	pattern_InventoryService_ListGoodsReceipts_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "goods-receipts"}, ""))
-	pattern_InventoryService_GetGoodsReceipt_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id"}, ""))
-	pattern_InventoryService_CreateGoodsReceipt_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "goods-receipts"}, ""))
-	pattern_InventoryService_UpdateGoodsReceipt_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id"}, ""))
-	pattern_InventoryService_CompleteGoodsReceipt_0     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id"}, "complete"))
-	pattern_InventoryService_CancelGoodsReceipt_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id"}, "cancel"))
-	pattern_InventoryService_GetPartSuppliers_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id", "suppliers"}, ""))
-	pattern_InventoryService_PutPartSuppliers_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id", "suppliers"}, ""))
-	pattern_InventoryService_GetRepairOrderStockIssue_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "repair-orders", "repair_order_id", "stock-issue"}, ""))
-	pattern_InventoryService_PostStockIssue_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "stock-issues", "stock_issue_id"}, "post"))
-	pattern_InventoryService_GetPurchasesReport_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5}, []string{"api", "v1", "garages", "garage_id", "reports", "purchases"}, ""))
-	pattern_InventoryService_GetStockValuationReport_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5}, []string{"api", "v1", "garages", "garage_id", "reports", "stock-valuation"}, ""))
+	pattern_InventoryService_ListStockLevels_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "stock-levels"}, ""))
+	pattern_InventoryService_GetStockLevel_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "stock-levels", "part_id"}, ""))
+	pattern_InventoryService_ListStockTransactions_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5}, []string{"api", "v1", "garages", "garage_id", "reports", "stock-movements"}, ""))
+	pattern_InventoryService_ListGoodsReceipts_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "goods-receipts"}, ""))
+	pattern_InventoryService_GetGoodsReceipt_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id"}, ""))
+	pattern_InventoryService_CreateGoodsReceipt_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "goods-receipts"}, ""))
+	pattern_InventoryService_UpdateGoodsReceipt_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id"}, ""))
+	pattern_InventoryService_CompleteGoodsReceipt_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id"}, "complete"))
+	pattern_InventoryService_CancelGoodsReceipt_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id"}, "cancel"))
+	pattern_InventoryService_GetPartSuppliers_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id", "suppliers"}, ""))
+	pattern_InventoryService_PutPartSuppliers_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id", "suppliers"}, ""))
+	pattern_InventoryService_GetRepairOrderStockIssue_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "repair-orders", "repair_order_id", "stock-issue"}, ""))
+	pattern_InventoryService_PostStockIssue_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "stock-issues", "stock_issue_id"}, "post"))
+	pattern_InventoryService_ListStockCounts_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "stock-counts"}, ""))
+	pattern_InventoryService_GetStockCount_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "stock-counts", "stock_count_id"}, ""))
+	pattern_InventoryService_CreateStockCount_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "stock-counts"}, ""))
+	pattern_InventoryService_UpdateStockCount_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "stock-counts", "stock_count_id"}, ""))
+	pattern_InventoryService_AddStockCountLines_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "stock-counts", "stock_count_id", "lines"}, ""))
+	pattern_InventoryService_UpdateStockCountLine_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"api", "v1", "garages", "garage_id", "stock-counts", "stock_count_id", "lines", "line_id"}, ""))
+	pattern_InventoryService_DeleteStockCountLine_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"api", "v1", "garages", "garage_id", "stock-counts", "stock_count_id", "lines", "line_id"}, ""))
+	pattern_InventoryService_MergeStockCounts_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "stock-counts"}, "merge"))
+	pattern_InventoryService_CompleteStockCount_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "stock-counts", "stock_count_id"}, "complete"))
+	pattern_InventoryService_CancelStockCount_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "stock-counts", "stock_count_id"}, "cancel"))
+	pattern_InventoryService_ListWriteOffs_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "write-offs"}, ""))
+	pattern_InventoryService_GetWriteOff_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "write-offs", "write_off_id"}, ""))
+	pattern_InventoryService_CreateWriteOff_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "write-offs"}, ""))
+	pattern_InventoryService_CancelWriteOff_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "write-offs", "write_off_id"}, "cancel"))
+	pattern_InventoryService_ListSupplierReturns_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "supplier-returns"}, ""))
+	pattern_InventoryService_GetSupplierReturn_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "supplier-returns", "supplier_return_id"}, ""))
+	pattern_InventoryService_CreateSupplierReturn_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "supplier-returns"}, ""))
+	pattern_InventoryService_CancelSupplierReturn_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "supplier-returns", "supplier_return_id"}, "cancel"))
+	pattern_InventoryService_ReturnRepairOrderPart_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "repair-orders", "repair_order_id", "part-returns"}, ""))
+	pattern_InventoryService_ListRepairOrderPartReturns_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "repair-orders", "repair_order_id", "part-returns"}, ""))
+	pattern_InventoryService_GetPurchasesReport_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5}, []string{"api", "v1", "garages", "garage_id", "reports", "purchases"}, ""))
+	pattern_InventoryService_GetStockValuationReport_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5}, []string{"api", "v1", "garages", "garage_id", "reports", "stock-valuation"}, ""))
 )
 
 var (
-	forward_InventoryService_ListStockLevels_0          = runtime.ForwardResponseMessage
-	forward_InventoryService_GetStockLevel_0            = runtime.ForwardResponseMessage
-	forward_InventoryService_ListStockTransactions_0    = runtime.ForwardResponseMessage
-	forward_InventoryService_ListGoodsReceipts_0        = runtime.ForwardResponseMessage
-	forward_InventoryService_GetGoodsReceipt_0          = runtime.ForwardResponseMessage
-	forward_InventoryService_CreateGoodsReceipt_0       = runtime.ForwardResponseMessage
-	forward_InventoryService_UpdateGoodsReceipt_0       = runtime.ForwardResponseMessage
-	forward_InventoryService_CompleteGoodsReceipt_0     = runtime.ForwardResponseMessage
-	forward_InventoryService_CancelGoodsReceipt_0       = runtime.ForwardResponseMessage
-	forward_InventoryService_GetPartSuppliers_0         = runtime.ForwardResponseMessage
-	forward_InventoryService_PutPartSuppliers_0         = runtime.ForwardResponseMessage
-	forward_InventoryService_GetRepairOrderStockIssue_0 = runtime.ForwardResponseMessage
-	forward_InventoryService_PostStockIssue_0           = runtime.ForwardResponseMessage
-	forward_InventoryService_GetPurchasesReport_0       = runtime.ForwardResponseMessage
-	forward_InventoryService_GetStockValuationReport_0  = runtime.ForwardResponseMessage
+	forward_InventoryService_ListStockLevels_0            = runtime.ForwardResponseMessage
+	forward_InventoryService_GetStockLevel_0              = runtime.ForwardResponseMessage
+	forward_InventoryService_ListStockTransactions_0      = runtime.ForwardResponseMessage
+	forward_InventoryService_ListGoodsReceipts_0          = runtime.ForwardResponseMessage
+	forward_InventoryService_GetGoodsReceipt_0            = runtime.ForwardResponseMessage
+	forward_InventoryService_CreateGoodsReceipt_0         = runtime.ForwardResponseMessage
+	forward_InventoryService_UpdateGoodsReceipt_0         = runtime.ForwardResponseMessage
+	forward_InventoryService_CompleteGoodsReceipt_0       = runtime.ForwardResponseMessage
+	forward_InventoryService_CancelGoodsReceipt_0         = runtime.ForwardResponseMessage
+	forward_InventoryService_GetPartSuppliers_0           = runtime.ForwardResponseMessage
+	forward_InventoryService_PutPartSuppliers_0           = runtime.ForwardResponseMessage
+	forward_InventoryService_GetRepairOrderStockIssue_0   = runtime.ForwardResponseMessage
+	forward_InventoryService_PostStockIssue_0             = runtime.ForwardResponseMessage
+	forward_InventoryService_ListStockCounts_0            = runtime.ForwardResponseMessage
+	forward_InventoryService_GetStockCount_0              = runtime.ForwardResponseMessage
+	forward_InventoryService_CreateStockCount_0           = runtime.ForwardResponseMessage
+	forward_InventoryService_UpdateStockCount_0           = runtime.ForwardResponseMessage
+	forward_InventoryService_AddStockCountLines_0         = runtime.ForwardResponseMessage
+	forward_InventoryService_UpdateStockCountLine_0       = runtime.ForwardResponseMessage
+	forward_InventoryService_DeleteStockCountLine_0       = runtime.ForwardResponseMessage
+	forward_InventoryService_MergeStockCounts_0           = runtime.ForwardResponseMessage
+	forward_InventoryService_CompleteStockCount_0         = runtime.ForwardResponseMessage
+	forward_InventoryService_CancelStockCount_0           = runtime.ForwardResponseMessage
+	forward_InventoryService_ListWriteOffs_0              = runtime.ForwardResponseMessage
+	forward_InventoryService_GetWriteOff_0                = runtime.ForwardResponseMessage
+	forward_InventoryService_CreateWriteOff_0             = runtime.ForwardResponseMessage
+	forward_InventoryService_CancelWriteOff_0             = runtime.ForwardResponseMessage
+	forward_InventoryService_ListSupplierReturns_0        = runtime.ForwardResponseMessage
+	forward_InventoryService_GetSupplierReturn_0          = runtime.ForwardResponseMessage
+	forward_InventoryService_CreateSupplierReturn_0       = runtime.ForwardResponseMessage
+	forward_InventoryService_CancelSupplierReturn_0       = runtime.ForwardResponseMessage
+	forward_InventoryService_ReturnRepairOrderPart_0      = runtime.ForwardResponseMessage
+	forward_InventoryService_ListRepairOrderPartReturns_0 = runtime.ForwardResponseMessage
+	forward_InventoryService_GetPurchasesReport_0         = runtime.ForwardResponseMessage
+	forward_InventoryService_GetStockValuationReport_0    = runtime.ForwardResponseMessage
 )

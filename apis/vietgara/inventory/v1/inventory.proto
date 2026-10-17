@@ -30,6 +30,18 @@ enum StockTransactionRefType {
   STOCK_TRANSACTION_REF_TYPE_GOODS_RECEIPT = 3;
   // A posted stock issue document (phiếu xuất kho, FR-INV-20, Release 7.0).
   STOCK_TRANSACTION_REF_TYPE_STOCK_ISSUE = 4;
+  // A completed stock count: the adjustment that makes stock equal the
+  // count, or the reversal of a cancelled count (FR-INV-12, Release 7.1).
+  STOCK_TRANSACTION_REF_TYPE_STOCK_COUNT = 5;
+  // A write-off document, or the reversal of a cancelled one (FR-INV-09,
+  // Release 7.1).
+  STOCK_TRANSACTION_REF_TYPE_WRITE_OFF = 6;
+  // A return to supplier document, or the reversal of a cancelled one
+  // (FR-INV-10, Release 7.1).
+  STOCK_TRANSACTION_REF_TYPE_SUPPLIER_RETURN = 7;
+  // Unused parts returned from a repair order (FR-INV-11, Release 7.1);
+  // ref_id is the repair order part return.
+  STOCK_TRANSACTION_REF_TYPE_REPAIR_ORDER_RETURN = 8;
 }
 
 // StockLevel is one part with how many of it the garage has (FR-INV-03).
@@ -120,6 +132,19 @@ message StockTransaction {
   string unit_abbreviation = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The abbreviation of the part's base unit, the unit `quantity` is in.
   string base_unit_abbreviation = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release 7.1: the number of the document behind the movement (goods
+  // receipt, stock issue, stock count, write-off or supplier return); empty
+  // for a repair order part return and for movements without a document.
+  string ref_number = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release 7.1: why the movement happened, for adjustments (the write-off
+  // reason, the repair order return reason; empty otherwise).
+  string reason = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release 7.1: the user who caused the movement; empty for system
+  // movements (an automatic posting).
+  string created_by_name = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release 7.1: the part's quantity on hand right after the movement, in
+  // the base unit (the running balance of the stock card).
+  string quantity_after = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message ListStockTransactionsRequest {
@@ -128,6 +153,8 @@ message ListStockTransactionsRequest {
   StockTransactionType type = 3;
   int32 page = 4;
   int32 page_size = 5;
+  // Release 7.1: only movements caused by this kind of document.
+  StockTransactionRefType ref_type = 6;
 }
 
 message ListStockTransactionsResponse {
@@ -336,6 +363,9 @@ message StockIssueLine {
   // The cost snapshot per base unit, whole VND; omitted without
   // PERMISSION_INVENTORY_COST_READ.
   optional int64 unit_cost = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release 7.1: the base-unit amount already returned to stock from this
+  // line (FR-INV-11); what can still be returned is quantity minus this.
+  string returned_quantity = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // StockIssue is the numbered stock-out document of a repair order
@@ -372,6 +402,466 @@ message PostStockIssueRequest {
 
 message PostStockIssueResponse {
   StockIssue stock_issue = 1;
+}
+
+// StockCountStatus is the lifecycle of a stock count (FR-INV-12): a draft
+// is counted line by line and can be merged with other drafts; completing it
+// posts the adjustments and freezes it; cancelling a draft just closes it,
+// cancelling a completed count posts the reversal.
+enum StockCountStatus {
+  STOCK_COUNT_STATUS_UNSPECIFIED = 0;
+  STOCK_COUNT_STATUS_DRAFT = 1;
+  STOCK_COUNT_STATUS_COMPLETED = 2;
+  STOCK_COUNT_STATUS_CANCELLED = 3;
+}
+
+// StockCountLineResult compares a line's counted quantity with the system
+// quantity.
+enum StockCountLineResult {
+  STOCK_COUNT_LINE_RESULT_UNSPECIFIED = 0;
+  // No counted quantity typed yet.
+  STOCK_COUNT_LINE_RESULT_UNCOUNTED = 1;
+  // Counted equals the system quantity.
+  STOCK_COUNT_LINE_RESULT_MATCHED = 2;
+  // Counted is more than the system quantity.
+  STOCK_COUNT_LINE_RESULT_OVER = 3;
+  // Counted is less than the system quantity.
+  STOCK_COUNT_LINE_RESULT_SHORT = 4;
+}
+
+// StockCountLine is one part of a stock count. system_quantity is a
+// snapshot of the stock on hand taken when the line is added and again each
+// time the counted quantity is typed ("the system quantity at the time of
+// counting"); completing the count takes a final snapshot of every counted
+// line, so that stock equals the count afterwards.
+message StockCountLine {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_sku = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string base_unit_abbreviation = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The packaging unit the counted quantity was typed in; unset means the
+  // base unit.
+  optional string unit_id = 6;
+  string unit_abbreviation = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The counted quantity as typed, in unit_id (or the base unit). Empty
+  // means not counted yet; "0" is a real count of none.
+  string entered_counted_quantity = 8;
+  // The counted quantity in the base unit, derived; empty while uncounted.
+  string counted_quantity = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The stock on hand in the base unit when the line was last counted.
+  string system_quantity = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // counted_quantity minus system_quantity, base unit, signed (for example
+  // "-2"); empty while uncounted.
+  string difference_quantity = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  StockCountLineResult result = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The weighted-average cost per base unit the difference is valued at,
+  // whole VND: the live average while a draft, the value used at completion
+  // afterwards. Omitted without PERMISSION_INVENTORY_COST_READ.
+  optional int64 average_cost = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // difference_quantity times average_cost, whole VND, signed (a shortage is
+  // negative); omitted without PERMISSION_INVENTORY_COST_READ.
+  optional int64 difference_value = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // When the counted quantity was last typed.
+  google.protobuf.Timestamp counted_at = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// StockCount is a numbered stock count document (FR-INV-12).
+message StockCount {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Rendered from the garage's stock_count numbering template (FR-TEN-05).
+  string number = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  StockCountStatus status = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // A label for the people counting, for example "Shelf A".
+  string name = 5;
+  string notes = 6;
+  // Not included in list answers.
+  repeated StockCountLine lines = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // How many lines are in each result; included in list answers too.
+  int32 uncounted_lines = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int32 matched_lines = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int32 over_lines = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int32 short_lines = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Sum of the lines' difference_value, whole VND, signed. Omitted without
+  // PERMISSION_INVENTORY_COST_READ.
+  optional int64 total_difference_value = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp completed_at = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string completed_by_name = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp cancelled_at = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string created_by_name = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListStockCountsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Matches the number, name or notes.
+  string query = 2;
+  StockCountStatus status = 3;
+  int32 page = 4;
+  int32 page_size = 5;
+}
+
+message ListStockCountsResponse {
+  repeated StockCount data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message GetStockCountRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string stock_count_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetStockCountResponse {
+  StockCount stock_count = 1;
+}
+
+message CreateStockCountRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Only name and notes are read; lines are added with AddStockCountLines.
+  StockCount stock_count = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateStockCountResponse {
+  StockCount stock_count = 1;
+}
+
+message UpdateStockCountRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string stock_count_id = 2 [(google.api.field_behavior) = REQUIRED];
+  StockCount stock_count = 3 [(google.api.field_behavior) = REQUIRED];
+  // Fields to replace: "name" and "notes"; filled from the JSON body when
+  // omitted. Lines have their own calls. Only a DRAFT count can be updated
+  // (otherwise STOCK_COUNT_NOT_DRAFT).
+  google.protobuf.FieldMask update_mask = 4;
+}
+
+message UpdateStockCountResponse {
+  StockCount stock_count = 1;
+}
+
+// AddStockCountLinesRequest adds parts to a draft count, taking the system
+// quantity snapshot of each. Parts already on the count are skipped. The
+// scan, search and category pickers of the screen all end here; the Excel
+// import and barcodes of Release 7.2 will too.
+message AddStockCountLinesRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string stock_count_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Parts picked one by one (search, scan).
+  repeated string part_ids = 3;
+  // Adds every active part of this category and its sub-categories that has
+  // a stock balance or a reservation.
+  string category_id = 4;
+}
+
+message AddStockCountLinesResponse {
+  StockCount stock_count = 1;
+}
+
+// UpdateStockCountLineRequest types the counted quantity of one line. The
+// body is a StockCountLine of which only unit_id and entered_counted_quantity
+// are read; an empty entered_counted_quantity marks the line uncounted.
+message UpdateStockCountLineRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string stock_count_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string line_id = 3 [(google.api.field_behavior) = REQUIRED];
+  StockCountLine line = 4 [(google.api.field_behavior) = REQUIRED];
+}
+
+message UpdateStockCountLineResponse {
+  StockCount stock_count = 1;
+}
+
+message DeleteStockCountLineRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string stock_count_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string line_id = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteStockCountLineResponse {
+  StockCount stock_count = 1;
+}
+
+// MergeStockCountsRequest folds several draft counts into the first one.
+// A part that is on more than one of them keeps one line whose counted
+// quantity is the sum of the counted quantities (two people counted
+// different places); an uncounted line gives way to a counted one. The
+// other counts become CANCELLED and their lines move to the first.
+message MergeStockCountsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // At least two draft counts; the first is kept and returned.
+  repeated string stock_count_ids = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message MergeStockCountsResponse {
+  StockCount stock_count = 1;
+}
+
+message CompleteStockCountRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string stock_count_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Drop the lines that were never counted instead of refusing
+  // (STOCK_COUNT_HAS_UNCOUNTED_LINES).
+  bool skip_uncounted = 3;
+}
+
+message CompleteStockCountResponse {
+  StockCount stock_count = 1;
+}
+
+message CancelStockCountRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string stock_count_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CancelStockCountResponse {
+  StockCount stock_count = 1;
+}
+
+// AdjustmentStatus is the lifecycle of a write-off or a supplier return:
+// created already posted, cancelled by a reversing movement.
+enum AdjustmentStatus {
+  ADJUSTMENT_STATUS_UNSPECIFIED = 0;
+  ADJUSTMENT_STATUS_COMPLETED = 1;
+  ADJUSTMENT_STATUS_CANCELLED = 2;
+}
+
+// WriteOffReason is why stock is written off (FR-INV-09).
+enum WriteOffReason {
+  WRITE_OFF_REASON_UNSPECIFIED = 0;
+  WRITE_OFF_REASON_DAMAGED = 1;
+  WRITE_OFF_REASON_LOST = 2;
+  WRITE_OFF_REASON_EXPIRED = 3;
+  WRITE_OFF_REASON_INTERNAL_USE = 4;
+  WRITE_OFF_REASON_WARRANTY_REPLACEMENT = 5;
+}
+
+// WriteOffLine is one part of a write-off.
+message WriteOffLine {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string part_sku = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string base_unit_abbreviation = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The packaging unit the quantity is typed in; unset means the base unit.
+  optional string unit_id = 6;
+  string unit_abbreviation = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // In unit_id, or the base unit; must be positive.
+  string entered_quantity = 8 [(google.api.field_behavior) = REQUIRED];
+  // The base-unit amount, derived.
+  string quantity = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The average cost per base unit at the moment of the write-off, whole
+  // VND. Omitted without PERMISSION_INVENTORY_COST_READ.
+  optional int64 unit_cost = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // quantity times unit_cost, whole VND. Omitted without
+  // PERMISSION_INVENTORY_COST_READ.
+  optional int64 line_value = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// WriteOff is a numbered document that reduces stock at average cost
+// (FR-INV-09). It is posted when created; mistakes are undone by cancelling
+// it, which puts the parts back.
+message WriteOff {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Rendered from the garage's write_off numbering template (FR-TEN-05).
+  string number = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  AdjustmentStatus status = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  WriteOffReason reason = 5 [(google.api.field_behavior) = REQUIRED];
+  string notes = 6;
+  repeated WriteOffLine lines = 7;
+  // Sum of the lines' value, whole VND. Omitted without
+  // PERMISSION_INVENTORY_COST_READ.
+  optional int64 total_value = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp cancelled_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string created_by_name = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListWriteOffsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Matches the number or notes.
+  string query = 2;
+  WriteOffReason reason = 3;
+  AdjustmentStatus status = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+message ListWriteOffsResponse {
+  repeated WriteOff data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message GetWriteOffRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string write_off_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetWriteOffResponse {
+  WriteOff write_off = 1;
+}
+
+message CreateWriteOffRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  WriteOff write_off = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateWriteOffResponse {
+  WriteOff write_off = 1;
+}
+
+message CancelWriteOffRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string write_off_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CancelWriteOffResponse {
+  WriteOff write_off = 1;
+}
+
+// SupplierReturnLine is one part of a return to a supplier.
+message SupplierReturnLine {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string part_sku = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string base_unit_abbreviation = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  optional string unit_id = 6;
+  string unit_abbreviation = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string entered_quantity = 8 [(google.api.field_behavior) = REQUIRED];
+  // The base-unit amount, derived.
+  string quantity = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The credit the supplier gives, VND per entered unit, as typed. Zero or
+  // unset takes the cost of the same part on the linked goods receipt when
+  // there is one, else the part's average cost. Omitted from answers, and
+  // ignored on input, without PERMISSION_INVENTORY_COST_READ.
+  optional int64 unit_cost = 10;
+  // entered_quantity times unit_cost, whole VND, rounded half-up per line.
+  // Omitted without PERMISSION_INVENTORY_COST_READ.
+  optional int64 line_amount = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// SupplierReturn is a numbered document that reduces stock and records the
+// credit owed by the supplier (FR-INV-10). It is posted when created;
+// cancelling it puts the parts back.
+message SupplierReturn {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Rendered from the garage's supplier_return numbering template.
+  string number = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  AdjustmentStatus status = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string supplier_id = 5 [(google.api.field_behavior) = REQUIRED];
+  string supplier_name = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The completed goods receipt the parts came from, when known.
+  optional string goods_receipt_id = 7;
+  string goods_receipt_number = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The supplier's own credit note number, when they have issued one.
+  string credit_note_number = 9;
+  string notes = 10;
+  repeated SupplierReturnLine lines = 11;
+  // The credit recorded against the supplier: the sum of the lines'
+  // amounts, whole VND. Omitted without PERMISSION_INVENTORY_COST_READ.
+  optional int64 credit_amount = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp cancelled_at = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string created_by_name = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListSupplierReturnsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Matches the number, credit note number or notes.
+  string query = 2;
+  string supplier_id = 3;
+  AdjustmentStatus status = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+message ListSupplierReturnsResponse {
+  repeated SupplierReturn data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message GetSupplierReturnRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string supplier_return_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetSupplierReturnResponse {
+  SupplierReturn supplier_return = 1;
+}
+
+message CreateSupplierReturnRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  SupplierReturn supplier_return = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateSupplierReturnResponse {
+  SupplierReturn supplier_return = 1;
+}
+
+message CancelSupplierReturnRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string supplier_return_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CancelSupplierReturnResponse {
+  SupplierReturn supplier_return = 1;
+}
+
+// RepairOrderPartReturn records unused parts of a repair order coming back
+// to stock (FR-INV-11): the stock is restored at the cost they left with.
+// It is immutable. It does not change the repair order's lines or what the
+// customer is billed.
+message RepairOrderPartReturn {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string repair_order_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string repair_order_number = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string stock_issue_id = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The repair order part line the parts are returned from.
+  string repair_order_line_id = 6 [(google.api.field_behavior) = REQUIRED];
+  string part_id = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_sku = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_name = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string base_unit_abbreviation = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The packaging unit the quantity is typed in; unset means the base unit.
+  optional string unit_id = 11;
+  string unit_abbreviation = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string entered_quantity = 13 [(google.api.field_behavior) = REQUIRED];
+  // The base-unit amount, derived.
+  string quantity = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Why the parts came back; required.
+  string reason = 15 [(google.api.field_behavior) = REQUIRED];
+  // The cost per base unit the parts are restored at (the line's cost
+  // snapshot), whole VND; omitted without PERMISSION_INVENTORY_COST_READ.
+  optional int64 unit_cost = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string created_by_name = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ReturnRepairOrderPartRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Only repair_order_line_id, unit_id, entered_quantity and reason are read.
+  RepairOrderPartReturn part_return = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ReturnRepairOrderPartResponse {
+  RepairOrderPartReturn part_return = 1;
+}
+
+message ListRepairOrderPartReturnsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ListRepairOrderPartReturnsResponse {
+  repeated RepairOrderPartReturn data = 1;
 }
 
 // PurchaseLine is one line of a completed goods receipt in the purchases
@@ -451,7 +941,9 @@ message GetStockValuationReportResponse {
 }
 
 // InventoryService manages how many of each part a garage has (FRD 3.7).
-// Reads need PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE.
+// Reads need PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE
+// (stock counts need PERMISSION_INVENTORY_COUNT, write-offs, supplier
+// returns and repair order part returns PERMISSION_INVENTORY_ADJUST).
 // The parts themselves are managed by CatalogueService.
 service InventoryService {
   // The stock-on-hand list (FR-INV-03): parts with their balances.
@@ -553,6 +1045,171 @@ service InventoryService {
       body: "*"
       response_body: "stock_issue"
     };
+  }
+
+  // Stock counts (FR-INV-12, Release 7.1). Reads need PERMISSION_INVENTORY_READ,
+  // every change PERMISSION_INVENTORY_COUNT. Reasons: STOCK_COUNT_NOT_DRAFT,
+  // STOCK_COUNT_ALREADY_CANCELLED, STOCK_COUNT_HAS_UNCOUNTED_LINES (complete),
+  // INSUFFICIENT_STOCK_TO_REVERSE (cancel of a completed count).
+  rpc ListStockCounts(ListStockCountsRequest) returns (ListStockCountsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/stock-counts"};
+  }
+
+  rpc GetStockCount(GetStockCountRequest) returns (GetStockCountResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}"
+      response_body: "stock_count"
+    };
+  }
+
+  rpc CreateStockCount(CreateStockCountRequest) returns (CreateStockCountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/stock-counts"
+      body: "stock_count"
+      response_body: "stock_count"
+    };
+  }
+
+  rpc UpdateStockCount(UpdateStockCountRequest) returns (UpdateStockCountResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}"
+      body: "stock_count"
+      response_body: "stock_count"
+    };
+  }
+
+  rpc AddStockCountLines(AddStockCountLinesRequest) returns (AddStockCountLinesResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}/lines"
+      body: "*"
+      response_body: "stock_count"
+    };
+  }
+
+  rpc UpdateStockCountLine(UpdateStockCountLineRequest) returns (UpdateStockCountLineResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}/lines/{line_id}"
+      body: "line"
+      response_body: "stock_count"
+    };
+  }
+
+  rpc DeleteStockCountLine(DeleteStockCountLineRequest) returns (DeleteStockCountLineResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}/lines/{line_id}"
+      response_body: "stock_count"
+    };
+  }
+
+  // Folds several drafts into the first one; the others become cancelled.
+  rpc MergeStockCounts(MergeStockCountsRequest) returns (MergeStockCountsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/stock-counts:merge"
+      body: "*"
+      response_body: "stock_count"
+    };
+  }
+
+  // Posts one adjustment movement per counted line that differs, so that
+  // stock equals the count; the count can no longer be edited.
+  rpc CompleteStockCount(CompleteStockCountRequest) returns (CompleteStockCountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}:complete"
+      body: "*"
+      response_body: "stock_count"
+    };
+  }
+
+  // Cancelling a draft just closes it; cancelling a completed count posts
+  // the reversal of its adjustments.
+  rpc CancelStockCount(CancelStockCountRequest) returns (CancelStockCountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}:cancel"
+      body: "*"
+      response_body: "stock_count"
+    };
+  }
+
+  // Write-offs (FR-INV-09, Release 7.1). Reads need PERMISSION_INVENTORY_READ,
+  // changes PERMISSION_INVENTORY_ADJUST. Creating one posts it; it is
+  // refused with INSUFFICIENT_STOCK when a part is not on hand in that
+  // quantity. Cancelling restores the stock (WRITE_OFF_ALREADY_CANCELLED
+  // when repeated).
+  rpc ListWriteOffs(ListWriteOffsRequest) returns (ListWriteOffsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/write-offs"};
+  }
+
+  rpc GetWriteOff(GetWriteOffRequest) returns (GetWriteOffResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/garages/{garage_id}/write-offs/{write_off_id}"
+      response_body: "write_off"
+    };
+  }
+
+  rpc CreateWriteOff(CreateWriteOffRequest) returns (CreateWriteOffResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/write-offs"
+      body: "write_off"
+      response_body: "write_off"
+    };
+  }
+
+  rpc CancelWriteOff(CancelWriteOffRequest) returns (CancelWriteOffResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/write-offs/{write_off_id}:cancel"
+      body: "*"
+      response_body: "write_off"
+    };
+  }
+
+  // Returns to supplier (FR-INV-10, Release 7.1). Reads need
+  // PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_ADJUST. Creating
+  // one posts it (INSUFFICIENT_STOCK when a part is short; the linked goods
+  // receipt must be completed, else GOODS_RECEIPT_NOT_COMPLETED).
+  // Cancelling restores the stock (SUPPLIER_RETURN_ALREADY_CANCELLED when
+  // repeated).
+  rpc ListSupplierReturns(ListSupplierReturnsRequest) returns (ListSupplierReturnsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/supplier-returns"};
+  }
+
+  rpc GetSupplierReturn(GetSupplierReturnRequest) returns (GetSupplierReturnResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/garages/{garage_id}/supplier-returns/{supplier_return_id}"
+      response_body: "supplier_return"
+    };
+  }
+
+  rpc CreateSupplierReturn(CreateSupplierReturnRequest) returns (CreateSupplierReturnResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/supplier-returns"
+      body: "supplier_return"
+      response_body: "supplier_return"
+    };
+  }
+
+  rpc CancelSupplierReturn(CancelSupplierReturnRequest) returns (CancelSupplierReturnResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/supplier-returns/{supplier_return_id}:cancel"
+      body: "*"
+      response_body: "supplier_return"
+    };
+  }
+
+  // Returns unused parts of a repair order to stock (FR-INV-11, Release
+  // 7.1); needs PERMISSION_INVENTORY_ADJUST. The order's stock issue must be
+  // posted (STOCK_ISSUE_NOT_POSTED: until then the draft just follows the
+  // order's lines), and the total returned from a line cannot exceed what
+  // was issued (RETURN_EXCEEDS_ISSUED).
+  rpc ReturnRepairOrderPart(ReturnRepairOrderPartRequest) returns (ReturnRepairOrderPartResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/part-returns"
+      body: "part_return"
+      response_body: "part_return"
+    };
+  }
+
+  rpc ListRepairOrderPartReturns(ListRepairOrderPartReturnsRequest) returns (ListRepairOrderPartReturnsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/part-returns"};
   }
 
   // Purchases by supplier and period (FR-INV-19), from completed goods
