@@ -401,6 +401,67 @@ func local_request_QuoteService_SendQuote_0(ctx context.Context, marshaler runti
 	return msg, metadata, err
 }
 
+func request_QuoteService_AddQuoteJob_0(ctx context.Context, marshaler runtime.Marshaler, client QuoteServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq AddQuoteJobRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["quote_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "quote_id")
+	}
+	protoReq.QuoteId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "quote_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.AddQuoteJob(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_QuoteService_AddQuoteJob_0(ctx context.Context, marshaler runtime.Marshaler, server QuoteServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq AddQuoteJobRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["quote_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "quote_id")
+	}
+	protoReq.QuoteId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "quote_id", err)
+	}
+	msg, err := server.AddQuoteJob(ctx, &protoReq)
+	return msg, metadata, err
+}
+
 func request_QuoteService_RecordQuoteDecision_0(ctx context.Context, marshaler runtime.Marshaler, client QuoteServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq RecordQuoteDecisionRequest
@@ -733,6 +794,26 @@ func RegisterQuoteServiceHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_QuoteService_SendQuote_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodPost, pattern_QuoteService_AddQuoteJob_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.quote.v1.QuoteService/AddQuoteJob", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/quotes/{quote_id}/lines:fromJob"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_QuoteService_AddQuoteJob_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_QuoteService_AddQuoteJob_0(annotatedContext, mux, outboundMarshaler, w, req, response_QuoteService_AddQuoteJob_0{resp.(*AddQuoteJobResponse)}, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodPost, pattern_QuoteService_RecordQuoteDecision_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -965,6 +1046,23 @@ func RegisterQuoteServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_QuoteService_SendQuote_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodPost, pattern_QuoteService_AddQuoteJob_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.quote.v1.QuoteService/AddQuoteJob", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/quotes/{quote_id}/lines:fromJob"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_QuoteService_AddQuoteJob_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_QuoteService_AddQuoteJob_0(annotatedContext, mux, outboundMarshaler, w, req, response_QuoteService_AddQuoteJob_0{resp.(*AddQuoteJobResponse)}, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodPost, pattern_QuoteService_RecordQuoteDecision_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1029,6 +1127,15 @@ func (m response_QuoteService_UpdateQuote_0) XXX_ResponseBody() interface{} {
 	return response.Quote
 }
 
+type response_QuoteService_AddQuoteJob_0 struct {
+	*AddQuoteJobResponse
+}
+
+func (m response_QuoteService_AddQuoteJob_0) XXX_ResponseBody() interface{} {
+	response := m.AddQuoteJobResponse
+	return response.Quote
+}
+
 type response_QuoteService_RecordQuoteDecision_0 struct {
 	*RecordQuoteDecisionResponse
 }
@@ -1045,6 +1152,7 @@ var (
 	pattern_QuoteService_UpdateQuote_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "quotes", "quote_id"}, ""))
 	pattern_QuoteService_DeleteQuote_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "quotes", "quote_id"}, ""))
 	pattern_QuoteService_SendQuote_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "quotes", "quote_id", "sending"}, ""))
+	pattern_QuoteService_AddQuoteJob_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "quotes", "quote_id", "lines"}, "fromJob"))
 	pattern_QuoteService_RecordQuoteDecision_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "quotes", "quote_id", "decision"}, ""))
 	pattern_QuoteService_ConvertQuote_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "quotes", "quote_id", "conversion"}, ""))
 )
@@ -1056,6 +1164,7 @@ var (
 	forward_QuoteService_UpdateQuote_0         = runtime.ForwardResponseMessage
 	forward_QuoteService_DeleteQuote_0         = runtime.ForwardResponseMessage
 	forward_QuoteService_SendQuote_0           = runtime.ForwardResponseMessage
+	forward_QuoteService_AddQuoteJob_0         = runtime.ForwardResponseMessage
 	forward_QuoteService_RecordQuoteDecision_0 = runtime.ForwardResponseMessage
 	forward_QuoteService_ConvertQuote_0        = runtime.ForwardResponseMessage
 )

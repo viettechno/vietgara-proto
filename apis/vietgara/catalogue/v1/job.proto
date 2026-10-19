@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package vietgara.catalogue.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/lifecycle.proto";
+import "vietgara/common/v1/pagination.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/catalogue/v1;cataloguev1";
+
+// JobPart is one part a job suggests (FR-CAT-05): a default amount in a
+// unit of the part. The quote form turns it into a part line.
+message JobPart {
+  string part_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // The amount in unit_id (the part's base unit when unit_id is unset), a
+  // decimal string above zero with at most three decimals.
+  string quantity = 2 [(google.api.field_behavior) = REQUIRED];
+  // A packaging unit of the part; unset means the base unit.
+  optional string unit_id = 3;
+  // A hidden consumable (FR-CAT-08): the quote line it makes is not shown to
+  // the customer and is not billed, but its stock is deducted.
+  bool non_billable = 4;
+  string part_sku = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_name = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string unit_abbreviation = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The part's current sale price per unit_id (or per base unit), whole
+  // VND; what a quote line made from this suggestion starts at.
+  int64 unit_price = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // False when the part has been deactivated since; such a suggestion is
+  // skipped when the job is added to a quote.
+  bool part_is_active = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// Job is one type of work of a garage (FR-CAT-05): a standard labor charge
+// and the parts it usually needs.
+message Job {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Unique per garage, compared without regard to case.
+  string name = 3 [(google.api.field_behavior) = REQUIRED];
+  // A free label to group jobs in the picker (for example Maintenance).
+  string category = 4;
+  // The standard labor price, whole VND; zero is allowed.
+  int64 labor_price = 5;
+  // The standard duration in minutes; zero when not set.
+  int32 duration_minutes = 6;
+  // At most 30 suggested parts, each part once. On update, sending parts
+  // replaces the whole list.
+  repeated JobPart parts = 7;
+  bool is_active = 8;
+  google.protobuf.Timestamp created_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListJobsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Matches the name or the category.
+  string query = 2;
+  string category = 3;
+  // Inactive jobs are hidden unless asked for (they never show in pickers).
+  bool include_inactive = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+message ListJobsResponse {
+  repeated Job data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message CreateJobRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  Job job = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateJobResponse {
+  Job job = 1;
+}
+
+message GetJobRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string job_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetJobResponse {
+  Job job = 1;
+}
+
+message UpdateJobRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string job_id = 2 [(google.api.field_behavior) = REQUIRED];
+  Job job = 3 [(google.api.field_behavior) = REQUIRED];
+  // Filled from the JSON body keys when omitted.
+  google.protobuf.FieldMask update_mask = 4;
+}
+
+message UpdateJobResponse {
+  Job job = 1;
+}
+
+message DeleteJobRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string job_id = 2 [(google.api.field_behavior) = REQUIRED];
+  bool dry_run = 3;
+}
+
+message DeleteJobResponse {
+  vietgara.common.v1.DeleteOutcome outcome = 1;
+}
+
+message ActivateJobRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string job_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ActivateJobResponse {
+  Job job = 1;
+}
+
+// JobService manages the job catalogue (FR-CAT-05). Jobs are quoting data:
+// reads need PERMISSION_QUOTE_READ, changes PERMISSION_QUOTE_WRITE.
+service JobService {
+  rpc ListJobs(ListJobsRequest) returns (ListJobsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/jobs"};
+  }
+
+  rpc CreateJob(CreateJobRequest) returns (CreateJobResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/jobs"
+      body: "job"
+      response_body: "job"
+    };
+  }
+
+  rpc GetJob(GetJobRequest) returns (GetJobResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/garages/{garage_id}/jobs/{job_id}"
+      response_body: "job"
+    };
+  }
+
+  rpc UpdateJob(UpdateJobRequest) returns (UpdateJobResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/garages/{garage_id}/jobs/{job_id}"
+      body: "job"
+      response_body: "job"
+    };
+  }
+
+  // Follows the delete-or-deactivate rule (FR-CAT-07): a job that a quote
+  // line came from is only deactivated.
+  rpc DeleteJob(DeleteJobRequest) returns (DeleteJobResponse) {
+    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/jobs/{job_id}"};
+  }
+
+  rpc ActivateJob(ActivateJobRequest) returns (ActivateJobResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/jobs/{job_id}:activate"
+      body: "*"
+      response_body: "job"
+    };
+  }
+}

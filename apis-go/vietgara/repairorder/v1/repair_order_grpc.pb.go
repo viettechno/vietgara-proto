@@ -22,6 +22,9 @@ const (
 	RepairOrderService_ListRepairOrders_FullMethodName      = "/vietgara.repairorder.v1.RepairOrderService/ListRepairOrders"
 	RepairOrderService_CreateRepairOrder_FullMethodName     = "/vietgara.repairorder.v1.RepairOrderService/CreateRepairOrder"
 	RepairOrderService_GetRepairOrder_FullMethodName        = "/vietgara.repairorder.v1.RepairOrderService/GetRepairOrder"
+	RepairOrderService_AddRepairOrderLine_FullMethodName    = "/vietgara.repairorder.v1.RepairOrderService/AddRepairOrderLine"
+	RepairOrderService_DeleteRepairOrderLine_FullMethodName = "/vietgara.repairorder.v1.RepairOrderService/DeleteRepairOrderLine"
+	RepairOrderService_CancelRepairOrder_FullMethodName     = "/vietgara.repairorder.v1.RepairOrderService/CancelRepairOrder"
 	RepairOrderService_UpdateRepairOrderLine_FullMethodName = "/vietgara.repairorder.v1.RepairOrderService/UpdateRepairOrderLine"
 	RepairOrderService_CloseRepairOrder_FullMethodName      = "/vietgara.repairorder.v1.RepairOrderService/CloseRepairOrder"
 )
@@ -39,9 +42,25 @@ type RepairOrderServiceClient interface {
 	// through QuoteService.ConvertQuote instead.
 	CreateRepairOrder(ctx context.Context, in *CreateRepairOrderRequest, opts ...grpc.CallOption) (*CreateRepairOrderResponse, error)
 	GetRepairOrder(ctx context.Context, in *GetRepairOrderRequest, opts ...grpc.CallOption) (*GetRepairOrderResponse, error)
-	// Assigns technicians and/or updates one line's own progress
-	// (FR-REP-02/03); the repair order's overall status (the Kanban
-	// column) is derived from its lines and returned in the response.
+	// Adds a line to a repair order that is not closed or cancelled
+	// (Release 7.3). The draft stock issue follows a part line. Once the
+	// stock issue is posted, a part line can no longer be added.
+	AddRepairOrderLine(ctx context.Context, in *AddRepairOrderLineRequest, opts ...grpc.CallOption) (*AddRepairOrderLineResponse, error)
+	// Removes a line from a repair order that is not closed or cancelled
+	// (Release 7.3); the last line cannot be removed. A part line cannot be
+	// removed once the stock issue is posted (FAILED_PRECONDITION).
+	DeleteRepairOrderLine(ctx context.Context, in *DeleteRepairOrderLineRequest, opts ...grpc.CallOption) (*DeleteRepairOrderLineResponse, error)
+	// Cancels a repair order that is open or waiting on parts (Release 7.3):
+	// its stock issue is cancelled and the reservation released. The quote it
+	// came from stays converted. FAILED_PRECONDITION once work has started,
+	// or when the order is completed, closed or already cancelled.
+	CancelRepairOrder(ctx context.Context, in *CancelRepairOrderRequest, opts ...grpc.CallOption) (*CancelRepairOrderResponse, error)
+	// Assigns technicians, updates one line's own progress (FR-REP-02/03)
+	// and, since Release 7.3, edits the line itself (description, item_ref_id,
+	// quantity, entered_quantity, unit_id, unit_price). The repair order's
+	// overall status (the Kanban column) is derived from its lines and
+	// returned in the response. A part line's item, quantity and unit are
+	// fixed once the stock issue is posted.
 	UpdateRepairOrderLine(ctx context.Context, in *UpdateRepairOrderLineRequest, opts ...grpc.CallOption) (*UpdateRepairOrderLineResponse, error)
 	// Closes the repair order (FR-REP-06): fails FAILED_PRECONDITION
 	// unless every line is completed. Publishes repair_order.closed, which
@@ -87,6 +106,36 @@ func (c *repairOrderServiceClient) GetRepairOrder(ctx context.Context, in *GetRe
 	return out, nil
 }
 
+func (c *repairOrderServiceClient) AddRepairOrderLine(ctx context.Context, in *AddRepairOrderLineRequest, opts ...grpc.CallOption) (*AddRepairOrderLineResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddRepairOrderLineResponse)
+	err := c.cc.Invoke(ctx, RepairOrderService_AddRepairOrderLine_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *repairOrderServiceClient) DeleteRepairOrderLine(ctx context.Context, in *DeleteRepairOrderLineRequest, opts ...grpc.CallOption) (*DeleteRepairOrderLineResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteRepairOrderLineResponse)
+	err := c.cc.Invoke(ctx, RepairOrderService_DeleteRepairOrderLine_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *repairOrderServiceClient) CancelRepairOrder(ctx context.Context, in *CancelRepairOrderRequest, opts ...grpc.CallOption) (*CancelRepairOrderResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelRepairOrderResponse)
+	err := c.cc.Invoke(ctx, RepairOrderService_CancelRepairOrder_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *repairOrderServiceClient) UpdateRepairOrderLine(ctx context.Context, in *UpdateRepairOrderLineRequest, opts ...grpc.CallOption) (*UpdateRepairOrderLineResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UpdateRepairOrderLineResponse)
@@ -120,9 +169,25 @@ type RepairOrderServiceServer interface {
 	// through QuoteService.ConvertQuote instead.
 	CreateRepairOrder(context.Context, *CreateRepairOrderRequest) (*CreateRepairOrderResponse, error)
 	GetRepairOrder(context.Context, *GetRepairOrderRequest) (*GetRepairOrderResponse, error)
-	// Assigns technicians and/or updates one line's own progress
-	// (FR-REP-02/03); the repair order's overall status (the Kanban
-	// column) is derived from its lines and returned in the response.
+	// Adds a line to a repair order that is not closed or cancelled
+	// (Release 7.3). The draft stock issue follows a part line. Once the
+	// stock issue is posted, a part line can no longer be added.
+	AddRepairOrderLine(context.Context, *AddRepairOrderLineRequest) (*AddRepairOrderLineResponse, error)
+	// Removes a line from a repair order that is not closed or cancelled
+	// (Release 7.3); the last line cannot be removed. A part line cannot be
+	// removed once the stock issue is posted (FAILED_PRECONDITION).
+	DeleteRepairOrderLine(context.Context, *DeleteRepairOrderLineRequest) (*DeleteRepairOrderLineResponse, error)
+	// Cancels a repair order that is open or waiting on parts (Release 7.3):
+	// its stock issue is cancelled and the reservation released. The quote it
+	// came from stays converted. FAILED_PRECONDITION once work has started,
+	// or when the order is completed, closed or already cancelled.
+	CancelRepairOrder(context.Context, *CancelRepairOrderRequest) (*CancelRepairOrderResponse, error)
+	// Assigns technicians, updates one line's own progress (FR-REP-02/03)
+	// and, since Release 7.3, edits the line itself (description, item_ref_id,
+	// quantity, entered_quantity, unit_id, unit_price). The repair order's
+	// overall status (the Kanban column) is derived from its lines and
+	// returned in the response. A part line's item, quantity and unit are
+	// fixed once the stock issue is posted.
 	UpdateRepairOrderLine(context.Context, *UpdateRepairOrderLineRequest) (*UpdateRepairOrderLineResponse, error)
 	// Closes the repair order (FR-REP-06): fails FAILED_PRECONDITION
 	// unless every line is completed. Publishes repair_order.closed, which
@@ -146,6 +211,15 @@ func (UnimplementedRepairOrderServiceServer) CreateRepairOrder(context.Context, 
 }
 func (UnimplementedRepairOrderServiceServer) GetRepairOrder(context.Context, *GetRepairOrderRequest) (*GetRepairOrderResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetRepairOrder not implemented")
+}
+func (UnimplementedRepairOrderServiceServer) AddRepairOrderLine(context.Context, *AddRepairOrderLineRequest) (*AddRepairOrderLineResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddRepairOrderLine not implemented")
+}
+func (UnimplementedRepairOrderServiceServer) DeleteRepairOrderLine(context.Context, *DeleteRepairOrderLineRequest) (*DeleteRepairOrderLineResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteRepairOrderLine not implemented")
+}
+func (UnimplementedRepairOrderServiceServer) CancelRepairOrder(context.Context, *CancelRepairOrderRequest) (*CancelRepairOrderResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelRepairOrder not implemented")
 }
 func (UnimplementedRepairOrderServiceServer) UpdateRepairOrderLine(context.Context, *UpdateRepairOrderLineRequest) (*UpdateRepairOrderLineResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateRepairOrderLine not implemented")
@@ -228,6 +302,60 @@ func _RepairOrderService_GetRepairOrder_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RepairOrderService_AddRepairOrderLine_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddRepairOrderLineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepairOrderServiceServer).AddRepairOrderLine(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RepairOrderService_AddRepairOrderLine_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepairOrderServiceServer).AddRepairOrderLine(ctx, req.(*AddRepairOrderLineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RepairOrderService_DeleteRepairOrderLine_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRepairOrderLineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepairOrderServiceServer).DeleteRepairOrderLine(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RepairOrderService_DeleteRepairOrderLine_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepairOrderServiceServer).DeleteRepairOrderLine(ctx, req.(*DeleteRepairOrderLineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RepairOrderService_CancelRepairOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelRepairOrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepairOrderServiceServer).CancelRepairOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RepairOrderService_CancelRepairOrder_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepairOrderServiceServer).CancelRepairOrder(ctx, req.(*CancelRepairOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _RepairOrderService_UpdateRepairOrderLine_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateRepairOrderLineRequest)
 	if err := dec(in); err != nil {
@@ -282,6 +410,18 @@ var RepairOrderService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRepairOrder",
 			Handler:    _RepairOrderService_GetRepairOrder_Handler,
+		},
+		{
+			MethodName: "AddRepairOrderLine",
+			Handler:    _RepairOrderService_AddRepairOrderLine_Handler,
+		},
+		{
+			MethodName: "DeleteRepairOrderLine",
+			Handler:    _RepairOrderService_DeleteRepairOrderLine_Handler,
+		},
+		{
+			MethodName: "CancelRepairOrder",
+			Handler:    _RepairOrderService_CancelRepairOrder_Handler,
 		},
 		{
 			MethodName: "UpdateRepairOrderLine",

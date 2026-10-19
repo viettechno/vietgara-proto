@@ -15,6 +15,10 @@
       "description": "CatalogueService manages the parts of a garage and the reference data\naround them. Reads need PERMISSION_CATALOGUE_READ, changes\nPERMISSION_CATALOGUE_WRITE."
     },
     {
+      "name": "JobService",
+      "description": "JobService manages the job catalogue (FR-CAT-05). Jobs are quoting data:\nreads need PERMISSION_QUOTE_READ, changes PERMISSION_QUOTE_WRITE."
+    },
+    {
       "name": "CustomerService",
       "description": "CustomerService manages a garage's customers (FRD 3.4). Reads need\nPERMISSION_CUSTOMER_READ, changes PERMISSION_CUSTOMER_WRITE."
     },
@@ -2617,6 +2621,269 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/jobs": {
+      "get": {
+        "operationId": "JobService_ListJobs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListJobsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "query",
+            "description": "Matches the name or the category.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "includeInactive",
+            "description": "Inactive jobs are hidden unless asked for (they never show in pickers).",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "JobService"
+        ]
+      },
+      "post": {
+        "operationId": "JobService_CreateJob",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Job"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "job",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Job"
+            }
+          }
+        ],
+        "tags": [
+          "JobService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/jobs/{jobId}": {
+      "get": {
+        "operationId": "JobService_GetJob",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Job"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "JobService"
+        ]
+      },
+      "delete": {
+        "summary": "Follows the delete-or-deactivate rule (FR-CAT-07): a job that a quote\nline came from is only deactivated.",
+        "operationId": "JobService_DeleteJob",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteJobResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "dryRun",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "JobService"
+        ]
+      },
+      "patch": {
+        "operationId": "JobService_UpdateJob",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Job"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "job",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Job"
+            }
+          }
+        ],
+        "tags": [
+          "JobService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/jobs/{jobId}:activate": {
+      "post": {
+        "operationId": "JobService_ActivateJob",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Job"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/JobServiceActivateJobBody"
+            }
+          }
+        ],
+        "tags": [
+          "JobService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/logo": {
       "delete": {
         "operationId": "GarageService_DeleteGarageLogo",
@@ -3678,6 +3945,51 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/quotes/{quoteId}/lines:fromJob": {
+      "post": {
+        "summary": "Adds a job's lines to a draft quote (FR-CAT-06): one labor line at the\njob's labor price, then one part line per suggested part at the part's\nsale price in the suggested unit. A deactivated job is refused; a\nsuggestion whose part is deactivated is skipped. The lines are\nappended, count against the 100-line limit, and stay editable.",
+        "operationId": "QuoteService_AddQuoteJob",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1Quote"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/QuoteServiceAddQuoteJobBody"
+            }
+          }
+        ],
+        "tags": [
+          "QuoteService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/quotes/{quoteId}/pdf": {
       "get": {
         "summary": "FR-DOC-01: the quote as a PDF, using the garage's standard layout.",
@@ -3792,7 +4104,7 @@
           },
           {
             "name": "status",
-            "description": " - REPAIR_ORDER_STATUS_OPEN: \"To Do\": not yet started.\n - REPAIR_ORDER_STATUS_WAITING_ON_PARTS: Blocked on a part not currently in stock.\n - REPAIR_ORDER_STATUS_COMPLETED: Every line is done; ready for the advisor to close it.\n - REPAIR_ORDER_STATUS_CLOSED: Closed (FR-REP-06): no further edits; ready for settlement (Release\n1.4) and triggers stock deduction (Event Design, repair_order.closed).",
+            "description": " - REPAIR_ORDER_STATUS_OPEN: \"To Do\": not yet started.\n - REPAIR_ORDER_STATUS_WAITING_ON_PARTS: Blocked on a part not currently in stock (Release 7.3): set when the\ndraft stock issue cannot be covered by what is on hand, cleared when\nit can.\n - REPAIR_ORDER_STATUS_COMPLETED: Every line is done; ready for the advisor to close it.\n - REPAIR_ORDER_STATUS_CLOSED: Closed (FR-REP-06): no further edits; ready for settlement (Release\n1.4) and triggers stock deduction (Event Design, repair_order.closed).\n - REPAIR_ORDER_STATUS_CANCELLED: Cancelled before any work started (Release 7.3): its stock issue is\ncancelled and the reservation released. Final.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -3801,7 +4113,8 @@
               "REPAIR_ORDER_STATUS_IN_PROGRESS",
               "REPAIR_ORDER_STATUS_WAITING_ON_PARTS",
               "REPAIR_ORDER_STATUS_COMPLETED",
-              "REPAIR_ORDER_STATUS_CLOSED"
+              "REPAIR_ORDER_STATUS_CLOSED",
+              "REPAIR_ORDER_STATUS_CANCELLED"
             ]
           },
           {
@@ -3905,6 +4218,51 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/cancellation": {
+      "post": {
+        "summary": "Cancels a repair order that is open or waiting on parts (Release 7.3):\nits stock issue is cancelled and the reservation released. The quote it\ncame from stays converted. FAILED_PRECONDITION once work has started,\nor when the order is completed, closed or already cancelled.",
+        "operationId": "RepairOrderService_CancelRepairOrder",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1RepairOrder"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RepairOrderServiceCancelRepairOrderBody"
+            }
+          }
+        ],
+        "tags": [
+          "RepairOrderService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/closing": {
       "post": {
         "summary": "Closes the repair order (FR-REP-06): fails FAILED_PRECONDITION\nunless every line is completed. Publishes repair_order.closed, which\ndeducts stock for the part lines (Event Design).",
@@ -3950,9 +4308,95 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/lines": {
+      "post": {
+        "summary": "Adds a line to a repair order that is not closed or cancelled\n(Release 7.3). The draft stock issue follows a part line. Once the\nstock issue is posted, a part line can no longer be added.",
+        "operationId": "RepairOrderService_AddRepairOrderLine",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1RepairOrder"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "line",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RepairOrderLine"
+            }
+          }
+        ],
+        "tags": [
+          "RepairOrderService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/lines/{lineId}": {
+      "delete": {
+        "summary": "Removes a line from a repair order that is not closed or cancelled\n(Release 7.3); the last line cannot be removed. A part line cannot be\nremoved once the stock issue is posted (FAILED_PRECONDITION).",
+        "operationId": "RepairOrderService_DeleteRepairOrderLine",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1RepairOrder"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lineId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RepairOrderService"
+        ]
+      },
       "patch": {
-        "summary": "Assigns technicians and/or updates one line's own progress\n(FR-REP-02/03); the repair order's overall status (the Kanban\ncolumn) is derived from its lines and returned in the response.",
+        "summary": "Assigns technicians, updates one line's own progress (FR-REP-02/03)\nand, since Release 7.3, edits the line itself (description, item_ref_id,\nquantity, entered_quantity, unit_id, unit_price). The repair order's\noverall status (the Kanban column) is derived from its lines and\nreturned in the response. A part line's item, quantity and unit are\nfixed once the stock issue is posted.",
         "operationId": "RepairOrderService_UpdateRepairOrderLine",
         "responses": {
           "200": {
@@ -3989,7 +4433,7 @@
           },
           {
             "name": "line",
-            "description": "status and/or assigned_technician_ids (FR-REP-02/03).",
+            "description": "status and/or assigned_technician_ids (FR-REP-02/03), and from\nRelease 7.3 the editable fields of the line.",
             "in": "body",
             "required": true,
             "schema": {
@@ -8363,6 +8807,9 @@
     "InvitationServiceRevokeInvitationBody": {
       "type": "object"
     },
+    "JobServiceActivateJobBody": {
+      "type": "object"
+    },
     "LicenseAdminServiceAdjustCreditBody": {
       "type": "object",
       "properties": {
@@ -8464,6 +8911,17 @@
         "decisions"
       ]
     },
+    "QuoteServiceAddQuoteJobBody": {
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "jobId"
+      ]
+    },
     "QuoteServiceConvertQuoteBody": {
       "type": "object"
     },
@@ -8484,6 +8942,9 @@
       ]
     },
     "QuoteServiceSendQuoteBody": {
+      "type": "object"
+    },
+    "RepairOrderServiceCancelRepairOrderBody": {
       "type": "object"
     },
     "RepairOrderServiceCloseRepairOrderBody": {
@@ -8668,6 +9129,14 @@
         }
       }
     },
+    "v1ActivateJobResponse": {
+      "type": "object",
+      "properties": {
+        "job": {
+          "$ref": "#/definitions/v1Job"
+        }
+      }
+    },
     "v1ActivatePartResponse": {
       "type": "object",
       "properties": {
@@ -8697,6 +9166,22 @@
       "properties": {
         "part": {
           "$ref": "#/definitions/v1Part"
+        }
+      }
+    },
+    "v1AddQuoteJobResponse": {
+      "type": "object",
+      "properties": {
+        "quote": {
+          "$ref": "#/definitions/v1Quote"
+        }
+      }
+    },
+    "v1AddRepairOrderLineResponse": {
+      "type": "object",
+      "properties": {
+        "repairOrder": {
+          "$ref": "#/definitions/v1RepairOrder"
         }
       }
     },
@@ -8832,6 +9317,14 @@
       "properties": {
         "request": {
           "$ref": "#/definitions/v1PlanPaymentRequest"
+        }
+      }
+    },
+    "v1CancelRepairOrderResponse": {
+      "type": "object",
+      "properties": {
+        "repairOrder": {
+          "$ref": "#/definitions/v1RepairOrder"
         }
       }
     },
@@ -8997,6 +9490,14 @@
       "properties": {
         "invitation": {
           "$ref": "#/definitions/v1Invitation"
+        }
+      }
+    },
+    "v1CreateJobResponse": {
+      "type": "object",
+      "properties": {
+        "job": {
+          "$ref": "#/definitions/v1Job"
         }
       }
     },
@@ -9427,6 +9928,14 @@
         }
       }
     },
+    "v1DeleteJobResponse": {
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "$ref": "#/definitions/v1DeleteOutcome"
+        }
+      }
+    },
     "v1DeleteOutcome": {
       "type": "string",
       "enum": [
@@ -9453,6 +9962,14 @@
     },
     "v1DeleteQuoteResponse": {
       "type": "object"
+    },
+    "v1DeleteRepairOrderLineResponse": {
+      "type": "object",
+      "properties": {
+        "repairOrder": {
+          "$ref": "#/definitions/v1RepairOrder"
+        }
+      }
     },
     "v1DeleteRoleResponse": {
       "type": "object"
@@ -9901,6 +10418,14 @@
       "properties": {
         "goodsReceipt": {
           "$ref": "#/definitions/v1GoodsReceipt"
+        }
+      }
+    },
+    "v1GetJobResponse": {
+      "type": "object",
+      "properties": {
+        "job": {
+          "$ref": "#/definitions/v1Job"
         }
       }
     },
@@ -10532,6 +11057,110 @@
         "INVITATION_STATUS_EXPIRED"
       ]
     },
+    "v1Job": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "description": "Unique per garage, compared without regard to case."
+        },
+        "category": {
+          "type": "string",
+          "description": "A free label to group jobs in the picker (for example Maintenance)."
+        },
+        "laborPrice": {
+          "type": "string",
+          "format": "int64",
+          "description": "The standard labor price, whole VND; zero is allowed."
+        },
+        "durationMinutes": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The standard duration in minutes; zero when not set."
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1JobPart"
+          },
+          "description": "At most 30 suggested parts, each part once. On update, sending parts\nreplaces the whole list."
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Job is one type of work of a garage (FR-CAT-05): a standard labor charge\nand the parts it usually needs.",
+      "required": [
+        "name"
+      ]
+    },
+    "v1JobPart": {
+      "type": "object",
+      "properties": {
+        "partId": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "string",
+          "description": "The amount in unit_id (the part's base unit when unit_id is unset), a\ndecimal string above zero with at most three decimals."
+        },
+        "unitId": {
+          "type": "string",
+          "description": "A packaging unit of the part; unset means the base unit."
+        },
+        "nonBillable": {
+          "type": "boolean",
+          "description": "A hidden consumable (FR-CAT-08): the quote line it makes is not shown to\nthe customer and is not billed, but its stock is deducted."
+        },
+        "partSku": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "unitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "unitPrice": {
+          "type": "string",
+          "format": "int64",
+          "description": "The part's current sale price per unit_id (or per base unit), whole\nVND; what a quote line made from this suggestion starts at.",
+          "readOnly": true
+        },
+        "partIsActive": {
+          "type": "boolean",
+          "description": "False when the part has been deactivated since; such a suggestion is\nskipped when the job is added to a quote.",
+          "readOnly": true
+        }
+      },
+      "description": "JobPart is one part a job suggests (FR-CAT-05): a default amount in a\nunit of the part. The quote form turns it into a part line.",
+      "required": [
+        "partId",
+        "quantity"
+      ]
+    },
     "v1ListAllPlansResponse": {
       "type": "object",
       "properties": {
@@ -10608,6 +11237,21 @@
             "type": "object",
             "$ref": "#/definitions/v1Invitation"
           }
+        }
+      }
+    },
+    "v1ListJobsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Job"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
         }
       }
     },
@@ -12039,6 +12683,14 @@
         "unitAbbreviation": {
           "type": "string",
           "readOnly": true
+        },
+        "jobId": {
+          "type": "string",
+          "description": "The job this line came from (FR-CAT-06), kept so the quote remembers its\norigin; the job may since have been deactivated. The line itself is\nindependent of the job and stays editable."
+        },
+        "nonBillable": {
+          "type": "boolean",
+          "description": "A hidden consumable (FR-CAT-08): a part line the customer does not see\nand is not billed for, whose stock is deducted when the job is done.\nOnly a part line with item_ref_id can be non-billable; its unit_price\nand line_total are 0 and it is left out of total_amount, the public\nquote, the PDF and the approval decisions. It is carried to the repair\norder when its job_id has an approved line, or when it has no job_id."
         }
       },
       "description": "QuoteLine is one labor or part line of a quote.",
@@ -12319,6 +12971,14 @@
             "type": "string"
           },
           "description": "Technician user ids assigned to this line (FR-REP-02); a line may\nhave more than one."
+        },
+        "jobId": {
+          "type": "string",
+          "description": "The job the line came from (Release 7.3), carried from the quote line."
+        },
+        "nonBillable": {
+          "type": "boolean",
+          "description": "A hidden consumable (FR-CAT-08): its stock is deducted, but it is not\nbilled, has no price and does not hold the order back (it needs no\nprogress). Printed documents leave it out."
         }
       },
       "description": "RepairOrderLine is one labor or part line of a repair order.",
@@ -12431,9 +13091,10 @@
         "REPAIR_ORDER_STATUS_IN_PROGRESS",
         "REPAIR_ORDER_STATUS_WAITING_ON_PARTS",
         "REPAIR_ORDER_STATUS_COMPLETED",
-        "REPAIR_ORDER_STATUS_CLOSED"
+        "REPAIR_ORDER_STATUS_CLOSED",
+        "REPAIR_ORDER_STATUS_CANCELLED"
       ],
-      "description": "RepairOrderStatus is the lifecycle of a repair order (FR-REP-01..06),\nshown as the Kanban board's columns (UI Design Spec Section 3.3).\n\n - REPAIR_ORDER_STATUS_OPEN: \"To Do\": not yet started.\n - REPAIR_ORDER_STATUS_WAITING_ON_PARTS: Blocked on a part not currently in stock.\n - REPAIR_ORDER_STATUS_COMPLETED: Every line is done; ready for the advisor to close it.\n - REPAIR_ORDER_STATUS_CLOSED: Closed (FR-REP-06): no further edits; ready for settlement (Release\n1.4) and triggers stock deduction (Event Design, repair_order.closed)."
+      "description": "RepairOrderStatus is the lifecycle of a repair order (FR-REP-01..06),\nshown as the Kanban board's columns (UI Design Spec Section 3.3).\n\n - REPAIR_ORDER_STATUS_OPEN: \"To Do\": not yet started.\n - REPAIR_ORDER_STATUS_WAITING_ON_PARTS: Blocked on a part not currently in stock (Release 7.3): set when the\ndraft stock issue cannot be covered by what is on hand, cleared when\nit can.\n - REPAIR_ORDER_STATUS_COMPLETED: Every line is done; ready for the advisor to close it.\n - REPAIR_ORDER_STATUS_CLOSED: Closed (FR-REP-06): no further edits; ready for settlement (Release\n1.4) and triggers stock deduction (Event Design, repair_order.closed).\n - REPAIR_ORDER_STATUS_CANCELLED: Cancelled before any work started (Release 7.3): its stock issue is\ncancelled and the reservation released. Final."
     },
     "v1RequestCustomerUserLinkResponse": {
       "type": "object",
@@ -13211,6 +13872,11 @@
           "type": "string",
           "format": "date-time",
           "readOnly": true
+        },
+        "isShort": {
+          "type": "boolean",
+          "description": "Release 7.3: true while a draft cannot be covered by the stock on hand\n(some line has a short_quantity); the repair order is then waiting on\nparts.",
+          "readOnly": true
         }
       },
       "description": "StockIssue is the numbered stock-out document of a repair order\n(FR-INV-20). It is created as a draft with the repair order and follows\nit until posted; printing it uses the standard document layout."
@@ -13268,6 +13934,11 @@
         "returnedQuantity": {
           "type": "string",
           "description": "Release 7.1: the base-unit amount already returned to stock from this\nline (FR-INV-11); what can still be returned is quantity minus this.",
+          "readOnly": true
+        },
+        "shortQuantity": {
+          "type": "string",
+          "description": "Release 7.3: the base-unit amount of this line the stock cannot cover\nyet (\"0\" when covered). Reservations are served in the order the issues\nwere created.",
           "readOnly": true
         }
       },
@@ -13934,6 +14605,14 @@
       "properties": {
         "goodsReceipt": {
           "$ref": "#/definitions/v1GoodsReceipt"
+        }
+      }
+    },
+    "v1UpdateJobResponse": {
+      "type": "object",
+      "properties": {
+        "job": {
+          "$ref": "#/definitions/v1Job"
         }
       }
     },

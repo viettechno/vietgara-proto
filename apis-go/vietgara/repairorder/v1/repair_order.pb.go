@@ -34,13 +34,18 @@ const (
 	// "To Do": not yet started.
 	RepairOrderStatus_REPAIR_ORDER_STATUS_OPEN        RepairOrderStatus = 1
 	RepairOrderStatus_REPAIR_ORDER_STATUS_IN_PROGRESS RepairOrderStatus = 2
-	// Blocked on a part not currently in stock.
+	// Blocked on a part not currently in stock (Release 7.3): set when the
+	// draft stock issue cannot be covered by what is on hand, cleared when
+	// it can.
 	RepairOrderStatus_REPAIR_ORDER_STATUS_WAITING_ON_PARTS RepairOrderStatus = 3
 	// Every line is done; ready for the advisor to close it.
 	RepairOrderStatus_REPAIR_ORDER_STATUS_COMPLETED RepairOrderStatus = 4
 	// Closed (FR-REP-06): no further edits; ready for settlement (Release
 	// 1.4) and triggers stock deduction (Event Design, repair_order.closed).
 	RepairOrderStatus_REPAIR_ORDER_STATUS_CLOSED RepairOrderStatus = 5
+	// Cancelled before any work started (Release 7.3): its stock issue is
+	// cancelled and the reservation released. Final.
+	RepairOrderStatus_REPAIR_ORDER_STATUS_CANCELLED RepairOrderStatus = 6
 )
 
 // Enum value maps for RepairOrderStatus.
@@ -52,6 +57,7 @@ var (
 		3: "REPAIR_ORDER_STATUS_WAITING_ON_PARTS",
 		4: "REPAIR_ORDER_STATUS_COMPLETED",
 		5: "REPAIR_ORDER_STATUS_CLOSED",
+		6: "REPAIR_ORDER_STATUS_CANCELLED",
 	}
 	RepairOrderStatus_value = map[string]int32{
 		"REPAIR_ORDER_STATUS_UNSPECIFIED":      0,
@@ -60,6 +66,7 @@ var (
 		"REPAIR_ORDER_STATUS_WAITING_ON_PARTS": 3,
 		"REPAIR_ORDER_STATUS_COMPLETED":        4,
 		"REPAIR_ORDER_STATUS_CLOSED":           5,
+		"REPAIR_ORDER_STATUS_CANCELLED":        6,
 	}
 )
 
@@ -217,8 +224,14 @@ type RepairOrderLine struct {
 	// Technician user ids assigned to this line (FR-REP-02); a line may
 	// have more than one.
 	AssignedTechnicianIds []string `protobuf:"bytes,9,rep,name=assigned_technician_ids,json=assignedTechnicianIds,proto3" json:"assigned_technician_ids,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	// The job the line came from (Release 7.3), carried from the quote line.
+	JobId *string `protobuf:"bytes,13,opt,name=job_id,json=jobId,proto3,oneof" json:"job_id,omitempty"`
+	// A hidden consumable (FR-CAT-08): its stock is deducted, but it is not
+	// billed, has no price and does not hold the order back (it needs no
+	// progress). Printed documents leave it out.
+	NonBillable   bool `protobuf:"varint,14,opt,name=non_billable,json=nonBillable,proto3" json:"non_billable,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *RepairOrderLine) Reset() {
@@ -333,6 +346,20 @@ func (x *RepairOrderLine) GetAssignedTechnicianIds() []string {
 		return x.AssignedTechnicianIds
 	}
 	return nil
+}
+
+func (x *RepairOrderLine) GetJobId() string {
+	if x != nil && x.JobId != nil {
+		return *x.JobId
+	}
+	return ""
+}
+
+func (x *RepairOrderLine) GetNonBillable() bool {
+	if x != nil {
+		return x.NonBillable
+	}
+	return false
 }
 
 // RepairOrder is a repair job for one vehicle (FR-REP-01), either
@@ -815,7 +842,8 @@ type UpdateRepairOrderLineRequest struct {
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	RepairOrderId string                 `protobuf:"bytes,2,opt,name=repair_order_id,json=repairOrderId,proto3" json:"repair_order_id,omitempty"`
 	LineId        string                 `protobuf:"bytes,3,opt,name=line_id,json=lineId,proto3" json:"line_id,omitempty"`
-	// status and/or assigned_technician_ids (FR-REP-02/03).
+	// status and/or assigned_technician_ids (FR-REP-02/03), and from
+	// Release 7.3 the editable fields of the line.
 	Line          *RepairOrderLine       `protobuf:"bytes,4,opt,name=line,proto3" json:"line,omitempty"`
 	UpdateMask    *fieldmaskpb.FieldMask `protobuf:"bytes,5,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -931,6 +959,310 @@ func (x *UpdateRepairOrderLineResponse) GetRepairOrder() *RepairOrder {
 	return nil
 }
 
+type AddRepairOrderLineRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	RepairOrderId string                 `protobuf:"bytes,2,opt,name=repair_order_id,json=repairOrderId,proto3" json:"repair_order_id,omitempty"`
+	Line          *RepairOrderLine       `protobuf:"bytes,3,opt,name=line,proto3" json:"line,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddRepairOrderLineRequest) Reset() {
+	*x = AddRepairOrderLineRequest{}
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddRepairOrderLineRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddRepairOrderLineRequest) ProtoMessage() {}
+
+func (x *AddRepairOrderLineRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddRepairOrderLineRequest.ProtoReflect.Descriptor instead.
+func (*AddRepairOrderLineRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_repairorder_v1_repair_order_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *AddRepairOrderLineRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *AddRepairOrderLineRequest) GetRepairOrderId() string {
+	if x != nil {
+		return x.RepairOrderId
+	}
+	return ""
+}
+
+func (x *AddRepairOrderLineRequest) GetLine() *RepairOrderLine {
+	if x != nil {
+		return x.Line
+	}
+	return nil
+}
+
+type AddRepairOrderLineResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepairOrder   *RepairOrder           `protobuf:"bytes,1,opt,name=repair_order,json=repairOrder,proto3" json:"repair_order,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddRepairOrderLineResponse) Reset() {
+	*x = AddRepairOrderLineResponse{}
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddRepairOrderLineResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddRepairOrderLineResponse) ProtoMessage() {}
+
+func (x *AddRepairOrderLineResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddRepairOrderLineResponse.ProtoReflect.Descriptor instead.
+func (*AddRepairOrderLineResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_repairorder_v1_repair_order_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *AddRepairOrderLineResponse) GetRepairOrder() *RepairOrder {
+	if x != nil {
+		return x.RepairOrder
+	}
+	return nil
+}
+
+type DeleteRepairOrderLineRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	RepairOrderId string                 `protobuf:"bytes,2,opt,name=repair_order_id,json=repairOrderId,proto3" json:"repair_order_id,omitempty"`
+	LineId        string                 `protobuf:"bytes,3,opt,name=line_id,json=lineId,proto3" json:"line_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteRepairOrderLineRequest) Reset() {
+	*x = DeleteRepairOrderLineRequest{}
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteRepairOrderLineRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRepairOrderLineRequest) ProtoMessage() {}
+
+func (x *DeleteRepairOrderLineRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRepairOrderLineRequest.ProtoReflect.Descriptor instead.
+func (*DeleteRepairOrderLineRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_repairorder_v1_repair_order_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *DeleteRepairOrderLineRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *DeleteRepairOrderLineRequest) GetRepairOrderId() string {
+	if x != nil {
+		return x.RepairOrderId
+	}
+	return ""
+}
+
+func (x *DeleteRepairOrderLineRequest) GetLineId() string {
+	if x != nil {
+		return x.LineId
+	}
+	return ""
+}
+
+type DeleteRepairOrderLineResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepairOrder   *RepairOrder           `protobuf:"bytes,1,opt,name=repair_order,json=repairOrder,proto3" json:"repair_order,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteRepairOrderLineResponse) Reset() {
+	*x = DeleteRepairOrderLineResponse{}
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteRepairOrderLineResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRepairOrderLineResponse) ProtoMessage() {}
+
+func (x *DeleteRepairOrderLineResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRepairOrderLineResponse.ProtoReflect.Descriptor instead.
+func (*DeleteRepairOrderLineResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_repairorder_v1_repair_order_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *DeleteRepairOrderLineResponse) GetRepairOrder() *RepairOrder {
+	if x != nil {
+		return x.RepairOrder
+	}
+	return nil
+}
+
+type CancelRepairOrderRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	RepairOrderId string                 `protobuf:"bytes,2,opt,name=repair_order_id,json=repairOrderId,proto3" json:"repair_order_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelRepairOrderRequest) Reset() {
+	*x = CancelRepairOrderRequest{}
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelRepairOrderRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelRepairOrderRequest) ProtoMessage() {}
+
+func (x *CancelRepairOrderRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelRepairOrderRequest.ProtoReflect.Descriptor instead.
+func (*CancelRepairOrderRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_repairorder_v1_repair_order_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *CancelRepairOrderRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *CancelRepairOrderRequest) GetRepairOrderId() string {
+	if x != nil {
+		return x.RepairOrderId
+	}
+	return ""
+}
+
+type CancelRepairOrderResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepairOrder   *RepairOrder           `protobuf:"bytes,1,opt,name=repair_order,json=repairOrder,proto3" json:"repair_order,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelRepairOrderResponse) Reset() {
+	*x = CancelRepairOrderResponse{}
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelRepairOrderResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelRepairOrderResponse) ProtoMessage() {}
+
+func (x *CancelRepairOrderResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelRepairOrderResponse.ProtoReflect.Descriptor instead.
+func (*CancelRepairOrderResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_repairorder_v1_repair_order_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *CancelRepairOrderResponse) GetRepairOrder() *RepairOrder {
+	if x != nil {
+		return x.RepairOrder
+	}
+	return nil
+}
+
 type CloseRepairOrderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
@@ -941,7 +1273,7 @@ type CloseRepairOrderRequest struct {
 
 func (x *CloseRepairOrderRequest) Reset() {
 	*x = CloseRepairOrderRequest{}
-	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[10]
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -953,7 +1285,7 @@ func (x *CloseRepairOrderRequest) String() string {
 func (*CloseRepairOrderRequest) ProtoMessage() {}
 
 func (x *CloseRepairOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[10]
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -966,7 +1298,7 @@ func (x *CloseRepairOrderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CloseRepairOrderRequest.ProtoReflect.Descriptor instead.
 func (*CloseRepairOrderRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_repairorder_v1_repair_order_proto_rawDescGZIP(), []int{10}
+	return file_vietgara_repairorder_v1_repair_order_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *CloseRepairOrderRequest) GetGarageId() string {
@@ -992,7 +1324,7 @@ type CloseRepairOrderResponse struct {
 
 func (x *CloseRepairOrderResponse) Reset() {
 	*x = CloseRepairOrderResponse{}
-	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[11]
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1004,7 +1336,7 @@ func (x *CloseRepairOrderResponse) String() string {
 func (*CloseRepairOrderResponse) ProtoMessage() {}
 
 func (x *CloseRepairOrderResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[11]
+	mi := &file_vietgara_repairorder_v1_repair_order_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1017,7 +1349,7 @@ func (x *CloseRepairOrderResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CloseRepairOrderResponse.ProtoReflect.Descriptor instead.
 func (*CloseRepairOrderResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_repairorder_v1_repair_order_proto_rawDescGZIP(), []int{11}
+	return file_vietgara_repairorder_v1_repair_order_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *CloseRepairOrderResponse) GetRepairOrder() *RepairOrder {
@@ -1031,7 +1363,7 @@ var File_vietgara_repairorder_v1_repair_order_proto protoreflect.FileDescriptor
 
 const file_vietgara_repairorder_v1_repair_order_proto_rawDesc = "" +
 	"\n" +
-	"*vietgara/repairorder/v1/repair_order.proto\x12\x17vietgara.repairorder.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\xc2\x04\n" +
+	"*vietgara/repairorder/v1/repair_order.proto\x12\x17vietgara.repairorder.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\x8c\x05\n" +
 	"\x0fRepairOrderLine\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12N\n" +
 	"\titem_type\x18\x02 \x01(\x0e2,.vietgara.repairorder.v1.RepairOrderItemTypeB\x03\xe0A\x02R\bitemType\x12#\n" +
@@ -1047,10 +1379,13 @@ const file_vietgara_repairorder_v1_repair_order_proto_rawDesc = "" +
 	" \x01(\tH\x01R\x06unitId\x88\x01\x01\x12)\n" +
 	"\x10entered_quantity\x18\v \x01(\tR\x0fenteredQuantity\x120\n" +
 	"\x11unit_abbreviation\x18\f \x01(\tB\x03\xe0A\x03R\x10unitAbbreviation\x126\n" +
-	"\x17assigned_technician_ids\x18\t \x03(\tR\x15assignedTechnicianIdsB\x0e\n" +
+	"\x17assigned_technician_ids\x18\t \x03(\tR\x15assignedTechnicianIds\x12\x1a\n" +
+	"\x06job_id\x18\r \x01(\tH\x02R\x05jobId\x88\x01\x01\x12!\n" +
+	"\fnon_billable\x18\x0e \x01(\bR\vnonBillableB\x0e\n" +
 	"\f_item_ref_idB\n" +
 	"\n" +
-	"\b_unit_id\"\xf7\x04\n" +
+	"\b_unit_idB\t\n" +
+	"\a_job_id\"\xf7\x04\n" +
 	"\vRepairOrder\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
 	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\x1e\n" +
@@ -1100,19 +1435,37 @@ const file_vietgara_repairorder_v1_repair_order_proto_rawDesc = "" +
 	"\vupdate_mask\x18\x05 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
 	"updateMask\"h\n" +
 	"\x1dUpdateRepairOrderLineResponse\x12G\n" +
+	"\frepair_order\x18\x01 \x01(\v2$.vietgara.repairorder.v1.RepairOrderR\vrepairOrder\"\xad\x01\n" +
+	"\x19AddRepairOrderLineRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12+\n" +
+	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\x12A\n" +
+	"\x04line\x18\x03 \x01(\v2(.vietgara.repairorder.v1.RepairOrderLineB\x03\xe0A\x02R\x04line\"e\n" +
+	"\x1aAddRepairOrderLineResponse\x12G\n" +
+	"\frepair_order\x18\x01 \x01(\v2$.vietgara.repairorder.v1.RepairOrderR\vrepairOrder\"\x8b\x01\n" +
+	"\x1cDeleteRepairOrderLineRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12+\n" +
+	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\x12\x1c\n" +
+	"\aline_id\x18\x03 \x01(\tB\x03\xe0A\x02R\x06lineId\"h\n" +
+	"\x1dDeleteRepairOrderLineResponse\x12G\n" +
+	"\frepair_order\x18\x01 \x01(\v2$.vietgara.repairorder.v1.RepairOrderR\vrepairOrder\"i\n" +
+	"\x18CancelRepairOrderRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12+\n" +
+	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\"d\n" +
+	"\x19CancelRepairOrderResponse\x12G\n" +
 	"\frepair_order\x18\x01 \x01(\v2$.vietgara.repairorder.v1.RepairOrderR\vrepairOrder\"h\n" +
 	"\x17CloseRepairOrderRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12+\n" +
 	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\"c\n" +
 	"\x18CloseRepairOrderResponse\x12G\n" +
-	"\frepair_order\x18\x01 \x01(\v2$.vietgara.repairorder.v1.RepairOrderR\vrepairOrder*\xe8\x01\n" +
+	"\frepair_order\x18\x01 \x01(\v2$.vietgara.repairorder.v1.RepairOrderR\vrepairOrder*\x8b\x02\n" +
 	"\x11RepairOrderStatus\x12#\n" +
 	"\x1fREPAIR_ORDER_STATUS_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18REPAIR_ORDER_STATUS_OPEN\x10\x01\x12#\n" +
 	"\x1fREPAIR_ORDER_STATUS_IN_PROGRESS\x10\x02\x12(\n" +
 	"$REPAIR_ORDER_STATUS_WAITING_ON_PARTS\x10\x03\x12!\n" +
 	"\x1dREPAIR_ORDER_STATUS_COMPLETED\x10\x04\x12\x1e\n" +
-	"\x1aREPAIR_ORDER_STATUS_CLOSED\x10\x05*\x80\x01\n" +
+	"\x1aREPAIR_ORDER_STATUS_CLOSED\x10\x05\x12!\n" +
+	"\x1dREPAIR_ORDER_STATUS_CANCELLED\x10\x06*\x80\x01\n" +
 	"\x13RepairOrderItemType\x12&\n" +
 	"\"REPAIR_ORDER_ITEM_TYPE_UNSPECIFIED\x10\x00\x12 \n" +
 	"\x1cREPAIR_ORDER_ITEM_TYPE_LABOR\x10\x01\x12\x1f\n" +
@@ -1121,11 +1474,14 @@ const file_vietgara_repairorder_v1_repair_order_proto_rawDesc = "" +
 	"$REPAIR_ORDER_LINE_STATUS_UNSPECIFIED\x10\x00\x12(\n" +
 	"$REPAIR_ORDER_LINE_STATUS_NOT_STARTED\x10\x01\x12(\n" +
 	"$REPAIR_ORDER_LINE_STATUS_IN_PROGRESS\x10\x02\x12&\n" +
-	"\"REPAIR_ORDER_LINE_STATUS_COMPLETED\x10\x032\x9e\b\n" +
+	"\"REPAIR_ORDER_LINE_STATUS_COMPLETED\x10\x032\xc9\r\n" +
 	"\x12RepairOrderService\x12\xaa\x01\n" +
 	"\x10ListRepairOrders\x120.vietgara.repairorder.v1.ListRepairOrdersRequest\x1a1.vietgara.repairorder.v1.ListRepairOrdersResponse\"1\x82\xd3\xe4\x93\x02+\x12)/api/v1/garages/{garage_id}/repair-orders\x12\xc9\x01\n" +
 	"\x11CreateRepairOrder\x121.vietgara.repairorder.v1.CreateRepairOrderRequest\x1a2.vietgara.repairorder.v1.CreateRepairOrderResponse\"M\x82\xd3\xe4\x93\x02G:\frepair_orderb\frepair_order\")/api/v1/garages/{garage_id}/repair-orders\x12\xc4\x01\n" +
-	"\x0eGetRepairOrder\x12..vietgara.repairorder.v1.GetRepairOrderRequest\x1a/.vietgara.repairorder.v1.GetRepairOrderResponse\"Q\x82\xd3\xe4\x93\x02Kb\frepair_order\x12;/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}\x12\xef\x01\n" +
+	"\x0eGetRepairOrder\x12..vietgara.repairorder.v1.GetRepairOrderRequest\x1a/.vietgara.repairorder.v1.GetRepairOrderResponse\"Q\x82\xd3\xe4\x93\x02Kb\frepair_order\x12;/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}\x12\xdc\x01\n" +
+	"\x12AddRepairOrderLine\x122.vietgara.repairorder.v1.AddRepairOrderLineRequest\x1a3.vietgara.repairorder.v1.AddRepairOrderLineResponse\"]\x82\xd3\xe4\x93\x02W:\x04lineb\frepair_order\"A/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/lines\x12\xe9\x01\n" +
+	"\x15DeleteRepairOrderLine\x125.vietgara.repairorder.v1.DeleteRepairOrderLineRequest\x1a6.vietgara.repairorder.v1.DeleteRepairOrderLineResponse\"a\x82\xd3\xe4\x93\x02[b\frepair_order*K/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/lines/{line_id}\x12\xdd\x01\n" +
+	"\x11CancelRepairOrder\x121.vietgara.repairorder.v1.CancelRepairOrderRequest\x1a2.vietgara.repairorder.v1.CancelRepairOrderResponse\"a\x82\xd3\xe4\x93\x02[:\x01*b\frepair_order\"H/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/cancellation\x12\xef\x01\n" +
 	"\x15UpdateRepairOrderLine\x125.vietgara.repairorder.v1.UpdateRepairOrderLineRequest\x1a6.vietgara.repairorder.v1.UpdateRepairOrderLineResponse\"g\x82\xd3\xe4\x93\x02a:\x04lineb\frepair_order2K/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/lines/{line_id}\x12\xd5\x01\n" +
 	"\x10CloseRepairOrder\x120.vietgara.repairorder.v1.CloseRepairOrderRequest\x1a1.vietgara.repairorder.v1.CloseRepairOrderResponse\"\\\x82\xd3\xe4\x93\x02V:\x01*b\frepair_order\"C/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/closingBTZRgithub.com/viettechno/vietgara-proto/apis-go/vietgara/repairorder/v1;repairorderv1b\x06proto3"
 
@@ -1142,7 +1498,7 @@ func file_vietgara_repairorder_v1_repair_order_proto_rawDescGZIP() []byte {
 }
 
 var file_vietgara_repairorder_v1_repair_order_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_vietgara_repairorder_v1_repair_order_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_vietgara_repairorder_v1_repair_order_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_vietgara_repairorder_v1_repair_order_proto_goTypes = []any{
 	(RepairOrderStatus)(0),                // 0: vietgara.repairorder.v1.RepairOrderStatus
 	(RepairOrderItemType)(0),              // 1: vietgara.repairorder.v1.RepairOrderItemType
@@ -1157,45 +1513,61 @@ var file_vietgara_repairorder_v1_repair_order_proto_goTypes = []any{
 	(*GetRepairOrderResponse)(nil),        // 10: vietgara.repairorder.v1.GetRepairOrderResponse
 	(*UpdateRepairOrderLineRequest)(nil),  // 11: vietgara.repairorder.v1.UpdateRepairOrderLineRequest
 	(*UpdateRepairOrderLineResponse)(nil), // 12: vietgara.repairorder.v1.UpdateRepairOrderLineResponse
-	(*CloseRepairOrderRequest)(nil),       // 13: vietgara.repairorder.v1.CloseRepairOrderRequest
-	(*CloseRepairOrderResponse)(nil),      // 14: vietgara.repairorder.v1.CloseRepairOrderResponse
-	(*timestamppb.Timestamp)(nil),         // 15: google.protobuf.Timestamp
-	(*v1.Pagination)(nil),                 // 16: vietgara.common.v1.Pagination
-	(*fieldmaskpb.FieldMask)(nil),         // 17: google.protobuf.FieldMask
+	(*AddRepairOrderLineRequest)(nil),     // 13: vietgara.repairorder.v1.AddRepairOrderLineRequest
+	(*AddRepairOrderLineResponse)(nil),    // 14: vietgara.repairorder.v1.AddRepairOrderLineResponse
+	(*DeleteRepairOrderLineRequest)(nil),  // 15: vietgara.repairorder.v1.DeleteRepairOrderLineRequest
+	(*DeleteRepairOrderLineResponse)(nil), // 16: vietgara.repairorder.v1.DeleteRepairOrderLineResponse
+	(*CancelRepairOrderRequest)(nil),      // 17: vietgara.repairorder.v1.CancelRepairOrderRequest
+	(*CancelRepairOrderResponse)(nil),     // 18: vietgara.repairorder.v1.CancelRepairOrderResponse
+	(*CloseRepairOrderRequest)(nil),       // 19: vietgara.repairorder.v1.CloseRepairOrderRequest
+	(*CloseRepairOrderResponse)(nil),      // 20: vietgara.repairorder.v1.CloseRepairOrderResponse
+	(*timestamppb.Timestamp)(nil),         // 21: google.protobuf.Timestamp
+	(*v1.Pagination)(nil),                 // 22: vietgara.common.v1.Pagination
+	(*fieldmaskpb.FieldMask)(nil),         // 23: google.protobuf.FieldMask
 }
 var file_vietgara_repairorder_v1_repair_order_proto_depIdxs = []int32{
 	1,  // 0: vietgara.repairorder.v1.RepairOrderLine.item_type:type_name -> vietgara.repairorder.v1.RepairOrderItemType
 	2,  // 1: vietgara.repairorder.v1.RepairOrderLine.status:type_name -> vietgara.repairorder.v1.RepairOrderLineStatus
 	0,  // 2: vietgara.repairorder.v1.RepairOrder.status:type_name -> vietgara.repairorder.v1.RepairOrderStatus
 	3,  // 3: vietgara.repairorder.v1.RepairOrder.lines:type_name -> vietgara.repairorder.v1.RepairOrderLine
-	15, // 4: vietgara.repairorder.v1.RepairOrder.closed_at:type_name -> google.protobuf.Timestamp
-	15, // 5: vietgara.repairorder.v1.RepairOrder.created_at:type_name -> google.protobuf.Timestamp
-	15, // 6: vietgara.repairorder.v1.RepairOrder.updated_at:type_name -> google.protobuf.Timestamp
+	21, // 4: vietgara.repairorder.v1.RepairOrder.closed_at:type_name -> google.protobuf.Timestamp
+	21, // 5: vietgara.repairorder.v1.RepairOrder.created_at:type_name -> google.protobuf.Timestamp
+	21, // 6: vietgara.repairorder.v1.RepairOrder.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 7: vietgara.repairorder.v1.ListRepairOrdersRequest.status:type_name -> vietgara.repairorder.v1.RepairOrderStatus
 	4,  // 8: vietgara.repairorder.v1.ListRepairOrdersResponse.data:type_name -> vietgara.repairorder.v1.RepairOrder
-	16, // 9: vietgara.repairorder.v1.ListRepairOrdersResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	22, // 9: vietgara.repairorder.v1.ListRepairOrdersResponse.pagination:type_name -> vietgara.common.v1.Pagination
 	4,  // 10: vietgara.repairorder.v1.CreateRepairOrderRequest.repair_order:type_name -> vietgara.repairorder.v1.RepairOrder
 	4,  // 11: vietgara.repairorder.v1.CreateRepairOrderResponse.repair_order:type_name -> vietgara.repairorder.v1.RepairOrder
 	4,  // 12: vietgara.repairorder.v1.GetRepairOrderResponse.repair_order:type_name -> vietgara.repairorder.v1.RepairOrder
 	3,  // 13: vietgara.repairorder.v1.UpdateRepairOrderLineRequest.line:type_name -> vietgara.repairorder.v1.RepairOrderLine
-	17, // 14: vietgara.repairorder.v1.UpdateRepairOrderLineRequest.update_mask:type_name -> google.protobuf.FieldMask
+	23, // 14: vietgara.repairorder.v1.UpdateRepairOrderLineRequest.update_mask:type_name -> google.protobuf.FieldMask
 	4,  // 15: vietgara.repairorder.v1.UpdateRepairOrderLineResponse.repair_order:type_name -> vietgara.repairorder.v1.RepairOrder
-	4,  // 16: vietgara.repairorder.v1.CloseRepairOrderResponse.repair_order:type_name -> vietgara.repairorder.v1.RepairOrder
-	5,  // 17: vietgara.repairorder.v1.RepairOrderService.ListRepairOrders:input_type -> vietgara.repairorder.v1.ListRepairOrdersRequest
-	7,  // 18: vietgara.repairorder.v1.RepairOrderService.CreateRepairOrder:input_type -> vietgara.repairorder.v1.CreateRepairOrderRequest
-	9,  // 19: vietgara.repairorder.v1.RepairOrderService.GetRepairOrder:input_type -> vietgara.repairorder.v1.GetRepairOrderRequest
-	11, // 20: vietgara.repairorder.v1.RepairOrderService.UpdateRepairOrderLine:input_type -> vietgara.repairorder.v1.UpdateRepairOrderLineRequest
-	13, // 21: vietgara.repairorder.v1.RepairOrderService.CloseRepairOrder:input_type -> vietgara.repairorder.v1.CloseRepairOrderRequest
-	6,  // 22: vietgara.repairorder.v1.RepairOrderService.ListRepairOrders:output_type -> vietgara.repairorder.v1.ListRepairOrdersResponse
-	8,  // 23: vietgara.repairorder.v1.RepairOrderService.CreateRepairOrder:output_type -> vietgara.repairorder.v1.CreateRepairOrderResponse
-	10, // 24: vietgara.repairorder.v1.RepairOrderService.GetRepairOrder:output_type -> vietgara.repairorder.v1.GetRepairOrderResponse
-	12, // 25: vietgara.repairorder.v1.RepairOrderService.UpdateRepairOrderLine:output_type -> vietgara.repairorder.v1.UpdateRepairOrderLineResponse
-	14, // 26: vietgara.repairorder.v1.RepairOrderService.CloseRepairOrder:output_type -> vietgara.repairorder.v1.CloseRepairOrderResponse
-	22, // [22:27] is the sub-list for method output_type
-	17, // [17:22] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	3,  // 16: vietgara.repairorder.v1.AddRepairOrderLineRequest.line:type_name -> vietgara.repairorder.v1.RepairOrderLine
+	4,  // 17: vietgara.repairorder.v1.AddRepairOrderLineResponse.repair_order:type_name -> vietgara.repairorder.v1.RepairOrder
+	4,  // 18: vietgara.repairorder.v1.DeleteRepairOrderLineResponse.repair_order:type_name -> vietgara.repairorder.v1.RepairOrder
+	4,  // 19: vietgara.repairorder.v1.CancelRepairOrderResponse.repair_order:type_name -> vietgara.repairorder.v1.RepairOrder
+	4,  // 20: vietgara.repairorder.v1.CloseRepairOrderResponse.repair_order:type_name -> vietgara.repairorder.v1.RepairOrder
+	5,  // 21: vietgara.repairorder.v1.RepairOrderService.ListRepairOrders:input_type -> vietgara.repairorder.v1.ListRepairOrdersRequest
+	7,  // 22: vietgara.repairorder.v1.RepairOrderService.CreateRepairOrder:input_type -> vietgara.repairorder.v1.CreateRepairOrderRequest
+	9,  // 23: vietgara.repairorder.v1.RepairOrderService.GetRepairOrder:input_type -> vietgara.repairorder.v1.GetRepairOrderRequest
+	13, // 24: vietgara.repairorder.v1.RepairOrderService.AddRepairOrderLine:input_type -> vietgara.repairorder.v1.AddRepairOrderLineRequest
+	15, // 25: vietgara.repairorder.v1.RepairOrderService.DeleteRepairOrderLine:input_type -> vietgara.repairorder.v1.DeleteRepairOrderLineRequest
+	17, // 26: vietgara.repairorder.v1.RepairOrderService.CancelRepairOrder:input_type -> vietgara.repairorder.v1.CancelRepairOrderRequest
+	11, // 27: vietgara.repairorder.v1.RepairOrderService.UpdateRepairOrderLine:input_type -> vietgara.repairorder.v1.UpdateRepairOrderLineRequest
+	19, // 28: vietgara.repairorder.v1.RepairOrderService.CloseRepairOrder:input_type -> vietgara.repairorder.v1.CloseRepairOrderRequest
+	6,  // 29: vietgara.repairorder.v1.RepairOrderService.ListRepairOrders:output_type -> vietgara.repairorder.v1.ListRepairOrdersResponse
+	8,  // 30: vietgara.repairorder.v1.RepairOrderService.CreateRepairOrder:output_type -> vietgara.repairorder.v1.CreateRepairOrderResponse
+	10, // 31: vietgara.repairorder.v1.RepairOrderService.GetRepairOrder:output_type -> vietgara.repairorder.v1.GetRepairOrderResponse
+	14, // 32: vietgara.repairorder.v1.RepairOrderService.AddRepairOrderLine:output_type -> vietgara.repairorder.v1.AddRepairOrderLineResponse
+	16, // 33: vietgara.repairorder.v1.RepairOrderService.DeleteRepairOrderLine:output_type -> vietgara.repairorder.v1.DeleteRepairOrderLineResponse
+	18, // 34: vietgara.repairorder.v1.RepairOrderService.CancelRepairOrder:output_type -> vietgara.repairorder.v1.CancelRepairOrderResponse
+	12, // 35: vietgara.repairorder.v1.RepairOrderService.UpdateRepairOrderLine:output_type -> vietgara.repairorder.v1.UpdateRepairOrderLineResponse
+	20, // 36: vietgara.repairorder.v1.RepairOrderService.CloseRepairOrder:output_type -> vietgara.repairorder.v1.CloseRepairOrderResponse
+	29, // [29:37] is the sub-list for method output_type
+	21, // [21:29] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_repairorder_v1_repair_order_proto_init() }
@@ -1210,7 +1582,7 @@ func file_vietgara_repairorder_v1_repair_order_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_repairorder_v1_repair_order_proto_rawDesc), len(file_vietgara_repairorder_v1_repair_order_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   12,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
