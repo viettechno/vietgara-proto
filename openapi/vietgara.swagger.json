@@ -2351,7 +2351,7 @@
     },
     "/api/v1/garages/{garageId}/imports/{importType}/confirm": {
       "post": {
-        "summary": "Imports the file in one transaction. A file with any error is refused\nas a whole (IMPORT_FILE_INVALID) and nothing is written.",
+        "summary": "Imports the file in one transaction. A file with any error is refused\nas a whole (IMPORT_FILE_INVALID) and nothing is written. The same file\ncontent imported twice for the same garage and type is refused\n(IMPORT_FILE_ALREADY_IMPORTED), so a retry or double click cannot\ncreate a second document.",
         "operationId": "ImportService_ConfirmImport",
         "responses": {
           "200": {
@@ -8256,7 +8256,7 @@
         "content": {
           "type": "string",
           "format": "byte",
-          "description": "An .xlsx workbook made from the template, at most 5 MB and 5,000 rows\n(base64 in JSON)."
+          "description": "An .xlsx workbook made from the template, at most 5 MB and 5,000 rows\n(base64 in JSON; the server accepts messages of that size). A file over\neither limit is reported as a row-0 error, not imported."
         }
       },
       "required": [
@@ -10381,7 +10381,7 @@
         },
         "canConfirm": {
           "type": "boolean",
-          "description": "True when the file has rows and no errors."
+          "description": "True when the file has rows and no errors at all; always false when\nerrors_truncated."
         }
       },
       "description": "ImportPreview is the result of checking a file without writing anything."
@@ -10391,7 +10391,8 @@
       "properties": {
         "row": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "description": "Numbered like ImportRowError.row."
         },
         "cells": {
           "type": "array",
@@ -10437,7 +10438,7 @@
         "row": {
           "type": "integer",
           "format": "int32",
-          "description": "The 1-based row of the sheet; 0 for a problem of the whole file such as\na missing column."
+          "description": "The row number as the sheet shows it: the header is row 1 and the first\ndata row is 2. 0 for a problem of the whole file such as a missing\ncolumn."
         },
         "column": {
           "type": "string",
@@ -10445,7 +10446,7 @@
         },
         "code": {
           "type": "string",
-          "description": "A stable reason such as SKU_DUPLICATE, BARCODE_ALREADY_USED,\nUNKNOWN_SUPPLIER or REQUIRED_VALUE_MISSING."
+          "description": "A stable reason such as SKU_DUPLICATE, BARCODE_ALREADY_USED,\nUNKNOWN_SUPPLIER or REQUIRED_VALUE_MISSING. File-level reasons (row 0):\nFILE_TOO_LARGE, TOO_MANY_ROWS, MISSING_COLUMN, and PERMISSION_REQUIRED\nwhen the file has columns (opening stock, unit cost) whose permission\nthe caller lacks."
         },
         "message": {
           "type": "string"
@@ -11322,7 +11323,7 @@
       "properties": {
         "barcode": {
           "type": "string",
-          "description": "1 to 64 characters, letters, digits and - . / + $ % space; stored as\ntyped after trimming. Unique across the garage's parts."
+          "description": "1 to 64 characters, letters, digits and - . / + $ % space; stored as\ntyped after trimming. Matched case-insensitively, by lookup, search and\nthe uniqueness check alike. Unique across the garage's parts; deleting\na part frees its codes."
         },
         "unitId": {
           "type": "string",

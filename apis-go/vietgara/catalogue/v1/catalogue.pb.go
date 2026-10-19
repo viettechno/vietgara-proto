@@ -552,7 +552,9 @@ func (x *Part) GetBarcodes() []*PartBarcode {
 type PartBarcode struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 1 to 64 characters, letters, digits and - . / + $ % space; stored as
-	// typed after trimming. Unique across the garage's parts.
+	// typed after trimming. Matched case-insensitively, by lookup, search and
+	// the uniqueness check alike. Unique across the garage's parts; deleting
+	// a part frees its codes.
 	Barcode string `protobuf:"bytes,1,opt,name=barcode,proto3" json:"barcode,omitempty"`
 	// The packaging unit one scan stands for (a case barcode); unset means
 	// the base unit. Must be a packaging unit of the same part.

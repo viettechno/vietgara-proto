@@ -85,14 +85,18 @@ func (ImportType) EnumDescriptor() ([]byte, []int) {
 // when it has none, so the preview lists every error at once.
 type ImportRowError struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The 1-based row of the sheet; 0 for a problem of the whole file such as
-	// a missing column.
+	// The row number as the sheet shows it: the header is row 1 and the first
+	// data row is 2. 0 for a problem of the whole file such as a missing
+	// column.
 	Row int32 `protobuf:"varint,1,opt,name=row,proto3" json:"row,omitempty"`
 	// The column header the problem is in; empty when it concerns the row or
 	// the file.
 	Column string `protobuf:"bytes,2,opt,name=column,proto3" json:"column,omitempty"`
 	// A stable reason such as SKU_DUPLICATE, BARCODE_ALREADY_USED,
-	// UNKNOWN_SUPPLIER or REQUIRED_VALUE_MISSING.
+	// UNKNOWN_SUPPLIER or REQUIRED_VALUE_MISSING. File-level reasons (row 0):
+	// FILE_TOO_LARGE, TOO_MANY_ROWS, MISSING_COLUMN, and PERMISSION_REQUIRED
+	// when the file has columns (opening stock, unit cost) whose permission
+	// the caller lacks.
 	Code          string `protobuf:"bytes,3,opt,name=code,proto3" json:"code,omitempty"`
 	Message       string `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -160,7 +164,8 @@ func (x *ImportRowError) GetMessage() string {
 // ImportPreviewRow is one row of the file as read, for the preview table.
 type ImportPreviewRow struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	Row   int32                  `protobuf:"varint,1,opt,name=row,proto3" json:"row,omitempty"`
+	// Numbered like ImportRowError.row.
+	Row int32 `protobuf:"varint,1,opt,name=row,proto3" json:"row,omitempty"`
 	// In the order of ImportPreview.columns.
 	Cells         []string `protobuf:"bytes,2,rep,name=cells,proto3" json:"cells,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -229,7 +234,8 @@ type ImportPreview struct {
 	// What confirming would create, by name: for parts, "parts", "barcodes",
 	// "units", "categories" and "receipt_lines"; for documents, "lines".
 	Counts map[string]int32 `protobuf:"bytes,8,rep,name=counts,proto3" json:"counts,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
-	// True when the file has rows and no errors.
+	// True when the file has rows and no errors at all; always false when
+	// errors_truncated.
 	CanConfirm    bool `protobuf:"varint,9,opt,name=can_confirm,json=canConfirm,proto3" json:"can_confirm,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -468,7 +474,8 @@ type PreviewImportRequest struct {
 	// The original file name, kept in the audit entry.
 	FileName string `protobuf:"bytes,3,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
 	// An .xlsx workbook made from the template, at most 5 MB and 5,000 rows
-	// (base64 in JSON).
+	// (base64 in JSON; the server accepts messages of that size). A file over
+	// either limit is reported as a row-0 error, not imported.
 	Content       []byte `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

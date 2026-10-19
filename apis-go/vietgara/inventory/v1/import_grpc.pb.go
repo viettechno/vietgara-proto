@@ -41,7 +41,10 @@ type ImportServiceClient interface {
 	// Checks the file and reports every error without writing anything.
 	PreviewImport(ctx context.Context, in *PreviewImportRequest, opts ...grpc.CallOption) (*PreviewImportResponse, error)
 	// Imports the file in one transaction. A file with any error is refused
-	// as a whole (IMPORT_FILE_INVALID) and nothing is written.
+	// as a whole (IMPORT_FILE_INVALID) and nothing is written. The same file
+	// content imported twice for the same garage and type is refused
+	// (IMPORT_FILE_ALREADY_IMPORTED), so a retry or double click cannot
+	// create a second document.
 	ConfirmImport(ctx context.Context, in *ConfirmImportRequest, opts ...grpc.CallOption) (*ConfirmImportResponse, error)
 }
 
@@ -99,7 +102,10 @@ type ImportServiceServer interface {
 	// Checks the file and reports every error without writing anything.
 	PreviewImport(context.Context, *PreviewImportRequest) (*PreviewImportResponse, error)
 	// Imports the file in one transaction. A file with any error is refused
-	// as a whole (IMPORT_FILE_INVALID) and nothing is written.
+	// as a whole (IMPORT_FILE_INVALID) and nothing is written. The same file
+	// content imported twice for the same garage and type is refused
+	// (IMPORT_FILE_ALREADY_IMPORTED), so a retry or double click cannot
+	// create a second document.
 	ConfirmImport(context.Context, *ConfirmImportRequest) (*ConfirmImportResponse, error)
 	mustEmbedUnimplementedImportServiceServer()
 }

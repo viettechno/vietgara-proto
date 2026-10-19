@@ -24,20 +24,25 @@ enum ImportType {
 // ImportRowError is one problem found in the file. A file is imported only
 // when it has none, so the preview lists every error at once.
 message ImportRowError {
-  // The 1-based row of the sheet; 0 for a problem of the whole file such as
-  // a missing column.
+  // The row number as the sheet shows it: the header is row 1 and the first
+  // data row is 2. 0 for a problem of the whole file such as a missing
+  // column.
   int32 row = 1;
   // The column header the problem is in; empty when it concerns the row or
   // the file.
   string column = 2;
   // A stable reason such as SKU_DUPLICATE, BARCODE_ALREADY_USED,
-  // UNKNOWN_SUPPLIER or REQUIRED_VALUE_MISSING.
+  // UNKNOWN_SUPPLIER or REQUIRED_VALUE_MISSING. File-level reasons (row 0):
+  // FILE_TOO_LARGE, TOO_MANY_ROWS, MISSING_COLUMN, and PERMISSION_REQUIRED
+  // when the file has columns (opening stock, unit cost) whose permission
+  // the caller lacks.
   string code = 3;
   string message = 4;
 }
 
 // ImportPreviewRow is one row of the file as read, for the preview table.
 message ImportPreviewRow {
+  // Numbered like ImportRowError.row.
   int32 row = 1;
   // In the order of ImportPreview.columns.
   repeated string cells = 2;
@@ -60,7 +65,8 @@ message ImportPreview {
   // What confirming would create, by name: for parts, "parts", "barcodes",
   // "units", "categories" and "receipt_lines"; for documents, "lines".
   map<string, int32> counts = 8;
-  // True when the file has rows and no errors.
+  // True when the file has rows and no errors at all; always false when
+  // errors_truncated.
   bool can_confirm = 9;
 }
 
@@ -88,7 +94,8 @@ message PreviewImportRequest {
   // The original file name, kept in the audit entry.
   string file_name = 3;
   // An .xlsx workbook made from the template, at most 5 MB and 5,000 rows
-  // (base64 in JSON).
+  // (base64 in JSON; the server accepts messages of that size). A file over
+  // either limit is reported as a row-0 error, not imported.
   bytes content = 4 [(google.api.field_behavior) = REQUIRED];
 }
 
@@ -130,7 +137,10 @@ service ImportService {
   }
 
   // Imports the file in one transaction. A file with any error is refused
-  // as a whole (IMPORT_FILE_INVALID) and nothing is written.
+  // as a whole (IMPORT_FILE_INVALID) and nothing is written. The same file
+  // content imported twice for the same garage and type is refused
+  // (IMPORT_FILE_ALREADY_IMPORTED), so a retry or double click cannot
+  // create a second document.
   rpc ConfirmImport(ConfirmImportRequest) returns (ConfirmImportResponse) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/imports/{import_type}/confirm"
