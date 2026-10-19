@@ -62,8 +62,9 @@ Protocol Buffers. The same `.proto` files describe:
 | | | `LicenseAdminService`: ListAllPlans, CreatePlan, UpdatePlan, ListSubscriptions, ExtendSubscription |
 | `vietgara.customer.v1` | Customer & Vehicle (HLD #4) | `CustomerService` (+ Activate, Lookup), `VehicleService` (+ Activate, Correct, ChangeOwner), `CustomerLinkService` (RequestCustomerUserLink, ConfirmCustomerUserLink, UnlinkCustomerUser), `CustomerTaxProfileService` |
 | `vietgara.supplier.v1` | Supplier (FR-SUP-01) | `SupplierService`: List, Create, Get, Update, Delete, Activate (replaces `PartnerService`, Release 5.0) |
-| `vietgara.catalogue.v1` | Catalogue (HLD #18, Release 6.0) | `CatalogueService`: parts (List, Create, Get, Update, Delete, Activate, SetPartUnits, AddPartImage, RemovePartImage), units, part categories. The part and everything that describes it; no quantities |
+| `vietgara.catalogue.v1` | Catalogue (HLD #18, Release 6.0) | `CatalogueService`: parts (List, Create, Get, Update, Delete, Activate, SetPartUnits, SetPartBarcodes, LookupPartByBarcode, AddPartImage, RemovePartImage), units, part categories. The part and everything that describes it; no quantities |
 | `vietgara.inventory.v1` | Inventory (HLD #7) | `InventoryService`: ListStockLevels, GetStockLevel, CreateStockReceipt, ListStockTransactions. Stock only; the part is in `vietgara.catalogue.v1` |
+| | | `ImportService` (Release 7.2): DownloadImportTemplate, PreviewImport, ConfirmImport for parts, goods receipts and stock counts from Excel |
 | `vietgara.file.v1` | File registry (Release 5.0) | `FileService`: UploadFile, GetFileUrl, DeleteFile |
 | `vietgara.common.v1` | Shared messages | `Pagination`, `BankDetails`, `DeleteOutcome`, `BillingParty` and `TaxProfileKind`, `ErrorResponse` and the OpenAPI document options (no services) |
 

@@ -89,11 +89,28 @@ message Part {
   repeated PartImage images = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp created_at = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp updated_at = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The barcodes that identify this part, each for the base unit or a
+  // packaging unit (FR-INV-13). Set with SetPartBarcodes.
+  repeated PartBarcode barcodes = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// PartBarcode is one scannable code of a part. Codes are unique per garage.
+message PartBarcode {
+  // 1 to 64 characters, letters, digits and - . / + $ % space; stored as
+  // typed after trimming. Matched case-insensitively, by lookup, search and
+  // the uniqueness check alike. Unique across the garage's parts; deleting
+  // a part frees its codes.
+  string barcode = 1 [(google.api.field_behavior) = REQUIRED];
+  // The packaging unit one scan stands for (a case barcode); unset means
+  // the base unit. Must be a packaging unit of the same part.
+  optional string unit_id = 2;
+  string unit_name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string unit_abbreviation = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message ListPartsRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
-  // Matches SKU, name or brand.
+  // Matches SKU, name, brand or an exact barcode.
   string query = 2;
   // Also matches the sub-categories of this category.
   string category_id = 3;
@@ -166,6 +183,29 @@ message SetPartUnitsRequest {
 
 message SetPartUnitsResponse {
   Part part = 1;
+}
+
+message SetPartBarcodesRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Replaces the whole barcode table. A code already used by another part
+  // of the garage is refused (BARCODE_ALREADY_USED).
+  repeated PartBarcode barcodes = 3;
+}
+
+message SetPartBarcodesResponse {
+  Part part = 1;
+}
+
+message LookupPartByBarcodeRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string barcode = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message LookupPartByBarcodeResponse {
+  Part part = 1;
+  // The matched code with the unit one scan stands for.
+  PartBarcode barcode = 2;
 }
 
 message AddPartImageRequest {
@@ -323,6 +363,21 @@ service CatalogueService {
       body: "*"
       response_body: "part"
     };
+  }
+
+  // Replaces the part's barcodes (FR-INV-13).
+  rpc SetPartBarcodes(SetPartBarcodesRequest) returns (SetPartBarcodesResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/garages/{garage_id}/parts/{part_id}/barcodes"
+      body: "*"
+      response_body: "part"
+    };
+  }
+
+  // Finds the part a scanned code belongs to (FR-INV-13), including
+  // inactive parts so a scan can say so. NOT_FOUND when no part has it.
+  rpc LookupPartByBarcode(LookupPartByBarcodeRequest) returns (LookupPartByBarcodeResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/barcodes:lookup"};
   }
 
   // Attaches an uploaded part_image file, at most three per part
