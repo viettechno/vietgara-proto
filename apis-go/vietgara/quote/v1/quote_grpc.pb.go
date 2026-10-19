@@ -25,6 +25,7 @@ const (
 	QuoteService_UpdateQuote_FullMethodName         = "/vietgara.quote.v1.QuoteService/UpdateQuote"
 	QuoteService_DeleteQuote_FullMethodName         = "/vietgara.quote.v1.QuoteService/DeleteQuote"
 	QuoteService_SendQuote_FullMethodName           = "/vietgara.quote.v1.QuoteService/SendQuote"
+	QuoteService_AddQuoteJob_FullMethodName         = "/vietgara.quote.v1.QuoteService/AddQuoteJob"
 	QuoteService_RecordQuoteDecision_FullMethodName = "/vietgara.quote.v1.QuoteService/RecordQuoteDecision"
 	QuoteService_ConvertQuote_FullMethodName        = "/vietgara.quote.v1.QuoteService/ConvertQuote"
 )
@@ -48,6 +49,12 @@ type QuoteServiceClient interface {
 	// e-mail on file), or simply marks a MANUAL-mode quote ready for
 	// RecordQuoteDecision.
 	SendQuote(ctx context.Context, in *SendQuoteRequest, opts ...grpc.CallOption) (*SendQuoteResponse, error)
+	// Adds a job's lines to a draft quote (FR-CAT-06): one labor line at the
+	// job's labor price, then one part line per suggested part at the part's
+	// sale price in the suggested unit. A deactivated job is refused; a
+	// suggestion whose part is deactivated is skipped. The lines are
+	// appended, count against the 100-line limit, and stay editable.
+	AddQuoteJob(ctx context.Context, in *AddQuoteJobRequest, opts ...grpc.CallOption) (*AddQuoteJobResponse, error)
 	// Records the customer's decision on behalf of the customer (FR-QUO-03),
 	// for a MANUAL-mode quote or as a staff override of a LINK-mode one
 	// (e.g. the customer decided by phone).
@@ -125,6 +132,16 @@ func (c *quoteServiceClient) SendQuote(ctx context.Context, in *SendQuoteRequest
 	return out, nil
 }
 
+func (c *quoteServiceClient) AddQuoteJob(ctx context.Context, in *AddQuoteJobRequest, opts ...grpc.CallOption) (*AddQuoteJobResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddQuoteJobResponse)
+	err := c.cc.Invoke(ctx, QuoteService_AddQuoteJob_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *quoteServiceClient) RecordQuoteDecision(ctx context.Context, in *RecordQuoteDecisionRequest, opts ...grpc.CallOption) (*RecordQuoteDecisionResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RecordQuoteDecisionResponse)
@@ -164,6 +181,12 @@ type QuoteServiceServer interface {
 	// e-mail on file), or simply marks a MANUAL-mode quote ready for
 	// RecordQuoteDecision.
 	SendQuote(context.Context, *SendQuoteRequest) (*SendQuoteResponse, error)
+	// Adds a job's lines to a draft quote (FR-CAT-06): one labor line at the
+	// job's labor price, then one part line per suggested part at the part's
+	// sale price in the suggested unit. A deactivated job is refused; a
+	// suggestion whose part is deactivated is skipped. The lines are
+	// appended, count against the 100-line limit, and stay editable.
+	AddQuoteJob(context.Context, *AddQuoteJobRequest) (*AddQuoteJobResponse, error)
 	// Records the customer's decision on behalf of the customer (FR-QUO-03),
 	// for a MANUAL-mode quote or as a staff override of a LINK-mode one
 	// (e.g. the customer decided by phone).
@@ -198,6 +221,9 @@ func (UnimplementedQuoteServiceServer) DeleteQuote(context.Context, *DeleteQuote
 }
 func (UnimplementedQuoteServiceServer) SendQuote(context.Context, *SendQuoteRequest) (*SendQuoteResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SendQuote not implemented")
+}
+func (UnimplementedQuoteServiceServer) AddQuoteJob(context.Context, *AddQuoteJobRequest) (*AddQuoteJobResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddQuoteJob not implemented")
 }
 func (UnimplementedQuoteServiceServer) RecordQuoteDecision(context.Context, *RecordQuoteDecisionRequest) (*RecordQuoteDecisionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RecordQuoteDecision not implemented")
@@ -334,6 +360,24 @@ func _QuoteService_SendQuote_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _QuoteService_AddQuoteJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddQuoteJobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QuoteServiceServer).AddQuoteJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QuoteService_AddQuoteJob_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QuoteServiceServer).AddQuoteJob(ctx, req.(*AddQuoteJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _QuoteService_RecordQuoteDecision_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RecordQuoteDecisionRequest)
 	if err := dec(in); err != nil {
@@ -400,6 +444,10 @@ var QuoteService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendQuote",
 			Handler:    _QuoteService_SendQuote_Handler,
+		},
+		{
+			MethodName: "AddQuoteJob",
+			Handler:    _QuoteService_AddQuoteJob_Handler,
 		},
 		{
 			MethodName: "RecordQuoteDecision",

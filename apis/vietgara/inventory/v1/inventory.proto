@@ -366,6 +366,10 @@ message StockIssueLine {
   // Release 7.1: the base-unit amount already returned to stock from this
   // line (FR-INV-11); what can still be returned is quantity minus this.
   string returned_quantity = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release 7.3: the base-unit amount of this line the stock cannot cover
+  // yet ("0" when covered). Reservations are served in the order the issues
+  // were created.
+  string short_quantity = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // StockIssue is the numbered stock-out document of a repair order
@@ -384,6 +388,10 @@ message StockIssue {
   string posted_by_name = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp created_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp updated_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release 7.3: true while a draft cannot be covered by the stock on hand
+  // (some line has a short_quantity); the repair order is then waiting on
+  // parts.
+  bool is_short = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message GetRepairOrderStockIssueRequest {

@@ -218,8 +218,19 @@ type QuoteLine struct {
 	// The amount as typed, in unit_id (decimal string); required with unit_id.
 	EnteredQuantity  string `protobuf:"bytes,10,opt,name=entered_quantity,json=enteredQuantity,proto3" json:"entered_quantity,omitempty"`
 	UnitAbbreviation string `protobuf:"bytes,11,opt,name=unit_abbreviation,json=unitAbbreviation,proto3" json:"unit_abbreviation,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// The job this line came from (FR-CAT-06), kept so the quote remembers its
+	// origin; the job may since have been deactivated. The line itself is
+	// independent of the job and stays editable.
+	JobId *string `protobuf:"bytes,12,opt,name=job_id,json=jobId,proto3,oneof" json:"job_id,omitempty"`
+	// A hidden consumable (FR-CAT-08): a part line the customer does not see
+	// and is not billed for, whose stock is deducted when the job is done.
+	// Only a part line with item_ref_id can be non-billable; its unit_price
+	// and line_total are 0 and it is left out of total_amount, the public
+	// quote, the PDF and the approval decisions. It is carried to the repair
+	// order when its job_id has an approved line, or when it has no job_id.
+	NonBillable   bool `protobuf:"varint,13,opt,name=non_billable,json=nonBillable,proto3" json:"non_billable,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *QuoteLine) Reset() {
@@ -327,6 +338,20 @@ func (x *QuoteLine) GetUnitAbbreviation() string {
 		return x.UnitAbbreviation
 	}
 	return ""
+}
+
+func (x *QuoteLine) GetJobId() string {
+	if x != nil && x.JobId != nil {
+		return *x.JobId
+	}
+	return ""
+}
+
+func (x *QuoteLine) GetNonBillable() bool {
+	if x != nil {
+		return x.NonBillable
+	}
+	return false
 }
 
 // Quote is a price estimate awaiting the customer's approval (FR-QUO-01).
@@ -1164,6 +1189,110 @@ func (x *SendQuoteResponse) GetEmailed() bool {
 	return false
 }
 
+type AddQuoteJobRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	QuoteId       string                 `protobuf:"bytes,2,opt,name=quote_id,json=quoteId,proto3" json:"quote_id,omitempty"`
+	JobId         string                 `protobuf:"bytes,3,opt,name=job_id,json=jobId,proto3" json:"job_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddQuoteJobRequest) Reset() {
+	*x = AddQuoteJobRequest{}
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddQuoteJobRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddQuoteJobRequest) ProtoMessage() {}
+
+func (x *AddQuoteJobRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddQuoteJobRequest.ProtoReflect.Descriptor instead.
+func (*AddQuoteJobRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *AddQuoteJobRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *AddQuoteJobRequest) GetQuoteId() string {
+	if x != nil {
+		return x.QuoteId
+	}
+	return ""
+}
+
+func (x *AddQuoteJobRequest) GetJobId() string {
+	if x != nil {
+		return x.JobId
+	}
+	return ""
+}
+
+type AddQuoteJobResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Quote         *Quote                 `protobuf:"bytes,1,opt,name=quote,proto3" json:"quote,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddQuoteJobResponse) Reset() {
+	*x = AddQuoteJobResponse{}
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddQuoteJobResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddQuoteJobResponse) ProtoMessage() {}
+
+func (x *AddQuoteJobResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddQuoteJobResponse.ProtoReflect.Descriptor instead.
+func (*AddQuoteJobResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *AddQuoteJobResponse) GetQuote() *Quote {
+	if x != nil {
+		return x.Quote
+	}
+	return nil
+}
+
 type QuoteLineDecisionInput struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	LineId        string                 `protobuf:"bytes,1,opt,name=line_id,json=lineId,proto3" json:"line_id,omitempty"`
@@ -1174,7 +1303,7 @@ type QuoteLineDecisionInput struct {
 
 func (x *QuoteLineDecisionInput) Reset() {
 	*x = QuoteLineDecisionInput{}
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[14]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1186,7 +1315,7 @@ func (x *QuoteLineDecisionInput) String() string {
 func (*QuoteLineDecisionInput) ProtoMessage() {}
 
 func (x *QuoteLineDecisionInput) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[14]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1199,7 +1328,7 @@ func (x *QuoteLineDecisionInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QuoteLineDecisionInput.ProtoReflect.Descriptor instead.
 func (*QuoteLineDecisionInput) Descriptor() ([]byte, []int) {
-	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{14}
+	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *QuoteLineDecisionInput) GetLineId() string {
@@ -1228,7 +1357,7 @@ type RecordQuoteDecisionRequest struct {
 
 func (x *RecordQuoteDecisionRequest) Reset() {
 	*x = RecordQuoteDecisionRequest{}
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[15]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1240,7 +1369,7 @@ func (x *RecordQuoteDecisionRequest) String() string {
 func (*RecordQuoteDecisionRequest) ProtoMessage() {}
 
 func (x *RecordQuoteDecisionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[15]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1253,7 +1382,7 @@ func (x *RecordQuoteDecisionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordQuoteDecisionRequest.ProtoReflect.Descriptor instead.
 func (*RecordQuoteDecisionRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{15}
+	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *RecordQuoteDecisionRequest) GetGarageId() string {
@@ -1286,7 +1415,7 @@ type RecordQuoteDecisionResponse struct {
 
 func (x *RecordQuoteDecisionResponse) Reset() {
 	*x = RecordQuoteDecisionResponse{}
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[16]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1298,7 +1427,7 @@ func (x *RecordQuoteDecisionResponse) String() string {
 func (*RecordQuoteDecisionResponse) ProtoMessage() {}
 
 func (x *RecordQuoteDecisionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[16]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1311,7 +1440,7 @@ func (x *RecordQuoteDecisionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordQuoteDecisionResponse.ProtoReflect.Descriptor instead.
 func (*RecordQuoteDecisionResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{16}
+	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *RecordQuoteDecisionResponse) GetQuote() *Quote {
@@ -1331,7 +1460,7 @@ type ConvertQuoteRequest struct {
 
 func (x *ConvertQuoteRequest) Reset() {
 	*x = ConvertQuoteRequest{}
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[17]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1343,7 +1472,7 @@ func (x *ConvertQuoteRequest) String() string {
 func (*ConvertQuoteRequest) ProtoMessage() {}
 
 func (x *ConvertQuoteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[17]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1356,7 +1485,7 @@ func (x *ConvertQuoteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConvertQuoteRequest.ProtoReflect.Descriptor instead.
 func (*ConvertQuoteRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{17}
+	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ConvertQuoteRequest) GetGarageId() string {
@@ -1385,7 +1514,7 @@ type ConvertQuoteResponse struct {
 
 func (x *ConvertQuoteResponse) Reset() {
 	*x = ConvertQuoteResponse{}
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[18]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1397,7 +1526,7 @@ func (x *ConvertQuoteResponse) String() string {
 func (*ConvertQuoteResponse) ProtoMessage() {}
 
 func (x *ConvertQuoteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[18]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1410,7 +1539,7 @@ func (x *ConvertQuoteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConvertQuoteResponse.ProtoReflect.Descriptor instead.
 func (*ConvertQuoteResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{18}
+	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ConvertQuoteResponse) GetQuote() *Quote {
@@ -1447,7 +1576,7 @@ type PublicQuote struct {
 
 func (x *PublicQuote) Reset() {
 	*x = PublicQuote{}
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[19]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1459,7 +1588,7 @@ func (x *PublicQuote) String() string {
 func (*PublicQuote) ProtoMessage() {}
 
 func (x *PublicQuote) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[19]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1472,7 +1601,7 @@ func (x *PublicQuote) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublicQuote.ProtoReflect.Descriptor instead.
 func (*PublicQuote) Descriptor() ([]byte, []int) {
-	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{19}
+	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *PublicQuote) GetNumber() string {
@@ -1547,7 +1676,7 @@ type GetPublicQuoteRequest struct {
 
 func (x *GetPublicQuoteRequest) Reset() {
 	*x = GetPublicQuoteRequest{}
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[20]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1559,7 +1688,7 @@ func (x *GetPublicQuoteRequest) String() string {
 func (*GetPublicQuoteRequest) ProtoMessage() {}
 
 func (x *GetPublicQuoteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[20]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1572,7 +1701,7 @@ func (x *GetPublicQuoteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPublicQuoteRequest.ProtoReflect.Descriptor instead.
 func (*GetPublicQuoteRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{20}
+	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *GetPublicQuoteRequest) GetToken() string {
@@ -1591,7 +1720,7 @@ type GetPublicQuoteResponse struct {
 
 func (x *GetPublicQuoteResponse) Reset() {
 	*x = GetPublicQuoteResponse{}
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[21]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1603,7 +1732,7 @@ func (x *GetPublicQuoteResponse) String() string {
 func (*GetPublicQuoteResponse) ProtoMessage() {}
 
 func (x *GetPublicQuoteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[21]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1616,7 +1745,7 @@ func (x *GetPublicQuoteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPublicQuoteResponse.ProtoReflect.Descriptor instead.
 func (*GetPublicQuoteResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{21}
+	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *GetPublicQuoteResponse) GetQuote() *PublicQuote {
@@ -1636,7 +1765,7 @@ type DecidePublicQuoteRequest struct {
 
 func (x *DecidePublicQuoteRequest) Reset() {
 	*x = DecidePublicQuoteRequest{}
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[22]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1648,7 +1777,7 @@ func (x *DecidePublicQuoteRequest) String() string {
 func (*DecidePublicQuoteRequest) ProtoMessage() {}
 
 func (x *DecidePublicQuoteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[22]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1661,7 +1790,7 @@ func (x *DecidePublicQuoteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DecidePublicQuoteRequest.ProtoReflect.Descriptor instead.
 func (*DecidePublicQuoteRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{22}
+	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *DecidePublicQuoteRequest) GetToken() string {
@@ -1687,7 +1816,7 @@ type DecidePublicQuoteResponse struct {
 
 func (x *DecidePublicQuoteResponse) Reset() {
 	*x = DecidePublicQuoteResponse{}
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[23]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1699,7 +1828,7 @@ func (x *DecidePublicQuoteResponse) String() string {
 func (*DecidePublicQuoteResponse) ProtoMessage() {}
 
 func (x *DecidePublicQuoteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[23]
+	mi := &file_vietgara_quote_v1_quote_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1712,7 +1841,7 @@ func (x *DecidePublicQuoteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DecidePublicQuoteResponse.ProtoReflect.Descriptor instead.
 func (*DecidePublicQuoteResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{23}
+	return file_vietgara_quote_v1_quote_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *DecidePublicQuoteResponse) GetQuote() *PublicQuote {
@@ -1726,7 +1855,7 @@ var File_vietgara_quote_v1_quote_proto protoreflect.FileDescriptor
 
 const file_vietgara_quote_v1_quote_proto_rawDesc = "" +
 	"\n" +
-	"\x1dvietgara/quote/v1/quote.proto\x12\x11vietgara.quote.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a&vietgara/common/v1/billing_party.proto\x1a#vietgara/common/v1/pagination.proto\x1a,vietgara/common/v1/quote_approval_mode.proto\"\xf7\x03\n" +
+	"\x1dvietgara/quote/v1/quote.proto\x12\x11vietgara.quote.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a&vietgara/common/v1/billing_party.proto\x1a#vietgara/common/v1/pagination.proto\x1a,vietgara/common/v1/quote_approval_mode.proto\"\xc1\x04\n" +
 	"\tQuoteLine\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12B\n" +
 	"\titem_type\x18\x02 \x01(\x0e2 .vietgara.quote.v1.QuoteItemTypeB\x03\xe0A\x02R\bitemType\x12#\n" +
@@ -1741,10 +1870,13 @@ const file_vietgara_quote_v1_quote_proto_rawDesc = "" +
 	"\aunit_id\x18\t \x01(\tH\x01R\x06unitId\x88\x01\x01\x12)\n" +
 	"\x10entered_quantity\x18\n" +
 	" \x01(\tR\x0fenteredQuantity\x120\n" +
-	"\x11unit_abbreviation\x18\v \x01(\tB\x03\xe0A\x03R\x10unitAbbreviationB\x0e\n" +
+	"\x11unit_abbreviation\x18\v \x01(\tB\x03\xe0A\x03R\x10unitAbbreviation\x12\x1a\n" +
+	"\x06job_id\x18\f \x01(\tH\x02R\x05jobId\x88\x01\x01\x12!\n" +
+	"\fnon_billable\x18\r \x01(\bR\vnonBillableB\x0e\n" +
 	"\f_item_ref_idB\n" +
 	"\n" +
-	"\b_unit_id\"\x88\a\n" +
+	"\b_unit_idB\t\n" +
+	"\a_job_id\"\x88\a\n" +
 	"\x05Quote\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
 	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12$\n" +
@@ -1813,7 +1945,13 @@ const file_vietgara_quote_v1_quote_proto_rawDesc = "" +
 	"\x05quote\x18\x01 \x01(\v2\x18.vietgara.quote.v1.QuoteR\x05quote\x12\x1d\n" +
 	"\n" +
 	"public_url\x18\x02 \x01(\tR\tpublicUrl\x12\x18\n" +
-	"\aemailed\x18\x03 \x01(\bR\aemailed\"R\n" +
+	"\aemailed\x18\x03 \x01(\bR\aemailed\"r\n" +
+	"\x12AddQuoteJobRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1e\n" +
+	"\bquote_id\x18\x02 \x01(\tB\x03\xe0A\x02R\aquoteId\x12\x1a\n" +
+	"\x06job_id\x18\x03 \x01(\tB\x03\xe0A\x02R\x05jobId\"E\n" +
+	"\x13AddQuoteJobResponse\x12.\n" +
+	"\x05quote\x18\x01 \x01(\v2\x18.vietgara.quote.v1.QuoteR\x05quote\"R\n" +
 	"\x16QuoteLineDecisionInput\x12\x1c\n" +
 	"\aline_id\x18\x01 \x01(\tB\x03\xe0A\x02R\x06lineId\x12\x1a\n" +
 	"\bapproved\x18\x02 \x01(\bR\bapproved\"\xac\x01\n" +
@@ -1865,8 +2003,7 @@ const file_vietgara_quote_v1_quote_proto_rawDesc = "" +
 	"\x1fQUOTE_LINE_DECISION_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bQUOTE_LINE_DECISION_PENDING\x10\x01\x12 \n" +
 	"\x1cQUOTE_LINE_DECISION_APPROVED\x10\x02\x12 \n" +
-	"\x1cQUOTE_LINE_DECISION_REJECTED\x10\x032\x80\n" +
-	"\n" +
+	"\x1cQUOTE_LINE_DECISION_REJECTED\x10\x032\xae\v\n" +
 	"\fQuoteService\x12\x85\x01\n" +
 	"\n" +
 	"ListQuotes\x12$.vietgara.quote.v1.ListQuotesRequest\x1a%.vietgara.quote.v1.ListQuotesResponse\"*\x82\xd3\xe4\x93\x02$\x12\"/api/v1/garages/{garage_id}/quotes\x12\x96\x01\n" +
@@ -1874,7 +2011,8 @@ const file_vietgara_quote_v1_quote_proto_rawDesc = "" +
 	"\bGetQuote\x12\".vietgara.quote.v1.GetQuoteRequest\x1a#.vietgara.quote.v1.GetQuoteResponse\"<\x82\xd3\xe4\x93\x026b\x05quote\x12-/api/v1/garages/{garage_id}/quotes/{quote_id}\x12\xa1\x01\n" +
 	"\vUpdateQuote\x12%.vietgara.quote.v1.UpdateQuoteRequest\x1a&.vietgara.quote.v1.UpdateQuoteResponse\"C\x82\xd3\xe4\x93\x02=:\x05quoteb\x05quote2-/api/v1/garages/{garage_id}/quotes/{quote_id}\x12\x93\x01\n" +
 	"\vDeleteQuote\x12%.vietgara.quote.v1.DeleteQuoteRequest\x1a&.vietgara.quote.v1.DeleteQuoteResponse\"5\x82\xd3\xe4\x93\x02/*-/api/v1/garages/{garage_id}/quotes/{quote_id}\x12\x98\x01\n" +
-	"\tSendQuote\x12#.vietgara.quote.v1.SendQuoteRequest\x1a$.vietgara.quote.v1.SendQuoteResponse\"@\x82\xd3\xe4\x93\x02::\x01*\"5/api/v1/garages/{garage_id}/quotes/{quote_id}/sending\x12\xbe\x01\n" +
+	"\tSendQuote\x12#.vietgara.quote.v1.SendQuoteRequest\x1a$.vietgara.quote.v1.SendQuoteResponse\"@\x82\xd3\xe4\x93\x02::\x01*\"5/api/v1/garages/{garage_id}/quotes/{quote_id}/sending\x12\xab\x01\n" +
+	"\vAddQuoteJob\x12%.vietgara.quote.v1.AddQuoteJobRequest\x1a&.vietgara.quote.v1.AddQuoteJobResponse\"M\x82\xd3\xe4\x93\x02G:\x01*b\x05quote\";/api/v1/garages/{garage_id}/quotes/{quote_id}/lines:fromJob\x12\xbe\x01\n" +
 	"\x13RecordQuoteDecision\x12-.vietgara.quote.v1.RecordQuoteDecisionRequest\x1a..vietgara.quote.v1.RecordQuoteDecisionResponse\"H\x82\xd3\xe4\x93\x02B:\x01*b\x05quote\"6/api/v1/garages/{garage_id}/quotes/{quote_id}/decision\x12\xa4\x01\n" +
 	"\fConvertQuote\x12&.vietgara.quote.v1.ConvertQuoteRequest\x1a'.vietgara.quote.v1.ConvertQuoteResponse\"C\x82\xd3\xe4\x93\x02=:\x01*\"8/api/v1/garages/{garage_id}/quotes/{quote_id}/conversion2\xd5\x02\n" +
 	"\x12PublicQuoteService\x12\x93\x01\n" +
@@ -1894,7 +2032,7 @@ func file_vietgara_quote_v1_quote_proto_rawDescGZIP() []byte {
 }
 
 var file_vietgara_quote_v1_quote_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_vietgara_quote_v1_quote_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_vietgara_quote_v1_quote_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_vietgara_quote_v1_quote_proto_goTypes = []any{
 	(QuoteStatus)(0),                    // 0: vietgara.quote.v1.QuoteStatus
 	(QuoteItemType)(0),                  // 1: vietgara.quote.v1.QuoteItemType
@@ -1913,78 +2051,83 @@ var file_vietgara_quote_v1_quote_proto_goTypes = []any{
 	(*DeleteQuoteResponse)(nil),         // 14: vietgara.quote.v1.DeleteQuoteResponse
 	(*SendQuoteRequest)(nil),            // 15: vietgara.quote.v1.SendQuoteRequest
 	(*SendQuoteResponse)(nil),           // 16: vietgara.quote.v1.SendQuoteResponse
-	(*QuoteLineDecisionInput)(nil),      // 17: vietgara.quote.v1.QuoteLineDecisionInput
-	(*RecordQuoteDecisionRequest)(nil),  // 18: vietgara.quote.v1.RecordQuoteDecisionRequest
-	(*RecordQuoteDecisionResponse)(nil), // 19: vietgara.quote.v1.RecordQuoteDecisionResponse
-	(*ConvertQuoteRequest)(nil),         // 20: vietgara.quote.v1.ConvertQuoteRequest
-	(*ConvertQuoteResponse)(nil),        // 21: vietgara.quote.v1.ConvertQuoteResponse
-	(*PublicQuote)(nil),                 // 22: vietgara.quote.v1.PublicQuote
-	(*GetPublicQuoteRequest)(nil),       // 23: vietgara.quote.v1.GetPublicQuoteRequest
-	(*GetPublicQuoteResponse)(nil),      // 24: vietgara.quote.v1.GetPublicQuoteResponse
-	(*DecidePublicQuoteRequest)(nil),    // 25: vietgara.quote.v1.DecidePublicQuoteRequest
-	(*DecidePublicQuoteResponse)(nil),   // 26: vietgara.quote.v1.DecidePublicQuoteResponse
-	(v1.QuoteApprovalMode)(0),           // 27: vietgara.common.v1.QuoteApprovalMode
-	(*timestamppb.Timestamp)(nil),       // 28: google.protobuf.Timestamp
-	(*v1.BillingParty)(nil),             // 29: vietgara.common.v1.BillingParty
-	(*v1.Pagination)(nil),               // 30: vietgara.common.v1.Pagination
-	(*fieldmaskpb.FieldMask)(nil),       // 31: google.protobuf.FieldMask
+	(*AddQuoteJobRequest)(nil),          // 17: vietgara.quote.v1.AddQuoteJobRequest
+	(*AddQuoteJobResponse)(nil),         // 18: vietgara.quote.v1.AddQuoteJobResponse
+	(*QuoteLineDecisionInput)(nil),      // 19: vietgara.quote.v1.QuoteLineDecisionInput
+	(*RecordQuoteDecisionRequest)(nil),  // 20: vietgara.quote.v1.RecordQuoteDecisionRequest
+	(*RecordQuoteDecisionResponse)(nil), // 21: vietgara.quote.v1.RecordQuoteDecisionResponse
+	(*ConvertQuoteRequest)(nil),         // 22: vietgara.quote.v1.ConvertQuoteRequest
+	(*ConvertQuoteResponse)(nil),        // 23: vietgara.quote.v1.ConvertQuoteResponse
+	(*PublicQuote)(nil),                 // 24: vietgara.quote.v1.PublicQuote
+	(*GetPublicQuoteRequest)(nil),       // 25: vietgara.quote.v1.GetPublicQuoteRequest
+	(*GetPublicQuoteResponse)(nil),      // 26: vietgara.quote.v1.GetPublicQuoteResponse
+	(*DecidePublicQuoteRequest)(nil),    // 27: vietgara.quote.v1.DecidePublicQuoteRequest
+	(*DecidePublicQuoteResponse)(nil),   // 28: vietgara.quote.v1.DecidePublicQuoteResponse
+	(v1.QuoteApprovalMode)(0),           // 29: vietgara.common.v1.QuoteApprovalMode
+	(*timestamppb.Timestamp)(nil),       // 30: google.protobuf.Timestamp
+	(*v1.BillingParty)(nil),             // 31: vietgara.common.v1.BillingParty
+	(*v1.Pagination)(nil),               // 32: vietgara.common.v1.Pagination
+	(*fieldmaskpb.FieldMask)(nil),       // 33: google.protobuf.FieldMask
 }
 var file_vietgara_quote_v1_quote_proto_depIdxs = []int32{
 	1,  // 0: vietgara.quote.v1.QuoteLine.item_type:type_name -> vietgara.quote.v1.QuoteItemType
 	2,  // 1: vietgara.quote.v1.QuoteLine.decision:type_name -> vietgara.quote.v1.QuoteLineDecision
 	0,  // 2: vietgara.quote.v1.Quote.status:type_name -> vietgara.quote.v1.QuoteStatus
-	27, // 3: vietgara.quote.v1.Quote.approval_mode:type_name -> vietgara.common.v1.QuoteApprovalMode
+	29, // 3: vietgara.quote.v1.Quote.approval_mode:type_name -> vietgara.common.v1.QuoteApprovalMode
 	3,  // 4: vietgara.quote.v1.Quote.lines:type_name -> vietgara.quote.v1.QuoteLine
-	28, // 5: vietgara.quote.v1.Quote.sent_at:type_name -> google.protobuf.Timestamp
-	28, // 6: vietgara.quote.v1.Quote.decided_at:type_name -> google.protobuf.Timestamp
-	28, // 7: vietgara.quote.v1.Quote.converted_at:type_name -> google.protobuf.Timestamp
-	28, // 8: vietgara.quote.v1.Quote.created_at:type_name -> google.protobuf.Timestamp
-	28, // 9: vietgara.quote.v1.Quote.updated_at:type_name -> google.protobuf.Timestamp
-	29, // 10: vietgara.quote.v1.Quote.billing_party:type_name -> vietgara.common.v1.BillingParty
+	30, // 5: vietgara.quote.v1.Quote.sent_at:type_name -> google.protobuf.Timestamp
+	30, // 6: vietgara.quote.v1.Quote.decided_at:type_name -> google.protobuf.Timestamp
+	30, // 7: vietgara.quote.v1.Quote.converted_at:type_name -> google.protobuf.Timestamp
+	30, // 8: vietgara.quote.v1.Quote.created_at:type_name -> google.protobuf.Timestamp
+	30, // 9: vietgara.quote.v1.Quote.updated_at:type_name -> google.protobuf.Timestamp
+	31, // 10: vietgara.quote.v1.Quote.billing_party:type_name -> vietgara.common.v1.BillingParty
 	0,  // 11: vietgara.quote.v1.ListQuotesRequest.status:type_name -> vietgara.quote.v1.QuoteStatus
 	4,  // 12: vietgara.quote.v1.ListQuotesResponse.data:type_name -> vietgara.quote.v1.Quote
-	30, // 13: vietgara.quote.v1.ListQuotesResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	32, // 13: vietgara.quote.v1.ListQuotesResponse.pagination:type_name -> vietgara.common.v1.Pagination
 	4,  // 14: vietgara.quote.v1.CreateQuoteRequest.quote:type_name -> vietgara.quote.v1.Quote
 	4,  // 15: vietgara.quote.v1.CreateQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
 	4,  // 16: vietgara.quote.v1.GetQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
 	4,  // 17: vietgara.quote.v1.UpdateQuoteRequest.quote:type_name -> vietgara.quote.v1.Quote
-	31, // 18: vietgara.quote.v1.UpdateQuoteRequest.update_mask:type_name -> google.protobuf.FieldMask
+	33, // 18: vietgara.quote.v1.UpdateQuoteRequest.update_mask:type_name -> google.protobuf.FieldMask
 	4,  // 19: vietgara.quote.v1.UpdateQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
 	4,  // 20: vietgara.quote.v1.SendQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
-	17, // 21: vietgara.quote.v1.RecordQuoteDecisionRequest.decisions:type_name -> vietgara.quote.v1.QuoteLineDecisionInput
-	4,  // 22: vietgara.quote.v1.RecordQuoteDecisionResponse.quote:type_name -> vietgara.quote.v1.Quote
-	4,  // 23: vietgara.quote.v1.ConvertQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
-	0,  // 24: vietgara.quote.v1.PublicQuote.status:type_name -> vietgara.quote.v1.QuoteStatus
-	3,  // 25: vietgara.quote.v1.PublicQuote.lines:type_name -> vietgara.quote.v1.QuoteLine
-	28, // 26: vietgara.quote.v1.PublicQuote.expires_at:type_name -> google.protobuf.Timestamp
-	22, // 27: vietgara.quote.v1.GetPublicQuoteResponse.quote:type_name -> vietgara.quote.v1.PublicQuote
-	17, // 28: vietgara.quote.v1.DecidePublicQuoteRequest.decisions:type_name -> vietgara.quote.v1.QuoteLineDecisionInput
-	22, // 29: vietgara.quote.v1.DecidePublicQuoteResponse.quote:type_name -> vietgara.quote.v1.PublicQuote
-	5,  // 30: vietgara.quote.v1.QuoteService.ListQuotes:input_type -> vietgara.quote.v1.ListQuotesRequest
-	7,  // 31: vietgara.quote.v1.QuoteService.CreateQuote:input_type -> vietgara.quote.v1.CreateQuoteRequest
-	9,  // 32: vietgara.quote.v1.QuoteService.GetQuote:input_type -> vietgara.quote.v1.GetQuoteRequest
-	11, // 33: vietgara.quote.v1.QuoteService.UpdateQuote:input_type -> vietgara.quote.v1.UpdateQuoteRequest
-	13, // 34: vietgara.quote.v1.QuoteService.DeleteQuote:input_type -> vietgara.quote.v1.DeleteQuoteRequest
-	15, // 35: vietgara.quote.v1.QuoteService.SendQuote:input_type -> vietgara.quote.v1.SendQuoteRequest
-	18, // 36: vietgara.quote.v1.QuoteService.RecordQuoteDecision:input_type -> vietgara.quote.v1.RecordQuoteDecisionRequest
-	20, // 37: vietgara.quote.v1.QuoteService.ConvertQuote:input_type -> vietgara.quote.v1.ConvertQuoteRequest
-	23, // 38: vietgara.quote.v1.PublicQuoteService.GetPublicQuote:input_type -> vietgara.quote.v1.GetPublicQuoteRequest
-	25, // 39: vietgara.quote.v1.PublicQuoteService.DecidePublicQuote:input_type -> vietgara.quote.v1.DecidePublicQuoteRequest
-	6,  // 40: vietgara.quote.v1.QuoteService.ListQuotes:output_type -> vietgara.quote.v1.ListQuotesResponse
-	8,  // 41: vietgara.quote.v1.QuoteService.CreateQuote:output_type -> vietgara.quote.v1.CreateQuoteResponse
-	10, // 42: vietgara.quote.v1.QuoteService.GetQuote:output_type -> vietgara.quote.v1.GetQuoteResponse
-	12, // 43: vietgara.quote.v1.QuoteService.UpdateQuote:output_type -> vietgara.quote.v1.UpdateQuoteResponse
-	14, // 44: vietgara.quote.v1.QuoteService.DeleteQuote:output_type -> vietgara.quote.v1.DeleteQuoteResponse
-	16, // 45: vietgara.quote.v1.QuoteService.SendQuote:output_type -> vietgara.quote.v1.SendQuoteResponse
-	19, // 46: vietgara.quote.v1.QuoteService.RecordQuoteDecision:output_type -> vietgara.quote.v1.RecordQuoteDecisionResponse
-	21, // 47: vietgara.quote.v1.QuoteService.ConvertQuote:output_type -> vietgara.quote.v1.ConvertQuoteResponse
-	24, // 48: vietgara.quote.v1.PublicQuoteService.GetPublicQuote:output_type -> vietgara.quote.v1.GetPublicQuoteResponse
-	26, // 49: vietgara.quote.v1.PublicQuoteService.DecidePublicQuote:output_type -> vietgara.quote.v1.DecidePublicQuoteResponse
-	40, // [40:50] is the sub-list for method output_type
-	30, // [30:40] is the sub-list for method input_type
-	30, // [30:30] is the sub-list for extension type_name
-	30, // [30:30] is the sub-list for extension extendee
-	0,  // [0:30] is the sub-list for field type_name
+	4,  // 21: vietgara.quote.v1.AddQuoteJobResponse.quote:type_name -> vietgara.quote.v1.Quote
+	19, // 22: vietgara.quote.v1.RecordQuoteDecisionRequest.decisions:type_name -> vietgara.quote.v1.QuoteLineDecisionInput
+	4,  // 23: vietgara.quote.v1.RecordQuoteDecisionResponse.quote:type_name -> vietgara.quote.v1.Quote
+	4,  // 24: vietgara.quote.v1.ConvertQuoteResponse.quote:type_name -> vietgara.quote.v1.Quote
+	0,  // 25: vietgara.quote.v1.PublicQuote.status:type_name -> vietgara.quote.v1.QuoteStatus
+	3,  // 26: vietgara.quote.v1.PublicQuote.lines:type_name -> vietgara.quote.v1.QuoteLine
+	30, // 27: vietgara.quote.v1.PublicQuote.expires_at:type_name -> google.protobuf.Timestamp
+	24, // 28: vietgara.quote.v1.GetPublicQuoteResponse.quote:type_name -> vietgara.quote.v1.PublicQuote
+	19, // 29: vietgara.quote.v1.DecidePublicQuoteRequest.decisions:type_name -> vietgara.quote.v1.QuoteLineDecisionInput
+	24, // 30: vietgara.quote.v1.DecidePublicQuoteResponse.quote:type_name -> vietgara.quote.v1.PublicQuote
+	5,  // 31: vietgara.quote.v1.QuoteService.ListQuotes:input_type -> vietgara.quote.v1.ListQuotesRequest
+	7,  // 32: vietgara.quote.v1.QuoteService.CreateQuote:input_type -> vietgara.quote.v1.CreateQuoteRequest
+	9,  // 33: vietgara.quote.v1.QuoteService.GetQuote:input_type -> vietgara.quote.v1.GetQuoteRequest
+	11, // 34: vietgara.quote.v1.QuoteService.UpdateQuote:input_type -> vietgara.quote.v1.UpdateQuoteRequest
+	13, // 35: vietgara.quote.v1.QuoteService.DeleteQuote:input_type -> vietgara.quote.v1.DeleteQuoteRequest
+	15, // 36: vietgara.quote.v1.QuoteService.SendQuote:input_type -> vietgara.quote.v1.SendQuoteRequest
+	17, // 37: vietgara.quote.v1.QuoteService.AddQuoteJob:input_type -> vietgara.quote.v1.AddQuoteJobRequest
+	20, // 38: vietgara.quote.v1.QuoteService.RecordQuoteDecision:input_type -> vietgara.quote.v1.RecordQuoteDecisionRequest
+	22, // 39: vietgara.quote.v1.QuoteService.ConvertQuote:input_type -> vietgara.quote.v1.ConvertQuoteRequest
+	25, // 40: vietgara.quote.v1.PublicQuoteService.GetPublicQuote:input_type -> vietgara.quote.v1.GetPublicQuoteRequest
+	27, // 41: vietgara.quote.v1.PublicQuoteService.DecidePublicQuote:input_type -> vietgara.quote.v1.DecidePublicQuoteRequest
+	6,  // 42: vietgara.quote.v1.QuoteService.ListQuotes:output_type -> vietgara.quote.v1.ListQuotesResponse
+	8,  // 43: vietgara.quote.v1.QuoteService.CreateQuote:output_type -> vietgara.quote.v1.CreateQuoteResponse
+	10, // 44: vietgara.quote.v1.QuoteService.GetQuote:output_type -> vietgara.quote.v1.GetQuoteResponse
+	12, // 45: vietgara.quote.v1.QuoteService.UpdateQuote:output_type -> vietgara.quote.v1.UpdateQuoteResponse
+	14, // 46: vietgara.quote.v1.QuoteService.DeleteQuote:output_type -> vietgara.quote.v1.DeleteQuoteResponse
+	16, // 47: vietgara.quote.v1.QuoteService.SendQuote:output_type -> vietgara.quote.v1.SendQuoteResponse
+	18, // 48: vietgara.quote.v1.QuoteService.AddQuoteJob:output_type -> vietgara.quote.v1.AddQuoteJobResponse
+	21, // 49: vietgara.quote.v1.QuoteService.RecordQuoteDecision:output_type -> vietgara.quote.v1.RecordQuoteDecisionResponse
+	23, // 50: vietgara.quote.v1.QuoteService.ConvertQuote:output_type -> vietgara.quote.v1.ConvertQuoteResponse
+	26, // 51: vietgara.quote.v1.PublicQuoteService.GetPublicQuote:output_type -> vietgara.quote.v1.GetPublicQuoteResponse
+	28, // 52: vietgara.quote.v1.PublicQuoteService.DecidePublicQuote:output_type -> vietgara.quote.v1.DecidePublicQuoteResponse
+	42, // [42:53] is the sub-list for method output_type
+	31, // [31:42] is the sub-list for method input_type
+	31, // [31:31] is the sub-list for extension type_name
+	31, // [31:31] is the sub-list for extension extendee
+	0,  // [0:31] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_quote_v1_quote_proto_init() }
@@ -1999,7 +2142,7 @@ func file_vietgara_quote_v1_quote_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_quote_v1_quote_proto_rawDesc), len(file_vietgara_quote_v1_quote_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   24,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

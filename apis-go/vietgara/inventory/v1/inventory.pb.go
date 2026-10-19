@@ -2528,8 +2528,12 @@ type StockIssueLine struct {
 	// Release 7.1: the base-unit amount already returned to stock from this
 	// line (FR-INV-11); what can still be returned is quantity minus this.
 	ReturnedQuantity string `protobuf:"bytes,12,opt,name=returned_quantity,json=returnedQuantity,proto3" json:"returned_quantity,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// Release 7.3: the base-unit amount of this line the stock cannot cover
+	// yet ("0" when covered). Reservations are served in the order the issues
+	// were created.
+	ShortQuantity string `protobuf:"bytes,13,opt,name=short_quantity,json=shortQuantity,proto3" json:"short_quantity,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *StockIssueLine) Reset() {
@@ -2646,6 +2650,13 @@ func (x *StockIssueLine) GetReturnedQuantity() string {
 	return ""
 }
 
+func (x *StockIssueLine) GetShortQuantity() string {
+	if x != nil {
+		return x.ShortQuantity
+	}
+	return ""
+}
+
 // StockIssue is the numbered stock-out document of a repair order
 // (FR-INV-20). It is created as a draft with the repair order and follows
 // it until posted; printing it uses the standard document layout.
@@ -2663,8 +2674,12 @@ type StockIssue struct {
 	PostedByName      string                 `protobuf:"bytes,9,opt,name=posted_by_name,json=postedByName,proto3" json:"posted_by_name,omitempty"`
 	CreatedAt         *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt         *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	// Release 7.3: true while a draft cannot be covered by the stock on hand
+	// (some line has a short_quantity); the repair order is then waiting on
+	// parts.
+	IsShort       bool `protobuf:"varint,12,opt,name=is_short,json=isShort,proto3" json:"is_short,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *StockIssue) Reset() {
@@ -2772,6 +2787,13 @@ func (x *StockIssue) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *StockIssue) GetIsShort() bool {
+	if x != nil {
+		return x.IsShort
+	}
+	return false
 }
 
 type GetRepairOrderStockIssueRequest struct {
@@ -6970,7 +6992,7 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\apart_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06partId\x127\n" +
 	"\x04data\x18\x03 \x03(\v2#.vietgara.inventory.v1.PartSupplierR\x04data\"S\n" +
 	"\x18PutPartSuppliersResponse\x127\n" +
-	"\x04data\x18\x01 \x03(\v2#.vietgara.inventory.v1.PartSupplierR\x04data\"\x8f\x04\n" +
+	"\x04data\x18\x01 \x03(\v2#.vietgara.inventory.v1.PartSupplierR\x04data\"\xbb\x04\n" +
 	"\x0eStockIssueLine\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x124\n" +
 	"\x14repair_order_line_id\x18\x02 \x01(\tB\x03\xe0A\x03R\x11repairOrderLineId\x12\x1c\n" +
@@ -6984,11 +7006,12 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\bquantity\x18\n" +
 	" \x01(\tB\x03\xe0A\x03R\bquantity\x12%\n" +
 	"\tunit_cost\x18\v \x01(\x03B\x03\xe0A\x03H\x01R\bunitCost\x88\x01\x01\x120\n" +
-	"\x11returned_quantity\x18\f \x01(\tB\x03\xe0A\x03R\x10returnedQuantityB\n" +
+	"\x11returned_quantity\x18\f \x01(\tB\x03\xe0A\x03R\x10returnedQuantity\x12*\n" +
+	"\x0eshort_quantity\x18\r \x01(\tB\x03\xe0A\x03R\rshortQuantityB\n" +
 	"\n" +
 	"\b_unit_idB\f\n" +
 	"\n" +
-	"_unit_cost\"\xb3\x04\n" +
+	"_unit_cost\"\xd3\x04\n" +
 	"\n" +
 	"StockIssue\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
@@ -7004,7 +7027,8 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\"p\n" +
+	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12\x1e\n" +
+	"\bis_short\x18\f \x01(\bB\x03\xe0A\x03R\aisShort\"p\n" +
 	"\x1fGetRepairOrderStockIssueRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12+\n" +
 	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\"f\n" +

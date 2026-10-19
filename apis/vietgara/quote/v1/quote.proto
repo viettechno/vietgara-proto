@@ -67,6 +67,17 @@ message QuoteLine {
   // The amount as typed, in unit_id (decimal string); required with unit_id.
   string entered_quantity = 10;
   string unit_abbreviation = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The job this line came from (FR-CAT-06), kept so the quote remembers its
+  // origin; the job may since have been deactivated. The line itself is
+  // independent of the job and stays editable.
+  optional string job_id = 12;
+  // A hidden consumable (FR-CAT-08): a part line the customer does not see
+  // and is not billed for, whose stock is deducted when the job is done.
+  // Only a part line with item_ref_id can be non-billable; its unit_price
+  // and line_total are 0 and it is left out of total_amount, the public
+  // quote, the PDF and the approval decisions. It is carried to the repair
+  // order when its job_id has an approved line, or when it has no job_id.
+  bool non_billable = 13;
 }
 
 // Quote is a price estimate awaiting the customer's approval (FR-QUO-01).
@@ -166,6 +177,16 @@ message SendQuoteResponse {
   bool emailed = 3;
 }
 
+message AddQuoteJobRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string quote_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string job_id = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message AddQuoteJobResponse {
+  Quote quote = 1;
+}
+
 message QuoteLineDecisionInput {
   string line_id = 1 [(google.api.field_behavior) = REQUIRED];
   bool approved = 2;
@@ -238,6 +259,19 @@ service QuoteService {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/quotes/{quote_id}/sending"
       body: "*"
+    };
+  }
+
+  // Adds a job's lines to a draft quote (FR-CAT-06): one labor line at the
+  // job's labor price, then one part line per suggested part at the part's
+  // sale price in the suggested unit. A deactivated job is refused; a
+  // suggestion whose part is deactivated is skipped. The lines are
+  // appended, count against the 100-line limit, and stay editable.
+  rpc AddQuoteJob(AddQuoteJobRequest) returns (AddQuoteJobResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/quotes/{quote_id}/lines:fromJob"
+      body: "*"
+      response_body: "quote"
     };
   }
 
