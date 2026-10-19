@@ -19,23 +19,25 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CatalogueService_ListParts_FullMethodName          = "/vietgara.catalogue.v1.CatalogueService/ListParts"
-	CatalogueService_CreatePart_FullMethodName         = "/vietgara.catalogue.v1.CatalogueService/CreatePart"
-	CatalogueService_GetPart_FullMethodName            = "/vietgara.catalogue.v1.CatalogueService/GetPart"
-	CatalogueService_UpdatePart_FullMethodName         = "/vietgara.catalogue.v1.CatalogueService/UpdatePart"
-	CatalogueService_DeletePart_FullMethodName         = "/vietgara.catalogue.v1.CatalogueService/DeletePart"
-	CatalogueService_ActivatePart_FullMethodName       = "/vietgara.catalogue.v1.CatalogueService/ActivatePart"
-	CatalogueService_SetPartUnits_FullMethodName       = "/vietgara.catalogue.v1.CatalogueService/SetPartUnits"
-	CatalogueService_AddPartImage_FullMethodName       = "/vietgara.catalogue.v1.CatalogueService/AddPartImage"
-	CatalogueService_RemovePartImage_FullMethodName    = "/vietgara.catalogue.v1.CatalogueService/RemovePartImage"
-	CatalogueService_ListUnits_FullMethodName          = "/vietgara.catalogue.v1.CatalogueService/ListUnits"
-	CatalogueService_CreateUnit_FullMethodName         = "/vietgara.catalogue.v1.CatalogueService/CreateUnit"
-	CatalogueService_UpdateUnit_FullMethodName         = "/vietgara.catalogue.v1.CatalogueService/UpdateUnit"
-	CatalogueService_DeleteUnit_FullMethodName         = "/vietgara.catalogue.v1.CatalogueService/DeleteUnit"
-	CatalogueService_ListPartCategories_FullMethodName = "/vietgara.catalogue.v1.CatalogueService/ListPartCategories"
-	CatalogueService_CreatePartCategory_FullMethodName = "/vietgara.catalogue.v1.CatalogueService/CreatePartCategory"
-	CatalogueService_UpdatePartCategory_FullMethodName = "/vietgara.catalogue.v1.CatalogueService/UpdatePartCategory"
-	CatalogueService_DeletePartCategory_FullMethodName = "/vietgara.catalogue.v1.CatalogueService/DeletePartCategory"
+	CatalogueService_ListParts_FullMethodName           = "/vietgara.catalogue.v1.CatalogueService/ListParts"
+	CatalogueService_CreatePart_FullMethodName          = "/vietgara.catalogue.v1.CatalogueService/CreatePart"
+	CatalogueService_GetPart_FullMethodName             = "/vietgara.catalogue.v1.CatalogueService/GetPart"
+	CatalogueService_UpdatePart_FullMethodName          = "/vietgara.catalogue.v1.CatalogueService/UpdatePart"
+	CatalogueService_DeletePart_FullMethodName          = "/vietgara.catalogue.v1.CatalogueService/DeletePart"
+	CatalogueService_ActivatePart_FullMethodName        = "/vietgara.catalogue.v1.CatalogueService/ActivatePart"
+	CatalogueService_SetPartUnits_FullMethodName        = "/vietgara.catalogue.v1.CatalogueService/SetPartUnits"
+	CatalogueService_SetPartBarcodes_FullMethodName     = "/vietgara.catalogue.v1.CatalogueService/SetPartBarcodes"
+	CatalogueService_LookupPartByBarcode_FullMethodName = "/vietgara.catalogue.v1.CatalogueService/LookupPartByBarcode"
+	CatalogueService_AddPartImage_FullMethodName        = "/vietgara.catalogue.v1.CatalogueService/AddPartImage"
+	CatalogueService_RemovePartImage_FullMethodName     = "/vietgara.catalogue.v1.CatalogueService/RemovePartImage"
+	CatalogueService_ListUnits_FullMethodName           = "/vietgara.catalogue.v1.CatalogueService/ListUnits"
+	CatalogueService_CreateUnit_FullMethodName          = "/vietgara.catalogue.v1.CatalogueService/CreateUnit"
+	CatalogueService_UpdateUnit_FullMethodName          = "/vietgara.catalogue.v1.CatalogueService/UpdateUnit"
+	CatalogueService_DeleteUnit_FullMethodName          = "/vietgara.catalogue.v1.CatalogueService/DeleteUnit"
+	CatalogueService_ListPartCategories_FullMethodName  = "/vietgara.catalogue.v1.CatalogueService/ListPartCategories"
+	CatalogueService_CreatePartCategory_FullMethodName  = "/vietgara.catalogue.v1.CatalogueService/CreatePartCategory"
+	CatalogueService_UpdatePartCategory_FullMethodName  = "/vietgara.catalogue.v1.CatalogueService/UpdatePartCategory"
+	CatalogueService_DeletePartCategory_FullMethodName  = "/vietgara.catalogue.v1.CatalogueService/DeletePartCategory"
 )
 
 // CatalogueServiceClient is the client API for CatalogueService service.
@@ -55,6 +57,11 @@ type CatalogueServiceClient interface {
 	ActivatePart(ctx context.Context, in *ActivatePartRequest, opts ...grpc.CallOption) (*ActivatePartResponse, error)
 	// Replaces the part's packaging table (FR-CAT-02).
 	SetPartUnits(ctx context.Context, in *SetPartUnitsRequest, opts ...grpc.CallOption) (*SetPartUnitsResponse, error)
+	// Replaces the part's barcodes (FR-INV-13).
+	SetPartBarcodes(ctx context.Context, in *SetPartBarcodesRequest, opts ...grpc.CallOption) (*SetPartBarcodesResponse, error)
+	// Finds the part a scanned code belongs to (FR-INV-13), including
+	// inactive parts so a scan can say so. NOT_FOUND when no part has it.
+	LookupPartByBarcode(ctx context.Context, in *LookupPartByBarcodeRequest, opts ...grpc.CallOption) (*LookupPartByBarcodeResponse, error)
 	// Attaches an uploaded part_image file, at most three per part
 	// (FR-CAT-04).
 	AddPartImage(ctx context.Context, in *AddPartImageRequest, opts ...grpc.CallOption) (*AddPartImageResponse, error)
@@ -143,6 +150,26 @@ func (c *catalogueServiceClient) SetPartUnits(ctx context.Context, in *SetPartUn
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SetPartUnitsResponse)
 	err := c.cc.Invoke(ctx, CatalogueService_SetPartUnits_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *catalogueServiceClient) SetPartBarcodes(ctx context.Context, in *SetPartBarcodesRequest, opts ...grpc.CallOption) (*SetPartBarcodesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetPartBarcodesResponse)
+	err := c.cc.Invoke(ctx, CatalogueService_SetPartBarcodes_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *catalogueServiceClient) LookupPartByBarcode(ctx context.Context, in *LookupPartByBarcodeRequest, opts ...grpc.CallOption) (*LookupPartByBarcodeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LookupPartByBarcodeResponse)
+	err := c.cc.Invoke(ctx, CatalogueService_LookupPartByBarcode_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -266,6 +293,11 @@ type CatalogueServiceServer interface {
 	ActivatePart(context.Context, *ActivatePartRequest) (*ActivatePartResponse, error)
 	// Replaces the part's packaging table (FR-CAT-02).
 	SetPartUnits(context.Context, *SetPartUnitsRequest) (*SetPartUnitsResponse, error)
+	// Replaces the part's barcodes (FR-INV-13).
+	SetPartBarcodes(context.Context, *SetPartBarcodesRequest) (*SetPartBarcodesResponse, error)
+	// Finds the part a scanned code belongs to (FR-INV-13), including
+	// inactive parts so a scan can say so. NOT_FOUND when no part has it.
+	LookupPartByBarcode(context.Context, *LookupPartByBarcodeRequest) (*LookupPartByBarcodeResponse, error)
 	// Attaches an uploaded part_image file, at most three per part
 	// (FR-CAT-04).
 	AddPartImage(context.Context, *AddPartImageRequest) (*AddPartImageResponse, error)
@@ -310,6 +342,12 @@ func (UnimplementedCatalogueServiceServer) ActivatePart(context.Context, *Activa
 }
 func (UnimplementedCatalogueServiceServer) SetPartUnits(context.Context, *SetPartUnitsRequest) (*SetPartUnitsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SetPartUnits not implemented")
+}
+func (UnimplementedCatalogueServiceServer) SetPartBarcodes(context.Context, *SetPartBarcodesRequest) (*SetPartBarcodesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetPartBarcodes not implemented")
+}
+func (UnimplementedCatalogueServiceServer) LookupPartByBarcode(context.Context, *LookupPartByBarcodeRequest) (*LookupPartByBarcodeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method LookupPartByBarcode not implemented")
 }
 func (UnimplementedCatalogueServiceServer) AddPartImage(context.Context, *AddPartImageRequest) (*AddPartImageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AddPartImage not implemented")
@@ -484,6 +522,42 @@ func _CatalogueService_SetPartUnits_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CatalogueServiceServer).SetPartUnits(ctx, req.(*SetPartUnitsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CatalogueService_SetPartBarcodes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetPartBarcodesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CatalogueServiceServer).SetPartBarcodes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CatalogueService_SetPartBarcodes_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CatalogueServiceServer).SetPartBarcodes(ctx, req.(*SetPartBarcodesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CatalogueService_LookupPartByBarcode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LookupPartByBarcodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CatalogueServiceServer).LookupPartByBarcode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CatalogueService_LookupPartByBarcode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CatalogueServiceServer).LookupPartByBarcode(ctx, req.(*LookupPartByBarcodeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -702,6 +776,14 @@ var CatalogueService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetPartUnits",
 			Handler:    _CatalogueService_SetPartUnits_Handler,
+		},
+		{
+			MethodName: "SetPartBarcodes",
+			Handler:    _CatalogueService_SetPartBarcodes_Handler,
+		},
+		{
+			MethodName: "LookupPartByBarcode",
+			Handler:    _CatalogueService_LookupPartByBarcode_Handler,
 		},
 		{
 			MethodName: "AddPartImage",

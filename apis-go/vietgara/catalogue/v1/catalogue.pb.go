@@ -382,9 +382,12 @@ type Part struct {
 	ReorderThreshold string           `protobuf:"bytes,13,opt,name=reorder_threshold,json=reorderThreshold,proto3" json:"reorder_threshold,omitempty"`
 	PackagingUnits   []*PackagingUnit `protobuf:"bytes,14,rep,name=packaging_units,json=packagingUnits,proto3" json:"packaging_units,omitempty"`
 	// At most three, in display order; the first is the thumbnail.
-	Images        []*PartImage           `protobuf:"bytes,15,rep,name=images,proto3" json:"images,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,17,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Images    []*PartImage           `protobuf:"bytes,15,rep,name=images,proto3" json:"images,omitempty"`
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,17,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	// The barcodes that identify this part, each for the base unit or a
+	// packaging unit (FR-INV-13). Set with SetPartBarcodes.
+	Barcodes      []*PartBarcode `protobuf:"bytes,18,rep,name=barcodes,proto3" json:"barcodes,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -538,10 +541,90 @@ func (x *Part) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Part) GetBarcodes() []*PartBarcode {
+	if x != nil {
+		return x.Barcodes
+	}
+	return nil
+}
+
+// PartBarcode is one scannable code of a part. Codes are unique per garage.
+type PartBarcode struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 1 to 64 characters, letters, digits and - . / + $ % space; stored as
+	// typed after trimming. Unique across the garage's parts.
+	Barcode string `protobuf:"bytes,1,opt,name=barcode,proto3" json:"barcode,omitempty"`
+	// The packaging unit one scan stands for (a case barcode); unset means
+	// the base unit. Must be a packaging unit of the same part.
+	UnitId           *string `protobuf:"bytes,2,opt,name=unit_id,json=unitId,proto3,oneof" json:"unit_id,omitempty"`
+	UnitName         string  `protobuf:"bytes,3,opt,name=unit_name,json=unitName,proto3" json:"unit_name,omitempty"`
+	UnitAbbreviation string  `protobuf:"bytes,4,opt,name=unit_abbreviation,json=unitAbbreviation,proto3" json:"unit_abbreviation,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *PartBarcode) Reset() {
+	*x = PartBarcode{}
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PartBarcode) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PartBarcode) ProtoMessage() {}
+
+func (x *PartBarcode) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PartBarcode.ProtoReflect.Descriptor instead.
+func (*PartBarcode) Descriptor() ([]byte, []int) {
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *PartBarcode) GetBarcode() string {
+	if x != nil {
+		return x.Barcode
+	}
+	return ""
+}
+
+func (x *PartBarcode) GetUnitId() string {
+	if x != nil && x.UnitId != nil {
+		return *x.UnitId
+	}
+	return ""
+}
+
+func (x *PartBarcode) GetUnitName() string {
+	if x != nil {
+		return x.UnitName
+	}
+	return ""
+}
+
+func (x *PartBarcode) GetUnitAbbreviation() string {
+	if x != nil {
+		return x.UnitAbbreviation
+	}
+	return ""
+}
+
 type ListPartsRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// Matches SKU, name or brand.
+	// Matches SKU, name, brand or an exact barcode.
 	Query string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
 	// Also matches the sub-categories of this category.
 	CategoryId      string `protobuf:"bytes,3,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
@@ -555,7 +638,7 @@ type ListPartsRequest struct {
 
 func (x *ListPartsRequest) Reset() {
 	*x = ListPartsRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[5]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -567,7 +650,7 @@ func (x *ListPartsRequest) String() string {
 func (*ListPartsRequest) ProtoMessage() {}
 
 func (x *ListPartsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[5]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -580,7 +663,7 @@ func (x *ListPartsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPartsRequest.ProtoReflect.Descriptor instead.
 func (*ListPartsRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{5}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ListPartsRequest) GetGarageId() string {
@@ -642,7 +725,7 @@ type ListPartsResponse struct {
 
 func (x *ListPartsResponse) Reset() {
 	*x = ListPartsResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[6]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -654,7 +737,7 @@ func (x *ListPartsResponse) String() string {
 func (*ListPartsResponse) ProtoMessage() {}
 
 func (x *ListPartsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[6]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -667,7 +750,7 @@ func (x *ListPartsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPartsResponse.ProtoReflect.Descriptor instead.
 func (*ListPartsResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{6}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListPartsResponse) GetData() []*Part {
@@ -694,7 +777,7 @@ type CreatePartRequest struct {
 
 func (x *CreatePartRequest) Reset() {
 	*x = CreatePartRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[7]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -706,7 +789,7 @@ func (x *CreatePartRequest) String() string {
 func (*CreatePartRequest) ProtoMessage() {}
 
 func (x *CreatePartRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[7]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -719,7 +802,7 @@ func (x *CreatePartRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePartRequest.ProtoReflect.Descriptor instead.
 func (*CreatePartRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{7}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *CreatePartRequest) GetGarageId() string {
@@ -745,7 +828,7 @@ type CreatePartResponse struct {
 
 func (x *CreatePartResponse) Reset() {
 	*x = CreatePartResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[8]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -757,7 +840,7 @@ func (x *CreatePartResponse) String() string {
 func (*CreatePartResponse) ProtoMessage() {}
 
 func (x *CreatePartResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[8]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -770,7 +853,7 @@ func (x *CreatePartResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePartResponse.ProtoReflect.Descriptor instead.
 func (*CreatePartResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{8}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *CreatePartResponse) GetPart() *Part {
@@ -790,7 +873,7 @@ type GetPartRequest struct {
 
 func (x *GetPartRequest) Reset() {
 	*x = GetPartRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[9]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -802,7 +885,7 @@ func (x *GetPartRequest) String() string {
 func (*GetPartRequest) ProtoMessage() {}
 
 func (x *GetPartRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[9]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -815,7 +898,7 @@ func (x *GetPartRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPartRequest.ProtoReflect.Descriptor instead.
 func (*GetPartRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{9}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetPartRequest) GetGarageId() string {
@@ -841,7 +924,7 @@ type GetPartResponse struct {
 
 func (x *GetPartResponse) Reset() {
 	*x = GetPartResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[10]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -853,7 +936,7 @@ func (x *GetPartResponse) String() string {
 func (*GetPartResponse) ProtoMessage() {}
 
 func (x *GetPartResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[10]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -866,7 +949,7 @@ func (x *GetPartResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPartResponse.ProtoReflect.Descriptor instead.
 func (*GetPartResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{10}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetPartResponse) GetPart() *Part {
@@ -888,7 +971,7 @@ type UpdatePartRequest struct {
 
 func (x *UpdatePartRequest) Reset() {
 	*x = UpdatePartRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[11]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -900,7 +983,7 @@ func (x *UpdatePartRequest) String() string {
 func (*UpdatePartRequest) ProtoMessage() {}
 
 func (x *UpdatePartRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[11]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -913,7 +996,7 @@ func (x *UpdatePartRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePartRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePartRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{11}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *UpdatePartRequest) GetGarageId() string {
@@ -953,7 +1036,7 @@ type UpdatePartResponse struct {
 
 func (x *UpdatePartResponse) Reset() {
 	*x = UpdatePartResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[12]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -965,7 +1048,7 @@ func (x *UpdatePartResponse) String() string {
 func (*UpdatePartResponse) ProtoMessage() {}
 
 func (x *UpdatePartResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[12]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -978,7 +1061,7 @@ func (x *UpdatePartResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePartResponse.ProtoReflect.Descriptor instead.
 func (*UpdatePartResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{12}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *UpdatePartResponse) GetPart() *Part {
@@ -1000,7 +1083,7 @@ type DeletePartRequest struct {
 
 func (x *DeletePartRequest) Reset() {
 	*x = DeletePartRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[13]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1012,7 +1095,7 @@ func (x *DeletePartRequest) String() string {
 func (*DeletePartRequest) ProtoMessage() {}
 
 func (x *DeletePartRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[13]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1025,7 +1108,7 @@ func (x *DeletePartRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePartRequest.ProtoReflect.Descriptor instead.
 func (*DeletePartRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{13}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *DeletePartRequest) GetGarageId() string {
@@ -1058,7 +1141,7 @@ type DeletePartResponse struct {
 
 func (x *DeletePartResponse) Reset() {
 	*x = DeletePartResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[14]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1070,7 +1153,7 @@ func (x *DeletePartResponse) String() string {
 func (*DeletePartResponse) ProtoMessage() {}
 
 func (x *DeletePartResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[14]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1083,7 +1166,7 @@ func (x *DeletePartResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePartResponse.ProtoReflect.Descriptor instead.
 func (*DeletePartResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{14}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *DeletePartResponse) GetOutcome() v1.DeleteOutcome {
@@ -1103,7 +1186,7 @@ type ActivatePartRequest struct {
 
 func (x *ActivatePartRequest) Reset() {
 	*x = ActivatePartRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[15]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1115,7 +1198,7 @@ func (x *ActivatePartRequest) String() string {
 func (*ActivatePartRequest) ProtoMessage() {}
 
 func (x *ActivatePartRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[15]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1128,7 +1211,7 @@ func (x *ActivatePartRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ActivatePartRequest.ProtoReflect.Descriptor instead.
 func (*ActivatePartRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{15}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ActivatePartRequest) GetGarageId() string {
@@ -1154,7 +1237,7 @@ type ActivatePartResponse struct {
 
 func (x *ActivatePartResponse) Reset() {
 	*x = ActivatePartResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[16]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1166,7 +1249,7 @@ func (x *ActivatePartResponse) String() string {
 func (*ActivatePartResponse) ProtoMessage() {}
 
 func (x *ActivatePartResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[16]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1179,7 +1262,7 @@ func (x *ActivatePartResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ActivatePartResponse.ProtoReflect.Descriptor instead.
 func (*ActivatePartResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{16}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ActivatePartResponse) GetPart() *Part {
@@ -1201,7 +1284,7 @@ type SetPartUnitsRequest struct {
 
 func (x *SetPartUnitsRequest) Reset() {
 	*x = SetPartUnitsRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[17]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1213,7 +1296,7 @@ func (x *SetPartUnitsRequest) String() string {
 func (*SetPartUnitsRequest) ProtoMessage() {}
 
 func (x *SetPartUnitsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[17]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1226,7 +1309,7 @@ func (x *SetPartUnitsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetPartUnitsRequest.ProtoReflect.Descriptor instead.
 func (*SetPartUnitsRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{17}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *SetPartUnitsRequest) GetGarageId() string {
@@ -1259,7 +1342,7 @@ type SetPartUnitsResponse struct {
 
 func (x *SetPartUnitsResponse) Reset() {
 	*x = SetPartUnitsResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[18]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1271,7 +1354,7 @@ func (x *SetPartUnitsResponse) String() string {
 func (*SetPartUnitsResponse) ProtoMessage() {}
 
 func (x *SetPartUnitsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[18]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1284,12 +1367,223 @@ func (x *SetPartUnitsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetPartUnitsResponse.ProtoReflect.Descriptor instead.
 func (*SetPartUnitsResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{18}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *SetPartUnitsResponse) GetPart() *Part {
 	if x != nil {
 		return x.Part
+	}
+	return nil
+}
+
+type SetPartBarcodesRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	PartId   string                 `protobuf:"bytes,2,opt,name=part_id,json=partId,proto3" json:"part_id,omitempty"`
+	// Replaces the whole barcode table. A code already used by another part
+	// of the garage is refused (BARCODE_ALREADY_USED).
+	Barcodes      []*PartBarcode `protobuf:"bytes,3,rep,name=barcodes,proto3" json:"barcodes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetPartBarcodesRequest) Reset() {
+	*x = SetPartBarcodesRequest{}
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetPartBarcodesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetPartBarcodesRequest) ProtoMessage() {}
+
+func (x *SetPartBarcodesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetPartBarcodesRequest.ProtoReflect.Descriptor instead.
+func (*SetPartBarcodesRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *SetPartBarcodesRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *SetPartBarcodesRequest) GetPartId() string {
+	if x != nil {
+		return x.PartId
+	}
+	return ""
+}
+
+func (x *SetPartBarcodesRequest) GetBarcodes() []*PartBarcode {
+	if x != nil {
+		return x.Barcodes
+	}
+	return nil
+}
+
+type SetPartBarcodesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Part          *Part                  `protobuf:"bytes,1,opt,name=part,proto3" json:"part,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetPartBarcodesResponse) Reset() {
+	*x = SetPartBarcodesResponse{}
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetPartBarcodesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetPartBarcodesResponse) ProtoMessage() {}
+
+func (x *SetPartBarcodesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetPartBarcodesResponse.ProtoReflect.Descriptor instead.
+func (*SetPartBarcodesResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *SetPartBarcodesResponse) GetPart() *Part {
+	if x != nil {
+		return x.Part
+	}
+	return nil
+}
+
+type LookupPartByBarcodeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	Barcode       string                 `protobuf:"bytes,2,opt,name=barcode,proto3" json:"barcode,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LookupPartByBarcodeRequest) Reset() {
+	*x = LookupPartByBarcodeRequest{}
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LookupPartByBarcodeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LookupPartByBarcodeRequest) ProtoMessage() {}
+
+func (x *LookupPartByBarcodeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LookupPartByBarcodeRequest.ProtoReflect.Descriptor instead.
+func (*LookupPartByBarcodeRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *LookupPartByBarcodeRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *LookupPartByBarcodeRequest) GetBarcode() string {
+	if x != nil {
+		return x.Barcode
+	}
+	return ""
+}
+
+type LookupPartByBarcodeResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Part  *Part                  `protobuf:"bytes,1,opt,name=part,proto3" json:"part,omitempty"`
+	// The matched code with the unit one scan stands for.
+	Barcode       *PartBarcode `protobuf:"bytes,2,opt,name=barcode,proto3" json:"barcode,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LookupPartByBarcodeResponse) Reset() {
+	*x = LookupPartByBarcodeResponse{}
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LookupPartByBarcodeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LookupPartByBarcodeResponse) ProtoMessage() {}
+
+func (x *LookupPartByBarcodeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LookupPartByBarcodeResponse.ProtoReflect.Descriptor instead.
+func (*LookupPartByBarcodeResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *LookupPartByBarcodeResponse) GetPart() *Part {
+	if x != nil {
+		return x.Part
+	}
+	return nil
+}
+
+func (x *LookupPartByBarcodeResponse) GetBarcode() *PartBarcode {
+	if x != nil {
+		return x.Barcode
 	}
 	return nil
 }
@@ -1307,7 +1601,7 @@ type AddPartImageRequest struct {
 
 func (x *AddPartImageRequest) Reset() {
 	*x = AddPartImageRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[19]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1319,7 +1613,7 @@ func (x *AddPartImageRequest) String() string {
 func (*AddPartImageRequest) ProtoMessage() {}
 
 func (x *AddPartImageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[19]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1332,7 +1626,7 @@ func (x *AddPartImageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddPartImageRequest.ProtoReflect.Descriptor instead.
 func (*AddPartImageRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{19}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *AddPartImageRequest) GetGarageId() string {
@@ -1365,7 +1659,7 @@ type AddPartImageResponse struct {
 
 func (x *AddPartImageResponse) Reset() {
 	*x = AddPartImageResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[20]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1377,7 +1671,7 @@ func (x *AddPartImageResponse) String() string {
 func (*AddPartImageResponse) ProtoMessage() {}
 
 func (x *AddPartImageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[20]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1390,7 +1684,7 @@ func (x *AddPartImageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddPartImageResponse.ProtoReflect.Descriptor instead.
 func (*AddPartImageResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{20}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *AddPartImageResponse) GetPart() *Part {
@@ -1411,7 +1705,7 @@ type RemovePartImageRequest struct {
 
 func (x *RemovePartImageRequest) Reset() {
 	*x = RemovePartImageRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[21]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1423,7 +1717,7 @@ func (x *RemovePartImageRequest) String() string {
 func (*RemovePartImageRequest) ProtoMessage() {}
 
 func (x *RemovePartImageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[21]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1436,7 +1730,7 @@ func (x *RemovePartImageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemovePartImageRequest.ProtoReflect.Descriptor instead.
 func (*RemovePartImageRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{21}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *RemovePartImageRequest) GetGarageId() string {
@@ -1469,7 +1763,7 @@ type RemovePartImageResponse struct {
 
 func (x *RemovePartImageResponse) Reset() {
 	*x = RemovePartImageResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[22]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1481,7 +1775,7 @@ func (x *RemovePartImageResponse) String() string {
 func (*RemovePartImageResponse) ProtoMessage() {}
 
 func (x *RemovePartImageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[22]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1494,7 +1788,7 @@ func (x *RemovePartImageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemovePartImageResponse.ProtoReflect.Descriptor instead.
 func (*RemovePartImageResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{22}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *RemovePartImageResponse) GetPart() *Part {
@@ -1516,7 +1810,7 @@ type ListUnitsRequest struct {
 
 func (x *ListUnitsRequest) Reset() {
 	*x = ListUnitsRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[23]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1528,7 +1822,7 @@ func (x *ListUnitsRequest) String() string {
 func (*ListUnitsRequest) ProtoMessage() {}
 
 func (x *ListUnitsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[23]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1541,7 +1835,7 @@ func (x *ListUnitsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUnitsRequest.ProtoReflect.Descriptor instead.
 func (*ListUnitsRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{23}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *ListUnitsRequest) GetGarageId() string {
@@ -1582,7 +1876,7 @@ type ListUnitsResponse struct {
 
 func (x *ListUnitsResponse) Reset() {
 	*x = ListUnitsResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[24]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1594,7 +1888,7 @@ func (x *ListUnitsResponse) String() string {
 func (*ListUnitsResponse) ProtoMessage() {}
 
 func (x *ListUnitsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[24]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1607,7 +1901,7 @@ func (x *ListUnitsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUnitsResponse.ProtoReflect.Descriptor instead.
 func (*ListUnitsResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{24}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *ListUnitsResponse) GetData() []*Unit {
@@ -1634,7 +1928,7 @@ type CreateUnitRequest struct {
 
 func (x *CreateUnitRequest) Reset() {
 	*x = CreateUnitRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[25]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1646,7 +1940,7 @@ func (x *CreateUnitRequest) String() string {
 func (*CreateUnitRequest) ProtoMessage() {}
 
 func (x *CreateUnitRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[25]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1659,7 +1953,7 @@ func (x *CreateUnitRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateUnitRequest.ProtoReflect.Descriptor instead.
 func (*CreateUnitRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{25}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *CreateUnitRequest) GetGarageId() string {
@@ -1685,7 +1979,7 @@ type CreateUnitResponse struct {
 
 func (x *CreateUnitResponse) Reset() {
 	*x = CreateUnitResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[26]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1697,7 +1991,7 @@ func (x *CreateUnitResponse) String() string {
 func (*CreateUnitResponse) ProtoMessage() {}
 
 func (x *CreateUnitResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[26]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1710,7 +2004,7 @@ func (x *CreateUnitResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateUnitResponse.ProtoReflect.Descriptor instead.
 func (*CreateUnitResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{26}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *CreateUnitResponse) GetUnit() *Unit {
@@ -1732,7 +2026,7 @@ type UpdateUnitRequest struct {
 
 func (x *UpdateUnitRequest) Reset() {
 	*x = UpdateUnitRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[27]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1744,7 +2038,7 @@ func (x *UpdateUnitRequest) String() string {
 func (*UpdateUnitRequest) ProtoMessage() {}
 
 func (x *UpdateUnitRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[27]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1757,7 +2051,7 @@ func (x *UpdateUnitRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUnitRequest.ProtoReflect.Descriptor instead.
 func (*UpdateUnitRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{27}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *UpdateUnitRequest) GetGarageId() string {
@@ -1797,7 +2091,7 @@ type UpdateUnitResponse struct {
 
 func (x *UpdateUnitResponse) Reset() {
 	*x = UpdateUnitResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[28]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1809,7 +2103,7 @@ func (x *UpdateUnitResponse) String() string {
 func (*UpdateUnitResponse) ProtoMessage() {}
 
 func (x *UpdateUnitResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[28]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1822,7 +2116,7 @@ func (x *UpdateUnitResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUnitResponse.ProtoReflect.Descriptor instead.
 func (*UpdateUnitResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{28}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *UpdateUnitResponse) GetUnit() *Unit {
@@ -1843,7 +2137,7 @@ type DeleteUnitRequest struct {
 
 func (x *DeleteUnitRequest) Reset() {
 	*x = DeleteUnitRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[29]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1855,7 +2149,7 @@ func (x *DeleteUnitRequest) String() string {
 func (*DeleteUnitRequest) ProtoMessage() {}
 
 func (x *DeleteUnitRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[29]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1868,7 +2162,7 @@ func (x *DeleteUnitRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteUnitRequest.ProtoReflect.Descriptor instead.
 func (*DeleteUnitRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{29}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *DeleteUnitRequest) GetGarageId() string {
@@ -1901,7 +2195,7 @@ type DeleteUnitResponse struct {
 
 func (x *DeleteUnitResponse) Reset() {
 	*x = DeleteUnitResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[30]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1913,7 +2207,7 @@ func (x *DeleteUnitResponse) String() string {
 func (*DeleteUnitResponse) ProtoMessage() {}
 
 func (x *DeleteUnitResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[30]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1926,7 +2220,7 @@ func (x *DeleteUnitResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteUnitResponse.ProtoReflect.Descriptor instead.
 func (*DeleteUnitResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{30}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *DeleteUnitResponse) GetOutcome() v1.DeleteOutcome {
@@ -1946,7 +2240,7 @@ type ListPartCategoriesRequest struct {
 
 func (x *ListPartCategoriesRequest) Reset() {
 	*x = ListPartCategoriesRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[31]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1958,7 +2252,7 @@ func (x *ListPartCategoriesRequest) String() string {
 func (*ListPartCategoriesRequest) ProtoMessage() {}
 
 func (x *ListPartCategoriesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[31]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1971,7 +2265,7 @@ func (x *ListPartCategoriesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPartCategoriesRequest.ProtoReflect.Descriptor instead.
 func (*ListPartCategoriesRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{31}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *ListPartCategoriesRequest) GetGarageId() string {
@@ -1998,7 +2292,7 @@ type ListPartCategoriesResponse struct {
 
 func (x *ListPartCategoriesResponse) Reset() {
 	*x = ListPartCategoriesResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[32]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2010,7 +2304,7 @@ func (x *ListPartCategoriesResponse) String() string {
 func (*ListPartCategoriesResponse) ProtoMessage() {}
 
 func (x *ListPartCategoriesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[32]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2023,7 +2317,7 @@ func (x *ListPartCategoriesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPartCategoriesResponse.ProtoReflect.Descriptor instead.
 func (*ListPartCategoriesResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{32}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *ListPartCategoriesResponse) GetData() []*PartCategory {
@@ -2043,7 +2337,7 @@ type CreatePartCategoryRequest struct {
 
 func (x *CreatePartCategoryRequest) Reset() {
 	*x = CreatePartCategoryRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[33]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2055,7 +2349,7 @@ func (x *CreatePartCategoryRequest) String() string {
 func (*CreatePartCategoryRequest) ProtoMessage() {}
 
 func (x *CreatePartCategoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[33]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2068,7 +2362,7 @@ func (x *CreatePartCategoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePartCategoryRequest.ProtoReflect.Descriptor instead.
 func (*CreatePartCategoryRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{33}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *CreatePartCategoryRequest) GetGarageId() string {
@@ -2094,7 +2388,7 @@ type CreatePartCategoryResponse struct {
 
 func (x *CreatePartCategoryResponse) Reset() {
 	*x = CreatePartCategoryResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[34]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2106,7 +2400,7 @@ func (x *CreatePartCategoryResponse) String() string {
 func (*CreatePartCategoryResponse) ProtoMessage() {}
 
 func (x *CreatePartCategoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[34]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2119,7 +2413,7 @@ func (x *CreatePartCategoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePartCategoryResponse.ProtoReflect.Descriptor instead.
 func (*CreatePartCategoryResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{34}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *CreatePartCategoryResponse) GetCategory() *PartCategory {
@@ -2141,7 +2435,7 @@ type UpdatePartCategoryRequest struct {
 
 func (x *UpdatePartCategoryRequest) Reset() {
 	*x = UpdatePartCategoryRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[35]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2153,7 +2447,7 @@ func (x *UpdatePartCategoryRequest) String() string {
 func (*UpdatePartCategoryRequest) ProtoMessage() {}
 
 func (x *UpdatePartCategoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[35]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2166,7 +2460,7 @@ func (x *UpdatePartCategoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePartCategoryRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePartCategoryRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{35}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *UpdatePartCategoryRequest) GetGarageId() string {
@@ -2206,7 +2500,7 @@ type UpdatePartCategoryResponse struct {
 
 func (x *UpdatePartCategoryResponse) Reset() {
 	*x = UpdatePartCategoryResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[36]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2218,7 +2512,7 @@ func (x *UpdatePartCategoryResponse) String() string {
 func (*UpdatePartCategoryResponse) ProtoMessage() {}
 
 func (x *UpdatePartCategoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[36]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2231,7 +2525,7 @@ func (x *UpdatePartCategoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePartCategoryResponse.ProtoReflect.Descriptor instead.
 func (*UpdatePartCategoryResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{36}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *UpdatePartCategoryResponse) GetCategory() *PartCategory {
@@ -2252,7 +2546,7 @@ type DeletePartCategoryRequest struct {
 
 func (x *DeletePartCategoryRequest) Reset() {
 	*x = DeletePartCategoryRequest{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[37]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2264,7 +2558,7 @@ func (x *DeletePartCategoryRequest) String() string {
 func (*DeletePartCategoryRequest) ProtoMessage() {}
 
 func (x *DeletePartCategoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[37]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2277,7 +2571,7 @@ func (x *DeletePartCategoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePartCategoryRequest.ProtoReflect.Descriptor instead.
 func (*DeletePartCategoryRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{37}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *DeletePartCategoryRequest) GetGarageId() string {
@@ -2310,7 +2604,7 @@ type DeletePartCategoryResponse struct {
 
 func (x *DeletePartCategoryResponse) Reset() {
 	*x = DeletePartCategoryResponse{}
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[38]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2322,7 +2616,7 @@ func (x *DeletePartCategoryResponse) String() string {
 func (*DeletePartCategoryResponse) ProtoMessage() {}
 
 func (x *DeletePartCategoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[38]
+	mi := &file_vietgara_catalogue_v1_catalogue_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2335,7 +2629,7 @@ func (x *DeletePartCategoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePartCategoryResponse.ProtoReflect.Descriptor instead.
 func (*DeletePartCategoryResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{38}
+	return file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *DeletePartCategoryResponse) GetOutcome() v1.DeleteOutcome {
@@ -2383,7 +2677,7 @@ const file_vietgara_catalogue_v1_catalogue_proto_rawDesc = "" +
 	"_parent_id\"6\n" +
 	"\tPartImage\x12\x17\n" +
 	"\afile_id\x18\x01 \x01(\tR\x06fileId\x12\x10\n" +
-	"\x03url\x18\x02 \x01(\tR\x03url\"\xec\x05\n" +
+	"\x03url\x18\x02 \x01(\tR\x03url\"\xb1\x06\n" +
 	"\x04Part\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
 	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\x15\n" +
@@ -2407,8 +2701,16 @@ const file_vietgara_catalogue_v1_catalogue_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\x0e\n" +
-	"\f_category_id\"\xdd\x01\n" +
+	"updated_at\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12C\n" +
+	"\bbarcodes\x18\x12 \x03(\v2\".vietgara.catalogue.v1.PartBarcodeB\x03\xe0A\x03R\bbarcodesB\x0e\n" +
+	"\f_category_id\"\xaa\x01\n" +
+	"\vPartBarcode\x12\x1d\n" +
+	"\abarcode\x18\x01 \x01(\tB\x03\xe0A\x02R\abarcode\x12\x1c\n" +
+	"\aunit_id\x18\x02 \x01(\tH\x00R\x06unitId\x88\x01\x01\x12 \n" +
+	"\tunit_name\x18\x03 \x01(\tB\x03\xe0A\x03R\bunitName\x120\n" +
+	"\x11unit_abbreviation\x18\x04 \x01(\tB\x03\xe0A\x03R\x10unitAbbreviationB\n" +
+	"\n" +
+	"\b_unit_id\"\xdd\x01\n" +
 	"\x10ListPartsRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x14\n" +
 	"\x05query\x18\x02 \x01(\tR\x05query\x12\x1f\n" +
@@ -2457,7 +2759,19 @@ const file_vietgara_catalogue_v1_catalogue_proto_rawDesc = "" +
 	"\apart_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06partId\x12M\n" +
 	"\x0fpackaging_units\x18\x03 \x03(\v2$.vietgara.catalogue.v1.PackagingUnitR\x0epackagingUnits\"G\n" +
 	"\x14SetPartUnitsResponse\x12/\n" +
-	"\x04part\x18\x01 \x01(\v2\x1b.vietgara.catalogue.v1.PartR\x04part\"s\n" +
+	"\x04part\x18\x01 \x01(\v2\x1b.vietgara.catalogue.v1.PartR\x04part\"\x98\x01\n" +
+	"\x16SetPartBarcodesRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1c\n" +
+	"\apart_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06partId\x12>\n" +
+	"\bbarcodes\x18\x03 \x03(\v2\".vietgara.catalogue.v1.PartBarcodeR\bbarcodes\"J\n" +
+	"\x17SetPartBarcodesResponse\x12/\n" +
+	"\x04part\x18\x01 \x01(\v2\x1b.vietgara.catalogue.v1.PartR\x04part\"]\n" +
+	"\x1aLookupPartByBarcodeRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1d\n" +
+	"\abarcode\x18\x02 \x01(\tB\x03\xe0A\x02R\abarcode\"\x8c\x01\n" +
+	"\x1bLookupPartByBarcodeResponse\x12/\n" +
+	"\x04part\x18\x01 \x01(\v2\x1b.vietgara.catalogue.v1.PartR\x04part\x12<\n" +
+	"\abarcode\x18\x02 \x01(\v2\".vietgara.catalogue.v1.PartBarcodeR\abarcode\"s\n" +
 	"\x13AddPartImageRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1c\n" +
 	"\apart_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x06partId\x12\x1c\n" +
@@ -2524,7 +2838,7 @@ const file_vietgara_catalogue_v1_catalogue_proto_rawDesc = "" +
 	"categoryId\x12\x17\n" +
 	"\adry_run\x18\x03 \x01(\bR\x06dryRun\"Y\n" +
 	"\x1aDeletePartCategoryResponse\x12;\n" +
-	"\aoutcome\x18\x01 \x01(\x0e2!.vietgara.common.v1.DeleteOutcomeR\aoutcome2\xc7\x16\n" +
+	"\aoutcome\x18\x01 \x01(\x0e2!.vietgara.common.v1.DeleteOutcomeR\aoutcome2\xb5\x19\n" +
 	"\x10CatalogueService\x12\x89\x01\n" +
 	"\tListParts\x12'.vietgara.catalogue.v1.ListPartsRequest\x1a(.vietgara.catalogue.v1.ListPartsResponse\")\x82\xd3\xe4\x93\x02#\x12!/api/v1/garages/{garage_id}/parts\x12\x98\x01\n" +
 	"\n" +
@@ -2535,7 +2849,9 @@ const file_vietgara_catalogue_v1_catalogue_proto_rawDesc = "" +
 	"\n" +
 	"DeletePart\x12(.vietgara.catalogue.v1.DeletePartRequest\x1a).vietgara.catalogue.v1.DeletePartResponse\"3\x82\xd3\xe4\x93\x02-*+/api/v1/garages/{garage_id}/parts/{part_id}\x12\xae\x01\n" +
 	"\fActivatePart\x12*.vietgara.catalogue.v1.ActivatePartRequest\x1a+.vietgara.catalogue.v1.ActivatePartResponse\"E\x82\xd3\xe4\x93\x02?:\x01*b\x04part\"4/api/v1/garages/{garage_id}/parts/{part_id}:activate\x12\xab\x01\n" +
-	"\fSetPartUnits\x12*.vietgara.catalogue.v1.SetPartUnitsRequest\x1a+.vietgara.catalogue.v1.SetPartUnitsResponse\"B\x82\xd3\xe4\x93\x02<:\x01*b\x04part\x1a1/api/v1/garages/{garage_id}/parts/{part_id}/units\x12\xac\x01\n" +
+	"\fSetPartUnits\x12*.vietgara.catalogue.v1.SetPartUnitsRequest\x1a+.vietgara.catalogue.v1.SetPartUnitsResponse\"B\x82\xd3\xe4\x93\x02<:\x01*b\x04part\x1a1/api/v1/garages/{garage_id}/parts/{part_id}/units\x12\xb7\x01\n" +
+	"\x0fSetPartBarcodes\x12-.vietgara.catalogue.v1.SetPartBarcodesRequest\x1a..vietgara.catalogue.v1.SetPartBarcodesResponse\"E\x82\xd3\xe4\x93\x02?:\x01*b\x04part\x1a4/api/v1/garages/{garage_id}/parts/{part_id}/barcodes\x12\xb1\x01\n" +
+	"\x13LookupPartByBarcode\x121.vietgara.catalogue.v1.LookupPartByBarcodeRequest\x1a2.vietgara.catalogue.v1.LookupPartByBarcodeResponse\"3\x82\xd3\xe4\x93\x02-\x12+/api/v1/garages/{garage_id}/barcodes:lookup\x12\xac\x01\n" +
 	"\fAddPartImage\x12*.vietgara.catalogue.v1.AddPartImageRequest\x1a+.vietgara.catalogue.v1.AddPartImageResponse\"C\x82\xd3\xe4\x93\x02=:\x01*b\x04part\"2/api/v1/garages/{garage_id}/parts/{part_id}/images\x12\xbc\x01\n" +
 	"\x0fRemovePartImage\x12-.vietgara.catalogue.v1.RemovePartImageRequest\x1a..vietgara.catalogue.v1.RemovePartImageResponse\"J\x82\xd3\xe4\x93\x02Db\x04part*</api/v1/garages/{garage_id}/parts/{part_id}/images/{file_id}\x12\x89\x01\n" +
 	"\tListUnits\x12'.vietgara.catalogue.v1.ListUnitsRequest\x1a(.vietgara.catalogue.v1.ListUnitsResponse\")\x82\xd3\xe4\x93\x02#\x12!/api/v1/garages/{garage_id}/units\x12\x98\x01\n" +
@@ -2562,129 +2878,143 @@ func file_vietgara_catalogue_v1_catalogue_proto_rawDescGZIP() []byte {
 	return file_vietgara_catalogue_v1_catalogue_proto_rawDescData
 }
 
-var file_vietgara_catalogue_v1_catalogue_proto_msgTypes = make([]protoimpl.MessageInfo, 39)
+var file_vietgara_catalogue_v1_catalogue_proto_msgTypes = make([]protoimpl.MessageInfo, 44)
 var file_vietgara_catalogue_v1_catalogue_proto_goTypes = []any{
-	(*Unit)(nil),                       // 0: vietgara.catalogue.v1.Unit
-	(*PackagingUnit)(nil),              // 1: vietgara.catalogue.v1.PackagingUnit
-	(*PartCategory)(nil),               // 2: vietgara.catalogue.v1.PartCategory
-	(*PartImage)(nil),                  // 3: vietgara.catalogue.v1.PartImage
-	(*Part)(nil),                       // 4: vietgara.catalogue.v1.Part
-	(*ListPartsRequest)(nil),           // 5: vietgara.catalogue.v1.ListPartsRequest
-	(*ListPartsResponse)(nil),          // 6: vietgara.catalogue.v1.ListPartsResponse
-	(*CreatePartRequest)(nil),          // 7: vietgara.catalogue.v1.CreatePartRequest
-	(*CreatePartResponse)(nil),         // 8: vietgara.catalogue.v1.CreatePartResponse
-	(*GetPartRequest)(nil),             // 9: vietgara.catalogue.v1.GetPartRequest
-	(*GetPartResponse)(nil),            // 10: vietgara.catalogue.v1.GetPartResponse
-	(*UpdatePartRequest)(nil),          // 11: vietgara.catalogue.v1.UpdatePartRequest
-	(*UpdatePartResponse)(nil),         // 12: vietgara.catalogue.v1.UpdatePartResponse
-	(*DeletePartRequest)(nil),          // 13: vietgara.catalogue.v1.DeletePartRequest
-	(*DeletePartResponse)(nil),         // 14: vietgara.catalogue.v1.DeletePartResponse
-	(*ActivatePartRequest)(nil),        // 15: vietgara.catalogue.v1.ActivatePartRequest
-	(*ActivatePartResponse)(nil),       // 16: vietgara.catalogue.v1.ActivatePartResponse
-	(*SetPartUnitsRequest)(nil),        // 17: vietgara.catalogue.v1.SetPartUnitsRequest
-	(*SetPartUnitsResponse)(nil),       // 18: vietgara.catalogue.v1.SetPartUnitsResponse
-	(*AddPartImageRequest)(nil),        // 19: vietgara.catalogue.v1.AddPartImageRequest
-	(*AddPartImageResponse)(nil),       // 20: vietgara.catalogue.v1.AddPartImageResponse
-	(*RemovePartImageRequest)(nil),     // 21: vietgara.catalogue.v1.RemovePartImageRequest
-	(*RemovePartImageResponse)(nil),    // 22: vietgara.catalogue.v1.RemovePartImageResponse
-	(*ListUnitsRequest)(nil),           // 23: vietgara.catalogue.v1.ListUnitsRequest
-	(*ListUnitsResponse)(nil),          // 24: vietgara.catalogue.v1.ListUnitsResponse
-	(*CreateUnitRequest)(nil),          // 25: vietgara.catalogue.v1.CreateUnitRequest
-	(*CreateUnitResponse)(nil),         // 26: vietgara.catalogue.v1.CreateUnitResponse
-	(*UpdateUnitRequest)(nil),          // 27: vietgara.catalogue.v1.UpdateUnitRequest
-	(*UpdateUnitResponse)(nil),         // 28: vietgara.catalogue.v1.UpdateUnitResponse
-	(*DeleteUnitRequest)(nil),          // 29: vietgara.catalogue.v1.DeleteUnitRequest
-	(*DeleteUnitResponse)(nil),         // 30: vietgara.catalogue.v1.DeleteUnitResponse
-	(*ListPartCategoriesRequest)(nil),  // 31: vietgara.catalogue.v1.ListPartCategoriesRequest
-	(*ListPartCategoriesResponse)(nil), // 32: vietgara.catalogue.v1.ListPartCategoriesResponse
-	(*CreatePartCategoryRequest)(nil),  // 33: vietgara.catalogue.v1.CreatePartCategoryRequest
-	(*CreatePartCategoryResponse)(nil), // 34: vietgara.catalogue.v1.CreatePartCategoryResponse
-	(*UpdatePartCategoryRequest)(nil),  // 35: vietgara.catalogue.v1.UpdatePartCategoryRequest
-	(*UpdatePartCategoryResponse)(nil), // 36: vietgara.catalogue.v1.UpdatePartCategoryResponse
-	(*DeletePartCategoryRequest)(nil),  // 37: vietgara.catalogue.v1.DeletePartCategoryRequest
-	(*DeletePartCategoryResponse)(nil), // 38: vietgara.catalogue.v1.DeletePartCategoryResponse
-	(*timestamppb.Timestamp)(nil),      // 39: google.protobuf.Timestamp
-	(*v1.Pagination)(nil),              // 40: vietgara.common.v1.Pagination
-	(*fieldmaskpb.FieldMask)(nil),      // 41: google.protobuf.FieldMask
-	(v1.DeleteOutcome)(0),              // 42: vietgara.common.v1.DeleteOutcome
+	(*Unit)(nil),                        // 0: vietgara.catalogue.v1.Unit
+	(*PackagingUnit)(nil),               // 1: vietgara.catalogue.v1.PackagingUnit
+	(*PartCategory)(nil),                // 2: vietgara.catalogue.v1.PartCategory
+	(*PartImage)(nil),                   // 3: vietgara.catalogue.v1.PartImage
+	(*Part)(nil),                        // 4: vietgara.catalogue.v1.Part
+	(*PartBarcode)(nil),                 // 5: vietgara.catalogue.v1.PartBarcode
+	(*ListPartsRequest)(nil),            // 6: vietgara.catalogue.v1.ListPartsRequest
+	(*ListPartsResponse)(nil),           // 7: vietgara.catalogue.v1.ListPartsResponse
+	(*CreatePartRequest)(nil),           // 8: vietgara.catalogue.v1.CreatePartRequest
+	(*CreatePartResponse)(nil),          // 9: vietgara.catalogue.v1.CreatePartResponse
+	(*GetPartRequest)(nil),              // 10: vietgara.catalogue.v1.GetPartRequest
+	(*GetPartResponse)(nil),             // 11: vietgara.catalogue.v1.GetPartResponse
+	(*UpdatePartRequest)(nil),           // 12: vietgara.catalogue.v1.UpdatePartRequest
+	(*UpdatePartResponse)(nil),          // 13: vietgara.catalogue.v1.UpdatePartResponse
+	(*DeletePartRequest)(nil),           // 14: vietgara.catalogue.v1.DeletePartRequest
+	(*DeletePartResponse)(nil),          // 15: vietgara.catalogue.v1.DeletePartResponse
+	(*ActivatePartRequest)(nil),         // 16: vietgara.catalogue.v1.ActivatePartRequest
+	(*ActivatePartResponse)(nil),        // 17: vietgara.catalogue.v1.ActivatePartResponse
+	(*SetPartUnitsRequest)(nil),         // 18: vietgara.catalogue.v1.SetPartUnitsRequest
+	(*SetPartUnitsResponse)(nil),        // 19: vietgara.catalogue.v1.SetPartUnitsResponse
+	(*SetPartBarcodesRequest)(nil),      // 20: vietgara.catalogue.v1.SetPartBarcodesRequest
+	(*SetPartBarcodesResponse)(nil),     // 21: vietgara.catalogue.v1.SetPartBarcodesResponse
+	(*LookupPartByBarcodeRequest)(nil),  // 22: vietgara.catalogue.v1.LookupPartByBarcodeRequest
+	(*LookupPartByBarcodeResponse)(nil), // 23: vietgara.catalogue.v1.LookupPartByBarcodeResponse
+	(*AddPartImageRequest)(nil),         // 24: vietgara.catalogue.v1.AddPartImageRequest
+	(*AddPartImageResponse)(nil),        // 25: vietgara.catalogue.v1.AddPartImageResponse
+	(*RemovePartImageRequest)(nil),      // 26: vietgara.catalogue.v1.RemovePartImageRequest
+	(*RemovePartImageResponse)(nil),     // 27: vietgara.catalogue.v1.RemovePartImageResponse
+	(*ListUnitsRequest)(nil),            // 28: vietgara.catalogue.v1.ListUnitsRequest
+	(*ListUnitsResponse)(nil),           // 29: vietgara.catalogue.v1.ListUnitsResponse
+	(*CreateUnitRequest)(nil),           // 30: vietgara.catalogue.v1.CreateUnitRequest
+	(*CreateUnitResponse)(nil),          // 31: vietgara.catalogue.v1.CreateUnitResponse
+	(*UpdateUnitRequest)(nil),           // 32: vietgara.catalogue.v1.UpdateUnitRequest
+	(*UpdateUnitResponse)(nil),          // 33: vietgara.catalogue.v1.UpdateUnitResponse
+	(*DeleteUnitRequest)(nil),           // 34: vietgara.catalogue.v1.DeleteUnitRequest
+	(*DeleteUnitResponse)(nil),          // 35: vietgara.catalogue.v1.DeleteUnitResponse
+	(*ListPartCategoriesRequest)(nil),   // 36: vietgara.catalogue.v1.ListPartCategoriesRequest
+	(*ListPartCategoriesResponse)(nil),  // 37: vietgara.catalogue.v1.ListPartCategoriesResponse
+	(*CreatePartCategoryRequest)(nil),   // 38: vietgara.catalogue.v1.CreatePartCategoryRequest
+	(*CreatePartCategoryResponse)(nil),  // 39: vietgara.catalogue.v1.CreatePartCategoryResponse
+	(*UpdatePartCategoryRequest)(nil),   // 40: vietgara.catalogue.v1.UpdatePartCategoryRequest
+	(*UpdatePartCategoryResponse)(nil),  // 41: vietgara.catalogue.v1.UpdatePartCategoryResponse
+	(*DeletePartCategoryRequest)(nil),   // 42: vietgara.catalogue.v1.DeletePartCategoryRequest
+	(*DeletePartCategoryResponse)(nil),  // 43: vietgara.catalogue.v1.DeletePartCategoryResponse
+	(*timestamppb.Timestamp)(nil),       // 44: google.protobuf.Timestamp
+	(*v1.Pagination)(nil),               // 45: vietgara.common.v1.Pagination
+	(*fieldmaskpb.FieldMask)(nil),       // 46: google.protobuf.FieldMask
+	(v1.DeleteOutcome)(0),               // 47: vietgara.common.v1.DeleteOutcome
 }
 var file_vietgara_catalogue_v1_catalogue_proto_depIdxs = []int32{
-	39, // 0: vietgara.catalogue.v1.Unit.created_at:type_name -> google.protobuf.Timestamp
-	39, // 1: vietgara.catalogue.v1.Unit.updated_at:type_name -> google.protobuf.Timestamp
-	39, // 2: vietgara.catalogue.v1.PartCategory.created_at:type_name -> google.protobuf.Timestamp
-	39, // 3: vietgara.catalogue.v1.PartCategory.updated_at:type_name -> google.protobuf.Timestamp
+	44, // 0: vietgara.catalogue.v1.Unit.created_at:type_name -> google.protobuf.Timestamp
+	44, // 1: vietgara.catalogue.v1.Unit.updated_at:type_name -> google.protobuf.Timestamp
+	44, // 2: vietgara.catalogue.v1.PartCategory.created_at:type_name -> google.protobuf.Timestamp
+	44, // 3: vietgara.catalogue.v1.PartCategory.updated_at:type_name -> google.protobuf.Timestamp
 	1,  // 4: vietgara.catalogue.v1.Part.packaging_units:type_name -> vietgara.catalogue.v1.PackagingUnit
 	3,  // 5: vietgara.catalogue.v1.Part.images:type_name -> vietgara.catalogue.v1.PartImage
-	39, // 6: vietgara.catalogue.v1.Part.created_at:type_name -> google.protobuf.Timestamp
-	39, // 7: vietgara.catalogue.v1.Part.updated_at:type_name -> google.protobuf.Timestamp
-	4,  // 8: vietgara.catalogue.v1.ListPartsResponse.data:type_name -> vietgara.catalogue.v1.Part
-	40, // 9: vietgara.catalogue.v1.ListPartsResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	4,  // 10: vietgara.catalogue.v1.CreatePartRequest.part:type_name -> vietgara.catalogue.v1.Part
-	4,  // 11: vietgara.catalogue.v1.CreatePartResponse.part:type_name -> vietgara.catalogue.v1.Part
-	4,  // 12: vietgara.catalogue.v1.GetPartResponse.part:type_name -> vietgara.catalogue.v1.Part
-	4,  // 13: vietgara.catalogue.v1.UpdatePartRequest.part:type_name -> vietgara.catalogue.v1.Part
-	41, // 14: vietgara.catalogue.v1.UpdatePartRequest.update_mask:type_name -> google.protobuf.FieldMask
-	4,  // 15: vietgara.catalogue.v1.UpdatePartResponse.part:type_name -> vietgara.catalogue.v1.Part
-	42, // 16: vietgara.catalogue.v1.DeletePartResponse.outcome:type_name -> vietgara.common.v1.DeleteOutcome
-	4,  // 17: vietgara.catalogue.v1.ActivatePartResponse.part:type_name -> vietgara.catalogue.v1.Part
-	1,  // 18: vietgara.catalogue.v1.SetPartUnitsRequest.packaging_units:type_name -> vietgara.catalogue.v1.PackagingUnit
-	4,  // 19: vietgara.catalogue.v1.SetPartUnitsResponse.part:type_name -> vietgara.catalogue.v1.Part
-	4,  // 20: vietgara.catalogue.v1.AddPartImageResponse.part:type_name -> vietgara.catalogue.v1.Part
-	4,  // 21: vietgara.catalogue.v1.RemovePartImageResponse.part:type_name -> vietgara.catalogue.v1.Part
-	0,  // 22: vietgara.catalogue.v1.ListUnitsResponse.data:type_name -> vietgara.catalogue.v1.Unit
-	40, // 23: vietgara.catalogue.v1.ListUnitsResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	0,  // 24: vietgara.catalogue.v1.CreateUnitRequest.unit:type_name -> vietgara.catalogue.v1.Unit
-	0,  // 25: vietgara.catalogue.v1.CreateUnitResponse.unit:type_name -> vietgara.catalogue.v1.Unit
-	0,  // 26: vietgara.catalogue.v1.UpdateUnitRequest.unit:type_name -> vietgara.catalogue.v1.Unit
-	41, // 27: vietgara.catalogue.v1.UpdateUnitRequest.update_mask:type_name -> google.protobuf.FieldMask
-	0,  // 28: vietgara.catalogue.v1.UpdateUnitResponse.unit:type_name -> vietgara.catalogue.v1.Unit
-	42, // 29: vietgara.catalogue.v1.DeleteUnitResponse.outcome:type_name -> vietgara.common.v1.DeleteOutcome
-	2,  // 30: vietgara.catalogue.v1.ListPartCategoriesResponse.data:type_name -> vietgara.catalogue.v1.PartCategory
-	2,  // 31: vietgara.catalogue.v1.CreatePartCategoryRequest.category:type_name -> vietgara.catalogue.v1.PartCategory
-	2,  // 32: vietgara.catalogue.v1.CreatePartCategoryResponse.category:type_name -> vietgara.catalogue.v1.PartCategory
-	2,  // 33: vietgara.catalogue.v1.UpdatePartCategoryRequest.category:type_name -> vietgara.catalogue.v1.PartCategory
-	41, // 34: vietgara.catalogue.v1.UpdatePartCategoryRequest.update_mask:type_name -> google.protobuf.FieldMask
-	2,  // 35: vietgara.catalogue.v1.UpdatePartCategoryResponse.category:type_name -> vietgara.catalogue.v1.PartCategory
-	42, // 36: vietgara.catalogue.v1.DeletePartCategoryResponse.outcome:type_name -> vietgara.common.v1.DeleteOutcome
-	5,  // 37: vietgara.catalogue.v1.CatalogueService.ListParts:input_type -> vietgara.catalogue.v1.ListPartsRequest
-	7,  // 38: vietgara.catalogue.v1.CatalogueService.CreatePart:input_type -> vietgara.catalogue.v1.CreatePartRequest
-	9,  // 39: vietgara.catalogue.v1.CatalogueService.GetPart:input_type -> vietgara.catalogue.v1.GetPartRequest
-	11, // 40: vietgara.catalogue.v1.CatalogueService.UpdatePart:input_type -> vietgara.catalogue.v1.UpdatePartRequest
-	13, // 41: vietgara.catalogue.v1.CatalogueService.DeletePart:input_type -> vietgara.catalogue.v1.DeletePartRequest
-	15, // 42: vietgara.catalogue.v1.CatalogueService.ActivatePart:input_type -> vietgara.catalogue.v1.ActivatePartRequest
-	17, // 43: vietgara.catalogue.v1.CatalogueService.SetPartUnits:input_type -> vietgara.catalogue.v1.SetPartUnitsRequest
-	19, // 44: vietgara.catalogue.v1.CatalogueService.AddPartImage:input_type -> vietgara.catalogue.v1.AddPartImageRequest
-	21, // 45: vietgara.catalogue.v1.CatalogueService.RemovePartImage:input_type -> vietgara.catalogue.v1.RemovePartImageRequest
-	23, // 46: vietgara.catalogue.v1.CatalogueService.ListUnits:input_type -> vietgara.catalogue.v1.ListUnitsRequest
-	25, // 47: vietgara.catalogue.v1.CatalogueService.CreateUnit:input_type -> vietgara.catalogue.v1.CreateUnitRequest
-	27, // 48: vietgara.catalogue.v1.CatalogueService.UpdateUnit:input_type -> vietgara.catalogue.v1.UpdateUnitRequest
-	29, // 49: vietgara.catalogue.v1.CatalogueService.DeleteUnit:input_type -> vietgara.catalogue.v1.DeleteUnitRequest
-	31, // 50: vietgara.catalogue.v1.CatalogueService.ListPartCategories:input_type -> vietgara.catalogue.v1.ListPartCategoriesRequest
-	33, // 51: vietgara.catalogue.v1.CatalogueService.CreatePartCategory:input_type -> vietgara.catalogue.v1.CreatePartCategoryRequest
-	35, // 52: vietgara.catalogue.v1.CatalogueService.UpdatePartCategory:input_type -> vietgara.catalogue.v1.UpdatePartCategoryRequest
-	37, // 53: vietgara.catalogue.v1.CatalogueService.DeletePartCategory:input_type -> vietgara.catalogue.v1.DeletePartCategoryRequest
-	6,  // 54: vietgara.catalogue.v1.CatalogueService.ListParts:output_type -> vietgara.catalogue.v1.ListPartsResponse
-	8,  // 55: vietgara.catalogue.v1.CatalogueService.CreatePart:output_type -> vietgara.catalogue.v1.CreatePartResponse
-	10, // 56: vietgara.catalogue.v1.CatalogueService.GetPart:output_type -> vietgara.catalogue.v1.GetPartResponse
-	12, // 57: vietgara.catalogue.v1.CatalogueService.UpdatePart:output_type -> vietgara.catalogue.v1.UpdatePartResponse
-	14, // 58: vietgara.catalogue.v1.CatalogueService.DeletePart:output_type -> vietgara.catalogue.v1.DeletePartResponse
-	16, // 59: vietgara.catalogue.v1.CatalogueService.ActivatePart:output_type -> vietgara.catalogue.v1.ActivatePartResponse
-	18, // 60: vietgara.catalogue.v1.CatalogueService.SetPartUnits:output_type -> vietgara.catalogue.v1.SetPartUnitsResponse
-	20, // 61: vietgara.catalogue.v1.CatalogueService.AddPartImage:output_type -> vietgara.catalogue.v1.AddPartImageResponse
-	22, // 62: vietgara.catalogue.v1.CatalogueService.RemovePartImage:output_type -> vietgara.catalogue.v1.RemovePartImageResponse
-	24, // 63: vietgara.catalogue.v1.CatalogueService.ListUnits:output_type -> vietgara.catalogue.v1.ListUnitsResponse
-	26, // 64: vietgara.catalogue.v1.CatalogueService.CreateUnit:output_type -> vietgara.catalogue.v1.CreateUnitResponse
-	28, // 65: vietgara.catalogue.v1.CatalogueService.UpdateUnit:output_type -> vietgara.catalogue.v1.UpdateUnitResponse
-	30, // 66: vietgara.catalogue.v1.CatalogueService.DeleteUnit:output_type -> vietgara.catalogue.v1.DeleteUnitResponse
-	32, // 67: vietgara.catalogue.v1.CatalogueService.ListPartCategories:output_type -> vietgara.catalogue.v1.ListPartCategoriesResponse
-	34, // 68: vietgara.catalogue.v1.CatalogueService.CreatePartCategory:output_type -> vietgara.catalogue.v1.CreatePartCategoryResponse
-	36, // 69: vietgara.catalogue.v1.CatalogueService.UpdatePartCategory:output_type -> vietgara.catalogue.v1.UpdatePartCategoryResponse
-	38, // 70: vietgara.catalogue.v1.CatalogueService.DeletePartCategory:output_type -> vietgara.catalogue.v1.DeletePartCategoryResponse
-	54, // [54:71] is the sub-list for method output_type
-	37, // [37:54] is the sub-list for method input_type
-	37, // [37:37] is the sub-list for extension type_name
-	37, // [37:37] is the sub-list for extension extendee
-	0,  // [0:37] is the sub-list for field type_name
+	44, // 6: vietgara.catalogue.v1.Part.created_at:type_name -> google.protobuf.Timestamp
+	44, // 7: vietgara.catalogue.v1.Part.updated_at:type_name -> google.protobuf.Timestamp
+	5,  // 8: vietgara.catalogue.v1.Part.barcodes:type_name -> vietgara.catalogue.v1.PartBarcode
+	4,  // 9: vietgara.catalogue.v1.ListPartsResponse.data:type_name -> vietgara.catalogue.v1.Part
+	45, // 10: vietgara.catalogue.v1.ListPartsResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	4,  // 11: vietgara.catalogue.v1.CreatePartRequest.part:type_name -> vietgara.catalogue.v1.Part
+	4,  // 12: vietgara.catalogue.v1.CreatePartResponse.part:type_name -> vietgara.catalogue.v1.Part
+	4,  // 13: vietgara.catalogue.v1.GetPartResponse.part:type_name -> vietgara.catalogue.v1.Part
+	4,  // 14: vietgara.catalogue.v1.UpdatePartRequest.part:type_name -> vietgara.catalogue.v1.Part
+	46, // 15: vietgara.catalogue.v1.UpdatePartRequest.update_mask:type_name -> google.protobuf.FieldMask
+	4,  // 16: vietgara.catalogue.v1.UpdatePartResponse.part:type_name -> vietgara.catalogue.v1.Part
+	47, // 17: vietgara.catalogue.v1.DeletePartResponse.outcome:type_name -> vietgara.common.v1.DeleteOutcome
+	4,  // 18: vietgara.catalogue.v1.ActivatePartResponse.part:type_name -> vietgara.catalogue.v1.Part
+	1,  // 19: vietgara.catalogue.v1.SetPartUnitsRequest.packaging_units:type_name -> vietgara.catalogue.v1.PackagingUnit
+	4,  // 20: vietgara.catalogue.v1.SetPartUnitsResponse.part:type_name -> vietgara.catalogue.v1.Part
+	5,  // 21: vietgara.catalogue.v1.SetPartBarcodesRequest.barcodes:type_name -> vietgara.catalogue.v1.PartBarcode
+	4,  // 22: vietgara.catalogue.v1.SetPartBarcodesResponse.part:type_name -> vietgara.catalogue.v1.Part
+	4,  // 23: vietgara.catalogue.v1.LookupPartByBarcodeResponse.part:type_name -> vietgara.catalogue.v1.Part
+	5,  // 24: vietgara.catalogue.v1.LookupPartByBarcodeResponse.barcode:type_name -> vietgara.catalogue.v1.PartBarcode
+	4,  // 25: vietgara.catalogue.v1.AddPartImageResponse.part:type_name -> vietgara.catalogue.v1.Part
+	4,  // 26: vietgara.catalogue.v1.RemovePartImageResponse.part:type_name -> vietgara.catalogue.v1.Part
+	0,  // 27: vietgara.catalogue.v1.ListUnitsResponse.data:type_name -> vietgara.catalogue.v1.Unit
+	45, // 28: vietgara.catalogue.v1.ListUnitsResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	0,  // 29: vietgara.catalogue.v1.CreateUnitRequest.unit:type_name -> vietgara.catalogue.v1.Unit
+	0,  // 30: vietgara.catalogue.v1.CreateUnitResponse.unit:type_name -> vietgara.catalogue.v1.Unit
+	0,  // 31: vietgara.catalogue.v1.UpdateUnitRequest.unit:type_name -> vietgara.catalogue.v1.Unit
+	46, // 32: vietgara.catalogue.v1.UpdateUnitRequest.update_mask:type_name -> google.protobuf.FieldMask
+	0,  // 33: vietgara.catalogue.v1.UpdateUnitResponse.unit:type_name -> vietgara.catalogue.v1.Unit
+	47, // 34: vietgara.catalogue.v1.DeleteUnitResponse.outcome:type_name -> vietgara.common.v1.DeleteOutcome
+	2,  // 35: vietgara.catalogue.v1.ListPartCategoriesResponse.data:type_name -> vietgara.catalogue.v1.PartCategory
+	2,  // 36: vietgara.catalogue.v1.CreatePartCategoryRequest.category:type_name -> vietgara.catalogue.v1.PartCategory
+	2,  // 37: vietgara.catalogue.v1.CreatePartCategoryResponse.category:type_name -> vietgara.catalogue.v1.PartCategory
+	2,  // 38: vietgara.catalogue.v1.UpdatePartCategoryRequest.category:type_name -> vietgara.catalogue.v1.PartCategory
+	46, // 39: vietgara.catalogue.v1.UpdatePartCategoryRequest.update_mask:type_name -> google.protobuf.FieldMask
+	2,  // 40: vietgara.catalogue.v1.UpdatePartCategoryResponse.category:type_name -> vietgara.catalogue.v1.PartCategory
+	47, // 41: vietgara.catalogue.v1.DeletePartCategoryResponse.outcome:type_name -> vietgara.common.v1.DeleteOutcome
+	6,  // 42: vietgara.catalogue.v1.CatalogueService.ListParts:input_type -> vietgara.catalogue.v1.ListPartsRequest
+	8,  // 43: vietgara.catalogue.v1.CatalogueService.CreatePart:input_type -> vietgara.catalogue.v1.CreatePartRequest
+	10, // 44: vietgara.catalogue.v1.CatalogueService.GetPart:input_type -> vietgara.catalogue.v1.GetPartRequest
+	12, // 45: vietgara.catalogue.v1.CatalogueService.UpdatePart:input_type -> vietgara.catalogue.v1.UpdatePartRequest
+	14, // 46: vietgara.catalogue.v1.CatalogueService.DeletePart:input_type -> vietgara.catalogue.v1.DeletePartRequest
+	16, // 47: vietgara.catalogue.v1.CatalogueService.ActivatePart:input_type -> vietgara.catalogue.v1.ActivatePartRequest
+	18, // 48: vietgara.catalogue.v1.CatalogueService.SetPartUnits:input_type -> vietgara.catalogue.v1.SetPartUnitsRequest
+	20, // 49: vietgara.catalogue.v1.CatalogueService.SetPartBarcodes:input_type -> vietgara.catalogue.v1.SetPartBarcodesRequest
+	22, // 50: vietgara.catalogue.v1.CatalogueService.LookupPartByBarcode:input_type -> vietgara.catalogue.v1.LookupPartByBarcodeRequest
+	24, // 51: vietgara.catalogue.v1.CatalogueService.AddPartImage:input_type -> vietgara.catalogue.v1.AddPartImageRequest
+	26, // 52: vietgara.catalogue.v1.CatalogueService.RemovePartImage:input_type -> vietgara.catalogue.v1.RemovePartImageRequest
+	28, // 53: vietgara.catalogue.v1.CatalogueService.ListUnits:input_type -> vietgara.catalogue.v1.ListUnitsRequest
+	30, // 54: vietgara.catalogue.v1.CatalogueService.CreateUnit:input_type -> vietgara.catalogue.v1.CreateUnitRequest
+	32, // 55: vietgara.catalogue.v1.CatalogueService.UpdateUnit:input_type -> vietgara.catalogue.v1.UpdateUnitRequest
+	34, // 56: vietgara.catalogue.v1.CatalogueService.DeleteUnit:input_type -> vietgara.catalogue.v1.DeleteUnitRequest
+	36, // 57: vietgara.catalogue.v1.CatalogueService.ListPartCategories:input_type -> vietgara.catalogue.v1.ListPartCategoriesRequest
+	38, // 58: vietgara.catalogue.v1.CatalogueService.CreatePartCategory:input_type -> vietgara.catalogue.v1.CreatePartCategoryRequest
+	40, // 59: vietgara.catalogue.v1.CatalogueService.UpdatePartCategory:input_type -> vietgara.catalogue.v1.UpdatePartCategoryRequest
+	42, // 60: vietgara.catalogue.v1.CatalogueService.DeletePartCategory:input_type -> vietgara.catalogue.v1.DeletePartCategoryRequest
+	7,  // 61: vietgara.catalogue.v1.CatalogueService.ListParts:output_type -> vietgara.catalogue.v1.ListPartsResponse
+	9,  // 62: vietgara.catalogue.v1.CatalogueService.CreatePart:output_type -> vietgara.catalogue.v1.CreatePartResponse
+	11, // 63: vietgara.catalogue.v1.CatalogueService.GetPart:output_type -> vietgara.catalogue.v1.GetPartResponse
+	13, // 64: vietgara.catalogue.v1.CatalogueService.UpdatePart:output_type -> vietgara.catalogue.v1.UpdatePartResponse
+	15, // 65: vietgara.catalogue.v1.CatalogueService.DeletePart:output_type -> vietgara.catalogue.v1.DeletePartResponse
+	17, // 66: vietgara.catalogue.v1.CatalogueService.ActivatePart:output_type -> vietgara.catalogue.v1.ActivatePartResponse
+	19, // 67: vietgara.catalogue.v1.CatalogueService.SetPartUnits:output_type -> vietgara.catalogue.v1.SetPartUnitsResponse
+	21, // 68: vietgara.catalogue.v1.CatalogueService.SetPartBarcodes:output_type -> vietgara.catalogue.v1.SetPartBarcodesResponse
+	23, // 69: vietgara.catalogue.v1.CatalogueService.LookupPartByBarcode:output_type -> vietgara.catalogue.v1.LookupPartByBarcodeResponse
+	25, // 70: vietgara.catalogue.v1.CatalogueService.AddPartImage:output_type -> vietgara.catalogue.v1.AddPartImageResponse
+	27, // 71: vietgara.catalogue.v1.CatalogueService.RemovePartImage:output_type -> vietgara.catalogue.v1.RemovePartImageResponse
+	29, // 72: vietgara.catalogue.v1.CatalogueService.ListUnits:output_type -> vietgara.catalogue.v1.ListUnitsResponse
+	31, // 73: vietgara.catalogue.v1.CatalogueService.CreateUnit:output_type -> vietgara.catalogue.v1.CreateUnitResponse
+	33, // 74: vietgara.catalogue.v1.CatalogueService.UpdateUnit:output_type -> vietgara.catalogue.v1.UpdateUnitResponse
+	35, // 75: vietgara.catalogue.v1.CatalogueService.DeleteUnit:output_type -> vietgara.catalogue.v1.DeleteUnitResponse
+	37, // 76: vietgara.catalogue.v1.CatalogueService.ListPartCategories:output_type -> vietgara.catalogue.v1.ListPartCategoriesResponse
+	39, // 77: vietgara.catalogue.v1.CatalogueService.CreatePartCategory:output_type -> vietgara.catalogue.v1.CreatePartCategoryResponse
+	41, // 78: vietgara.catalogue.v1.CatalogueService.UpdatePartCategory:output_type -> vietgara.catalogue.v1.UpdatePartCategoryResponse
+	43, // 79: vietgara.catalogue.v1.CatalogueService.DeletePartCategory:output_type -> vietgara.catalogue.v1.DeletePartCategoryResponse
+	61, // [61:80] is the sub-list for method output_type
+	42, // [42:61] is the sub-list for method input_type
+	42, // [42:42] is the sub-list for extension type_name
+	42, // [42:42] is the sub-list for extension extendee
+	0,  // [0:42] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_catalogue_v1_catalogue_proto_init() }
@@ -2695,13 +3025,14 @@ func file_vietgara_catalogue_v1_catalogue_proto_init() {
 	file_vietgara_catalogue_v1_catalogue_proto_msgTypes[1].OneofWrappers = []any{}
 	file_vietgara_catalogue_v1_catalogue_proto_msgTypes[2].OneofWrappers = []any{}
 	file_vietgara_catalogue_v1_catalogue_proto_msgTypes[4].OneofWrappers = []any{}
+	file_vietgara_catalogue_v1_catalogue_proto_msgTypes[5].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_catalogue_v1_catalogue_proto_rawDesc), len(file_vietgara_catalogue_v1_catalogue_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   39,
+			NumMessages:   44,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

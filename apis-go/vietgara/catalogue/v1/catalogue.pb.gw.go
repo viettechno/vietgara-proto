@@ -476,6 +476,120 @@ func local_request_CatalogueService_SetPartUnits_0(ctx context.Context, marshale
 	return msg, metadata, err
 }
 
+func request_CatalogueService_SetPartBarcodes_0(ctx context.Context, marshaler runtime.Marshaler, client CatalogueServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq SetPartBarcodesRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["part_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "part_id")
+	}
+	protoReq.PartId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "part_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.SetPartBarcodes(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_CatalogueService_SetPartBarcodes_0(ctx context.Context, marshaler runtime.Marshaler, server CatalogueServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq SetPartBarcodesRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["part_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "part_id")
+	}
+	protoReq.PartId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "part_id", err)
+	}
+	msg, err := server.SetPartBarcodes(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+var filter_CatalogueService_LookupPartByBarcode_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+
+func request_CatalogueService_LookupPartByBarcode_0(ctx context.Context, marshaler runtime.Marshaler, client CatalogueServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq LookupPartByBarcodeRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CatalogueService_LookupPartByBarcode_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.LookupPartByBarcode(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_CatalogueService_LookupPartByBarcode_0(ctx context.Context, marshaler runtime.Marshaler, server CatalogueServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq LookupPartByBarcodeRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CatalogueService_LookupPartByBarcode_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.LookupPartByBarcode(ctx, &protoReq)
+	return msg, metadata, err
+}
+
 func request_CatalogueService_AddPartImage_0(ctx context.Context, marshaler runtime.Marshaler, client CatalogueServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq AddPartImageRequest
@@ -1282,6 +1396,46 @@ func RegisterCatalogueServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		}
 		forward_CatalogueService_SetPartUnits_0(annotatedContext, mux, outboundMarshaler, w, req, response_CatalogueService_SetPartUnits_0{resp.(*SetPartUnitsResponse)}, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodPut, pattern_CatalogueService_SetPartBarcodes_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.catalogue.v1.CatalogueService/SetPartBarcodes", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/parts/{part_id}/barcodes"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_CatalogueService_SetPartBarcodes_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CatalogueService_SetPartBarcodes_0(annotatedContext, mux, outboundMarshaler, w, req, response_CatalogueService_SetPartBarcodes_0{resp.(*SetPartBarcodesResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_CatalogueService_LookupPartByBarcode_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.catalogue.v1.CatalogueService/LookupPartByBarcode", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/barcodes:lookup"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_CatalogueService_LookupPartByBarcode_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CatalogueService_LookupPartByBarcode_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodPost, pattern_CatalogueService_AddPartImage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1641,6 +1795,40 @@ func RegisterCatalogueServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 		}
 		forward_CatalogueService_SetPartUnits_0(annotatedContext, mux, outboundMarshaler, w, req, response_CatalogueService_SetPartUnits_0{resp.(*SetPartUnitsResponse)}, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodPut, pattern_CatalogueService_SetPartBarcodes_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.catalogue.v1.CatalogueService/SetPartBarcodes", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/parts/{part_id}/barcodes"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_CatalogueService_SetPartBarcodes_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CatalogueService_SetPartBarcodes_0(annotatedContext, mux, outboundMarshaler, w, req, response_CatalogueService_SetPartBarcodes_0{resp.(*SetPartBarcodesResponse)}, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_CatalogueService_LookupPartByBarcode_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.catalogue.v1.CatalogueService/LookupPartByBarcode", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/barcodes:lookup"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_CatalogueService_LookupPartByBarcode_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CatalogueService_LookupPartByBarcode_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodPost, pattern_CatalogueService_AddPartImage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1859,6 +2047,15 @@ func (m response_CatalogueService_SetPartUnits_0) XXX_ResponseBody() interface{}
 	return response.Part
 }
 
+type response_CatalogueService_SetPartBarcodes_0 struct {
+	*SetPartBarcodesResponse
+}
+
+func (m response_CatalogueService_SetPartBarcodes_0) XXX_ResponseBody() interface{} {
+	response := m.SetPartBarcodesResponse
+	return response.Part
+}
+
 type response_CatalogueService_AddPartImage_0 struct {
 	*AddPartImageResponse
 }
@@ -1914,41 +2111,45 @@ func (m response_CatalogueService_UpdatePartCategory_0) XXX_ResponseBody() inter
 }
 
 var (
-	pattern_CatalogueService_ListParts_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "parts"}, ""))
-	pattern_CatalogueService_CreatePart_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "parts"}, ""))
-	pattern_CatalogueService_GetPart_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id"}, ""))
-	pattern_CatalogueService_UpdatePart_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id"}, ""))
-	pattern_CatalogueService_DeletePart_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id"}, ""))
-	pattern_CatalogueService_ActivatePart_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id"}, "activate"))
-	pattern_CatalogueService_SetPartUnits_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id", "units"}, ""))
-	pattern_CatalogueService_AddPartImage_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id", "images"}, ""))
-	pattern_CatalogueService_RemovePartImage_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id", "images", "file_id"}, ""))
-	pattern_CatalogueService_ListUnits_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "units"}, ""))
-	pattern_CatalogueService_CreateUnit_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "units"}, ""))
-	pattern_CatalogueService_UpdateUnit_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "units", "unit_id"}, ""))
-	pattern_CatalogueService_DeleteUnit_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "units", "unit_id"}, ""))
-	pattern_CatalogueService_ListPartCategories_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "part-categories"}, ""))
-	pattern_CatalogueService_CreatePartCategory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "part-categories"}, ""))
-	pattern_CatalogueService_UpdatePartCategory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "part-categories", "category_id"}, ""))
-	pattern_CatalogueService_DeletePartCategory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "part-categories", "category_id"}, ""))
+	pattern_CatalogueService_ListParts_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "parts"}, ""))
+	pattern_CatalogueService_CreatePart_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "parts"}, ""))
+	pattern_CatalogueService_GetPart_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id"}, ""))
+	pattern_CatalogueService_UpdatePart_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id"}, ""))
+	pattern_CatalogueService_DeletePart_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id"}, ""))
+	pattern_CatalogueService_ActivatePart_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id"}, "activate"))
+	pattern_CatalogueService_SetPartUnits_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id", "units"}, ""))
+	pattern_CatalogueService_SetPartBarcodes_0     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id", "barcodes"}, ""))
+	pattern_CatalogueService_LookupPartByBarcode_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "barcodes"}, "lookup"))
+	pattern_CatalogueService_AddPartImage_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id", "images"}, ""))
+	pattern_CatalogueService_RemovePartImage_0     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"api", "v1", "garages", "garage_id", "parts", "part_id", "images", "file_id"}, ""))
+	pattern_CatalogueService_ListUnits_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "units"}, ""))
+	pattern_CatalogueService_CreateUnit_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "units"}, ""))
+	pattern_CatalogueService_UpdateUnit_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "units", "unit_id"}, ""))
+	pattern_CatalogueService_DeleteUnit_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "units", "unit_id"}, ""))
+	pattern_CatalogueService_ListPartCategories_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "part-categories"}, ""))
+	pattern_CatalogueService_CreatePartCategory_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "part-categories"}, ""))
+	pattern_CatalogueService_UpdatePartCategory_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "part-categories", "category_id"}, ""))
+	pattern_CatalogueService_DeletePartCategory_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "part-categories", "category_id"}, ""))
 )
 
 var (
-	forward_CatalogueService_ListParts_0          = runtime.ForwardResponseMessage
-	forward_CatalogueService_CreatePart_0         = runtime.ForwardResponseMessage
-	forward_CatalogueService_GetPart_0            = runtime.ForwardResponseMessage
-	forward_CatalogueService_UpdatePart_0         = runtime.ForwardResponseMessage
-	forward_CatalogueService_DeletePart_0         = runtime.ForwardResponseMessage
-	forward_CatalogueService_ActivatePart_0       = runtime.ForwardResponseMessage
-	forward_CatalogueService_SetPartUnits_0       = runtime.ForwardResponseMessage
-	forward_CatalogueService_AddPartImage_0       = runtime.ForwardResponseMessage
-	forward_CatalogueService_RemovePartImage_0    = runtime.ForwardResponseMessage
-	forward_CatalogueService_ListUnits_0          = runtime.ForwardResponseMessage
-	forward_CatalogueService_CreateUnit_0         = runtime.ForwardResponseMessage
-	forward_CatalogueService_UpdateUnit_0         = runtime.ForwardResponseMessage
-	forward_CatalogueService_DeleteUnit_0         = runtime.ForwardResponseMessage
-	forward_CatalogueService_ListPartCategories_0 = runtime.ForwardResponseMessage
-	forward_CatalogueService_CreatePartCategory_0 = runtime.ForwardResponseMessage
-	forward_CatalogueService_UpdatePartCategory_0 = runtime.ForwardResponseMessage
-	forward_CatalogueService_DeletePartCategory_0 = runtime.ForwardResponseMessage
+	forward_CatalogueService_ListParts_0           = runtime.ForwardResponseMessage
+	forward_CatalogueService_CreatePart_0          = runtime.ForwardResponseMessage
+	forward_CatalogueService_GetPart_0             = runtime.ForwardResponseMessage
+	forward_CatalogueService_UpdatePart_0          = runtime.ForwardResponseMessage
+	forward_CatalogueService_DeletePart_0          = runtime.ForwardResponseMessage
+	forward_CatalogueService_ActivatePart_0        = runtime.ForwardResponseMessage
+	forward_CatalogueService_SetPartUnits_0        = runtime.ForwardResponseMessage
+	forward_CatalogueService_SetPartBarcodes_0     = runtime.ForwardResponseMessage
+	forward_CatalogueService_LookupPartByBarcode_0 = runtime.ForwardResponseMessage
+	forward_CatalogueService_AddPartImage_0        = runtime.ForwardResponseMessage
+	forward_CatalogueService_RemovePartImage_0     = runtime.ForwardResponseMessage
+	forward_CatalogueService_ListUnits_0           = runtime.ForwardResponseMessage
+	forward_CatalogueService_CreateUnit_0          = runtime.ForwardResponseMessage
+	forward_CatalogueService_UpdateUnit_0          = runtime.ForwardResponseMessage
+	forward_CatalogueService_DeleteUnit_0          = runtime.ForwardResponseMessage
+	forward_CatalogueService_ListPartCategories_0  = runtime.ForwardResponseMessage
+	forward_CatalogueService_CreatePartCategory_0  = runtime.ForwardResponseMessage
+	forward_CatalogueService_UpdatePartCategory_0  = runtime.ForwardResponseMessage
+	forward_CatalogueService_DeletePartCategory_0  = runtime.ForwardResponseMessage
 )

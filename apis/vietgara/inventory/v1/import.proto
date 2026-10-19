@@ -1,0 +1,141 @@
+syntax = "proto3";
+
+package vietgara.inventory.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/api/httpbody.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/inventory/v1;inventoryv1";
+
+// ImportType names what an Excel file imports (FR-INV-14, Release 7.2).
+enum ImportType {
+  IMPORT_TYPE_UNSPECIFIED = 0;
+  // Parts with units, category, brand, barcodes and, per row, an opening
+  // quantity and cost. Rows with an opening quantity are posted as one
+  // completed goods receipt, each line with its own supplier.
+  IMPORT_TYPE_PARTS = 1;
+  // A draft goods receipt with its lines (supplier per line).
+  IMPORT_TYPE_GOODS_RECEIPTS = 2;
+  // A draft stock count with its counted quantities.
+  IMPORT_TYPE_STOCK_COUNTS = 3;
+}
+
+// ImportRowError is one problem found in the file. A file is imported only
+// when it has none, so the preview lists every error at once.
+message ImportRowError {
+  // The 1-based row of the sheet; 0 for a problem of the whole file such as
+  // a missing column.
+  int32 row = 1;
+  // The column header the problem is in; empty when it concerns the row or
+  // the file.
+  string column = 2;
+  // A stable reason such as SKU_DUPLICATE, BARCODE_ALREADY_USED,
+  // UNKNOWN_SUPPLIER or REQUIRED_VALUE_MISSING.
+  string code = 3;
+  string message = 4;
+}
+
+// ImportPreviewRow is one row of the file as read, for the preview table.
+message ImportPreviewRow {
+  int32 row = 1;
+  // In the order of ImportPreview.columns.
+  repeated string cells = 2;
+}
+
+// ImportPreview is the result of checking a file without writing anything.
+message ImportPreview {
+  ImportType import_type = 1;
+  // Data rows read, without the header.
+  int32 total_rows = 2;
+  // Rows without any error.
+  int32 valid_rows = 3;
+  // Every error found, ordered by row; capped at 1000 (errors_truncated).
+  repeated ImportRowError errors = 4;
+  bool errors_truncated = 5;
+  // The template headers.
+  repeated string columns = 6;
+  // The first rows, at most 20.
+  repeated ImportPreviewRow sample_rows = 7;
+  // What confirming would create, by name: for parts, "parts", "barcodes",
+  // "units", "categories" and "receipt_lines"; for documents, "lines".
+  map<string, int32> counts = 8;
+  // True when the file has rows and no errors.
+  bool can_confirm = 9;
+}
+
+// ImportResult is what a confirmed import created.
+message ImportResult {
+  ImportType import_type = 1;
+  int32 rows_imported = 2;
+  // Same keys as ImportPreview.counts.
+  map<string, int32> counts = 3;
+  // The document the import created: the completed opening-stock receipt of
+  // a parts import, the draft receipt or the draft count. Empty when a parts
+  // file had no opening quantity.
+  string document_id = 4;
+  string document_number = 5;
+}
+
+message DownloadImportTemplateRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  ImportType import_type = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PreviewImportRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  ImportType import_type = 2 [(google.api.field_behavior) = REQUIRED];
+  // The original file name, kept in the audit entry.
+  string file_name = 3;
+  // An .xlsx workbook made from the template, at most 5 MB and 5,000 rows
+  // (base64 in JSON).
+  bytes content = 4 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PreviewImportResponse {
+  ImportPreview preview = 1;
+}
+
+message ConfirmImportRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  ImportType import_type = 2 [(google.api.field_behavior) = REQUIRED];
+  string file_name = 3;
+  // The same file that was previewed; it is checked again.
+  bytes content = 4 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ConfirmImportResponse {
+  ImportResult result = 1;
+}
+
+// ImportService reads Excel files into parts, goods receipts and stock
+// counts (FR-INV-14). The permission depends on the type: parts need
+// PERMISSION_CATALOGUE_WRITE, plus PERMISSION_INVENTORY_WRITE and
+// PERMISSION_INVENTORY_COST_READ when rows carry an opening quantity or
+// cost; goods receipts need PERMISSION_INVENTORY_WRITE (and cost read for
+// unit costs); stock counts need PERMISSION_INVENTORY_COUNT.
+service ImportService {
+  // The template workbook for a type, with a sheet of instructions.
+  rpc DownloadImportTemplate(DownloadImportTemplateRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/imports/{import_type}/template"};
+  }
+
+  // Checks the file and reports every error without writing anything.
+  rpc PreviewImport(PreviewImportRequest) returns (PreviewImportResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/imports/{import_type}/preview"
+      body: "*"
+      response_body: "preview"
+    };
+  }
+
+  // Imports the file in one transaction. A file with any error is refused
+  // as a whole (IMPORT_FILE_INVALID) and nothing is written.
+  rpc ConfirmImport(ConfirmImportRequest) returns (ConfirmImportResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/imports/{import_type}/confirm"
+      body: "*"
+      response_body: "result"
+    };
+  }
+}
