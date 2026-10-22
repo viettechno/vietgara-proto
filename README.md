@@ -59,6 +59,7 @@ Protocol Buffers. The same `.proto` files describe:
 | | | `RoleService`: ListPermissions, ListRoles, GetRole, CreateRole, UpdateRole, DeleteRole |
 | | | `StaffGroupService`: ListStaffGroups, CreateStaffGroup, UpdateStaffGroup, DeleteStaffGroup |
 | `vietgara.license.v1` | License (HLD #3) | `LicenseService`: ListPlans, GetMySubscription, ChangeMyPlan, GetGarageEntitlements |
+| `vietgara.platform.v1` | Platform staff (Release 8.1) | `PlatformStaffService`: platform roles, groups, staff and invitations (`/api/v1/admin/...`); `PlatformAccessService`: GetMyPlatformAccess and the user's own platform invitations |
 | | | `LicenseAdminService`: ListAllPlans, CreatePlan, UpdatePlan, ListSubscriptions, ExtendSubscription |
 | `vietgara.customer.v1` | Customer & Vehicle (HLD #4) | `CustomerService` (+ Activate, Lookup), `VehicleService` (+ Activate, Correct, ChangeOwner), `CustomerLinkService` (RequestCustomerUserLink, ConfirmCustomerUserLink, UnlinkCustomerUser), `CustomerTaxProfileService` |
 | `vietgara.supplier.v1` | Supplier (FR-SUP-01) | `SupplierService`: List, Create, Get, Update, Delete, Activate (replaces `PartnerService`, Release 5.0) |
