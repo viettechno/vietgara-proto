@@ -59,15 +59,15 @@ Protocol Buffers. The same `.proto` files describe:
 | | | `RoleService`: ListPermissions, ListRoles, GetRole, CreateRole, UpdateRole, DeleteRole |
 | | | `StaffGroupService`: ListStaffGroups, CreateStaffGroup, UpdateStaffGroup, DeleteStaffGroup |
 | `vietgara.license.v1` | License (HLD #3) | `LicenseService`: ListPlans, GetMySubscription, ChangeMyPlan, GetGarageEntitlements |
-| `vietgara.platform.v1` | Platform staff (Release 8.1) | `PlatformStaffService`: platform roles, groups, staff and invitations (`/api/v1/admin/...`); `PlatformAccessService`: GetMyPlatformAccess and the user's own platform invitations |
+| `vietgara.platform.v1` | Platform staff | `PlatformStaffService`: platform roles, groups, staff and invitations (`/api/v1/admin/...`); `PlatformAccessService`: GetMyPlatformAccess and the user's own platform invitations |
 | | | `LicenseAdminService`: ListAllPlans, CreatePlan, UpdatePlan, ListSubscriptions, ExtendSubscription |
 | `vietgara.customer.v1` | Customer & Vehicle (HLD #4) | `CustomerService` (+ Activate, Lookup), `VehicleService` (+ Activate, Correct, ChangeOwner), `CustomerLinkService` (RequestCustomerUserLink, ConfirmCustomerUserLink, UnlinkCustomerUser), `CustomerTaxProfileService` |
-| `vietgara.supplier.v1` | Supplier (FR-SUP-01) | `SupplierService`: List, Create, Get, Update, Delete, Activate (replaces `PartnerService`, Release 5.0) |
-| `vietgara.catalogue.v1` | Catalogue (HLD #18, Release 6.0) | `CatalogueService`: parts (List, Create, Get, Update, Delete, Activate, SetPartUnits, SetPartBarcodes, LookupPartByBarcode, AddPartImage, RemovePartImage), units, part categories. The part and everything that describes it; no quantities |
+| `vietgara.supplier.v1` | Supplier (FR-SUP-01) | `SupplierService`: List, Create, Get, Update, Delete, Activate (replaces `PartnerService`) |
+| `vietgara.catalogue.v1` | Catalogue (HLD #18) | `CatalogueService`: parts (List, Create, Get, Update, Delete, Activate, SetPartUnits, SetPartBarcodes, LookupPartByBarcode, AddPartImage, RemovePartImage), units, part categories. The part and everything that describes it; no quantities |
 | `vietgara.inventory.v1` | Inventory (HLD #7) | `InventoryService`: ListStockLevels, GetStockLevel, CreateStockReceipt, ListStockTransactions. Stock only; the part is in `vietgara.catalogue.v1` |
-| | | `ImportService` (Release 7.2): DownloadImportTemplate, PreviewImport, ConfirmImport for parts, goods receipts and stock counts from Excel |
-| `vietgara.catalogue.v1` | Job catalogue (Release 7.3) | `JobService`: ListJobs, CreateJob, GetJob, UpdateJob, DeleteJob, ActivateJob (jobs and their suggested parts, FR-CAT-05). `QuoteService.AddQuoteJob` adds a job to a quote; `RepairOrderService` gains AddRepairOrderLine, DeleteRepairOrderLine and CancelRepairOrder |
-| `vietgara.file.v1` | File registry (Release 5.0) | `FileService`: UploadFile, GetFileUrl, DeleteFile |
+| | | `ImportService`: DownloadImportTemplate, PreviewImport, ConfirmImport for parts, goods receipts and stock counts from Excel |
+| `vietgara.catalogue.v1` | Job catalogue | `JobService`: ListJobs, CreateJob, GetJob, UpdateJob, DeleteJob, ActivateJob (jobs and their suggested parts, FR-CAT-05). `QuoteService.AddQuoteJob` adds a job to a quote; `RepairOrderService` gains AddRepairOrderLine, DeleteRepairOrderLine and CancelRepairOrder |
+| `vietgara.file.v1` | File registry | `FileService`: UploadFile, GetFileUrl, DeleteFile |
 | `vietgara.common.v1` | Shared messages | `Pagination`, `BankDetails`, `DeleteOutcome`, `BillingParty` and `TaxProfileKind`, `ErrorResponse` and the OpenAPI document options (no services) |
 
 ```mermaid
@@ -80,18 +80,11 @@ flowchart LR
 
 ## Planned contract changes
 
-Per the [Release Plan](https://github.com/viettechno/vietgara-docs/blob/master/docs/01-Product/Release_Plan/Release_Plan_Phase3.md) in `vietgara-docs` (API Specification, Section 16). Breaking changes are accepted deliberately while the product is in development (no real tenant yet); each one is a single, announced change.
+See the API Specification, Section 16. Breaking changes are accepted deliberately while the product is in development (no real tenant yet); each one is a single, announced change.
 
 | When | Change |
 | --- | --- |
-| Phase 3 | `Account` becomes `User`; `account_id` becomes `user_id`; the session carries `user`; no dual field and no compatibility window (`buf breaking` is expected to fail once) |
-| Release 5.0 | **Done:** insurer fields of settlements and payments, the `PayerType` enum and `AllocateSettlement` are removed (no `reserved` fields, numbers are renumbered); `Settlement.customer_amount` / `customer_paid_amount` become `paid_amount`; `PartnerService` becomes `SupplierService` in the new `vietgara.supplier.v1` package with `PERMISSION_SUPPLIER_*` and a shared `vietgara.common.v1.BankDetails`. payment vouchers (voucher number, payer, reason, void, voucher PDF), the file registry (`vietgara.file.v1`), the garage legal profile and voucher numbering template, and the `DELETED` / `DEACTIVATED` outcome with `dryRun`, `isActive`, `includeInactive` and `:activate` on customers, vehicles, suppliers and tax profiles |
-| Release 5.1 | **Done:** customer lookup and user links (`CustomerLinkService`, `/me/garage-links` in the Customer BFF), customer tax profiles, billing party on quotes and settlements, `invoiceRequested` and `UpdateSettlement`, vehicle `editable` / `lockedFields`, `:correct` and `:change-owner`, `PERMISSION_CUSTOMER_CORRECT` |
-| Release 5.2 | **Done:** `Subscription.pendingChange` and `CancelMyPendingPlanChange` (plan changes take effect at the period end) |
-| Release 6.0 | **Done:** the Catalogue module (`vietgara.catalogue.v1`: `Part`, `Unit`, `PackagingUnit`, `PartCategory`, `/parts`); `inventory.v1` keeps stock only (`StockLevel`, `Item` is gone, receipts take an optional `unit_id`); `unit_id` / `entered_quantity` on quote and repair-order lines; `FILE_KIND_PART_IMAGE`; `PERMISSION_CATALOGUE_READ` / `_WRITE`; `ExportRevenueExcel`. Breaking for `inventory.v1`, acknowledged with the `breaking-change` label |
-| Release 6.1 | MFA challenge and enrolment |
-| Phases 7, 10 | Goods receipts, stock counts, adjustments, barcodes, imports; jobs, print settings; the public contact request (Release 10.2, `POST /api/v1/public/contact-requests`) |
-| Phase 8 | Platform roles, groups and invitations; support grants |
+| Phase 10 | Print settings; the public contact request (Release 10.2, `POST /api/v1/public/contact-requests`) |
 | Phases 11-15 | Device tokens and push, sync for the technician BFF; booking; receivables, purchase orders; printers and templates; transfers |
 | Phases 16-17 | Payments and e-invoices; insurers and claims; supplier portal |
 
