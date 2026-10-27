@@ -1,0 +1,427 @@
+syntax = "proto3";
+
+package vietgara.platform.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/platform/v1;platformv1";
+
+// PlatformPermission is one action a platform user may perform (FR-IAM-10).
+// The catalogue is fixed and grouped by module, like the garage catalogue,
+// but it is a separate scope: it has no garage. A write permission includes
+// the read permission of its module. A Platform Admin (configured in the
+// deployment) holds every permission; admin staff hold the union of the
+// roles of their platform staff groups. Permissions are evaluated on every
+// request from the database, so a removal applies at once.
+enum PlatformPermission {
+  PLATFORM_PERMISSION_UNSPECIFIED = 0;
+  // Plans, and the platform payment details.
+  PLATFORM_PERMISSION_PLAN_READ = 1;
+  PLATFORM_PERMISSION_PLAN_WRITE = 2;
+  // Subscriptions, payment requests and credit.
+  PLATFORM_PERMISSION_SUBSCRIPTION_READ = 3;
+  PLATFORM_PERMISSION_SUBSCRIPTION_WRITE = 4;
+  // Platform dashboards (Phase 12).
+  PLATFORM_PERMISSION_STATS_READ = 5;
+  // Names and owners of garages, no business data.
+  PLATFORM_PERMISSION_GARAGE_DIRECTORY_READ = 6;
+  // Look up a user; never password or token data.
+  PLATFORM_PERMISSION_USER_READ = 7;
+  // Platform roles, groups, staff and invitations.
+  PLATFORM_PERMISSION_PLATFORM_STAFF_READ = 8;
+  PLATFORM_PERMISSION_PLATFORM_STAFF_WRITE = 9;
+  // Open and use support grants (Release 8.2).
+  PLATFORM_PERMISSION_SUPPORT_READ = 10;
+  PLATFORM_PERMISSION_SUPPORT_WRITE = 11;
+  // Read the platform audit log.
+  PLATFORM_PERMISSION_AUDIT_READ = 12;
+}
+
+enum PlatformInvitationStatus {
+  PLATFORM_INVITATION_STATUS_UNSPECIFIED = 0;
+  PLATFORM_INVITATION_STATUS_PENDING = 1;
+  PLATFORM_INVITATION_STATUS_ACCEPTED = 2;
+  PLATFORM_INVITATION_STATUS_DECLINED = 3;
+  PLATFORM_INVITATION_STATUS_REVOKED = 4;
+  PLATFORM_INVITATION_STATUS_EXPIRED = 5;
+}
+
+// PlatformPermissionInfo describes one catalogue entry.
+message PlatformPermissionInfo {
+  PlatformPermission permission = 1;
+  // Module the permission belongs to, e.g. "plan": groups the role editor.
+  string module = 2;
+  // "read" or "write": the permission's column in the role editor.
+  string action = 3;
+}
+
+// PlatformRole is a named set of platform permissions.
+message PlatformRole {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string name = 2 [(google.api.field_behavior) = REQUIRED];
+  string description = 3;
+  repeated PlatformPermission permissions = 4;
+  // Number of platform staff groups using the role.
+  int32 group_count = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// PlatformStaffGroup is a set of users that all receive the permissions of
+// the group's role.
+message PlatformStaffGroup {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string name = 2 [(google.api.field_behavior) = REQUIRED];
+  string description = 3;
+  string role_id = 4 [(google.api.field_behavior) = REQUIRED];
+  string role_name = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int32 member_count = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// GroupRef names a group a staff member belongs to.
+message GroupRef {
+  string id = 1;
+  string name = 2;
+}
+
+// PlatformStaffMember is a user with platform access: a Platform Admin, or a
+// member of at least one platform staff group.
+message PlatformStaffMember {
+  string user_id = 1;
+  string full_name = 2;
+  string email = 3;
+  // Configured in the deployment (PLATFORM_ADMIN_EMAILS): holds every
+  // permission and cannot be removed here.
+  bool platform_admin = 4;
+  repeated GroupRef groups = 5;
+}
+
+// PlatformInvitation asks an existing user to join a platform staff group.
+// It is e-mailed to the user and expires after 7 days.
+message PlatformInvitation {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string group_id = 2;
+  string group_name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string role_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string user_id = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string full_name = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string email = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  PlatformInvitationStatus status = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string invited_by_name = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp expires_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp responded_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// MyPlatformAccess is what the signed-in user may do on the platform: it
+// decides whether the admin web and the admin app open and which menus they
+// show.
+message MyPlatformAccess {
+  // Configured in the deployment; holds every permission.
+  bool platform_admin = 1;
+  // The effective permissions (the full catalogue for a Platform Admin).
+  repeated PlatformPermission permissions = 2;
+  // Invitations waiting for an answer.
+  int32 pending_invitation_count = 3;
+}
+
+message ListPlatformPermissionsRequest {}
+
+message ListPlatformPermissionsResponse {
+  repeated PlatformPermissionInfo data = 1;
+}
+
+message ListPlatformRolesRequest {}
+
+message ListPlatformRolesResponse {
+  repeated PlatformRole data = 1;
+}
+
+message GetPlatformRoleRequest {
+  string role_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetPlatformRoleResponse {
+  PlatformRole role = 1;
+}
+
+message CreatePlatformRoleRequest {
+  PlatformRole role = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreatePlatformRoleResponse {
+  PlatformRole role = 1;
+}
+
+message UpdatePlatformRoleRequest {
+  string role_id = 1 [(google.api.field_behavior) = REQUIRED];
+  PlatformRole role = 2 [(google.api.field_behavior) = REQUIRED];
+  // name, description, permissions; filled from the JSON body when omitted.
+  google.protobuf.FieldMask update_mask = 3;
+}
+
+message UpdatePlatformRoleResponse {
+  PlatformRole role = 1;
+}
+
+message DeletePlatformRoleRequest {
+  string role_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeletePlatformRoleResponse {}
+
+message ListPlatformGroupsRequest {}
+
+message ListPlatformGroupsResponse {
+  repeated PlatformStaffGroup data = 1;
+}
+
+message GetPlatformGroupRequest {
+  string group_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetPlatformGroupResponse {
+  PlatformStaffGroup group = 1;
+  repeated PlatformStaffMember members = 2;
+}
+
+message CreatePlatformGroupRequest {
+  PlatformStaffGroup group = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreatePlatformGroupResponse {
+  PlatformStaffGroup group = 1;
+}
+
+message UpdatePlatformGroupRequest {
+  string group_id = 1 [(google.api.field_behavior) = REQUIRED];
+  PlatformStaffGroup group = 2 [(google.api.field_behavior) = REQUIRED];
+  // name, description, role_id; filled from the JSON body when omitted.
+  google.protobuf.FieldMask update_mask = 3;
+}
+
+message UpdatePlatformGroupResponse {
+  PlatformStaffGroup group = 1;
+}
+
+message DeletePlatformGroupRequest {
+  string group_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeletePlatformGroupResponse {}
+
+message ListPlatformStaffRequest {}
+
+message ListPlatformStaffResponse {
+  repeated PlatformStaffMember data = 1;
+}
+
+message RemovePlatformStaffMemberRequest {
+  string group_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string user_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message RemovePlatformStaffMemberResponse {}
+
+message CreatePlatformInvitationRequest {
+  // The e-mail of an existing, verified user.
+  string email = 1 [(google.api.field_behavior) = REQUIRED];
+  string group_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreatePlatformInvitationResponse {
+  PlatformInvitation invitation = 1;
+}
+
+message ListPlatformInvitationsRequest {
+  // Unspecified lists every status.
+  PlatformInvitationStatus status = 1;
+}
+
+message ListPlatformInvitationsResponse {
+  repeated PlatformInvitation data = 1;
+}
+
+message RevokePlatformInvitationRequest {
+  string invitation_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message RevokePlatformInvitationResponse {
+  PlatformInvitation invitation = 1;
+}
+
+// PlatformStaffService manages platform roles, platform staff groups and
+// their members (FR-IAM-10). Every call needs PLATFORM_PERMISSION_PLATFORM_
+// STAFF_READ (reads) or PLATFORM_PERMISSION_PLATFORM_STAFF_WRITE (changes);
+// a Platform Admin passes. A user without the Platform Admin right can only
+// give permissions they hold themselves.
+service PlatformStaffService {
+  // Lists the permission catalogue.
+  rpc ListPlatformPermissions(ListPlatformPermissionsRequest) returns (ListPlatformPermissionsResponse) {
+    option (google.api.http) = {get: "/api/v1/admin/platform-permissions"};
+  }
+
+  rpc ListPlatformRoles(ListPlatformRolesRequest) returns (ListPlatformRolesResponse) {
+    option (google.api.http) = {get: "/api/v1/admin/platform-roles"};
+  }
+
+  rpc GetPlatformRole(GetPlatformRoleRequest) returns (GetPlatformRoleResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/platform-roles/{role_id}"
+      response_body: "role"
+    };
+  }
+
+  rpc CreatePlatformRole(CreatePlatformRoleRequest) returns (CreatePlatformRoleResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/platform-roles"
+      body: "role"
+      response_body: "role"
+    };
+  }
+
+  rpc UpdatePlatformRole(UpdatePlatformRoleRequest) returns (UpdatePlatformRoleResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/admin/platform-roles/{role_id}"
+      body: "role"
+      response_body: "role"
+    };
+  }
+
+  // Fails with PLATFORM_ROLE_IN_USE while a group uses the role.
+  rpc DeletePlatformRole(DeletePlatformRoleRequest) returns (DeletePlatformRoleResponse) {
+    option (google.api.http) = {delete: "/api/v1/admin/platform-roles/{role_id}"};
+  }
+
+  rpc ListPlatformGroups(ListPlatformGroupsRequest) returns (ListPlatformGroupsResponse) {
+    option (google.api.http) = {get: "/api/v1/admin/platform-groups"};
+  }
+
+  // One group with its members.
+  rpc GetPlatformGroup(GetPlatformGroupRequest) returns (GetPlatformGroupResponse) {
+    option (google.api.http) = {get: "/api/v1/admin/platform-groups/{group_id}"};
+  }
+
+  rpc CreatePlatformGroup(CreatePlatformGroupRequest) returns (CreatePlatformGroupResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/platform-groups"
+      body: "group"
+      response_body: "group"
+    };
+  }
+
+  rpc UpdatePlatformGroup(UpdatePlatformGroupRequest) returns (UpdatePlatformGroupResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/admin/platform-groups/{group_id}"
+      body: "group"
+      response_body: "group"
+    };
+  }
+
+  // Removes the group's members and revokes its pending invitations.
+  rpc DeletePlatformGroup(DeletePlatformGroupRequest) returns (DeletePlatformGroupResponse) {
+    option (google.api.http) = {delete: "/api/v1/admin/platform-groups/{group_id}"};
+  }
+
+  // Every user with platform access: the Platform Admins and the members of
+  // the groups.
+  rpc ListPlatformStaff(ListPlatformStaffRequest) returns (ListPlatformStaffResponse) {
+    option (google.api.http) = {get: "/api/v1/admin/platform-staff"};
+  }
+
+  // Takes a user out of one group; their access from other groups stays.
+  rpc RemovePlatformStaffMember(RemovePlatformStaffMemberRequest) returns (RemovePlatformStaffMemberResponse) {
+    option (google.api.http) = {delete: "/api/v1/admin/platform-groups/{group_id}/members/{user_id}"};
+  }
+
+  // Invites an existing user into a group and e-mails them.
+  rpc CreatePlatformInvitation(CreatePlatformInvitationRequest) returns (CreatePlatformInvitationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/platform-invitations"
+      body: "*"
+      response_body: "invitation"
+    };
+  }
+
+  rpc ListPlatformInvitations(ListPlatformInvitationsRequest) returns (ListPlatformInvitationsResponse) {
+    option (google.api.http) = {get: "/api/v1/admin/platform-invitations"};
+  }
+
+  rpc RevokePlatformInvitation(RevokePlatformInvitationRequest) returns (RevokePlatformInvitationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/platform-invitations/{invitation_id}/revoke"
+      body: "*"
+      response_body: "invitation"
+    };
+  }
+}
+
+message GetMyPlatformAccessRequest {}
+
+message GetMyPlatformAccessResponse {
+  MyPlatformAccess access = 1;
+}
+
+message ListMyPlatformInvitationsRequest {
+  // Unspecified lists every status.
+  PlatformInvitationStatus status = 1;
+}
+
+message ListMyPlatformInvitationsResponse {
+  repeated PlatformInvitation data = 1;
+}
+
+message AcceptPlatformInvitationRequest {
+  string invitation_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message AcceptPlatformInvitationResponse {
+  PlatformInvitation invitation = 1;
+}
+
+message DeclinePlatformInvitationRequest {
+  string invitation_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeclinePlatformInvitationResponse {
+  PlatformInvitation invitation = 1;
+}
+
+// PlatformAccessService is the signed-in user's own side of platform access:
+// what they may do, and the invitations they received. It needs no platform
+// permission, so a user about to become admin staff can answer an invitation.
+service PlatformAccessService {
+  // The platform permissions of the caller (menus in the admin web and app).
+  rpc GetMyPlatformAccess(GetMyPlatformAccessRequest) returns (GetMyPlatformAccessResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/me/permissions"
+      response_body: "access"
+    };
+  }
+
+  rpc ListMyPlatformInvitations(ListMyPlatformInvitationsRequest) returns (ListMyPlatformInvitationsResponse) {
+    option (google.api.http) = {get: "/api/v1/me/platform-invitations"};
+  }
+
+  // Joins the group of the invitation.
+  rpc AcceptPlatformInvitation(AcceptPlatformInvitationRequest) returns (AcceptPlatformInvitationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/platform-invitations/{invitation_id}/accept"
+      body: "*"
+      response_body: "invitation"
+    };
+  }
+
+  rpc DeclinePlatformInvitation(DeclinePlatformInvitationRequest) returns (DeclinePlatformInvitationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/platform-invitations/{invitation_id}/decline"
+      body: "*"
+      response_body: "invitation"
+    };
+  }
+}

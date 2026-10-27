@@ -79,6 +79,14 @@
       "description": "LicenseAdminService is for platform admins only (FR-LIC-05, FR-LIC-08, FR-LIC-10)."
     },
     {
+      "name": "PlatformStaffService",
+      "description": "PlatformStaffService manages platform roles, platform staff groups and\ntheir members (FR-IAM-10). Every call needs PLATFORM_PERMISSION_PLATFORM_\nSTAFF_READ (reads) or PLATFORM_PERMISSION_PLATFORM_STAFF_WRITE (changes);\na Platform Admin passes. A user without the Platform Admin right can only\ngive permissions they hold themselves."
+    },
+    {
+      "name": "PlatformAccessService",
+      "description": "PlatformAccessService is the signed-in user's own side of platform access:\nwhat they may do, and the invitations they received. It needs no platform\npermission, so a user about to become admin staff can answer an invitation."
+    },
+    {
       "name": "QuoteService",
       "description": "QuoteService manages quotes (FRD 3.5). Reads need PERMISSION_QUOTE_READ,\nchanges PERMISSION_QUOTE_WRITE."
     },
@@ -130,6 +138,29 @@
     "application/json"
   ],
   "paths": {
+    "/api/v1/admin/me/permissions": {
+      "get": {
+        "summary": "The platform permissions of the caller (menus in the admin web and app).",
+        "operationId": "PlatformAccessService_GetMyPlatformAccess",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1MyPlatformAccess"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "PlatformAccessService"
+        ]
+      }
+    },
     "/api/v1/admin/payment-settings": {
       "get": {
         "operationId": "LicenseAdminService_GetPlatformPaymentSettings",
@@ -470,6 +501,491 @@
         ],
         "tags": [
           "LicenseAdminService"
+        ]
+      }
+    },
+    "/api/v1/admin/platform-groups": {
+      "get": {
+        "operationId": "PlatformStaffService_ListPlatformGroups",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPlatformGroupsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "PlatformStaffService"
+        ]
+      },
+      "post": {
+        "operationId": "PlatformStaffService_CreatePlatformGroup",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlatformStaffGroup"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "group",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PlatformStaffGroup"
+            }
+          }
+        ],
+        "tags": [
+          "PlatformStaffService"
+        ]
+      }
+    },
+    "/api/v1/admin/platform-groups/{groupId}": {
+      "get": {
+        "summary": "One group with its members.",
+        "operationId": "PlatformStaffService_GetPlatformGroup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetPlatformGroupResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PlatformStaffService"
+        ]
+      },
+      "delete": {
+        "summary": "Removes the group's members and revokes its pending invitations.",
+        "operationId": "PlatformStaffService_DeletePlatformGroup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeletePlatformGroupResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PlatformStaffService"
+        ]
+      },
+      "patch": {
+        "operationId": "PlatformStaffService_UpdatePlatformGroup",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlatformStaffGroup"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "group",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PlatformStaffGroup"
+            }
+          }
+        ],
+        "tags": [
+          "PlatformStaffService"
+        ]
+      }
+    },
+    "/api/v1/admin/platform-groups/{groupId}/members/{userId}": {
+      "delete": {
+        "summary": "Takes a user out of one group; their access from other groups stays.",
+        "operationId": "PlatformStaffService_RemovePlatformStaffMember",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RemovePlatformStaffMemberResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PlatformStaffService"
+        ]
+      }
+    },
+    "/api/v1/admin/platform-invitations": {
+      "get": {
+        "operationId": "PlatformStaffService_ListPlatformInvitations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPlatformInvitationsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "description": "Unspecified lists every status.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PLATFORM_INVITATION_STATUS_PENDING",
+              "PLATFORM_INVITATION_STATUS_ACCEPTED",
+              "PLATFORM_INVITATION_STATUS_DECLINED",
+              "PLATFORM_INVITATION_STATUS_REVOKED",
+              "PLATFORM_INVITATION_STATUS_EXPIRED"
+            ]
+          }
+        ],
+        "tags": [
+          "PlatformStaffService"
+        ]
+      },
+      "post": {
+        "summary": "Invites an existing user into a group and e-mails them.",
+        "operationId": "PlatformStaffService_CreatePlatformInvitation",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlatformInvitation"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreatePlatformInvitationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PlatformStaffService"
+        ]
+      }
+    },
+    "/api/v1/admin/platform-invitations/{invitationId}/revoke": {
+      "post": {
+        "operationId": "PlatformStaffService_RevokePlatformInvitation",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlatformInvitation"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "invitationId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PlatformStaffServiceRevokePlatformInvitationBody"
+            }
+          }
+        ],
+        "tags": [
+          "PlatformStaffService"
+        ]
+      }
+    },
+    "/api/v1/admin/platform-permissions": {
+      "get": {
+        "summary": "Lists the permission catalogue.",
+        "operationId": "PlatformStaffService_ListPlatformPermissions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPlatformPermissionsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "PlatformStaffService"
+        ]
+      }
+    },
+    "/api/v1/admin/platform-roles": {
+      "get": {
+        "operationId": "PlatformStaffService_ListPlatformRoles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPlatformRolesResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "PlatformStaffService"
+        ]
+      },
+      "post": {
+        "operationId": "PlatformStaffService_CreatePlatformRole",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlatformRole"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "role",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PlatformRole"
+            }
+          }
+        ],
+        "tags": [
+          "PlatformStaffService"
+        ]
+      }
+    },
+    "/api/v1/admin/platform-roles/{roleId}": {
+      "get": {
+        "operationId": "PlatformStaffService_GetPlatformRole",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlatformRole"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "roleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PlatformStaffService"
+        ]
+      },
+      "delete": {
+        "summary": "Fails with PLATFORM_ROLE_IN_USE while a group uses the role.",
+        "operationId": "PlatformStaffService_DeletePlatformRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeletePlatformRoleResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "roleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PlatformStaffService"
+        ]
+      },
+      "patch": {
+        "operationId": "PlatformStaffService_UpdatePlatformRole",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlatformRole"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "roleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "role",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PlatformRole"
+            }
+          }
+        ],
+        "tags": [
+          "PlatformStaffService"
+        ]
+      }
+    },
+    "/api/v1/admin/platform-staff": {
+      "get": {
+        "summary": "Every user with platform access: the Platform Admins and the members of\nthe groups.",
+        "operationId": "PlatformStaffService_ListPlatformStaff",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPlatformStaffResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "PlatformStaffService"
         ]
       }
     },
@@ -8026,6 +8542,121 @@
         ]
       }
     },
+    "/api/v1/me/platform-invitations": {
+      "get": {
+        "operationId": "PlatformAccessService_ListMyPlatformInvitations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListMyPlatformInvitationsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "description": "Unspecified lists every status.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PLATFORM_INVITATION_STATUS_PENDING",
+              "PLATFORM_INVITATION_STATUS_ACCEPTED",
+              "PLATFORM_INVITATION_STATUS_DECLINED",
+              "PLATFORM_INVITATION_STATUS_REVOKED",
+              "PLATFORM_INVITATION_STATUS_EXPIRED"
+            ]
+          }
+        ],
+        "tags": [
+          "PlatformAccessService"
+        ]
+      }
+    },
+    "/api/v1/me/platform-invitations/{invitationId}/accept": {
+      "post": {
+        "summary": "Joins the group of the invitation.",
+        "operationId": "PlatformAccessService_AcceptPlatformInvitation",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlatformInvitation"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "invitationId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PlatformAccessServiceAcceptPlatformInvitationBody"
+            }
+          }
+        ],
+        "tags": [
+          "PlatformAccessService"
+        ]
+      }
+    },
+    "/api/v1/me/platform-invitations/{invitationId}/decline": {
+      "post": {
+        "operationId": "PlatformAccessService_DeclinePlatformInvitation",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1PlatformInvitation"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "invitationId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PlatformAccessServiceDeclinePlatformInvitationBody"
+            }
+          }
+        ],
+        "tags": [
+          "PlatformAccessService"
+        ]
+      }
+    },
     "/api/v1/me/subscription": {
       "get": {
         "summary": "The signed-in owner's subscription and usage.",
@@ -8896,6 +9527,15 @@
         "transferredAmount"
       ]
     },
+    "PlatformAccessServiceAcceptPlatformInvitationBody": {
+      "type": "object"
+    },
+    "PlatformAccessServiceDeclinePlatformInvitationBody": {
+      "type": "object"
+    },
+    "PlatformStaffServiceRevokePlatformInvitationBody": {
+      "type": "object"
+    },
     "PublicQuoteServiceDecidePublicQuoteBody": {
       "type": "object",
       "properties": {
@@ -9110,6 +9750,14 @@
       "properties": {
         "invitation": {
           "$ref": "#/definitions/v1Invitation"
+        }
+      }
+    },
+    "v1AcceptPlatformInvitationResponse": {
+      "type": "object",
+      "properties": {
+        "invitation": {
+          "$ref": "#/definitions/v1PlatformInvitation"
         }
       }
     },
@@ -9548,6 +10196,46 @@
         }
       }
     },
+    "v1CreatePlatformGroupResponse": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "$ref": "#/definitions/v1PlatformStaffGroup"
+        }
+      }
+    },
+    "v1CreatePlatformInvitationRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "The e-mail of an existing, verified user."
+        },
+        "groupId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "email",
+        "groupId"
+      ]
+    },
+    "v1CreatePlatformInvitationResponse": {
+      "type": "object",
+      "properties": {
+        "invitation": {
+          "$ref": "#/definitions/v1PlatformInvitation"
+        }
+      }
+    },
+    "v1CreatePlatformRoleResponse": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/v1PlatformRole"
+        }
+      }
+    },
     "v1CreateQuoteResponse": {
       "type": "object",
       "properties": {
@@ -9896,6 +10584,14 @@
         }
       }
     },
+    "v1DeclinePlatformInvitationResponse": {
+      "type": "object",
+      "properties": {
+        "invitation": {
+          "$ref": "#/definitions/v1PlatformInvitation"
+        }
+      }
+    },
     "v1DeleteCustomerResponse": {
       "type": "object",
       "properties": {
@@ -9959,6 +10655,12 @@
           "$ref": "#/definitions/v1DeleteOutcome"
         }
       }
+    },
+    "v1DeletePlatformGroupResponse": {
+      "type": "object"
+    },
+    "v1DeletePlatformRoleResponse": {
+      "type": "object"
     },
     "v1DeleteQuoteResponse": {
       "type": "object"
@@ -10469,6 +11171,14 @@
         }
       }
     },
+    "v1GetMyPlatformAccessResponse": {
+      "type": "object",
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/v1MyPlatformAccess"
+        }
+      }
+    },
     "v1GetMySubscriptionResponse": {
       "type": "object",
       "properties": {
@@ -10526,11 +11236,34 @@
         }
       }
     },
+    "v1GetPlatformGroupResponse": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "$ref": "#/definitions/v1PlatformStaffGroup"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PlatformStaffMember"
+          }
+        }
+      }
+    },
     "v1GetPlatformPaymentSettingsResponse": {
       "type": "object",
       "properties": {
         "settings": {
           "$ref": "#/definitions/v1PlatformPaymentSettings"
+        }
+      }
+    },
+    "v1GetPlatformRoleResponse": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/v1PlatformRole"
         }
       }
     },
@@ -10853,6 +11586,18 @@
         "GOODS_RECEIPT_STATUS_CANCELLED"
       ],
       "description": "GoodsReceiptStatus is the lifecycle of a goods receipt document\n(FR-INV-06): saved as a draft, then completed (which updates stock and\ncost), or cancelled (which reverses a completed one)."
+    },
+    "v1GroupRef": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "description": "GroupRef names a group a staff member belongs to."
     },
     "v1ImportPreview": {
       "type": "object",
@@ -11304,6 +12049,18 @@
         }
       }
     },
+    "v1ListMyPlatformInvitationsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PlatformInvitation"
+          }
+        }
+      }
+    },
     "v1ListMyVehiclesResponse": {
       "type": "object",
       "properties": {
@@ -11395,6 +12152,66 @@
             "$ref": "#/definitions/v1Plan"
           },
           "description": "Public, active plans, cheapest first."
+        }
+      }
+    },
+    "v1ListPlatformGroupsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PlatformStaffGroup"
+          }
+        }
+      }
+    },
+    "v1ListPlatformInvitationsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PlatformInvitation"
+          }
+        }
+      }
+    },
+    "v1ListPlatformPermissionsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PlatformPermissionInfo"
+          }
+        }
+      }
+    },
+    "v1ListPlatformRolesResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PlatformRole"
+          }
+        }
+      }
+    },
+    "v1ListPlatformStaffResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PlatformStaffMember"
+          }
         }
       }
     },
@@ -11755,6 +12572,28 @@
         }
       },
       "description": "MyGarage is a garage where the signed-in person is a customer."
+    },
+    "v1MyPlatformAccess": {
+      "type": "object",
+      "properties": {
+        "platformAdmin": {
+          "type": "boolean",
+          "description": "Configured in the deployment; holds every permission."
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1PlatformPermission"
+          },
+          "description": "The effective permissions (the full catalogue for a Platform Admin)."
+        },
+        "pendingInvitationCount": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Invitations waiting for an answer."
+        }
+      },
+      "description": "MyPlatformAccess is what the signed-in user may do on the platform: it\ndecides whether the admin web and the admin app open and which menus they\nshow."
     },
     "v1NumberingTemplates": {
       "type": "object",
@@ -12373,6 +13212,72 @@
       ],
       "description": "PlanPaymentStatus is the state of a payment request (LLD 3.3).\n\n - PLAN_PAYMENT_STATUS_AWAITING_PAYMENT: Quoted, with its transfer reference; the owner has not declared the\ntransfer yet. A new request replaces it.\n - PLAN_PAYMENT_STATUS_SUBMITTED: The owner declared the transfer; a platform admin reviews it.\n - PLAN_PAYMENT_STATUS_APPROVED: Approved: the plan applied at once."
     },
+    "v1PlatformInvitation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "groupId": {
+          "type": "string"
+        },
+        "groupName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "roleName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "userId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "fullName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "email": {
+          "type": "string",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1PlatformInvitationStatus",
+          "readOnly": true
+        },
+        "invitedByName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "respondedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "PlatformInvitation asks an existing user to join a platform staff group.\nIt is e-mailed to the user and expires after 7 days."
+    },
+    "v1PlatformInvitationStatus": {
+      "type": "string",
+      "enum": [
+        "PLATFORM_INVITATION_STATUS_PENDING",
+        "PLATFORM_INVITATION_STATUS_ACCEPTED",
+        "PLATFORM_INVITATION_STATUS_DECLINED",
+        "PLATFORM_INVITATION_STATUS_REVOKED",
+        "PLATFORM_INVITATION_STATUS_EXPIRED"
+      ]
+    },
     "v1PlatformPaymentSettings": {
       "type": "object",
       "properties": {
@@ -12403,6 +13308,150 @@
         }
       },
       "description": "PlatformPaymentSettings are the details owners transfer to (FR-LIC-10)."
+    },
+    "v1PlatformPermission": {
+      "type": "string",
+      "enum": [
+        "PLATFORM_PERMISSION_PLAN_READ",
+        "PLATFORM_PERMISSION_PLAN_WRITE",
+        "PLATFORM_PERMISSION_SUBSCRIPTION_READ",
+        "PLATFORM_PERMISSION_SUBSCRIPTION_WRITE",
+        "PLATFORM_PERMISSION_STATS_READ",
+        "PLATFORM_PERMISSION_GARAGE_DIRECTORY_READ",
+        "PLATFORM_PERMISSION_USER_READ",
+        "PLATFORM_PERMISSION_PLATFORM_STAFF_READ",
+        "PLATFORM_PERMISSION_PLATFORM_STAFF_WRITE",
+        "PLATFORM_PERMISSION_SUPPORT_READ",
+        "PLATFORM_PERMISSION_SUPPORT_WRITE",
+        "PLATFORM_PERMISSION_AUDIT_READ"
+      ],
+      "description": "PlatformPermission is one action a platform user may perform (FR-IAM-10).\nThe catalogue is fixed and grouped by module, like the garage catalogue,\nbut it is a separate scope: it has no garage. A write permission includes\nthe read permission of its module. A Platform Admin (configured in the\ndeployment) holds every permission; admin staff hold the union of the\nroles of their platform staff groups. Permissions are evaluated on every\nrequest from the database, so a removal applies at once.\n\n - PLATFORM_PERMISSION_PLAN_READ: Plans, and the platform payment details.\n - PLATFORM_PERMISSION_SUBSCRIPTION_READ: Subscriptions, payment requests and credit.\n - PLATFORM_PERMISSION_STATS_READ: Platform dashboards (Phase 12).\n - PLATFORM_PERMISSION_GARAGE_DIRECTORY_READ: Names and owners of garages, no business data.\n - PLATFORM_PERMISSION_USER_READ: Look up a user; never password or token data.\n - PLATFORM_PERMISSION_PLATFORM_STAFF_READ: Platform roles, groups, staff and invitations.\n - PLATFORM_PERMISSION_SUPPORT_READ: Open and use support grants (Release 8.2).\n - PLATFORM_PERMISSION_AUDIT_READ: Read the platform audit log."
+    },
+    "v1PlatformPermissionInfo": {
+      "type": "object",
+      "properties": {
+        "permission": {
+          "$ref": "#/definitions/v1PlatformPermission"
+        },
+        "module": {
+          "type": "string",
+          "description": "Module the permission belongs to, e.g. \"plan\": groups the role editor."
+        },
+        "action": {
+          "type": "string",
+          "description": "\"read\" or \"write\": the permission's column in the role editor."
+        }
+      },
+      "description": "PlatformPermissionInfo describes one catalogue entry."
+    },
+    "v1PlatformRole": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1PlatformPermission"
+          }
+        },
+        "groupCount": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Number of platform staff groups using the role.",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "PlatformRole is a named set of platform permissions.",
+      "required": [
+        "name"
+      ]
+    },
+    "v1PlatformStaffGroup": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "roleId": {
+          "type": "string"
+        },
+        "roleName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "memberCount": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "PlatformStaffGroup is a set of users that all receive the permissions of\nthe group's role.",
+      "required": [
+        "name",
+        "roleId"
+      ]
+    },
+    "v1PlatformStaffMember": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "platformAdmin": {
+          "type": "boolean",
+          "description": "Configured in the deployment (PLATFORM_ADMIN_EMAILS): holds every\npermission and cannot be removed here."
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1GroupRef"
+          }
+        }
+      },
+      "description": "PlatformStaffMember is a user with platform access: a Platform Admin, or a\nmember of at least one platform staff group."
     },
     "v1PostStockIssueResponse": {
       "type": "object",
@@ -12844,6 +13893,9 @@
         }
       }
     },
+    "v1RemovePlatformStaffMemberResponse": {
+      "type": "object"
+    },
     "v1RepairOrder": {
       "type": "object",
       "properties": {
@@ -13182,6 +14234,14 @@
       "properties": {
         "invitation": {
           "$ref": "#/definitions/v1Invitation"
+        }
+      }
+    },
+    "v1RevokePlatformInvitationResponse": {
+      "type": "object",
+      "properties": {
+        "invitation": {
+          "$ref": "#/definitions/v1PlatformInvitation"
         }
       }
     },
@@ -14648,11 +15708,27 @@
         }
       }
     },
+    "v1UpdatePlatformGroupResponse": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "$ref": "#/definitions/v1PlatformStaffGroup"
+        }
+      }
+    },
     "v1UpdatePlatformPaymentSettingsResponse": {
       "type": "object",
       "properties": {
         "settings": {
           "$ref": "#/definitions/v1PlatformPaymentSettings"
+        }
+      }
+    },
+    "v1UpdatePlatformRoleResponse": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/v1PlatformRole"
         }
       }
     },
