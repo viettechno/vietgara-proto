@@ -9324,6 +9324,29 @@
         ]
       }
     },
+    "/api/v1/me/support-sessions": {
+      "get": {
+        "summary": "The caller's active grants: the garages they can read now. It needs no\nplatform permission (it is empty for an ordinary user), so the owner web\ncan ask it of every signed-in user.",
+        "operationId": "SupportService_ListMySupportSessions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListMySupportSessionsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "SupportService"
+        ]
+      }
+    },
     "/api/v1/payment-settings": {
       "get": {
         "summary": "The platform's payment details (FR-LIC-10).",
@@ -12575,6 +12598,18 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1PlatformInvitation"
+          }
+        }
+      }
+    },
+    "v1ListMySupportSessionsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SupportGrant"
           }
         }
       }

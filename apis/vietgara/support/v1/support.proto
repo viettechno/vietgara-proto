@@ -123,6 +123,12 @@ message EndSupportGrantResponse {
   SupportGrant grant = 1;
 }
 
+message ListMySupportSessionsRequest {}
+
+message ListMySupportSessionsResponse {
+  repeated SupportGrant data = 1;
+}
+
 message ListGarageDirectoryRequest {
   // Matches the garage or owner name or the owner's e-mail.
   string query = 1;
@@ -165,6 +171,12 @@ message ListSupportNotificationsResponse {
 // read through the ordinary read endpoints of the garage; with an active
 // grant they answer, read-only, to the staff member.
 service SupportService {
+  // The caller's active grants: the garages they can read now. It needs no
+  // platform permission (it is empty for an ordinary user), so the owner web
+  // can ask it of every signed-in user.
+  rpc ListMySupportSessions(ListMySupportSessionsRequest) returns (ListMySupportSessionsResponse) {
+    option (google.api.http) = {get: "/api/v1/me/support-sessions"};
+  }
   // Searches garages by name, owner name or owner e-mail. Needs
   // PLATFORM_PERMISSION_GARAGE_DIRECTORY_READ.
   rpc ListGarageDirectory(ListGarageDirectoryRequest) returns (ListGarageDirectoryResponse) {

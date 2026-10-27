@@ -19,6 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	SupportService_ListMySupportSessions_FullMethodName    = "/vietgara.support.v1.SupportService/ListMySupportSessions"
 	SupportService_ListGarageDirectory_FullMethodName      = "/vietgara.support.v1.SupportService/ListGarageDirectory"
 	SupportService_RequestSupportGrant_FullMethodName      = "/vietgara.support.v1.SupportService/RequestSupportGrant"
 	SupportService_ListSupportGrants_FullMethodName        = "/vietgara.support.v1.SupportService/ListSupportGrants"
@@ -37,6 +38,10 @@ const (
 // read through the ordinary read endpoints of the garage; with an active
 // grant they answer, read-only, to the staff member.
 type SupportServiceClient interface {
+	// The caller's active grants: the garages they can read now. It needs no
+	// platform permission (it is empty for an ordinary user), so the owner web
+	// can ask it of every signed-in user.
+	ListMySupportSessions(ctx context.Context, in *ListMySupportSessionsRequest, opts ...grpc.CallOption) (*ListMySupportSessionsResponse, error)
 	// Searches garages by name, owner name or owner e-mail. Needs
 	// PLATFORM_PERMISSION_GARAGE_DIRECTORY_READ.
 	ListGarageDirectory(ctx context.Context, in *ListGarageDirectoryRequest, opts ...grpc.CallOption) (*ListGarageDirectoryResponse, error)
@@ -61,6 +66,16 @@ type supportServiceClient struct {
 
 func NewSupportServiceClient(cc grpc.ClientConnInterface) SupportServiceClient {
 	return &supportServiceClient{cc}
+}
+
+func (c *supportServiceClient) ListMySupportSessions(ctx context.Context, in *ListMySupportSessionsRequest, opts ...grpc.CallOption) (*ListMySupportSessionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListMySupportSessionsResponse)
+	err := c.cc.Invoke(ctx, SupportService_ListMySupportSessions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *supportServiceClient) ListGarageDirectory(ctx context.Context, in *ListGarageDirectoryRequest, opts ...grpc.CallOption) (*ListGarageDirectoryResponse, error) {
@@ -133,6 +148,10 @@ func (c *supportServiceClient) ListSupportNotifications(ctx context.Context, in 
 // read through the ordinary read endpoints of the garage; with an active
 // grant they answer, read-only, to the staff member.
 type SupportServiceServer interface {
+	// The caller's active grants: the garages they can read now. It needs no
+	// platform permission (it is empty for an ordinary user), so the owner web
+	// can ask it of every signed-in user.
+	ListMySupportSessions(context.Context, *ListMySupportSessionsRequest) (*ListMySupportSessionsResponse, error)
 	// Searches garages by name, owner name or owner e-mail. Needs
 	// PLATFORM_PERMISSION_GARAGE_DIRECTORY_READ.
 	ListGarageDirectory(context.Context, *ListGarageDirectoryRequest) (*ListGarageDirectoryResponse, error)
@@ -159,6 +178,9 @@ type SupportServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedSupportServiceServer struct{}
 
+func (UnimplementedSupportServiceServer) ListMySupportSessions(context.Context, *ListMySupportSessionsRequest) (*ListMySupportSessionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListMySupportSessions not implemented")
+}
 func (UnimplementedSupportServiceServer) ListGarageDirectory(context.Context, *ListGarageDirectoryRequest) (*ListGarageDirectoryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListGarageDirectory not implemented")
 }
@@ -196,6 +218,24 @@ func RegisterSupportServiceServer(s grpc.ServiceRegistrar, srv SupportServiceSer
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&SupportService_ServiceDesc, srv)
+}
+
+func _SupportService_ListMySupportSessions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMySupportSessionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SupportServiceServer).ListMySupportSessions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SupportService_ListMySupportSessions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SupportServiceServer).ListMySupportSessions(ctx, req.(*ListMySupportSessionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _SupportService_ListGarageDirectory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -313,6 +353,10 @@ var SupportService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "vietgara.support.v1.SupportService",
 	HandlerType: (*SupportServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListMySupportSessions",
+			Handler:    _SupportService_ListMySupportSessions_Handler,
+		},
 		{
 			MethodName: "ListGarageDirectory",
 			Handler:    _SupportService_ListGarageDirectory_Handler,

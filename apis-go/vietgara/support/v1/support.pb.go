@@ -891,6 +891,86 @@ func (x *EndSupportGrantResponse) GetGrant() *SupportGrant {
 	return nil
 }
 
+type ListMySupportSessionsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMySupportSessionsRequest) Reset() {
+	*x = ListMySupportSessionsRequest{}
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMySupportSessionsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMySupportSessionsRequest) ProtoMessage() {}
+
+func (x *ListMySupportSessionsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMySupportSessionsRequest.ProtoReflect.Descriptor instead.
+func (*ListMySupportSessionsRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{11}
+}
+
+type ListMySupportSessionsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []*SupportGrant        `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMySupportSessionsResponse) Reset() {
+	*x = ListMySupportSessionsResponse{}
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMySupportSessionsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMySupportSessionsResponse) ProtoMessage() {}
+
+func (x *ListMySupportSessionsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMySupportSessionsResponse.ProtoReflect.Descriptor instead.
+func (*ListMySupportSessionsResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ListMySupportSessionsResponse) GetData() []*SupportGrant {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
 type ListGarageDirectoryRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Matches the garage or owner name or the owner's e-mail.
@@ -903,7 +983,7 @@ type ListGarageDirectoryRequest struct {
 
 func (x *ListGarageDirectoryRequest) Reset() {
 	*x = ListGarageDirectoryRequest{}
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[11]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -915,7 +995,7 @@ func (x *ListGarageDirectoryRequest) String() string {
 func (*ListGarageDirectoryRequest) ProtoMessage() {}
 
 func (x *ListGarageDirectoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[11]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -928,7 +1008,7 @@ func (x *ListGarageDirectoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGarageDirectoryRequest.ProtoReflect.Descriptor instead.
 func (*ListGarageDirectoryRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{11}
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListGarageDirectoryRequest) GetQuery() string {
@@ -962,7 +1042,7 @@ type ListGarageDirectoryResponse struct {
 
 func (x *ListGarageDirectoryResponse) Reset() {
 	*x = ListGarageDirectoryResponse{}
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[12]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -974,7 +1054,7 @@ func (x *ListGarageDirectoryResponse) String() string {
 func (*ListGarageDirectoryResponse) ProtoMessage() {}
 
 func (x *ListGarageDirectoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[12]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -987,7 +1067,7 @@ func (x *ListGarageDirectoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGarageDirectoryResponse.ProtoReflect.Descriptor instead.
 func (*ListGarageDirectoryResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{12}
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ListGarageDirectoryResponse) GetData() []*GarageDirectoryEntry {
@@ -1017,7 +1097,7 @@ type ListSupportOutboxEventsRequest struct {
 
 func (x *ListSupportOutboxEventsRequest) Reset() {
 	*x = ListSupportOutboxEventsRequest{}
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[13]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1029,7 +1109,7 @@ func (x *ListSupportOutboxEventsRequest) String() string {
 func (*ListSupportOutboxEventsRequest) ProtoMessage() {}
 
 func (x *ListSupportOutboxEventsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[13]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1042,7 +1122,7 @@ func (x *ListSupportOutboxEventsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSupportOutboxEventsRequest.ProtoReflect.Descriptor instead.
 func (*ListSupportOutboxEventsRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{13}
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ListSupportOutboxEventsRequest) GetGrantId() string {
@@ -1083,7 +1163,7 @@ type ListSupportOutboxEventsResponse struct {
 
 func (x *ListSupportOutboxEventsResponse) Reset() {
 	*x = ListSupportOutboxEventsResponse{}
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[14]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1095,7 +1175,7 @@ func (x *ListSupportOutboxEventsResponse) String() string {
 func (*ListSupportOutboxEventsResponse) ProtoMessage() {}
 
 func (x *ListSupportOutboxEventsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[14]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1108,7 +1188,7 @@ func (x *ListSupportOutboxEventsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSupportOutboxEventsResponse.ProtoReflect.Descriptor instead.
 func (*ListSupportOutboxEventsResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{14}
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ListSupportOutboxEventsResponse) GetData() []*SupportOutboxEvent {
@@ -1136,7 +1216,7 @@ type ListSupportNotificationsRequest struct {
 
 func (x *ListSupportNotificationsRequest) Reset() {
 	*x = ListSupportNotificationsRequest{}
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[15]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1148,7 +1228,7 @@ func (x *ListSupportNotificationsRequest) String() string {
 func (*ListSupportNotificationsRequest) ProtoMessage() {}
 
 func (x *ListSupportNotificationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[15]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1161,7 +1241,7 @@ func (x *ListSupportNotificationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSupportNotificationsRequest.ProtoReflect.Descriptor instead.
 func (*ListSupportNotificationsRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{15}
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ListSupportNotificationsRequest) GetGrantId() string {
@@ -1195,7 +1275,7 @@ type ListSupportNotificationsResponse struct {
 
 func (x *ListSupportNotificationsResponse) Reset() {
 	*x = ListSupportNotificationsResponse{}
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[16]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1207,7 +1287,7 @@ func (x *ListSupportNotificationsResponse) String() string {
 func (*ListSupportNotificationsResponse) ProtoMessage() {}
 
 func (x *ListSupportNotificationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[16]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1220,7 +1300,7 @@ func (x *ListSupportNotificationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSupportNotificationsResponse.ProtoReflect.Descriptor instead.
 func (*ListSupportNotificationsResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{16}
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ListSupportNotificationsResponse) GetData() []*SupportNotification {
@@ -1248,7 +1328,7 @@ type ListGarageSupportGrantsRequest struct {
 
 func (x *ListGarageSupportGrantsRequest) Reset() {
 	*x = ListGarageSupportGrantsRequest{}
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[17]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1260,7 +1340,7 @@ func (x *ListGarageSupportGrantsRequest) String() string {
 func (*ListGarageSupportGrantsRequest) ProtoMessage() {}
 
 func (x *ListGarageSupportGrantsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[17]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1273,7 +1353,7 @@ func (x *ListGarageSupportGrantsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGarageSupportGrantsRequest.ProtoReflect.Descriptor instead.
 func (*ListGarageSupportGrantsRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{17}
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ListGarageSupportGrantsRequest) GetGarageId() string {
@@ -1299,7 +1379,7 @@ type ListGarageSupportGrantsResponse struct {
 
 func (x *ListGarageSupportGrantsResponse) Reset() {
 	*x = ListGarageSupportGrantsResponse{}
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[18]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1311,7 +1391,7 @@ func (x *ListGarageSupportGrantsResponse) String() string {
 func (*ListGarageSupportGrantsResponse) ProtoMessage() {}
 
 func (x *ListGarageSupportGrantsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[18]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1324,7 +1404,7 @@ func (x *ListGarageSupportGrantsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGarageSupportGrantsResponse.ProtoReflect.Descriptor instead.
 func (*ListGarageSupportGrantsResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{18}
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ListGarageSupportGrantsResponse) GetData() []*SupportGrant {
@@ -1344,7 +1424,7 @@ type ApproveSupportGrantRequest struct {
 
 func (x *ApproveSupportGrantRequest) Reset() {
 	*x = ApproveSupportGrantRequest{}
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[19]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1356,7 +1436,7 @@ func (x *ApproveSupportGrantRequest) String() string {
 func (*ApproveSupportGrantRequest) ProtoMessage() {}
 
 func (x *ApproveSupportGrantRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[19]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1369,7 +1449,7 @@ func (x *ApproveSupportGrantRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApproveSupportGrantRequest.ProtoReflect.Descriptor instead.
 func (*ApproveSupportGrantRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{19}
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *ApproveSupportGrantRequest) GetGarageId() string {
@@ -1395,7 +1475,7 @@ type ApproveSupportGrantResponse struct {
 
 func (x *ApproveSupportGrantResponse) Reset() {
 	*x = ApproveSupportGrantResponse{}
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[20]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1407,7 +1487,7 @@ func (x *ApproveSupportGrantResponse) String() string {
 func (*ApproveSupportGrantResponse) ProtoMessage() {}
 
 func (x *ApproveSupportGrantResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[20]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1420,7 +1500,7 @@ func (x *ApproveSupportGrantResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApproveSupportGrantResponse.ProtoReflect.Descriptor instead.
 func (*ApproveSupportGrantResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{20}
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *ApproveSupportGrantResponse) GetGrant() *SupportGrant {
@@ -1440,7 +1520,7 @@ type RevokeSupportGrantRequest struct {
 
 func (x *RevokeSupportGrantRequest) Reset() {
 	*x = RevokeSupportGrantRequest{}
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[21]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1452,7 +1532,7 @@ func (x *RevokeSupportGrantRequest) String() string {
 func (*RevokeSupportGrantRequest) ProtoMessage() {}
 
 func (x *RevokeSupportGrantRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[21]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1465,7 +1545,7 @@ func (x *RevokeSupportGrantRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevokeSupportGrantRequest.ProtoReflect.Descriptor instead.
 func (*RevokeSupportGrantRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{21}
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *RevokeSupportGrantRequest) GetGarageId() string {
@@ -1491,7 +1571,7 @@ type RevokeSupportGrantResponse struct {
 
 func (x *RevokeSupportGrantResponse) Reset() {
 	*x = RevokeSupportGrantResponse{}
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[22]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1503,7 +1583,7 @@ func (x *RevokeSupportGrantResponse) String() string {
 func (*RevokeSupportGrantResponse) ProtoMessage() {}
 
 func (x *RevokeSupportGrantResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[22]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1516,7 +1596,7 @@ func (x *RevokeSupportGrantResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevokeSupportGrantResponse.ProtoReflect.Descriptor instead.
 func (*RevokeSupportGrantResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{22}
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *RevokeSupportGrantResponse) GetGrant() *SupportGrant {
@@ -1539,7 +1619,7 @@ type ListSupportAccessLogRequest struct {
 
 func (x *ListSupportAccessLogRequest) Reset() {
 	*x = ListSupportAccessLogRequest{}
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[23]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1551,7 +1631,7 @@ func (x *ListSupportAccessLogRequest) String() string {
 func (*ListSupportAccessLogRequest) ProtoMessage() {}
 
 func (x *ListSupportAccessLogRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[23]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1564,7 +1644,7 @@ func (x *ListSupportAccessLogRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSupportAccessLogRequest.ProtoReflect.Descriptor instead.
 func (*ListSupportAccessLogRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{23}
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *ListSupportAccessLogRequest) GetGarageId() string {
@@ -1605,7 +1685,7 @@ type ListSupportAccessLogResponse struct {
 
 func (x *ListSupportAccessLogResponse) Reset() {
 	*x = ListSupportAccessLogResponse{}
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[24]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1617,7 +1697,7 @@ func (x *ListSupportAccessLogResponse) String() string {
 func (*ListSupportAccessLogResponse) ProtoMessage() {}
 
 func (x *ListSupportAccessLogResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_support_v1_support_proto_msgTypes[24]
+	mi := &file_vietgara_support_v1_support_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1630,7 +1710,7 @@ func (x *ListSupportAccessLogResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSupportAccessLogResponse.ProtoReflect.Descriptor instead.
 func (*ListSupportAccessLogResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{24}
+	return file_vietgara_support_v1_support_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *ListSupportAccessLogResponse) GetData() []*SupportAccessEvent {
@@ -1727,7 +1807,10 @@ const file_vietgara_support_v1_support_proto_rawDesc = "" +
 	"\x16EndSupportGrantRequest\x12\x1e\n" +
 	"\bgrant_id\x18\x01 \x01(\tB\x03\xe0A\x02R\agrantId\"R\n" +
 	"\x17EndSupportGrantResponse\x127\n" +
-	"\x05grant\x18\x01 \x01(\v2!.vietgara.support.v1.SupportGrantR\x05grant\"c\n" +
+	"\x05grant\x18\x01 \x01(\v2!.vietgara.support.v1.SupportGrantR\x05grant\"\x1e\n" +
+	"\x1cListMySupportSessionsRequest\"V\n" +
+	"\x1dListMySupportSessionsResponse\x125\n" +
+	"\x04data\x18\x01 \x03(\v2!.vietgara.support.v1.SupportGrantR\x04data\"c\n" +
 	"\x1aListGarageDirectoryRequest\x12\x14\n" +
 	"\x05query\x18\x01 \x01(\tR\x05query\x12\x12\n" +
 	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1b\n" +
@@ -1786,8 +1869,9 @@ const file_vietgara_support_v1_support_proto_rawDesc = "" +
 	"\x1cSUPPORT_GRANT_STATUS_PENDING\x10\x01\x12\x1f\n" +
 	"\x1bSUPPORT_GRANT_STATUS_ACTIVE\x10\x02\x12 \n" +
 	"\x1cSUPPORT_GRANT_STATUS_EXPIRED\x10\x03\x12 \n" +
-	"\x1cSUPPORT_GRANT_STATUS_REVOKED\x10\x042\xad\b\n" +
-	"\x0eSupportService\x12\x97\x01\n" +
+	"\x1cSUPPORT_GRANT_STATUS_REVOKED\x10\x042\xd3\t\n" +
+	"\x0eSupportService\x12\xa3\x01\n" +
+	"\x15ListMySupportSessions\x121.vietgara.support.v1.ListMySupportSessionsRequest\x1a2.vietgara.support.v1.ListMySupportSessionsResponse\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/api/v1/me/support-sessions\x12\x97\x01\n" +
 	"\x13ListGarageDirectory\x12/.vietgara.support.v1.ListGarageDirectoryRequest\x1a0.vietgara.support.v1.ListGarageDirectoryResponse\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/api/v1/admin/garages\x12\xa8\x01\n" +
 	"\x13RequestSupportGrant\x12/.vietgara.support.v1.RequestSupportGrantRequest\x1a0.vietgara.support.v1.RequestSupportGrantResponse\".\x82\xd3\xe4\x93\x02(:\x01*b\x05grant\"\x1c/api/v1/admin/support-grants\x12\x98\x01\n" +
 	"\x11ListSupportGrants\x12-.vietgara.support.v1.ListSupportGrantsRequest\x1a..vietgara.support.v1.ListSupportGrantsResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/api/v1/admin/support-grants\x12\xab\x01\n" +
@@ -1813,7 +1897,7 @@ func file_vietgara_support_v1_support_proto_rawDescGZIP() []byte {
 }
 
 var file_vietgara_support_v1_support_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_vietgara_support_v1_support_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
+var file_vietgara_support_v1_support_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
 var file_vietgara_support_v1_support_proto_goTypes = []any{
 	(SupportGrantStatus)(0),                  // 0: vietgara.support.v1.SupportGrantStatus
 	(*SupportGrant)(nil),                     // 1: vietgara.support.v1.SupportGrant
@@ -1827,74 +1911,79 @@ var file_vietgara_support_v1_support_proto_goTypes = []any{
 	(*ListSupportGrantsResponse)(nil),        // 9: vietgara.support.v1.ListSupportGrantsResponse
 	(*EndSupportGrantRequest)(nil),           // 10: vietgara.support.v1.EndSupportGrantRequest
 	(*EndSupportGrantResponse)(nil),          // 11: vietgara.support.v1.EndSupportGrantResponse
-	(*ListGarageDirectoryRequest)(nil),       // 12: vietgara.support.v1.ListGarageDirectoryRequest
-	(*ListGarageDirectoryResponse)(nil),      // 13: vietgara.support.v1.ListGarageDirectoryResponse
-	(*ListSupportOutboxEventsRequest)(nil),   // 14: vietgara.support.v1.ListSupportOutboxEventsRequest
-	(*ListSupportOutboxEventsResponse)(nil),  // 15: vietgara.support.v1.ListSupportOutboxEventsResponse
-	(*ListSupportNotificationsRequest)(nil),  // 16: vietgara.support.v1.ListSupportNotificationsRequest
-	(*ListSupportNotificationsResponse)(nil), // 17: vietgara.support.v1.ListSupportNotificationsResponse
-	(*ListGarageSupportGrantsRequest)(nil),   // 18: vietgara.support.v1.ListGarageSupportGrantsRequest
-	(*ListGarageSupportGrantsResponse)(nil),  // 19: vietgara.support.v1.ListGarageSupportGrantsResponse
-	(*ApproveSupportGrantRequest)(nil),       // 20: vietgara.support.v1.ApproveSupportGrantRequest
-	(*ApproveSupportGrantResponse)(nil),      // 21: vietgara.support.v1.ApproveSupportGrantResponse
-	(*RevokeSupportGrantRequest)(nil),        // 22: vietgara.support.v1.RevokeSupportGrantRequest
-	(*RevokeSupportGrantResponse)(nil),       // 23: vietgara.support.v1.RevokeSupportGrantResponse
-	(*ListSupportAccessLogRequest)(nil),      // 24: vietgara.support.v1.ListSupportAccessLogRequest
-	(*ListSupportAccessLogResponse)(nil),     // 25: vietgara.support.v1.ListSupportAccessLogResponse
-	(*timestamppb.Timestamp)(nil),            // 26: google.protobuf.Timestamp
-	(*v1.Pagination)(nil),                    // 27: vietgara.common.v1.Pagination
+	(*ListMySupportSessionsRequest)(nil),     // 12: vietgara.support.v1.ListMySupportSessionsRequest
+	(*ListMySupportSessionsResponse)(nil),    // 13: vietgara.support.v1.ListMySupportSessionsResponse
+	(*ListGarageDirectoryRequest)(nil),       // 14: vietgara.support.v1.ListGarageDirectoryRequest
+	(*ListGarageDirectoryResponse)(nil),      // 15: vietgara.support.v1.ListGarageDirectoryResponse
+	(*ListSupportOutboxEventsRequest)(nil),   // 16: vietgara.support.v1.ListSupportOutboxEventsRequest
+	(*ListSupportOutboxEventsResponse)(nil),  // 17: vietgara.support.v1.ListSupportOutboxEventsResponse
+	(*ListSupportNotificationsRequest)(nil),  // 18: vietgara.support.v1.ListSupportNotificationsRequest
+	(*ListSupportNotificationsResponse)(nil), // 19: vietgara.support.v1.ListSupportNotificationsResponse
+	(*ListGarageSupportGrantsRequest)(nil),   // 20: vietgara.support.v1.ListGarageSupportGrantsRequest
+	(*ListGarageSupportGrantsResponse)(nil),  // 21: vietgara.support.v1.ListGarageSupportGrantsResponse
+	(*ApproveSupportGrantRequest)(nil),       // 22: vietgara.support.v1.ApproveSupportGrantRequest
+	(*ApproveSupportGrantResponse)(nil),      // 23: vietgara.support.v1.ApproveSupportGrantResponse
+	(*RevokeSupportGrantRequest)(nil),        // 24: vietgara.support.v1.RevokeSupportGrantRequest
+	(*RevokeSupportGrantResponse)(nil),       // 25: vietgara.support.v1.RevokeSupportGrantResponse
+	(*ListSupportAccessLogRequest)(nil),      // 26: vietgara.support.v1.ListSupportAccessLogRequest
+	(*ListSupportAccessLogResponse)(nil),     // 27: vietgara.support.v1.ListSupportAccessLogResponse
+	(*timestamppb.Timestamp)(nil),            // 28: google.protobuf.Timestamp
+	(*v1.Pagination)(nil),                    // 29: vietgara.common.v1.Pagination
 }
 var file_vietgara_support_v1_support_proto_depIdxs = []int32{
 	0,  // 0: vietgara.support.v1.SupportGrant.status:type_name -> vietgara.support.v1.SupportGrantStatus
-	26, // 1: vietgara.support.v1.SupportGrant.requested_at:type_name -> google.protobuf.Timestamp
-	26, // 2: vietgara.support.v1.SupportGrant.approved_at:type_name -> google.protobuf.Timestamp
-	26, // 3: vietgara.support.v1.SupportGrant.expires_at:type_name -> google.protobuf.Timestamp
-	26, // 4: vietgara.support.v1.SupportGrant.revoked_at:type_name -> google.protobuf.Timestamp
-	26, // 5: vietgara.support.v1.SupportAccessEvent.created_at:type_name -> google.protobuf.Timestamp
-	26, // 6: vietgara.support.v1.SupportOutboxEvent.created_at:type_name -> google.protobuf.Timestamp
-	26, // 7: vietgara.support.v1.SupportOutboxEvent.published_at:type_name -> google.protobuf.Timestamp
-	26, // 8: vietgara.support.v1.SupportNotification.created_at:type_name -> google.protobuf.Timestamp
+	28, // 1: vietgara.support.v1.SupportGrant.requested_at:type_name -> google.protobuf.Timestamp
+	28, // 2: vietgara.support.v1.SupportGrant.approved_at:type_name -> google.protobuf.Timestamp
+	28, // 3: vietgara.support.v1.SupportGrant.expires_at:type_name -> google.protobuf.Timestamp
+	28, // 4: vietgara.support.v1.SupportGrant.revoked_at:type_name -> google.protobuf.Timestamp
+	28, // 5: vietgara.support.v1.SupportAccessEvent.created_at:type_name -> google.protobuf.Timestamp
+	28, // 6: vietgara.support.v1.SupportOutboxEvent.created_at:type_name -> google.protobuf.Timestamp
+	28, // 7: vietgara.support.v1.SupportOutboxEvent.published_at:type_name -> google.protobuf.Timestamp
+	28, // 8: vietgara.support.v1.SupportNotification.created_at:type_name -> google.protobuf.Timestamp
 	1,  // 9: vietgara.support.v1.RequestSupportGrantResponse.grant:type_name -> vietgara.support.v1.SupportGrant
 	0,  // 10: vietgara.support.v1.ListSupportGrantsRequest.status:type_name -> vietgara.support.v1.SupportGrantStatus
 	1,  // 11: vietgara.support.v1.ListSupportGrantsResponse.data:type_name -> vietgara.support.v1.SupportGrant
 	1,  // 12: vietgara.support.v1.EndSupportGrantResponse.grant:type_name -> vietgara.support.v1.SupportGrant
-	3,  // 13: vietgara.support.v1.ListGarageDirectoryResponse.data:type_name -> vietgara.support.v1.GarageDirectoryEntry
-	27, // 14: vietgara.support.v1.ListGarageDirectoryResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	4,  // 15: vietgara.support.v1.ListSupportOutboxEventsResponse.data:type_name -> vietgara.support.v1.SupportOutboxEvent
-	27, // 16: vietgara.support.v1.ListSupportOutboxEventsResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	5,  // 17: vietgara.support.v1.ListSupportNotificationsResponse.data:type_name -> vietgara.support.v1.SupportNotification
-	27, // 18: vietgara.support.v1.ListSupportNotificationsResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	0,  // 19: vietgara.support.v1.ListGarageSupportGrantsRequest.status:type_name -> vietgara.support.v1.SupportGrantStatus
-	1,  // 20: vietgara.support.v1.ListGarageSupportGrantsResponse.data:type_name -> vietgara.support.v1.SupportGrant
-	1,  // 21: vietgara.support.v1.ApproveSupportGrantResponse.grant:type_name -> vietgara.support.v1.SupportGrant
-	1,  // 22: vietgara.support.v1.RevokeSupportGrantResponse.grant:type_name -> vietgara.support.v1.SupportGrant
-	2,  // 23: vietgara.support.v1.ListSupportAccessLogResponse.data:type_name -> vietgara.support.v1.SupportAccessEvent
-	27, // 24: vietgara.support.v1.ListSupportAccessLogResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	12, // 25: vietgara.support.v1.SupportService.ListGarageDirectory:input_type -> vietgara.support.v1.ListGarageDirectoryRequest
-	6,  // 26: vietgara.support.v1.SupportService.RequestSupportGrant:input_type -> vietgara.support.v1.RequestSupportGrantRequest
-	8,  // 27: vietgara.support.v1.SupportService.ListSupportGrants:input_type -> vietgara.support.v1.ListSupportGrantsRequest
-	10, // 28: vietgara.support.v1.SupportService.EndSupportGrant:input_type -> vietgara.support.v1.EndSupportGrantRequest
-	14, // 29: vietgara.support.v1.SupportService.ListSupportOutboxEvents:input_type -> vietgara.support.v1.ListSupportOutboxEventsRequest
-	16, // 30: vietgara.support.v1.SupportService.ListSupportNotifications:input_type -> vietgara.support.v1.ListSupportNotificationsRequest
-	18, // 31: vietgara.support.v1.GarageSupportService.ListGarageSupportGrants:input_type -> vietgara.support.v1.ListGarageSupportGrantsRequest
-	20, // 32: vietgara.support.v1.GarageSupportService.ApproveSupportGrant:input_type -> vietgara.support.v1.ApproveSupportGrantRequest
-	22, // 33: vietgara.support.v1.GarageSupportService.RevokeSupportGrant:input_type -> vietgara.support.v1.RevokeSupportGrantRequest
-	24, // 34: vietgara.support.v1.GarageSupportService.ListSupportAccessLog:input_type -> vietgara.support.v1.ListSupportAccessLogRequest
-	13, // 35: vietgara.support.v1.SupportService.ListGarageDirectory:output_type -> vietgara.support.v1.ListGarageDirectoryResponse
-	7,  // 36: vietgara.support.v1.SupportService.RequestSupportGrant:output_type -> vietgara.support.v1.RequestSupportGrantResponse
-	9,  // 37: vietgara.support.v1.SupportService.ListSupportGrants:output_type -> vietgara.support.v1.ListSupportGrantsResponse
-	11, // 38: vietgara.support.v1.SupportService.EndSupportGrant:output_type -> vietgara.support.v1.EndSupportGrantResponse
-	15, // 39: vietgara.support.v1.SupportService.ListSupportOutboxEvents:output_type -> vietgara.support.v1.ListSupportOutboxEventsResponse
-	17, // 40: vietgara.support.v1.SupportService.ListSupportNotifications:output_type -> vietgara.support.v1.ListSupportNotificationsResponse
-	19, // 41: vietgara.support.v1.GarageSupportService.ListGarageSupportGrants:output_type -> vietgara.support.v1.ListGarageSupportGrantsResponse
-	21, // 42: vietgara.support.v1.GarageSupportService.ApproveSupportGrant:output_type -> vietgara.support.v1.ApproveSupportGrantResponse
-	23, // 43: vietgara.support.v1.GarageSupportService.RevokeSupportGrant:output_type -> vietgara.support.v1.RevokeSupportGrantResponse
-	25, // 44: vietgara.support.v1.GarageSupportService.ListSupportAccessLog:output_type -> vietgara.support.v1.ListSupportAccessLogResponse
-	35, // [35:45] is the sub-list for method output_type
-	25, // [25:35] is the sub-list for method input_type
-	25, // [25:25] is the sub-list for extension type_name
-	25, // [25:25] is the sub-list for extension extendee
-	0,  // [0:25] is the sub-list for field type_name
+	1,  // 13: vietgara.support.v1.ListMySupportSessionsResponse.data:type_name -> vietgara.support.v1.SupportGrant
+	3,  // 14: vietgara.support.v1.ListGarageDirectoryResponse.data:type_name -> vietgara.support.v1.GarageDirectoryEntry
+	29, // 15: vietgara.support.v1.ListGarageDirectoryResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	4,  // 16: vietgara.support.v1.ListSupportOutboxEventsResponse.data:type_name -> vietgara.support.v1.SupportOutboxEvent
+	29, // 17: vietgara.support.v1.ListSupportOutboxEventsResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	5,  // 18: vietgara.support.v1.ListSupportNotificationsResponse.data:type_name -> vietgara.support.v1.SupportNotification
+	29, // 19: vietgara.support.v1.ListSupportNotificationsResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	0,  // 20: vietgara.support.v1.ListGarageSupportGrantsRequest.status:type_name -> vietgara.support.v1.SupportGrantStatus
+	1,  // 21: vietgara.support.v1.ListGarageSupportGrantsResponse.data:type_name -> vietgara.support.v1.SupportGrant
+	1,  // 22: vietgara.support.v1.ApproveSupportGrantResponse.grant:type_name -> vietgara.support.v1.SupportGrant
+	1,  // 23: vietgara.support.v1.RevokeSupportGrantResponse.grant:type_name -> vietgara.support.v1.SupportGrant
+	2,  // 24: vietgara.support.v1.ListSupportAccessLogResponse.data:type_name -> vietgara.support.v1.SupportAccessEvent
+	29, // 25: vietgara.support.v1.ListSupportAccessLogResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	12, // 26: vietgara.support.v1.SupportService.ListMySupportSessions:input_type -> vietgara.support.v1.ListMySupportSessionsRequest
+	14, // 27: vietgara.support.v1.SupportService.ListGarageDirectory:input_type -> vietgara.support.v1.ListGarageDirectoryRequest
+	6,  // 28: vietgara.support.v1.SupportService.RequestSupportGrant:input_type -> vietgara.support.v1.RequestSupportGrantRequest
+	8,  // 29: vietgara.support.v1.SupportService.ListSupportGrants:input_type -> vietgara.support.v1.ListSupportGrantsRequest
+	10, // 30: vietgara.support.v1.SupportService.EndSupportGrant:input_type -> vietgara.support.v1.EndSupportGrantRequest
+	16, // 31: vietgara.support.v1.SupportService.ListSupportOutboxEvents:input_type -> vietgara.support.v1.ListSupportOutboxEventsRequest
+	18, // 32: vietgara.support.v1.SupportService.ListSupportNotifications:input_type -> vietgara.support.v1.ListSupportNotificationsRequest
+	20, // 33: vietgara.support.v1.GarageSupportService.ListGarageSupportGrants:input_type -> vietgara.support.v1.ListGarageSupportGrantsRequest
+	22, // 34: vietgara.support.v1.GarageSupportService.ApproveSupportGrant:input_type -> vietgara.support.v1.ApproveSupportGrantRequest
+	24, // 35: vietgara.support.v1.GarageSupportService.RevokeSupportGrant:input_type -> vietgara.support.v1.RevokeSupportGrantRequest
+	26, // 36: vietgara.support.v1.GarageSupportService.ListSupportAccessLog:input_type -> vietgara.support.v1.ListSupportAccessLogRequest
+	13, // 37: vietgara.support.v1.SupportService.ListMySupportSessions:output_type -> vietgara.support.v1.ListMySupportSessionsResponse
+	15, // 38: vietgara.support.v1.SupportService.ListGarageDirectory:output_type -> vietgara.support.v1.ListGarageDirectoryResponse
+	7,  // 39: vietgara.support.v1.SupportService.RequestSupportGrant:output_type -> vietgara.support.v1.RequestSupportGrantResponse
+	9,  // 40: vietgara.support.v1.SupportService.ListSupportGrants:output_type -> vietgara.support.v1.ListSupportGrantsResponse
+	11, // 41: vietgara.support.v1.SupportService.EndSupportGrant:output_type -> vietgara.support.v1.EndSupportGrantResponse
+	17, // 42: vietgara.support.v1.SupportService.ListSupportOutboxEvents:output_type -> vietgara.support.v1.ListSupportOutboxEventsResponse
+	19, // 43: vietgara.support.v1.SupportService.ListSupportNotifications:output_type -> vietgara.support.v1.ListSupportNotificationsResponse
+	21, // 44: vietgara.support.v1.GarageSupportService.ListGarageSupportGrants:output_type -> vietgara.support.v1.ListGarageSupportGrantsResponse
+	23, // 45: vietgara.support.v1.GarageSupportService.ApproveSupportGrant:output_type -> vietgara.support.v1.ApproveSupportGrantResponse
+	25, // 46: vietgara.support.v1.GarageSupportService.RevokeSupportGrant:output_type -> vietgara.support.v1.RevokeSupportGrantResponse
+	27, // 47: vietgara.support.v1.GarageSupportService.ListSupportAccessLog:output_type -> vietgara.support.v1.ListSupportAccessLogResponse
+	37, // [37:48] is the sub-list for method output_type
+	26, // [26:37] is the sub-list for method input_type
+	26, // [26:26] is the sub-list for extension type_name
+	26, // [26:26] is the sub-list for extension extendee
+	0,  // [0:26] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_support_v1_support_proto_init() }
@@ -1908,7 +1997,7 @@ func file_vietgara_support_v1_support_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_support_v1_support_proto_rawDesc), len(file_vietgara_support_v1_support_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   25,
+			NumMessages:   27,
 			NumExtensions: 0,
 			NumServices:   2,
 		},
