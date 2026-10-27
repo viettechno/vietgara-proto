@@ -1,0 +1,289 @@
+syntax = "proto3";
+
+package vietgara.support.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/pagination.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/support/v1;supportv1";
+
+// SupportGrantStatus is derived from the grant's times, never stored.
+enum SupportGrantStatus {
+  SUPPORT_GRANT_STATUS_UNSPECIFIED = 0;
+  // Requested; waiting for the garage owner (a request lapses after 7 days).
+  SUPPORT_GRANT_STATUS_PENDING = 1;
+  // Approved and not yet expired or revoked: the staff member can read.
+  SUPPORT_GRANT_STATUS_ACTIVE = 2;
+  // The time ran out, before or after approval.
+  SUPPORT_GRANT_STATUS_EXPIRED = 3;
+  // Revoked by the owner (or declined while pending), or ended by the staff.
+  SUPPORT_GRANT_STATUS_REVOKED = 4;
+}
+
+// SupportGrant lets one admin staff member read one garage's data, read-only,
+// for a limited time (FR-IAM-11). The garage owner approves it; a Platform
+// Admin's grant is active at once and only notifies the owner.
+message SupportGrant {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2;
+  string garage_name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string staff_user_id = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string staff_name = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string staff_email = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // A reason or ticket reference.
+  string reason = 7;
+  SupportGrantStatus status = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Length of the session in hours, counted from the approval.
+  int32 ttl_hours = 9;
+  google.protobuf.Timestamp requested_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp approved_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Empty when a Platform Admin opened the garage.
+  string approved_by_name = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Set at the approval.
+  google.protobuf.Timestamp expires_at = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp revoked_at = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The grant needed no approval because a Platform Admin opened it.
+  bool granted_by_platform_admin = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// SupportAccessEvent is one read made under a grant: the call and the entity
+// it named. Shown to the owner in the Support access log.
+message SupportAccessEvent {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string grant_id = 2;
+  string staff_name = 3;
+  // Kind of the entity, e.g. "settlement", "customers".
+  string entity_type = 4;
+  // Id from the request; empty for a list.
+  string entity_id = 5;
+  // The API call, e.g. "GetSettlement".
+  string method = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+// GarageDirectoryEntry is a garage's name and owner, nothing more.
+message GarageDirectoryEntry {
+  string garage_id = 1;
+  string name = 2;
+  string owner_name = 3;
+  string owner_email = 4;
+  bool active = 5;
+}
+
+// SupportOutboxEvent is the delivery status of one event of the garage.
+message SupportOutboxEvent {
+  string id = 1;
+  string event_type = 2;
+  string status = 3;
+  int32 attempts = 4;
+  string last_error = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp published_at = 7;
+}
+
+// SupportNotification is one entry of the notification log of the garage's
+// people (owner and staff).
+message SupportNotification {
+  string id = 1;
+  string channel = 2;
+  string template = 3;
+  string recipient = 4;
+  string status = 5;
+  string error = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message RequestSupportGrantRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string reason = 2 [(google.api.field_behavior) = REQUIRED];
+  // 1 to 168 hours; 24 when omitted.
+  int32 ttl_hours = 3;
+}
+
+message RequestSupportGrantResponse {
+  SupportGrant grant = 1;
+}
+
+message ListSupportGrantsRequest {
+  // Unspecified lists every status.
+  SupportGrantStatus status = 1;
+}
+
+message ListSupportGrantsResponse {
+  repeated SupportGrant data = 1;
+}
+
+message EndSupportGrantRequest {
+  string grant_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message EndSupportGrantResponse {
+  SupportGrant grant = 1;
+}
+
+message ListMySupportSessionsRequest {}
+
+message ListMySupportSessionsResponse {
+  repeated SupportGrant data = 1;
+}
+
+message ListGarageDirectoryRequest {
+  // Matches the garage or owner name or the owner's e-mail.
+  string query = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message ListGarageDirectoryResponse {
+  repeated GarageDirectoryEntry data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message ListSupportOutboxEventsRequest {
+  string grant_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // "pending", "published" or "failed"; empty lists all.
+  string status = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message ListSupportOutboxEventsResponse {
+  repeated SupportOutboxEvent data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message ListSupportNotificationsRequest {
+  string grant_id = 1 [(google.api.field_behavior) = REQUIRED];
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message ListSupportNotificationsResponse {
+  repeated SupportNotification data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+// SupportService is the platform side of support access (FR-IAM-11): admin
+// staff request a grant, see their grants, end a session and use the
+// diagnostic views of a garage they hold a grant for. Garage data itself is
+// read through the ordinary read endpoints of the garage; with an active
+// grant they answer, read-only, to the staff member.
+service SupportService {
+  // The caller's active grants: the garages they can read now. It needs no
+  // platform permission (it is empty for an ordinary user), so the owner web
+  // can ask it of every signed-in user.
+  rpc ListMySupportSessions(ListMySupportSessionsRequest) returns (ListMySupportSessionsResponse) {
+    option (google.api.http) = {get: "/api/v1/me/support-sessions"};
+  }
+  // Searches garages by name, owner name or owner e-mail. Needs
+  // PLATFORM_PERMISSION_GARAGE_DIRECTORY_READ.
+  rpc ListGarageDirectory(ListGarageDirectoryRequest) returns (ListGarageDirectoryResponse) {
+    option (google.api.http) = {get: "/api/v1/admin/garages"};
+  }
+  // Requests read-only access to one garage. Needs PLATFORM_PERMISSION_SUPPORT_
+  // WRITE. A Platform Admin's grant is active at once and the owner is told;
+  // any other staff member waits for the owner's approval.
+  rpc RequestSupportGrant(RequestSupportGrantRequest) returns (RequestSupportGrantResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/support-grants"
+      body: "*"
+      response_body: "grant"
+    };
+  }
+  // The caller's own grants, newest first. Needs PLATFORM_PERMISSION_SUPPORT_READ.
+  rpc ListSupportGrants(ListSupportGrantsRequest) returns (ListSupportGrantsResponse) {
+    option (google.api.http) = {get: "/api/v1/admin/support-grants"};
+  }
+  // Ends the caller's own active or pending grant. Needs PLATFORM_PERMISSION_SUPPORT_WRITE.
+  rpc EndSupportGrant(EndSupportGrantRequest) returns (EndSupportGrantResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/support-grants/{grant_id}:end"
+      body: "*"
+      response_body: "grant"
+    };
+  }
+  // Delivery status of the garage's outbox events. Needs an active grant of
+  // the caller and PLATFORM_PERMISSION_SUPPORT_WRITE; the read is logged.
+  rpc ListSupportOutboxEvents(ListSupportOutboxEventsRequest) returns (ListSupportOutboxEventsResponse) {
+    option (google.api.http) = {get: "/api/v1/admin/support-grants/{grant_id}/outbox-events"};
+  }
+  // The notification log of the garage's owner and staff. Same rules.
+  rpc ListSupportNotifications(ListSupportNotificationsRequest) returns (ListSupportNotificationsResponse) {
+    option (google.api.http) = {get: "/api/v1/admin/support-grants/{grant_id}/notifications"};
+  }
+}
+
+message ListGarageSupportGrantsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Unspecified lists every status.
+  SupportGrantStatus status = 2;
+}
+
+message ListGarageSupportGrantsResponse {
+  repeated SupportGrant data = 1;
+}
+
+message ApproveSupportGrantRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string grant_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ApproveSupportGrantResponse {
+  SupportGrant grant = 1;
+}
+
+message RevokeSupportGrantRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string grant_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message RevokeSupportGrantResponse {
+  SupportGrant grant = 1;
+}
+
+message ListSupportAccessLogRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Only the reads of one grant.
+  string grant_id = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message ListSupportAccessLogResponse {
+  repeated SupportAccessEvent data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+// GarageSupportService is the owner's side of support access: approve or
+// decline requests, revoke a grant at once and read what support opened.
+// Every call is for the garage owner only, and stays reachable when the
+// subscription is locked.
+service GarageSupportService {
+  // The garage's grants, newest first.
+  rpc ListGarageSupportGrants(ListGarageSupportGrantsRequest) returns (ListGarageSupportGrantsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/support-grants"};
+  }
+  // Approves a pending request; the session starts now and lasts its
+  // requested number of hours.
+  rpc ApproveSupportGrant(ApproveSupportGrantRequest) returns (ApproveSupportGrantResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/support-grants/{grant_id}:approve"
+      body: "*"
+      response_body: "grant"
+    };
+  }
+  // Ends an active grant at once, or declines a pending one.
+  rpc RevokeSupportGrant(RevokeSupportGrantRequest) returns (RevokeSupportGrantResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/support-grants/{grant_id}:revoke"
+      body: "*"
+      response_body: "grant"
+    };
+  }
+  // Every read made by support, newest first.
+  rpc ListSupportAccessLog(ListSupportAccessLogRequest) returns (ListSupportAccessLogResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/support-access-log"};
+  }
+}

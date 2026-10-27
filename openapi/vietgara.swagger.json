@@ -103,6 +103,14 @@
       "description": "SupplierService manages the garage's suppliers (FR-SUP-01). Reads need\nPERMISSION_SUPPLIER_READ, changes PERMISSION_SUPPLIER_WRITE."
     },
     {
+      "name": "SupportService",
+      "description": "SupportService is the platform side of support access (FR-IAM-11): admin\nstaff request a grant, see their grants, end a session and use the\ndiagnostic views of a garage they hold a grant for. Garage data itself is\nread through the ordinary read endpoints of the garage; with an active\ngrant they answer, read-only, to the staff member."
+    },
+    {
+      "name": "GarageSupportService",
+      "description": "GarageSupportService is the owner's side of support access: approve or\ndecline requests, revoke a grant at once and read what support opened.\nEvery call is for the garage owner only, and stays reachable when the\nsubscription is locked."
+    },
+    {
       "name": "TechnicianService",
       "description": "TechnicianService is the Technician BFF (Release 2.2, HLD Section 6): one\nconsolidated call per screen of the Technician App, composed from the\nTenant and Repair Order modules, so the app never calls each garage's\nendpoints one by one."
     },
@@ -138,6 +146,52 @@
     "application/json"
   ],
   "paths": {
+    "/api/v1/admin/garages": {
+      "get": {
+        "summary": "Searches garages by name, owner name or owner e-mail. Needs\nPLATFORM_PERMISSION_GARAGE_DIRECTORY_READ.",
+        "operationId": "SupportService_ListGarageDirectory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListGarageDirectoryResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "description": "Matches the garage or owner name or the owner's e-mail.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "SupportService"
+        ]
+      }
+    },
     "/api/v1/admin/me/permissions": {
       "get": {
         "summary": "The platform permissions of the caller (menus in the admin web and app).",
@@ -1121,6 +1175,211 @@
         ],
         "tags": [
           "LicenseAdminService"
+        ]
+      }
+    },
+    "/api/v1/admin/support-grants": {
+      "get": {
+        "summary": "The caller's own grants, newest first. Needs PLATFORM_PERMISSION_SUPPORT_READ.",
+        "operationId": "SupportService_ListSupportGrants",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListSupportGrantsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "description": "Unspecified lists every status.\n\n - SUPPORT_GRANT_STATUS_PENDING: Requested; waiting for the garage owner (a request lapses after 7 days).\n - SUPPORT_GRANT_STATUS_ACTIVE: Approved and not yet expired or revoked: the staff member can read.\n - SUPPORT_GRANT_STATUS_EXPIRED: The time ran out, before or after approval.\n - SUPPORT_GRANT_STATUS_REVOKED: Revoked by the owner (or declined while pending), or ended by the staff.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "SUPPORT_GRANT_STATUS_PENDING",
+              "SUPPORT_GRANT_STATUS_ACTIVE",
+              "SUPPORT_GRANT_STATUS_EXPIRED",
+              "SUPPORT_GRANT_STATUS_REVOKED"
+            ]
+          }
+        ],
+        "tags": [
+          "SupportService"
+        ]
+      },
+      "post": {
+        "summary": "Requests read-only access to one garage. Needs PLATFORM_PERMISSION_SUPPORT_\nWRITE. A Platform Admin's grant is active at once and the owner is told;\nany other staff member waits for the owner's approval.",
+        "operationId": "SupportService_RequestSupportGrant",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1SupportGrant"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RequestSupportGrantRequest"
+            }
+          }
+        ],
+        "tags": [
+          "SupportService"
+        ]
+      }
+    },
+    "/api/v1/admin/support-grants/{grantId}/notifications": {
+      "get": {
+        "summary": "The notification log of the garage's owner and staff. Same rules.",
+        "operationId": "SupportService_ListSupportNotifications",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListSupportNotificationsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "grantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "SupportService"
+        ]
+      }
+    },
+    "/api/v1/admin/support-grants/{grantId}/outbox-events": {
+      "get": {
+        "summary": "Delivery status of the garage's outbox events. Needs an active grant of\nthe caller and PLATFORM_PERMISSION_SUPPORT_WRITE; the read is logged.",
+        "operationId": "SupportService_ListSupportOutboxEvents",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListSupportOutboxEventsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "grantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "\"pending\", \"published\" or \"failed\"; empty lists all.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "SupportService"
+        ]
+      }
+    },
+    "/api/v1/admin/support-grants/{grantId}:end": {
+      "post": {
+        "summary": "Ends the caller's own active or pending grant. Needs PLATFORM_PERMISSION_SUPPORT_WRITE.",
+        "operationId": "SupportService_EndSupportGrant",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1SupportGrant"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "grantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SupportServiceEndSupportGrantBody"
+            }
+          }
+        ],
+        "tags": [
+          "SupportService"
         ]
       }
     },
@@ -7292,6 +7551,192 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/support-access-log": {
+      "get": {
+        "summary": "Every read made by support, newest first.",
+        "operationId": "GarageSupportService_ListSupportAccessLog",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListSupportAccessLogResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "grantId",
+            "description": "Only the reads of one grant.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "GarageSupportService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/support-grants": {
+      "get": {
+        "summary": "The garage's grants, newest first.",
+        "operationId": "GarageSupportService_ListGarageSupportGrants",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListGarageSupportGrantsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "Unspecified lists every status.\n\n - SUPPORT_GRANT_STATUS_PENDING: Requested; waiting for the garage owner (a request lapses after 7 days).\n - SUPPORT_GRANT_STATUS_ACTIVE: Approved and not yet expired or revoked: the staff member can read.\n - SUPPORT_GRANT_STATUS_EXPIRED: The time ran out, before or after approval.\n - SUPPORT_GRANT_STATUS_REVOKED: Revoked by the owner (or declined while pending), or ended by the staff.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "SUPPORT_GRANT_STATUS_PENDING",
+              "SUPPORT_GRANT_STATUS_ACTIVE",
+              "SUPPORT_GRANT_STATUS_EXPIRED",
+              "SUPPORT_GRANT_STATUS_REVOKED"
+            ]
+          }
+        ],
+        "tags": [
+          "GarageSupportService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/support-grants/{grantId}:approve": {
+      "post": {
+        "summary": "Approves a pending request; the session starts now and lasts its\nrequested number of hours.",
+        "operationId": "GarageSupportService_ApproveSupportGrant",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1SupportGrant"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "grantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GarageSupportServiceApproveSupportGrantBody"
+            }
+          }
+        ],
+        "tags": [
+          "GarageSupportService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/support-grants/{grantId}:revoke": {
+      "post": {
+        "summary": "Ends an active grant at once, or declines a pending one.",
+        "operationId": "GarageSupportService_RevokeSupportGrant",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1SupportGrant"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "grantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GarageSupportServiceRevokeSupportGrantBody"
+            }
+          }
+        ],
+        "tags": [
+          "GarageSupportService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/units": {
       "get": {
         "summary": "Units of measure of the garage (FR-CAT-01).",
@@ -8879,6 +9324,29 @@
         ]
       }
     },
+    "/api/v1/me/support-sessions": {
+      "get": {
+        "summary": "The caller's active grants: the garages they can read now. It needs no\nplatform permission (it is empty for an ordinary user), so the owner web\ncan ask it of every signed-in user.",
+        "operationId": "SupportService_ListMySupportSessions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListMySupportSessionsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "tags": [
+          "SupportService"
+        ]
+      }
+    },
     "/api/v1/payment-settings": {
       "get": {
         "summary": "The platform's payment details (FR-LIC-10).",
@@ -9305,6 +9773,12 @@
         "contentType"
       ]
     },
+    "GarageSupportServiceApproveSupportGrantBody": {
+      "type": "object"
+    },
+    "GarageSupportServiceRevokeSupportGrantBody": {
+      "type": "object"
+    },
     "ImportServiceConfirmImportBody": {
       "type": "object",
       "properties": {
@@ -9651,6 +10125,9 @@
     "SupplierServiceActivateSupplierBody": {
       "type": "object"
     },
+    "SupportServiceEndSupportGrantBody": {
+      "type": "object"
+    },
     "VehicleServiceActivateVehicleBody": {
       "type": "object"
     },
@@ -9888,6 +10365,14 @@
         "subscription": {
           "$ref": "#/definitions/v1Subscription",
           "description": "The owner's subscription with the new plan and period."
+        }
+      }
+    },
+    "v1ApproveSupportGrantResponse": {
+      "type": "object",
+      "properties": {
+        "grant": {
+          "$ref": "#/definitions/v1SupportGrant"
         }
       }
     },
@@ -10729,6 +11214,14 @@
     "v1DisableMfaResponse": {
       "type": "object"
     },
+    "v1EndSupportGrantResponse": {
+      "type": "object",
+      "properties": {
+        "grant": {
+          "$ref": "#/definitions/v1SupportGrant"
+        }
+      }
+    },
     "v1EnrollMfaRequest": {
       "type": "object"
     },
@@ -11013,6 +11506,27 @@
         }
       },
       "description": "GarageAccess is what the signed-in user may do in the garage."
+    },
+    "v1GarageDirectoryEntry": {
+      "type": "object",
+      "properties": {
+        "garageId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "ownerName": {
+          "type": "string"
+        },
+        "ownerEmail": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      },
+      "description": "GarageDirectoryEntry is a garage's name and owner, nothing more."
     },
     "v1GarageLink": {
       "type": "object",
@@ -11945,6 +12459,33 @@
         }
       }
     },
+    "v1ListGarageDirectoryResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1GarageDirectoryEntry"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1ListGarageSupportGrantsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SupportGrant"
+          }
+        }
+      }
+    },
     "v1ListGaragesResponse": {
       "type": "object",
       "properties": {
@@ -12057,6 +12598,18 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1PlatformInvitation"
+          }
+        }
+      }
+    },
+    "v1ListMySupportSessionsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SupportGrant"
           }
         }
       }
@@ -12391,6 +12944,63 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1Supplier"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1ListSupportAccessLogResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SupportAccessEvent"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1ListSupportGrantsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SupportGrant"
+          }
+        }
+      }
+    },
+    "v1ListSupportNotificationsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SupportNotification"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1ListSupportOutboxEventsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SupportOutboxEvent"
           }
         },
         "pagination": {
@@ -14175,6 +14785,34 @@
         }
       }
     },
+    "v1RequestSupportGrantRequest": {
+      "type": "object",
+      "properties": {
+        "garageId": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "ttlHours": {
+          "type": "integer",
+          "format": "int32",
+          "description": "1 to 168 hours; 24 when omitted."
+        }
+      },
+      "required": [
+        "garageId",
+        "reason"
+      ]
+    },
+    "v1RequestSupportGrantResponse": {
+      "type": "object",
+      "properties": {
+        "grant": {
+          "$ref": "#/definitions/v1SupportGrant"
+        }
+      }
+    },
     "v1ResetPasswordRequest": {
       "type": "object",
       "properties": {
@@ -14242,6 +14880,14 @@
       "properties": {
         "invitation": {
           "$ref": "#/definitions/v1PlatformInvitation"
+        }
+      }
+    },
+    "v1RevokeSupportGrantResponse": {
+      "type": "object",
+      "properties": {
+        "grant": {
+          "$ref": "#/definitions/v1SupportGrant"
         }
       }
     },
@@ -15574,6 +16220,179 @@
         "partId",
         "enteredQuantity"
       ]
+    },
+    "v1SupportAccessEvent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "grantId": {
+          "type": "string"
+        },
+        "staffName": {
+          "type": "string"
+        },
+        "entityType": {
+          "type": "string",
+          "description": "Kind of the entity, e.g. \"settlement\", \"customers\"."
+        },
+        "entityId": {
+          "type": "string",
+          "description": "Id from the request; empty for a list."
+        },
+        "method": {
+          "type": "string",
+          "description": "The API call, e.g. \"GetSettlement\"."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "SupportAccessEvent is one read made under a grant: the call and the entity\nit named. Shown to the owner in the Support access log."
+    },
+    "v1SupportGrant": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string"
+        },
+        "garageName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "staffUserId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "staffName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "staffEmail": {
+          "type": "string",
+          "readOnly": true
+        },
+        "reason": {
+          "type": "string",
+          "description": "A reason or ticket reference."
+        },
+        "status": {
+          "$ref": "#/definitions/v1SupportGrantStatus",
+          "readOnly": true
+        },
+        "ttlHours": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Length of the session in hours, counted from the approval."
+        },
+        "requestedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "approvedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "approvedByName": {
+          "type": "string",
+          "description": "Empty when a Platform Admin opened the garage.",
+          "readOnly": true
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Set at the approval.",
+          "readOnly": true
+        },
+        "revokedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "grantedByPlatformAdmin": {
+          "type": "boolean",
+          "description": "The grant needed no approval because a Platform Admin opened it.",
+          "readOnly": true
+        }
+      },
+      "description": "SupportGrant lets one admin staff member read one garage's data, read-only,\nfor a limited time (FR-IAM-11). The garage owner approves it; a Platform\nAdmin's grant is active at once and only notifies the owner."
+    },
+    "v1SupportGrantStatus": {
+      "type": "string",
+      "enum": [
+        "SUPPORT_GRANT_STATUS_PENDING",
+        "SUPPORT_GRANT_STATUS_ACTIVE",
+        "SUPPORT_GRANT_STATUS_EXPIRED",
+        "SUPPORT_GRANT_STATUS_REVOKED"
+      ],
+      "description": "SupportGrantStatus is derived from the grant's times, never stored.\n\n - SUPPORT_GRANT_STATUS_PENDING: Requested; waiting for the garage owner (a request lapses after 7 days).\n - SUPPORT_GRANT_STATUS_ACTIVE: Approved and not yet expired or revoked: the staff member can read.\n - SUPPORT_GRANT_STATUS_EXPIRED: The time ran out, before or after approval.\n - SUPPORT_GRANT_STATUS_REVOKED: Revoked by the owner (or declined while pending), or ended by the staff."
+    },
+    "v1SupportNotification": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "channel": {
+          "type": "string"
+        },
+        "template": {
+          "type": "string"
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "SupportNotification is one entry of the notification log of the garage's\npeople (owner and staff)."
+    },
+    "v1SupportOutboxEvent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "eventType": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "attempts": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "lastError": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "publishedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "SupportOutboxEvent is the delivery status of one event of the garage."
     },
     "v1TaxProfileKind": {
       "type": "string",
