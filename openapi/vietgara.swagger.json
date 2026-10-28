@@ -44,7 +44,7 @@
     },
     {
       "name": "DocumentService",
-      "description": "DocumentService renders PDFs and Excel reports on request (FRD 3.13).\nNo templates are stored -- FR-DOC-03 (letting a garage customize the\nlogo and layout) is Phase 4 -- every document is generated fresh from\nthe owning module's own data, read through a narrow interface the same\nway every other cross-module read works (HLD Section 2: a module never\nqueries another module's tables directly). Each RPC needs the same\npermission as the data it renders (quote.read, billing.read,\ninventory.read), not a permission of its own."
+      "description": "DocumentService renders PDFs and Excel reports on request (FRD 3.13).\nEvery document is generated fresh from the owning module's own data, read\nthrough a narrow interface the same way every other cross-module read\nworks (HLD Section 2: a module never queries another module's tables\ndirectly), with a built-in template per document type, paper size and\nversion (Release 10.0; a garage designing its own templates is FR-DOC-03,\nPhase 14). Each RPC needs the same\npermission as the data it renders (quote.read, billing.read,\ninventory.read), not a permission of its own."
     },
     {
       "name": "FileService",
@@ -3038,6 +3038,42 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/goods-receipts/{goodsReceiptId}/pdf:print": {
+      "post": {
+        "operationId": "DocumentService_PrintGoodsReceiptPdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "goodsReceiptId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/goods-receipts/{goodsReceiptId}:cancel": {
       "post": {
         "summary": "Cancelling a draft just closes it. Cancelling a completed receipt\nreverses its stock movements, and is refused with\nINSUFFICIENT_STOCK_TO_REVERSE when the reversal would take a part below\nzero. A cancelled receipt cannot be cancelled again\n(GOODS_RECEIPT_ALREADY_CANCELLED).",
@@ -4409,6 +4445,90 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/print-settings": {
+      "get": {
+        "summary": "FR-DOC-04, FR-DOC-05 (Release 10.0): the garage's print choice for each\ndocument type, defaults filled in. Needs membership of the garage.",
+        "operationId": "DocumentService_GetPrintSettings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetPrintSettingsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/print-settings/{documentType}": {
+      "put": {
+        "summary": "FR-DOC-04 (Release 10.0): sets the paper size and the copy mark of one\ndocument type. A size the type has no template for is refused.",
+        "operationId": "DocumentService_UpdatePrintSetting",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PrintSetting"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "documentType",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "DOCUMENT_TYPE_QUOTE",
+              "DOCUMENT_TYPE_REPAIR_ORDER",
+              "DOCUMENT_TYPE_SETTLEMENT",
+              "DOCUMENT_TYPE_PAYMENT_VOUCHER",
+              "DOCUMENT_TYPE_GOODS_RECEIPT",
+              "DOCUMENT_TYPE_STOCK_ISSUE"
+            ]
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServiceUpdatePrintSettingBody"
+            }
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/quotes": {
       "get": {
         "operationId": "QuoteService_ListQuotes",
@@ -4769,6 +4889,43 @@
       "get": {
         "summary": "FR-DOC-01: the quote as a PDF, using the garage's standard layout.",
         "operationId": "DocumentService_ExportQuotePdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/quotes/{quoteId}/pdf:print": {
+      "post": {
+        "summary": "FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching\nExport*Pdf RPC (the garage's paper size, the template version of the\ndocument's first print), add the copy mark of a reprint when the garage\nturned it on, and write the print log. Each needs the permission of the\ndata it renders.",
+        "operationId": "DocumentService_PrintQuotePdf",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -5338,6 +5495,42 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/pdf:print": {
+      "post": {
+        "operationId": "DocumentService_PrintRepairOrderPdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/stock-issue": {
       "get": {
         "summary": "The repair order's stock issue document (FR-INV-20, Release 7.0),\ncreated with the order and, while a draft, following its part lines.",
@@ -5379,6 +5572,42 @@
       "get": {
         "summary": "FR-INV-20 (Release 7.0): the repair order's stock issue document\n(phiếu xuất kho) as a PDF.",
         "operationId": "DocumentService_ExportStockIssuePdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/stock-issue/pdf:print": {
+      "post": {
+        "operationId": "DocumentService_PrintStockIssuePdf",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -6089,6 +6318,48 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/settlements/{settlementId}/payments/{paymentId}/voucher-pdf:print": {
+      "post": {
+        "operationId": "DocumentService_PrintPaymentVoucherPdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/settlements/{settlementId}/payments/{paymentId}:void": {
       "post": {
         "summary": "FR-BIL-06: voids a payment voucher with a reason. The voucher stays on\nfile marked void, the settlement's paid amount and status are\nrecalculated, and the audit log records who voided it.",
@@ -6144,6 +6415,42 @@
       "get": {
         "summary": "FR-DOC-01: the settlement as a receipt PDF.",
         "operationId": "DocumentService_ExportSettlementReceiptPdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/settlements/{settlementId}/receipt-pdf:print": {
+      "post": {
+        "operationId": "DocumentService_PrintSettlementReceiptPdf",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -9726,6 +10033,20 @@
     "CustomerTaxProfileServiceActivateCustomerTaxProfileBody": {
       "type": "object"
     },
+    "DocumentServiceUpdatePrintSettingBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize"
+        },
+        "copyMark": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "paperSize"
+      ]
+    },
     "FileServiceUploadFileBody": {
       "type": "object",
       "properties": {
@@ -11214,6 +11535,18 @@
     "v1DisableMfaResponse": {
       "type": "object"
     },
+    "v1DocumentType": {
+      "type": "string",
+      "enum": [
+        "DOCUMENT_TYPE_QUOTE",
+        "DOCUMENT_TYPE_REPAIR_ORDER",
+        "DOCUMENT_TYPE_SETTLEMENT",
+        "DOCUMENT_TYPE_PAYMENT_VOUCHER",
+        "DOCUMENT_TYPE_GOODS_RECEIPT",
+        "DOCUMENT_TYPE_STOCK_ISSUE"
+      ],
+      "description": "DocumentType is a document a garage can print (FR-DOC-04)."
+    },
     "v1EndSupportGrantResponse": {
       "type": "object",
       "properties": {
@@ -11778,6 +12111,19 @@
       "properties": {
         "role": {
           "$ref": "#/definitions/v1PlatformRole"
+        }
+      }
+    },
+    "v1GetPrintSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PrintSetting"
+          },
+          "description": "One entry for each document type, defaults filled in."
         }
       }
     },
@@ -13316,6 +13662,14 @@
       },
       "description": "Pagination describes the page returned by every List call (API\nSpecification Section 1.1): lists are requested with `page` (1-based,\ndefault 1) and `page_size` (default 20, max 100)."
     },
+    "v1PaperSize": {
+      "type": "string",
+      "enum": [
+        "PAPER_SIZE_A4",
+        "PAPER_SIZE_A5"
+      ],
+      "description": "PaperSize is the paper a document prints on: A4 (210 x 297 mm) or A5\n(148 x 210 mm)."
+    },
     "v1Part": {
       "type": "object",
       "properties": {
@@ -14078,6 +14432,30 @@
           "$ref": "#/definitions/v1ImportPreview"
         }
       }
+    },
+    "v1PrintSetting": {
+      "type": "object",
+      "properties": {
+        "documentType": {
+          "$ref": "#/definitions/v1DocumentType"
+        },
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize"
+        },
+        "copyMark": {
+          "type": "boolean",
+          "description": "Whether a reprint carries a \"copy\" mark."
+        },
+        "availablePaperSizes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1PaperSize"
+          },
+          "description": "The sizes the document type has a template for.",
+          "readOnly": true
+        }
+      },
+      "description": "PrintSetting is a garage's printing choice for one document type\n(FR-DOC-04). A garage that never changed it prints on A4 without the\ncopy mark."
     },
     "v1PublicQuote": {
       "type": "object",
