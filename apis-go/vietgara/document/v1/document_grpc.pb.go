@@ -31,6 +31,14 @@ const (
 	DocumentService_ExportStockCountExcel_FullMethodName      = "/vietgara.document.v1.DocumentService/ExportStockCountExcel"
 	DocumentService_ExportPurchasesExcel_FullMethodName       = "/vietgara.document.v1.DocumentService/ExportPurchasesExcel"
 	DocumentService_ExportStockValuationExcel_FullMethodName  = "/vietgara.document.v1.DocumentService/ExportStockValuationExcel"
+	DocumentService_GetPrintSettings_FullMethodName           = "/vietgara.document.v1.DocumentService/GetPrintSettings"
+	DocumentService_UpdatePrintSetting_FullMethodName         = "/vietgara.document.v1.DocumentService/UpdatePrintSetting"
+	DocumentService_PrintQuotePdf_FullMethodName              = "/vietgara.document.v1.DocumentService/PrintQuotePdf"
+	DocumentService_PrintRepairOrderPdf_FullMethodName        = "/vietgara.document.v1.DocumentService/PrintRepairOrderPdf"
+	DocumentService_PrintSettlementReceiptPdf_FullMethodName  = "/vietgara.document.v1.DocumentService/PrintSettlementReceiptPdf"
+	DocumentService_PrintPaymentVoucherPdf_FullMethodName     = "/vietgara.document.v1.DocumentService/PrintPaymentVoucherPdf"
+	DocumentService_PrintGoodsReceiptPdf_FullMethodName       = "/vietgara.document.v1.DocumentService/PrintGoodsReceiptPdf"
+	DocumentService_PrintStockIssuePdf_FullMethodName         = "/vietgara.document.v1.DocumentService/PrintStockIssuePdf"
 )
 
 // DocumentServiceClient is the client API for DocumentService service.
@@ -38,11 +46,12 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
 // DocumentService renders PDFs and Excel reports on request (FRD 3.13).
-// No templates are stored -- FR-DOC-03 (letting a garage customize the
-// logo and layout) is Phase 4 -- every document is generated fresh from
-// the owning module's own data, read through a narrow interface the same
-// way every other cross-module read works (HLD Section 2: a module never
-// queries another module's tables directly). Each RPC needs the same
+// Every document is generated fresh from the owning module's own data, read
+// through a narrow interface the same way every other cross-module read
+// works (HLD Section 2: a module never queries another module's tables
+// directly), with a built-in template per document type, paper size and
+// version (Release 10.0; a garage designing its own templates is FR-DOC-03,
+// Phase 14). Each RPC needs the same
 // permission as the data it renders (quote.read, billing.read,
 // inventory.read), not a permission of its own.
 type DocumentServiceClient interface {
@@ -81,6 +90,25 @@ type DocumentServiceClient interface {
 	// (InventoryService.GetStockValuationReport) as an Excel workbook. Needs
 	// inventory.cost.read.
 	ExportStockValuationExcel(ctx context.Context, in *ExportStockValuationExcelRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	// FR-DOC-04, FR-DOC-05 (Release 10.0): the garage's print choice for each
+	// document type, defaults filled in. Needs membership of the garage.
+	GetPrintSettings(ctx context.Context, in *GetPrintSettingsRequest, opts ...grpc.CallOption) (*GetPrintSettingsResponse, error)
+	// FR-DOC-04 (Release 10.0): replaces the paper size and the copy mark of
+	// one document type; an omitted copy_mark means false, and the type is the
+	// one in the path. An unspecified document type or paper size, and a size
+	// the type has no template for, are refused (INVALID_ARGUMENT).
+	UpdatePrintSetting(ctx context.Context, in *UpdatePrintSettingRequest, opts ...grpc.CallOption) (*PrintSetting, error)
+	// FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
+	// Export*Pdf RPC (the garage's paper size, the template version of the
+	// document's first print), add the copy mark of a reprint when the garage
+	// turned it on, and write the print log. Each needs the permission of the
+	// data it renders.
+	PrintQuotePdf(ctx context.Context, in *PrintQuotePdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	PrintRepairOrderPdf(ctx context.Context, in *PrintRepairOrderPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	PrintSettlementReceiptPdf(ctx context.Context, in *PrintSettlementReceiptPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	PrintPaymentVoucherPdf(ctx context.Context, in *PrintPaymentVoucherPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	PrintGoodsReceiptPdf(ctx context.Context, in *PrintGoodsReceiptPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	PrintStockIssuePdf(ctx context.Context, in *PrintStockIssuePdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 }
 
 type documentServiceClient struct {
@@ -201,16 +229,97 @@ func (c *documentServiceClient) ExportStockValuationExcel(ctx context.Context, i
 	return out, nil
 }
 
+func (c *documentServiceClient) GetPrintSettings(ctx context.Context, in *GetPrintSettingsRequest, opts ...grpc.CallOption) (*GetPrintSettingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPrintSettingsResponse)
+	err := c.cc.Invoke(ctx, DocumentService_GetPrintSettings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) UpdatePrintSetting(ctx context.Context, in *UpdatePrintSettingRequest, opts ...grpc.CallOption) (*PrintSetting, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PrintSetting)
+	err := c.cc.Invoke(ctx, DocumentService_UpdatePrintSetting_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) PrintQuotePdf(ctx context.Context, in *PrintQuotePdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_PrintQuotePdf_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) PrintRepairOrderPdf(ctx context.Context, in *PrintRepairOrderPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_PrintRepairOrderPdf_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) PrintSettlementReceiptPdf(ctx context.Context, in *PrintSettlementReceiptPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_PrintSettlementReceiptPdf_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) PrintPaymentVoucherPdf(ctx context.Context, in *PrintPaymentVoucherPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_PrintPaymentVoucherPdf_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) PrintGoodsReceiptPdf(ctx context.Context, in *PrintGoodsReceiptPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_PrintGoodsReceiptPdf_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) PrintStockIssuePdf(ctx context.Context, in *PrintStockIssuePdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_PrintStockIssuePdf_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DocumentServiceServer is the server API for DocumentService service.
 // All implementations must embed UnimplementedDocumentServiceServer
 // for forward compatibility.
 //
 // DocumentService renders PDFs and Excel reports on request (FRD 3.13).
-// No templates are stored -- FR-DOC-03 (letting a garage customize the
-// logo and layout) is Phase 4 -- every document is generated fresh from
-// the owning module's own data, read through a narrow interface the same
-// way every other cross-module read works (HLD Section 2: a module never
-// queries another module's tables directly). Each RPC needs the same
+// Every document is generated fresh from the owning module's own data, read
+// through a narrow interface the same way every other cross-module read
+// works (HLD Section 2: a module never queries another module's tables
+// directly), with a built-in template per document type, paper size and
+// version (Release 10.0; a garage designing its own templates is FR-DOC-03,
+// Phase 14). Each RPC needs the same
 // permission as the data it renders (quote.read, billing.read,
 // inventory.read), not a permission of its own.
 type DocumentServiceServer interface {
@@ -249,6 +358,25 @@ type DocumentServiceServer interface {
 	// (InventoryService.GetStockValuationReport) as an Excel workbook. Needs
 	// inventory.cost.read.
 	ExportStockValuationExcel(context.Context, *ExportStockValuationExcelRequest) (*httpbody.HttpBody, error)
+	// FR-DOC-04, FR-DOC-05 (Release 10.0): the garage's print choice for each
+	// document type, defaults filled in. Needs membership of the garage.
+	GetPrintSettings(context.Context, *GetPrintSettingsRequest) (*GetPrintSettingsResponse, error)
+	// FR-DOC-04 (Release 10.0): replaces the paper size and the copy mark of
+	// one document type; an omitted copy_mark means false, and the type is the
+	// one in the path. An unspecified document type or paper size, and a size
+	// the type has no template for, are refused (INVALID_ARGUMENT).
+	UpdatePrintSetting(context.Context, *UpdatePrintSettingRequest) (*PrintSetting, error)
+	// FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
+	// Export*Pdf RPC (the garage's paper size, the template version of the
+	// document's first print), add the copy mark of a reprint when the garage
+	// turned it on, and write the print log. Each needs the permission of the
+	// data it renders.
+	PrintQuotePdf(context.Context, *PrintQuotePdfRequest) (*httpbody.HttpBody, error)
+	PrintRepairOrderPdf(context.Context, *PrintRepairOrderPdfRequest) (*httpbody.HttpBody, error)
+	PrintSettlementReceiptPdf(context.Context, *PrintSettlementReceiptPdfRequest) (*httpbody.HttpBody, error)
+	PrintPaymentVoucherPdf(context.Context, *PrintPaymentVoucherPdfRequest) (*httpbody.HttpBody, error)
+	PrintGoodsReceiptPdf(context.Context, *PrintGoodsReceiptPdfRequest) (*httpbody.HttpBody, error)
+	PrintStockIssuePdf(context.Context, *PrintStockIssuePdfRequest) (*httpbody.HttpBody, error)
 	mustEmbedUnimplementedDocumentServiceServer()
 }
 
@@ -291,6 +419,30 @@ func (UnimplementedDocumentServiceServer) ExportPurchasesExcel(context.Context, 
 }
 func (UnimplementedDocumentServiceServer) ExportStockValuationExcel(context.Context, *ExportStockValuationExcelRequest) (*httpbody.HttpBody, error) {
 	return nil, status.Error(codes.Unimplemented, "method ExportStockValuationExcel not implemented")
+}
+func (UnimplementedDocumentServiceServer) GetPrintSettings(context.Context, *GetPrintSettingsRequest) (*GetPrintSettingsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPrintSettings not implemented")
+}
+func (UnimplementedDocumentServiceServer) UpdatePrintSetting(context.Context, *UpdatePrintSettingRequest) (*PrintSetting, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdatePrintSetting not implemented")
+}
+func (UnimplementedDocumentServiceServer) PrintQuotePdf(context.Context, *PrintQuotePdfRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method PrintQuotePdf not implemented")
+}
+func (UnimplementedDocumentServiceServer) PrintRepairOrderPdf(context.Context, *PrintRepairOrderPdfRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method PrintRepairOrderPdf not implemented")
+}
+func (UnimplementedDocumentServiceServer) PrintSettlementReceiptPdf(context.Context, *PrintSettlementReceiptPdfRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method PrintSettlementReceiptPdf not implemented")
+}
+func (UnimplementedDocumentServiceServer) PrintPaymentVoucherPdf(context.Context, *PrintPaymentVoucherPdfRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method PrintPaymentVoucherPdf not implemented")
+}
+func (UnimplementedDocumentServiceServer) PrintGoodsReceiptPdf(context.Context, *PrintGoodsReceiptPdfRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method PrintGoodsReceiptPdf not implemented")
+}
+func (UnimplementedDocumentServiceServer) PrintStockIssuePdf(context.Context, *PrintStockIssuePdfRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method PrintStockIssuePdf not implemented")
 }
 func (UnimplementedDocumentServiceServer) mustEmbedUnimplementedDocumentServiceServer() {}
 func (UnimplementedDocumentServiceServer) testEmbeddedByValue()                         {}
@@ -511,6 +663,150 @@ func _DocumentService_ExportStockValuationExcel_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DocumentService_GetPrintSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPrintSettingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).GetPrintSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_GetPrintSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).GetPrintSettings(ctx, req.(*GetPrintSettingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_UpdatePrintSetting_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePrintSettingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).UpdatePrintSetting(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_UpdatePrintSetting_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).UpdatePrintSetting(ctx, req.(*UpdatePrintSettingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_PrintQuotePdf_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrintQuotePdfRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).PrintQuotePdf(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_PrintQuotePdf_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).PrintQuotePdf(ctx, req.(*PrintQuotePdfRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_PrintRepairOrderPdf_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrintRepairOrderPdfRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).PrintRepairOrderPdf(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_PrintRepairOrderPdf_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).PrintRepairOrderPdf(ctx, req.(*PrintRepairOrderPdfRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_PrintSettlementReceiptPdf_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrintSettlementReceiptPdfRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).PrintSettlementReceiptPdf(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_PrintSettlementReceiptPdf_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).PrintSettlementReceiptPdf(ctx, req.(*PrintSettlementReceiptPdfRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_PrintPaymentVoucherPdf_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrintPaymentVoucherPdfRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).PrintPaymentVoucherPdf(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_PrintPaymentVoucherPdf_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).PrintPaymentVoucherPdf(ctx, req.(*PrintPaymentVoucherPdfRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_PrintGoodsReceiptPdf_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrintGoodsReceiptPdfRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).PrintGoodsReceiptPdf(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_PrintGoodsReceiptPdf_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).PrintGoodsReceiptPdf(ctx, req.(*PrintGoodsReceiptPdfRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_PrintStockIssuePdf_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrintStockIssuePdfRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).PrintStockIssuePdf(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_PrintStockIssuePdf_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).PrintStockIssuePdf(ctx, req.(*PrintStockIssuePdfRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DocumentService_ServiceDesc is the grpc.ServiceDesc for DocumentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -561,6 +857,38 @@ var DocumentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ExportStockValuationExcel",
 			Handler:    _DocumentService_ExportStockValuationExcel_Handler,
+		},
+		{
+			MethodName: "GetPrintSettings",
+			Handler:    _DocumentService_GetPrintSettings_Handler,
+		},
+		{
+			MethodName: "UpdatePrintSetting",
+			Handler:    _DocumentService_UpdatePrintSetting_Handler,
+		},
+		{
+			MethodName: "PrintQuotePdf",
+			Handler:    _DocumentService_PrintQuotePdf_Handler,
+		},
+		{
+			MethodName: "PrintRepairOrderPdf",
+			Handler:    _DocumentService_PrintRepairOrderPdf_Handler,
+		},
+		{
+			MethodName: "PrintSettlementReceiptPdf",
+			Handler:    _DocumentService_PrintSettlementReceiptPdf_Handler,
+		},
+		{
+			MethodName: "PrintPaymentVoucherPdf",
+			Handler:    _DocumentService_PrintPaymentVoucherPdf_Handler,
+		},
+		{
+			MethodName: "PrintGoodsReceiptPdf",
+			Handler:    _DocumentService_PrintGoodsReceiptPdf_Handler,
+		},
+		{
+			MethodName: "PrintStockIssuePdf",
+			Handler:    _DocumentService_PrintStockIssuePdf_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

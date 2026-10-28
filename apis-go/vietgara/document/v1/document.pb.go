@@ -24,6 +24,119 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// DocumentType is a document a garage can print (FR-DOC-04).
+type DocumentType int32
+
+const (
+	DocumentType_DOCUMENT_TYPE_UNSPECIFIED     DocumentType = 0
+	DocumentType_DOCUMENT_TYPE_QUOTE           DocumentType = 1
+	DocumentType_DOCUMENT_TYPE_REPAIR_ORDER    DocumentType = 2
+	DocumentType_DOCUMENT_TYPE_SETTLEMENT      DocumentType = 3
+	DocumentType_DOCUMENT_TYPE_PAYMENT_VOUCHER DocumentType = 4
+	DocumentType_DOCUMENT_TYPE_GOODS_RECEIPT   DocumentType = 5
+	DocumentType_DOCUMENT_TYPE_STOCK_ISSUE     DocumentType = 6
+)
+
+// Enum value maps for DocumentType.
+var (
+	DocumentType_name = map[int32]string{
+		0: "DOCUMENT_TYPE_UNSPECIFIED",
+		1: "DOCUMENT_TYPE_QUOTE",
+		2: "DOCUMENT_TYPE_REPAIR_ORDER",
+		3: "DOCUMENT_TYPE_SETTLEMENT",
+		4: "DOCUMENT_TYPE_PAYMENT_VOUCHER",
+		5: "DOCUMENT_TYPE_GOODS_RECEIPT",
+		6: "DOCUMENT_TYPE_STOCK_ISSUE",
+	}
+	DocumentType_value = map[string]int32{
+		"DOCUMENT_TYPE_UNSPECIFIED":     0,
+		"DOCUMENT_TYPE_QUOTE":           1,
+		"DOCUMENT_TYPE_REPAIR_ORDER":    2,
+		"DOCUMENT_TYPE_SETTLEMENT":      3,
+		"DOCUMENT_TYPE_PAYMENT_VOUCHER": 4,
+		"DOCUMENT_TYPE_GOODS_RECEIPT":   5,
+		"DOCUMENT_TYPE_STOCK_ISSUE":     6,
+	}
+)
+
+func (x DocumentType) Enum() *DocumentType {
+	p := new(DocumentType)
+	*p = x
+	return p
+}
+
+func (x DocumentType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DocumentType) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_document_v1_document_proto_enumTypes[0].Descriptor()
+}
+
+func (DocumentType) Type() protoreflect.EnumType {
+	return &file_vietgara_document_v1_document_proto_enumTypes[0]
+}
+
+func (x DocumentType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DocumentType.Descriptor instead.
+func (DocumentType) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{0}
+}
+
+// PaperSize is the paper a document prints on: A4 (210 x 297 mm) or A5
+// (148 x 210 mm).
+type PaperSize int32
+
+const (
+	PaperSize_PAPER_SIZE_UNSPECIFIED PaperSize = 0
+	PaperSize_PAPER_SIZE_A4          PaperSize = 1
+	PaperSize_PAPER_SIZE_A5          PaperSize = 2
+)
+
+// Enum value maps for PaperSize.
+var (
+	PaperSize_name = map[int32]string{
+		0: "PAPER_SIZE_UNSPECIFIED",
+		1: "PAPER_SIZE_A4",
+		2: "PAPER_SIZE_A5",
+	}
+	PaperSize_value = map[string]int32{
+		"PAPER_SIZE_UNSPECIFIED": 0,
+		"PAPER_SIZE_A4":          1,
+		"PAPER_SIZE_A5":          2,
+	}
+)
+
+func (x PaperSize) Enum() *PaperSize {
+	p := new(PaperSize)
+	*p = x
+	return p
+}
+
+func (x PaperSize) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PaperSize) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_document_v1_document_proto_enumTypes[1].Descriptor()
+}
+
+func (PaperSize) Type() protoreflect.EnumType {
+	return &file_vietgara_document_v1_document_proto_enumTypes[1]
+}
+
+func (x PaperSize) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PaperSize.Descriptor instead.
+func (PaperSize) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{1}
+}
+
 type ExportQuotePdfRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
@@ -643,6 +756,556 @@ func (x *ExportStockValuationExcelRequest) GetAt() string {
 	return ""
 }
 
+// PrintSetting is a garage's printing choice for one document type
+// (FR-DOC-04). A garage that never changed it prints on A4 without the
+// copy mark.
+type PrintSetting struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	DocumentType DocumentType           `protobuf:"varint,1,opt,name=document_type,json=documentType,proto3,enum=vietgara.document.v1.DocumentType" json:"document_type,omitempty"`
+	PaperSize    PaperSize              `protobuf:"varint,2,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
+	// Whether a reprint carries a "copy" mark.
+	CopyMark bool `protobuf:"varint,3,opt,name=copy_mark,json=copyMark,proto3" json:"copy_mark,omitempty"`
+	// The sizes the document type has a template for.
+	AvailablePaperSizes []PaperSize `protobuf:"varint,4,rep,packed,name=available_paper_sizes,json=availablePaperSizes,proto3,enum=vietgara.document.v1.PaperSize" json:"available_paper_sizes,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *PrintSetting) Reset() {
+	*x = PrintSetting{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrintSetting) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrintSetting) ProtoMessage() {}
+
+func (x *PrintSetting) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrintSetting.ProtoReflect.Descriptor instead.
+func (*PrintSetting) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *PrintSetting) GetDocumentType() DocumentType {
+	if x != nil {
+		return x.DocumentType
+	}
+	return DocumentType_DOCUMENT_TYPE_UNSPECIFIED
+}
+
+func (x *PrintSetting) GetPaperSize() PaperSize {
+	if x != nil {
+		return x.PaperSize
+	}
+	return PaperSize_PAPER_SIZE_UNSPECIFIED
+}
+
+func (x *PrintSetting) GetCopyMark() bool {
+	if x != nil {
+		return x.CopyMark
+	}
+	return false
+}
+
+func (x *PrintSetting) GetAvailablePaperSizes() []PaperSize {
+	if x != nil {
+		return x.AvailablePaperSizes
+	}
+	return nil
+}
+
+type GetPrintSettingsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPrintSettingsRequest) Reset() {
+	*x = GetPrintSettingsRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPrintSettingsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPrintSettingsRequest) ProtoMessage() {}
+
+func (x *GetPrintSettingsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPrintSettingsRequest.ProtoReflect.Descriptor instead.
+func (*GetPrintSettingsRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *GetPrintSettingsRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+type GetPrintSettingsResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// One entry for each document type, defaults filled in.
+	Settings      []*PrintSetting `protobuf:"bytes,1,rep,name=settings,proto3" json:"settings,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPrintSettingsResponse) Reset() {
+	*x = GetPrintSettingsResponse{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPrintSettingsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPrintSettingsResponse) ProtoMessage() {}
+
+func (x *GetPrintSettingsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPrintSettingsResponse.ProtoReflect.Descriptor instead.
+func (*GetPrintSettingsResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *GetPrintSettingsResponse) GetSettings() []*PrintSetting {
+	if x != nil {
+		return x.Settings
+	}
+	return nil
+}
+
+type UpdatePrintSettingRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	DocumentType  DocumentType           `protobuf:"varint,2,opt,name=document_type,json=documentType,proto3,enum=vietgara.document.v1.DocumentType" json:"document_type,omitempty"`
+	PaperSize     PaperSize              `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
+	CopyMark      bool                   `protobuf:"varint,4,opt,name=copy_mark,json=copyMark,proto3" json:"copy_mark,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdatePrintSettingRequest) Reset() {
+	*x = UpdatePrintSettingRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdatePrintSettingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdatePrintSettingRequest) ProtoMessage() {}
+
+func (x *UpdatePrintSettingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdatePrintSettingRequest.ProtoReflect.Descriptor instead.
+func (*UpdatePrintSettingRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *UpdatePrintSettingRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *UpdatePrintSettingRequest) GetDocumentType() DocumentType {
+	if x != nil {
+		return x.DocumentType
+	}
+	return DocumentType_DOCUMENT_TYPE_UNSPECIFIED
+}
+
+func (x *UpdatePrintSettingRequest) GetPaperSize() PaperSize {
+	if x != nil {
+		return x.PaperSize
+	}
+	return PaperSize_PAPER_SIZE_UNSPECIFIED
+}
+
+func (x *UpdatePrintSettingRequest) GetCopyMark() bool {
+	if x != nil {
+		return x.CopyMark
+	}
+	return false
+}
+
+type PrintQuotePdfRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	QuoteId       string                 `protobuf:"bytes,2,opt,name=quote_id,json=quoteId,proto3" json:"quote_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrintQuotePdfRequest) Reset() {
+	*x = PrintQuotePdfRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrintQuotePdfRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrintQuotePdfRequest) ProtoMessage() {}
+
+func (x *PrintQuotePdfRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrintQuotePdfRequest.ProtoReflect.Descriptor instead.
+func (*PrintQuotePdfRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *PrintQuotePdfRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *PrintQuotePdfRequest) GetQuoteId() string {
+	if x != nil {
+		return x.QuoteId
+	}
+	return ""
+}
+
+type PrintRepairOrderPdfRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	RepairOrderId string                 `protobuf:"bytes,2,opt,name=repair_order_id,json=repairOrderId,proto3" json:"repair_order_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrintRepairOrderPdfRequest) Reset() {
+	*x = PrintRepairOrderPdfRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrintRepairOrderPdfRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrintRepairOrderPdfRequest) ProtoMessage() {}
+
+func (x *PrintRepairOrderPdfRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrintRepairOrderPdfRequest.ProtoReflect.Descriptor instead.
+func (*PrintRepairOrderPdfRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *PrintRepairOrderPdfRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *PrintRepairOrderPdfRequest) GetRepairOrderId() string {
+	if x != nil {
+		return x.RepairOrderId
+	}
+	return ""
+}
+
+type PrintSettlementReceiptPdfRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	SettlementId  string                 `protobuf:"bytes,2,opt,name=settlement_id,json=settlementId,proto3" json:"settlement_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrintSettlementReceiptPdfRequest) Reset() {
+	*x = PrintSettlementReceiptPdfRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrintSettlementReceiptPdfRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrintSettlementReceiptPdfRequest) ProtoMessage() {}
+
+func (x *PrintSettlementReceiptPdfRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrintSettlementReceiptPdfRequest.ProtoReflect.Descriptor instead.
+func (*PrintSettlementReceiptPdfRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *PrintSettlementReceiptPdfRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *PrintSettlementReceiptPdfRequest) GetSettlementId() string {
+	if x != nil {
+		return x.SettlementId
+	}
+	return ""
+}
+
+type PrintPaymentVoucherPdfRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	SettlementId  string                 `protobuf:"bytes,2,opt,name=settlement_id,json=settlementId,proto3" json:"settlement_id,omitempty"`
+	PaymentId     string                 `protobuf:"bytes,3,opt,name=payment_id,json=paymentId,proto3" json:"payment_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrintPaymentVoucherPdfRequest) Reset() {
+	*x = PrintPaymentVoucherPdfRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrintPaymentVoucherPdfRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrintPaymentVoucherPdfRequest) ProtoMessage() {}
+
+func (x *PrintPaymentVoucherPdfRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrintPaymentVoucherPdfRequest.ProtoReflect.Descriptor instead.
+func (*PrintPaymentVoucherPdfRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *PrintPaymentVoucherPdfRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *PrintPaymentVoucherPdfRequest) GetSettlementId() string {
+	if x != nil {
+		return x.SettlementId
+	}
+	return ""
+}
+
+func (x *PrintPaymentVoucherPdfRequest) GetPaymentId() string {
+	if x != nil {
+		return x.PaymentId
+	}
+	return ""
+}
+
+type PrintGoodsReceiptPdfRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	GarageId       string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	GoodsReceiptId string                 `protobuf:"bytes,2,opt,name=goods_receipt_id,json=goodsReceiptId,proto3" json:"goods_receipt_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *PrintGoodsReceiptPdfRequest) Reset() {
+	*x = PrintGoodsReceiptPdfRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrintGoodsReceiptPdfRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrintGoodsReceiptPdfRequest) ProtoMessage() {}
+
+func (x *PrintGoodsReceiptPdfRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrintGoodsReceiptPdfRequest.ProtoReflect.Descriptor instead.
+func (*PrintGoodsReceiptPdfRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *PrintGoodsReceiptPdfRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *PrintGoodsReceiptPdfRequest) GetGoodsReceiptId() string {
+	if x != nil {
+		return x.GoodsReceiptId
+	}
+	return ""
+}
+
+type PrintStockIssuePdfRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	RepairOrderId string                 `protobuf:"bytes,2,opt,name=repair_order_id,json=repairOrderId,proto3" json:"repair_order_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrintStockIssuePdfRequest) Reset() {
+	*x = PrintStockIssuePdfRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrintStockIssuePdfRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrintStockIssuePdfRequest) ProtoMessage() {}
+
+func (x *PrintStockIssuePdfRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrintStockIssuePdfRequest.ProtoReflect.Descriptor instead.
+func (*PrintStockIssuePdfRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *PrintStockIssuePdfRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *PrintStockIssuePdfRequest) GetRepairOrderId() string {
+	if x != nil {
+		return x.RepairOrderId
+	}
+	return ""
+}
+
 var File_vietgara_document_v1_document_proto protoreflect.FileDescriptor
 
 const file_vietgara_document_v1_document_proto_rawDesc = "" +
@@ -687,7 +1350,55 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\x02to\x18\x04 \x01(\tR\x02to\"T\n" +
 	" ExportStockValuationExcelRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x0e\n" +
-	"\x02at\x18\x02 \x01(\tR\x02at2\xfa\x0e\n" +
+	"\x02at\x18\x02 \x01(\tR\x02at\"\x8e\x02\n" +
+	"\fPrintSetting\x12G\n" +
+	"\rdocument_type\x18\x01 \x01(\x0e2\".vietgara.document.v1.DocumentTypeR\fdocumentType\x12>\n" +
+	"\n" +
+	"paper_size\x18\x02 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeR\tpaperSize\x12\x1b\n" +
+	"\tcopy_mark\x18\x03 \x01(\bR\bcopyMark\x12X\n" +
+	"\x15available_paper_sizes\x18\x04 \x03(\x0e2\x1f.vietgara.document.v1.PaperSizeB\x03\xe0A\x03R\x13availablePaperSizes\";\n" +
+	"\x17GetPrintSettingsRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\"Z\n" +
+	"\x18GetPrintSettingsResponse\x12>\n" +
+	"\bsettings\x18\x01 \x03(\v2\".vietgara.document.v1.PrintSettingR\bsettings\"\xed\x01\n" +
+	"\x19UpdatePrintSettingRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12L\n" +
+	"\rdocument_type\x18\x02 \x01(\x0e2\".vietgara.document.v1.DocumentTypeB\x03\xe0A\x02R\fdocumentType\x12C\n" +
+	"\n" +
+	"paper_size\x18\x03 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeB\x03\xe0A\x02R\tpaperSize\x12\x1b\n" +
+	"\tcopy_mark\x18\x04 \x01(\bR\bcopyMark\"X\n" +
+	"\x14PrintQuotePdfRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1e\n" +
+	"\bquote_id\x18\x02 \x01(\tB\x03\xe0A\x02R\aquoteId\"k\n" +
+	"\x1aPrintRepairOrderPdfRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12+\n" +
+	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\"n\n" +
+	" PrintSettlementReceiptPdfRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12(\n" +
+	"\rsettlement_id\x18\x02 \x01(\tB\x03\xe0A\x02R\fsettlementId\"\x8f\x01\n" +
+	"\x1dPrintPaymentVoucherPdfRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12(\n" +
+	"\rsettlement_id\x18\x02 \x01(\tB\x03\xe0A\x02R\fsettlementId\x12\"\n" +
+	"\n" +
+	"payment_id\x18\x03 \x01(\tB\x03\xe0A\x02R\tpaymentId\"n\n" +
+	"\x1bPrintGoodsReceiptPdfRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12-\n" +
+	"\x10goods_receipt_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0egoodsReceiptId\"j\n" +
+	"\x19PrintStockIssuePdfRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12+\n" +
+	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId*\xe7\x01\n" +
+	"\fDocumentType\x12\x1d\n" +
+	"\x19DOCUMENT_TYPE_UNSPECIFIED\x10\x00\x12\x17\n" +
+	"\x13DOCUMENT_TYPE_QUOTE\x10\x01\x12\x1e\n" +
+	"\x1aDOCUMENT_TYPE_REPAIR_ORDER\x10\x02\x12\x1c\n" +
+	"\x18DOCUMENT_TYPE_SETTLEMENT\x10\x03\x12!\n" +
+	"\x1dDOCUMENT_TYPE_PAYMENT_VOUCHER\x10\x04\x12\x1f\n" +
+	"\x1bDOCUMENT_TYPE_GOODS_RECEIPT\x10\x05\x12\x1d\n" +
+	"\x19DOCUMENT_TYPE_STOCK_ISSUE\x10\x06*M\n" +
+	"\tPaperSize\x12\x1a\n" +
+	"\x16PAPER_SIZE_UNSPECIFIED\x10\x00\x12\x11\n" +
+	"\rPAPER_SIZE_A4\x10\x01\x12\x11\n" +
+	"\rPAPER_SIZE_A5\x10\x022\x93\x1a\n" +
 	"\x0fDocumentService\x12\x8e\x01\n" +
 	"\x0eExportQuotePdf\x12+.vietgara.document.v1.ExportQuotePdfRequest\x1a\x14.google.api.HttpBody\"9\x82\xd3\xe4\x93\x023\x121/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf\x12\xa8\x01\n" +
 	"\x14ExportRepairOrderPdf\x121.vietgara.document.v1.ExportRepairOrderPdfRequest\x1a\x14.google.api.HttpBody\"G\x82\xd3\xe4\x93\x02A\x12?/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/pdf\x12\xb8\x01\n" +
@@ -699,7 +1410,15 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\x13ExportStockIssuePdf\x120.vietgara.document.v1.ExportStockIssuePdfRequest\x1a\x14.google.api.HttpBody\"S\x82\xd3\xe4\x93\x02M\x12K/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue/pdf\x12\xaa\x01\n" +
 	"\x15ExportStockCountExcel\x122.vietgara.document.v1.ExportStockCountExcelRequest\x1a\x14.google.api.HttpBody\"G\x82\xd3\xe4\x93\x02A\x12?/api/v1/garages/{garage_id}/stock-counts/{stock_count_id}/excel\x12\x9c\x01\n" +
 	"\x14ExportPurchasesExcel\x121.vietgara.document.v1.ExportPurchasesExcelRequest\x1a\x14.google.api.HttpBody\";\x82\xd3\xe4\x93\x025\x123/api/v1/garages/{garage_id}/reports/purchases/excel\x12\xac\x01\n" +
-	"\x19ExportStockValuationExcel\x126.vietgara.document.v1.ExportStockValuationExcelRequest\x1a\x14.google.api.HttpBody\"A\x82\xd3\xe4\x93\x02;\x129/api/v1/garages/{garage_id}/reports/stock-valuation/excelBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/document/v1;documentv1b\x06proto3"
+	"\x19ExportStockValuationExcel\x126.vietgara.document.v1.ExportStockValuationExcelRequest\x1a\x14.google.api.HttpBody\"A\x82\xd3\xe4\x93\x02;\x129/api/v1/garages/{garage_id}/reports/stock-valuation/excel\x12\xa5\x01\n" +
+	"\x10GetPrintSettings\x12-.vietgara.document.v1.GetPrintSettingsRequest\x1a..vietgara.document.v1.GetPrintSettingsResponse\"2\x82\xd3\xe4\x93\x02,\x12*/api/v1/garages/{garage_id}/print-settings\x12\xb0\x01\n" +
+	"\x12UpdatePrintSetting\x12/.vietgara.document.v1.UpdatePrintSettingRequest\x1a\".vietgara.document.v1.PrintSetting\"E\x82\xd3\xe4\x93\x02?:\x01*\x1a:/api/v1/garages/{garage_id}/print-settings/{document_type}\x12\x92\x01\n" +
+	"\rPrintQuotePdf\x12*.vietgara.document.v1.PrintQuotePdfRequest\x1a\x14.google.api.HttpBody\"?\x82\xd3\xe4\x93\x029\"7/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf:print\x12\xac\x01\n" +
+	"\x13PrintRepairOrderPdf\x120.vietgara.document.v1.PrintRepairOrderPdfRequest\x1a\x14.google.api.HttpBody\"M\x82\xd3\xe4\x93\x02G\"E/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/pdf:print\x12\xbc\x01\n" +
+	"\x19PrintSettlementReceiptPdf\x126.vietgara.document.v1.PrintSettlementReceiptPdfRequest\x1a\x14.google.api.HttpBody\"Q\x82\xd3\xe4\x93\x02K\"I/api/v1/garages/{garage_id}/settlements/{settlement_id}/receipt-pdf:print\x12\xcc\x01\n" +
+	"\x16PrintPaymentVoucherPdf\x123.vietgara.document.v1.PrintPaymentVoucherPdfRequest\x1a\x14.google.api.HttpBody\"g\x82\xd3\xe4\x93\x02a\"_/api/v1/garages/{garage_id}/settlements/{settlement_id}/payments/{payment_id}/voucher-pdf:print\x12\xb0\x01\n" +
+	"\x14PrintGoodsReceiptPdf\x121.vietgara.document.v1.PrintGoodsReceiptPdfRequest\x1a\x14.google.api.HttpBody\"O\x82\xd3\xe4\x93\x02I\"G/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}/pdf:print\x12\xb6\x01\n" +
+	"\x12PrintStockIssuePdf\x12/.vietgara.document.v1.PrintStockIssuePdfRequest\x1a\x14.google.api.HttpBody\"Y\x82\xd3\xe4\x93\x02S\"Q/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue/pdf:printBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/document/v1;documentv1b\x06proto3"
 
 var (
 	file_vietgara_document_v1_document_proto_rawDescOnce sync.Once
@@ -713,51 +1432,86 @@ func file_vietgara_document_v1_document_proto_rawDescGZIP() []byte {
 	return file_vietgara_document_v1_document_proto_rawDescData
 }
 
-var file_vietgara_document_v1_document_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_vietgara_document_v1_document_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_vietgara_document_v1_document_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_vietgara_document_v1_document_proto_goTypes = []any{
-	(*ExportQuotePdfRequest)(nil),             // 0: vietgara.document.v1.ExportQuotePdfRequest
-	(*ExportRepairOrderPdfRequest)(nil),       // 1: vietgara.document.v1.ExportRepairOrderPdfRequest
-	(*ExportSettlementReceiptPdfRequest)(nil), // 2: vietgara.document.v1.ExportSettlementReceiptPdfRequest
-	(*ExportPaymentVoucherPdfRequest)(nil),    // 3: vietgara.document.v1.ExportPaymentVoucherPdfRequest
-	(*ExportStockMovementsExcelRequest)(nil),  // 4: vietgara.document.v1.ExportStockMovementsExcelRequest
-	(*ExportRevenueExcelRequest)(nil),         // 5: vietgara.document.v1.ExportRevenueExcelRequest
-	(*ExportGoodsReceiptPdfRequest)(nil),      // 6: vietgara.document.v1.ExportGoodsReceiptPdfRequest
-	(*ExportStockIssuePdfRequest)(nil),        // 7: vietgara.document.v1.ExportStockIssuePdfRequest
-	(*ExportStockCountExcelRequest)(nil),      // 8: vietgara.document.v1.ExportStockCountExcelRequest
-	(*ExportPurchasesExcelRequest)(nil),       // 9: vietgara.document.v1.ExportPurchasesExcelRequest
-	(*ExportStockValuationExcelRequest)(nil),  // 10: vietgara.document.v1.ExportStockValuationExcelRequest
-	(v1.RevenuePeriod)(0),                     // 11: vietgara.reporting.v1.RevenuePeriod
-	(*httpbody.HttpBody)(nil),                 // 12: google.api.HttpBody
+	(DocumentType)(0),                         // 0: vietgara.document.v1.DocumentType
+	(PaperSize)(0),                            // 1: vietgara.document.v1.PaperSize
+	(*ExportQuotePdfRequest)(nil),             // 2: vietgara.document.v1.ExportQuotePdfRequest
+	(*ExportRepairOrderPdfRequest)(nil),       // 3: vietgara.document.v1.ExportRepairOrderPdfRequest
+	(*ExportSettlementReceiptPdfRequest)(nil), // 4: vietgara.document.v1.ExportSettlementReceiptPdfRequest
+	(*ExportPaymentVoucherPdfRequest)(nil),    // 5: vietgara.document.v1.ExportPaymentVoucherPdfRequest
+	(*ExportStockMovementsExcelRequest)(nil),  // 6: vietgara.document.v1.ExportStockMovementsExcelRequest
+	(*ExportRevenueExcelRequest)(nil),         // 7: vietgara.document.v1.ExportRevenueExcelRequest
+	(*ExportGoodsReceiptPdfRequest)(nil),      // 8: vietgara.document.v1.ExportGoodsReceiptPdfRequest
+	(*ExportStockIssuePdfRequest)(nil),        // 9: vietgara.document.v1.ExportStockIssuePdfRequest
+	(*ExportStockCountExcelRequest)(nil),      // 10: vietgara.document.v1.ExportStockCountExcelRequest
+	(*ExportPurchasesExcelRequest)(nil),       // 11: vietgara.document.v1.ExportPurchasesExcelRequest
+	(*ExportStockValuationExcelRequest)(nil),  // 12: vietgara.document.v1.ExportStockValuationExcelRequest
+	(*PrintSetting)(nil),                      // 13: vietgara.document.v1.PrintSetting
+	(*GetPrintSettingsRequest)(nil),           // 14: vietgara.document.v1.GetPrintSettingsRequest
+	(*GetPrintSettingsResponse)(nil),          // 15: vietgara.document.v1.GetPrintSettingsResponse
+	(*UpdatePrintSettingRequest)(nil),         // 16: vietgara.document.v1.UpdatePrintSettingRequest
+	(*PrintQuotePdfRequest)(nil),              // 17: vietgara.document.v1.PrintQuotePdfRequest
+	(*PrintRepairOrderPdfRequest)(nil),        // 18: vietgara.document.v1.PrintRepairOrderPdfRequest
+	(*PrintSettlementReceiptPdfRequest)(nil),  // 19: vietgara.document.v1.PrintSettlementReceiptPdfRequest
+	(*PrintPaymentVoucherPdfRequest)(nil),     // 20: vietgara.document.v1.PrintPaymentVoucherPdfRequest
+	(*PrintGoodsReceiptPdfRequest)(nil),       // 21: vietgara.document.v1.PrintGoodsReceiptPdfRequest
+	(*PrintStockIssuePdfRequest)(nil),         // 22: vietgara.document.v1.PrintStockIssuePdfRequest
+	(v1.RevenuePeriod)(0),                     // 23: vietgara.reporting.v1.RevenuePeriod
+	(*httpbody.HttpBody)(nil),                 // 24: google.api.HttpBody
 }
 var file_vietgara_document_v1_document_proto_depIdxs = []int32{
-	11, // 0: vietgara.document.v1.ExportRevenueExcelRequest.period:type_name -> vietgara.reporting.v1.RevenuePeriod
-	0,  // 1: vietgara.document.v1.DocumentService.ExportQuotePdf:input_type -> vietgara.document.v1.ExportQuotePdfRequest
-	1,  // 2: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:input_type -> vietgara.document.v1.ExportRepairOrderPdfRequest
-	2,  // 3: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:input_type -> vietgara.document.v1.ExportSettlementReceiptPdfRequest
-	3,  // 4: vietgara.document.v1.DocumentService.ExportPaymentVoucherPdf:input_type -> vietgara.document.v1.ExportPaymentVoucherPdfRequest
-	4,  // 5: vietgara.document.v1.DocumentService.ExportStockMovementsExcel:input_type -> vietgara.document.v1.ExportStockMovementsExcelRequest
-	5,  // 6: vietgara.document.v1.DocumentService.ExportRevenueExcel:input_type -> vietgara.document.v1.ExportRevenueExcelRequest
-	6,  // 7: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:input_type -> vietgara.document.v1.ExportGoodsReceiptPdfRequest
-	7,  // 8: vietgara.document.v1.DocumentService.ExportStockIssuePdf:input_type -> vietgara.document.v1.ExportStockIssuePdfRequest
-	8,  // 9: vietgara.document.v1.DocumentService.ExportStockCountExcel:input_type -> vietgara.document.v1.ExportStockCountExcelRequest
-	9,  // 10: vietgara.document.v1.DocumentService.ExportPurchasesExcel:input_type -> vietgara.document.v1.ExportPurchasesExcelRequest
-	10, // 11: vietgara.document.v1.DocumentService.ExportStockValuationExcel:input_type -> vietgara.document.v1.ExportStockValuationExcelRequest
-	12, // 12: vietgara.document.v1.DocumentService.ExportQuotePdf:output_type -> google.api.HttpBody
-	12, // 13: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:output_type -> google.api.HttpBody
-	12, // 14: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:output_type -> google.api.HttpBody
-	12, // 15: vietgara.document.v1.DocumentService.ExportPaymentVoucherPdf:output_type -> google.api.HttpBody
-	12, // 16: vietgara.document.v1.DocumentService.ExportStockMovementsExcel:output_type -> google.api.HttpBody
-	12, // 17: vietgara.document.v1.DocumentService.ExportRevenueExcel:output_type -> google.api.HttpBody
-	12, // 18: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:output_type -> google.api.HttpBody
-	12, // 19: vietgara.document.v1.DocumentService.ExportStockIssuePdf:output_type -> google.api.HttpBody
-	12, // 20: vietgara.document.v1.DocumentService.ExportStockCountExcel:output_type -> google.api.HttpBody
-	12, // 21: vietgara.document.v1.DocumentService.ExportPurchasesExcel:output_type -> google.api.HttpBody
-	12, // 22: vietgara.document.v1.DocumentService.ExportStockValuationExcel:output_type -> google.api.HttpBody
-	12, // [12:23] is the sub-list for method output_type
-	1,  // [1:12] is the sub-list for method input_type
-	1,  // [1:1] is the sub-list for extension type_name
-	1,  // [1:1] is the sub-list for extension extendee
-	0,  // [0:1] is the sub-list for field type_name
+	23, // 0: vietgara.document.v1.ExportRevenueExcelRequest.period:type_name -> vietgara.reporting.v1.RevenuePeriod
+	0,  // 1: vietgara.document.v1.PrintSetting.document_type:type_name -> vietgara.document.v1.DocumentType
+	1,  // 2: vietgara.document.v1.PrintSetting.paper_size:type_name -> vietgara.document.v1.PaperSize
+	1,  // 3: vietgara.document.v1.PrintSetting.available_paper_sizes:type_name -> vietgara.document.v1.PaperSize
+	13, // 4: vietgara.document.v1.GetPrintSettingsResponse.settings:type_name -> vietgara.document.v1.PrintSetting
+	0,  // 5: vietgara.document.v1.UpdatePrintSettingRequest.document_type:type_name -> vietgara.document.v1.DocumentType
+	1,  // 6: vietgara.document.v1.UpdatePrintSettingRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
+	2,  // 7: vietgara.document.v1.DocumentService.ExportQuotePdf:input_type -> vietgara.document.v1.ExportQuotePdfRequest
+	3,  // 8: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:input_type -> vietgara.document.v1.ExportRepairOrderPdfRequest
+	4,  // 9: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:input_type -> vietgara.document.v1.ExportSettlementReceiptPdfRequest
+	5,  // 10: vietgara.document.v1.DocumentService.ExportPaymentVoucherPdf:input_type -> vietgara.document.v1.ExportPaymentVoucherPdfRequest
+	6,  // 11: vietgara.document.v1.DocumentService.ExportStockMovementsExcel:input_type -> vietgara.document.v1.ExportStockMovementsExcelRequest
+	7,  // 12: vietgara.document.v1.DocumentService.ExportRevenueExcel:input_type -> vietgara.document.v1.ExportRevenueExcelRequest
+	8,  // 13: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:input_type -> vietgara.document.v1.ExportGoodsReceiptPdfRequest
+	9,  // 14: vietgara.document.v1.DocumentService.ExportStockIssuePdf:input_type -> vietgara.document.v1.ExportStockIssuePdfRequest
+	10, // 15: vietgara.document.v1.DocumentService.ExportStockCountExcel:input_type -> vietgara.document.v1.ExportStockCountExcelRequest
+	11, // 16: vietgara.document.v1.DocumentService.ExportPurchasesExcel:input_type -> vietgara.document.v1.ExportPurchasesExcelRequest
+	12, // 17: vietgara.document.v1.DocumentService.ExportStockValuationExcel:input_type -> vietgara.document.v1.ExportStockValuationExcelRequest
+	14, // 18: vietgara.document.v1.DocumentService.GetPrintSettings:input_type -> vietgara.document.v1.GetPrintSettingsRequest
+	16, // 19: vietgara.document.v1.DocumentService.UpdatePrintSetting:input_type -> vietgara.document.v1.UpdatePrintSettingRequest
+	17, // 20: vietgara.document.v1.DocumentService.PrintQuotePdf:input_type -> vietgara.document.v1.PrintQuotePdfRequest
+	18, // 21: vietgara.document.v1.DocumentService.PrintRepairOrderPdf:input_type -> vietgara.document.v1.PrintRepairOrderPdfRequest
+	19, // 22: vietgara.document.v1.DocumentService.PrintSettlementReceiptPdf:input_type -> vietgara.document.v1.PrintSettlementReceiptPdfRequest
+	20, // 23: vietgara.document.v1.DocumentService.PrintPaymentVoucherPdf:input_type -> vietgara.document.v1.PrintPaymentVoucherPdfRequest
+	21, // 24: vietgara.document.v1.DocumentService.PrintGoodsReceiptPdf:input_type -> vietgara.document.v1.PrintGoodsReceiptPdfRequest
+	22, // 25: vietgara.document.v1.DocumentService.PrintStockIssuePdf:input_type -> vietgara.document.v1.PrintStockIssuePdfRequest
+	24, // 26: vietgara.document.v1.DocumentService.ExportQuotePdf:output_type -> google.api.HttpBody
+	24, // 27: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:output_type -> google.api.HttpBody
+	24, // 28: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:output_type -> google.api.HttpBody
+	24, // 29: vietgara.document.v1.DocumentService.ExportPaymentVoucherPdf:output_type -> google.api.HttpBody
+	24, // 30: vietgara.document.v1.DocumentService.ExportStockMovementsExcel:output_type -> google.api.HttpBody
+	24, // 31: vietgara.document.v1.DocumentService.ExportRevenueExcel:output_type -> google.api.HttpBody
+	24, // 32: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:output_type -> google.api.HttpBody
+	24, // 33: vietgara.document.v1.DocumentService.ExportStockIssuePdf:output_type -> google.api.HttpBody
+	24, // 34: vietgara.document.v1.DocumentService.ExportStockCountExcel:output_type -> google.api.HttpBody
+	24, // 35: vietgara.document.v1.DocumentService.ExportPurchasesExcel:output_type -> google.api.HttpBody
+	24, // 36: vietgara.document.v1.DocumentService.ExportStockValuationExcel:output_type -> google.api.HttpBody
+	15, // 37: vietgara.document.v1.DocumentService.GetPrintSettings:output_type -> vietgara.document.v1.GetPrintSettingsResponse
+	13, // 38: vietgara.document.v1.DocumentService.UpdatePrintSetting:output_type -> vietgara.document.v1.PrintSetting
+	24, // 39: vietgara.document.v1.DocumentService.PrintQuotePdf:output_type -> google.api.HttpBody
+	24, // 40: vietgara.document.v1.DocumentService.PrintRepairOrderPdf:output_type -> google.api.HttpBody
+	24, // 41: vietgara.document.v1.DocumentService.PrintSettlementReceiptPdf:output_type -> google.api.HttpBody
+	24, // 42: vietgara.document.v1.DocumentService.PrintPaymentVoucherPdf:output_type -> google.api.HttpBody
+	24, // 43: vietgara.document.v1.DocumentService.PrintGoodsReceiptPdf:output_type -> google.api.HttpBody
+	24, // 44: vietgara.document.v1.DocumentService.PrintStockIssuePdf:output_type -> google.api.HttpBody
+	26, // [26:45] is the sub-list for method output_type
+	7,  // [7:26] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_document_v1_document_proto_init() }
@@ -770,13 +1524,14 @@ func file_vietgara_document_v1_document_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_document_v1_document_proto_rawDesc), len(file_vietgara_document_v1_document_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   11,
+			NumEnums:      2,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_vietgara_document_v1_document_proto_goTypes,
 		DependencyIndexes: file_vietgara_document_v1_document_proto_depIdxs,
+		EnumInfos:         file_vietgara_document_v1_document_proto_enumTypes,
 		MessageInfos:      file_vietgara_document_v1_document_proto_msgTypes,
 	}.Build()
 	File_vietgara_document_v1_document_proto = out.File

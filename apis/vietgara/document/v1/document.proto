@@ -76,12 +76,91 @@ message ExportStockValuationExcelRequest {
   string at = 2;
 }
 
+// DocumentType is a document a garage can print (FR-DOC-04).
+enum DocumentType {
+  DOCUMENT_TYPE_UNSPECIFIED = 0;
+  DOCUMENT_TYPE_QUOTE = 1;
+  DOCUMENT_TYPE_REPAIR_ORDER = 2;
+  DOCUMENT_TYPE_SETTLEMENT = 3;
+  DOCUMENT_TYPE_PAYMENT_VOUCHER = 4;
+  DOCUMENT_TYPE_GOODS_RECEIPT = 5;
+  DOCUMENT_TYPE_STOCK_ISSUE = 6;
+}
+
+// PaperSize is the paper a document prints on: A4 (210 x 297 mm) or A5
+// (148 x 210 mm).
+enum PaperSize {
+  PAPER_SIZE_UNSPECIFIED = 0;
+  PAPER_SIZE_A4 = 1;
+  PAPER_SIZE_A5 = 2;
+}
+
+// PrintSetting is a garage's printing choice for one document type
+// (FR-DOC-04). A garage that never changed it prints on A4 without the
+// copy mark.
+message PrintSetting {
+  DocumentType document_type = 1;
+  PaperSize paper_size = 2;
+  // Whether a reprint carries a "copy" mark.
+  bool copy_mark = 3;
+  // The sizes the document type has a template for.
+  repeated PaperSize available_paper_sizes = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message GetPrintSettingsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetPrintSettingsResponse {
+  // One entry for each document type, defaults filled in.
+  repeated PrintSetting settings = 1;
+}
+
+message UpdatePrintSettingRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  DocumentType document_type = 2 [(google.api.field_behavior) = REQUIRED];
+  PaperSize paper_size = 3 [(google.api.field_behavior) = REQUIRED];
+  bool copy_mark = 4;
+}
+
+message PrintQuotePdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string quote_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PrintRepairOrderPdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PrintSettlementReceiptPdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PrintPaymentVoucherPdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string payment_id = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PrintGoodsReceiptPdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string goods_receipt_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PrintStockIssuePdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
 // DocumentService renders PDFs and Excel reports on request (FRD 3.13).
-// No templates are stored -- FR-DOC-03 (letting a garage customize the
-// logo and layout) is Phase 4 -- every document is generated fresh from
-// the owning module's own data, read through a narrow interface the same
-// way every other cross-module read works (HLD Section 2: a module never
-// queries another module's tables directly). Each RPC needs the same
+// Every document is generated fresh from the owning module's own data, read
+// through a narrow interface the same way every other cross-module read
+// works (HLD Section 2: a module never queries another module's tables
+// directly), with a built-in template per document type, paper size and
+// version (Release 10.0; a garage designing its own templates is FR-DOC-03,
+// Phase 14). Each RPC needs the same
 // permission as the data it renders (quote.read, billing.read,
 // inventory.read), not a permission of its own.
 service DocumentService {
@@ -151,5 +230,51 @@ service DocumentService {
   // inventory.cost.read.
   rpc ExportStockValuationExcel(ExportStockValuationExcelRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/stock-valuation/excel"};
+  }
+
+  // FR-DOC-04, FR-DOC-05 (Release 10.0): the garage's print choice for each
+  // document type, defaults filled in. Needs membership of the garage.
+  rpc GetPrintSettings(GetPrintSettingsRequest) returns (GetPrintSettingsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/print-settings"};
+  }
+
+  // FR-DOC-04 (Release 10.0): replaces the paper size and the copy mark of
+  // one document type; an omitted copy_mark means false, and the type is the
+  // one in the path. An unspecified document type or paper size, and a size
+  // the type has no template for, are refused (INVALID_ARGUMENT).
+  rpc UpdatePrintSetting(UpdatePrintSettingRequest) returns (PrintSetting) {
+    option (google.api.http) = {
+      put: "/api/v1/garages/{garage_id}/print-settings/{document_type}"
+      body: "*"
+    };
+  }
+
+  // FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
+  // Export*Pdf RPC (the garage's paper size, the template version of the
+  // document's first print), add the copy mark of a reprint when the garage
+  // turned it on, and write the print log. Each needs the permission of the
+  // data it renders.
+  rpc PrintQuotePdf(PrintQuotePdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf:print"};
+  }
+
+  rpc PrintRepairOrderPdf(PrintRepairOrderPdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/pdf:print"};
+  }
+
+  rpc PrintSettlementReceiptPdf(PrintSettlementReceiptPdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/settlements/{settlement_id}/receipt-pdf:print"};
+  }
+
+  rpc PrintPaymentVoucherPdf(PrintPaymentVoucherPdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/settlements/{settlement_id}/payments/{payment_id}/voucher-pdf:print"};
+  }
+
+  rpc PrintGoodsReceiptPdf(PrintGoodsReceiptPdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}/pdf:print"};
+  }
+
+  rpc PrintStockIssuePdf(PrintStockIssuePdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue/pdf:print"};
   }
 }
