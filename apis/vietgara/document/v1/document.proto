@@ -238,8 +238,10 @@ service DocumentService {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/print-settings"};
   }
 
-  // FR-DOC-04 (Release 10.0): sets the paper size and the copy mark of one
-  // document type. A size the type has no template for is refused.
+  // FR-DOC-04 (Release 10.0): replaces the paper size and the copy mark of
+  // one document type; an omitted copy_mark means false, and the type is the
+  // one in the path. An unspecified document type or paper size, and a size
+  // the type has no template for, are refused (INVALID_ARGUMENT).
   rpc UpdatePrintSetting(UpdatePrintSettingRequest) returns (PrintSetting) {
     option (google.api.http) = {
       put: "/api/v1/garages/{garage_id}/print-settings/{document_type}"

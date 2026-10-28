@@ -4478,7 +4478,7 @@
     },
     "/api/v1/garages/{garageId}/print-settings/{documentType}": {
       "put": {
-        "summary": "FR-DOC-04 (Release 10.0): sets the paper size and the copy mark of one\ndocument type. A size the type has no template for is refused.",
+        "summary": "FR-DOC-04 (Release 10.0): replaces the paper size and the copy mark of\none document type; an omitted copy_mark means false, and the type is the\none in the path. An unspecified document type or paper size, and a size\nthe type has no template for, are refused (INVALID_ARGUMENT).",
         "operationId": "DocumentService_UpdatePrintSetting",
         "responses": {
           "200": {

@@ -93,8 +93,10 @@ type DocumentServiceClient interface {
 	// FR-DOC-04, FR-DOC-05 (Release 10.0): the garage's print choice for each
 	// document type, defaults filled in. Needs membership of the garage.
 	GetPrintSettings(ctx context.Context, in *GetPrintSettingsRequest, opts ...grpc.CallOption) (*GetPrintSettingsResponse, error)
-	// FR-DOC-04 (Release 10.0): sets the paper size and the copy mark of one
-	// document type. A size the type has no template for is refused.
+	// FR-DOC-04 (Release 10.0): replaces the paper size and the copy mark of
+	// one document type; an omitted copy_mark means false, and the type is the
+	// one in the path. An unspecified document type or paper size, and a size
+	// the type has no template for, are refused (INVALID_ARGUMENT).
 	UpdatePrintSetting(ctx context.Context, in *UpdatePrintSettingRequest, opts ...grpc.CallOption) (*PrintSetting, error)
 	// FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
 	// Export*Pdf RPC (the garage's paper size, the template version of the
@@ -359,8 +361,10 @@ type DocumentServiceServer interface {
 	// FR-DOC-04, FR-DOC-05 (Release 10.0): the garage's print choice for each
 	// document type, defaults filled in. Needs membership of the garage.
 	GetPrintSettings(context.Context, *GetPrintSettingsRequest) (*GetPrintSettingsResponse, error)
-	// FR-DOC-04 (Release 10.0): sets the paper size and the copy mark of one
-	// document type. A size the type has no template for is refused.
+	// FR-DOC-04 (Release 10.0): replaces the paper size and the copy mark of
+	// one document type; an omitted copy_mark means false, and the type is the
+	// one in the path. An unspecified document type or paper size, and a size
+	// the type has no template for, are refused (INVALID_ARGUMENT).
 	UpdatePrintSetting(context.Context, *UpdatePrintSettingRequest) (*PrintSetting, error)
 	// FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
 	// Export*Pdf RPC (the garage's paper size, the template version of the
