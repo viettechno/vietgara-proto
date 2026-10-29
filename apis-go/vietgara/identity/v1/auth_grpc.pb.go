@@ -27,6 +27,9 @@ const (
 	AuthService_Logout_FullMethodName                   = "/vietgara.identity.v1.AuthService/Logout"
 	AuthService_SendEmailVerificationOtp_FullMethodName = "/vietgara.identity.v1.AuthService/SendEmailVerificationOtp"
 	AuthService_VerifyEmail_FullMethodName              = "/vietgara.identity.v1.AuthService/VerifyEmail"
+	AuthService_StartGoogleLink_FullMethodName          = "/vietgara.identity.v1.AuthService/StartGoogleLink"
+	AuthService_LinkGoogle_FullMethodName               = "/vietgara.identity.v1.AuthService/LinkGoogle"
+	AuthService_UnlinkGoogle_FullMethodName             = "/vietgara.identity.v1.AuthService/UnlinkGoogle"
 	AuthService_RequestPasswordReset_FullMethodName     = "/vietgara.identity.v1.AuthService/RequestPasswordReset"
 	AuthService_VerifyPasswordResetOtp_FullMethodName   = "/vietgara.identity.v1.AuthService/VerifyPasswordResetOtp"
 	AuthService_ResetPassword_FullMethodName            = "/vietgara.identity.v1.AuthService/ResetPassword"
@@ -66,6 +69,23 @@ type AuthServiceClient interface {
 	// Confirms the signed-in user's e-mail with the OTP and returns a
 	// session whose token is marked verified.
 	VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error)
+	// FR-IAM-06 (Release 10.3), web consoles: confirms the user's password and
+	// answers a single-use ticket (5 minutes) for the Google popup,
+	// GET /api/v1/auth/google/login?link=<ticket>, whose callback links the
+	// Google account chosen there to this user instead of signing in.
+	StartGoogleLink(ctx context.Context, in *StartGoogleLinkRequest, opts ...grpc.CallOption) (*StartGoogleLinkResponse, error)
+	// FR-IAM-06 (Release 10.3), mobile apps: links the Google account of a
+	// Google ID token (obtained natively, verified like SignInWithGoogleIdToken)
+	// to the signed-in user, who confirms with the password. Linking the account
+	// that is already linked changes nothing. Errors: PASSWORD_INCORRECT (403),
+	// NO_PASSWORD (412), GOOGLE_ALREADY_LINKED and GOOGLE_LINK_EXISTS (409),
+	// GOOGLE_TOKEN_INVALID (401) and GOOGLE_NOT_CONFIGURED.
+	LinkGoogle(ctx context.Context, in *LinkGoogleRequest, opts ...grpc.CallOption) (*LinkGoogleResponse, error)
+	// FR-IAM-06 (Release 10.3): removes the linked Google account, after the
+	// password. The last way to sign in is never removed (NO_PASSWORD), and a
+	// user with no Google account answers GOOGLE_NOT_LINKED (412). Every other
+	// session of the user is revoked, and the call answers a new one.
+	UnlinkGoogle(ctx context.Context, in *UnlinkGoogleRequest, opts ...grpc.CallOption) (*UnlinkGoogleResponse, error)
 	// Starts a password reset (FR-IAM-04): e-mails an OTP valid for 2
 	// minutes. Always succeeds so user existence is not revealed.
 	RequestPasswordReset(ctx context.Context, in *RequestPasswordResetRequest, opts ...grpc.CallOption) (*RequestPasswordResetResponse, error)
@@ -163,6 +183,36 @@ func (c *authServiceClient) VerifyEmail(ctx context.Context, in *VerifyEmailRequ
 	return out, nil
 }
 
+func (c *authServiceClient) StartGoogleLink(ctx context.Context, in *StartGoogleLinkRequest, opts ...grpc.CallOption) (*StartGoogleLinkResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(StartGoogleLinkResponse)
+	err := c.cc.Invoke(ctx, AuthService_StartGoogleLink_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) LinkGoogle(ctx context.Context, in *LinkGoogleRequest, opts ...grpc.CallOption) (*LinkGoogleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LinkGoogleResponse)
+	err := c.cc.Invoke(ctx, AuthService_LinkGoogle_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) UnlinkGoogle(ctx context.Context, in *UnlinkGoogleRequest, opts ...grpc.CallOption) (*UnlinkGoogleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UnlinkGoogleResponse)
+	err := c.cc.Invoke(ctx, AuthService_UnlinkGoogle_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *authServiceClient) RequestPasswordReset(ctx context.Context, in *RequestPasswordResetRequest, opts ...grpc.CallOption) (*RequestPasswordResetResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RequestPasswordResetResponse)
@@ -227,6 +277,23 @@ type AuthServiceServer interface {
 	// Confirms the signed-in user's e-mail with the OTP and returns a
 	// session whose token is marked verified.
 	VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error)
+	// FR-IAM-06 (Release 10.3), web consoles: confirms the user's password and
+	// answers a single-use ticket (5 minutes) for the Google popup,
+	// GET /api/v1/auth/google/login?link=<ticket>, whose callback links the
+	// Google account chosen there to this user instead of signing in.
+	StartGoogleLink(context.Context, *StartGoogleLinkRequest) (*StartGoogleLinkResponse, error)
+	// FR-IAM-06 (Release 10.3), mobile apps: links the Google account of a
+	// Google ID token (obtained natively, verified like SignInWithGoogleIdToken)
+	// to the signed-in user, who confirms with the password. Linking the account
+	// that is already linked changes nothing. Errors: PASSWORD_INCORRECT (403),
+	// NO_PASSWORD (412), GOOGLE_ALREADY_LINKED and GOOGLE_LINK_EXISTS (409),
+	// GOOGLE_TOKEN_INVALID (401) and GOOGLE_NOT_CONFIGURED.
+	LinkGoogle(context.Context, *LinkGoogleRequest) (*LinkGoogleResponse, error)
+	// FR-IAM-06 (Release 10.3): removes the linked Google account, after the
+	// password. The last way to sign in is never removed (NO_PASSWORD), and a
+	// user with no Google account answers GOOGLE_NOT_LINKED (412). Every other
+	// session of the user is revoked, and the call answers a new one.
+	UnlinkGoogle(context.Context, *UnlinkGoogleRequest) (*UnlinkGoogleResponse, error)
 	// Starts a password reset (FR-IAM-04): e-mails an OTP valid for 2
 	// minutes. Always succeeds so user existence is not revealed.
 	RequestPasswordReset(context.Context, *RequestPasswordResetRequest) (*RequestPasswordResetResponse, error)
@@ -267,6 +334,15 @@ func (UnimplementedAuthServiceServer) SendEmailVerificationOtp(context.Context, 
 }
 func (UnimplementedAuthServiceServer) VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method VerifyEmail not implemented")
+}
+func (UnimplementedAuthServiceServer) StartGoogleLink(context.Context, *StartGoogleLinkRequest) (*StartGoogleLinkResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method StartGoogleLink not implemented")
+}
+func (UnimplementedAuthServiceServer) LinkGoogle(context.Context, *LinkGoogleRequest) (*LinkGoogleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method LinkGoogle not implemented")
+}
+func (UnimplementedAuthServiceServer) UnlinkGoogle(context.Context, *UnlinkGoogleRequest) (*UnlinkGoogleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UnlinkGoogle not implemented")
 }
 func (UnimplementedAuthServiceServer) RequestPasswordReset(context.Context, *RequestPasswordResetRequest) (*RequestPasswordResetResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RequestPasswordReset not implemented")
@@ -442,6 +518,60 @@ func _AuthService_VerifyEmail_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_StartGoogleLink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartGoogleLinkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).StartGoogleLink(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_StartGoogleLink_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).StartGoogleLink(ctx, req.(*StartGoogleLinkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_LinkGoogle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LinkGoogleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).LinkGoogle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_LinkGoogle_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).LinkGoogle(ctx, req.(*LinkGoogleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_UnlinkGoogle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnlinkGoogleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).UnlinkGoogle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_UnlinkGoogle_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).UnlinkGoogle(ctx, req.(*UnlinkGoogleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthService_RequestPasswordReset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RequestPasswordResetRequest)
 	if err := dec(in); err != nil {
@@ -534,6 +664,18 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "VerifyEmail",
 			Handler:    _AuthService_VerifyEmail_Handler,
+		},
+		{
+			MethodName: "StartGoogleLink",
+			Handler:    _AuthService_StartGoogleLink_Handler,
+		},
+		{
+			MethodName: "LinkGoogle",
+			Handler:    _AuthService_LinkGoogle_Handler,
+		},
+		{
+			MethodName: "UnlinkGoogle",
+			Handler:    _AuthService_UnlinkGoogle_Handler,
 		},
 		{
 			MethodName: "RequestPasswordReset",

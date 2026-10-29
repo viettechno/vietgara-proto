@@ -194,7 +194,13 @@ type User struct {
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	// True when the user has turned on a TOTP second factor (FR-IAM-09).
-	MfaEnabled    bool `protobuf:"varint,12,opt,name=mfa_enabled,json=mfaEnabled,proto3" json:"mfa_enabled,omitempty"`
+	MfaEnabled bool `protobuf:"varint,12,opt,name=mfa_enabled,json=mfaEnabled,proto3" json:"mfa_enabled,omitempty"`
+	// True when a Google account is linked: by signing in with Google or by
+	// LinkGoogle (FR-IAM-06).
+	GoogleLinked bool `protobuf:"varint,13,opt,name=google_linked,json=googleLinked,proto3" json:"google_linked,omitempty"`
+	// True when the user can sign in with a password. A user created by Google
+	// has none until it resets one.
+	HasPassword   bool `protobuf:"varint,14,opt,name=has_password,json=hasPassword,proto3" json:"has_password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -309,6 +315,20 @@ func (x *User) GetUpdatedAt() *timestamppb.Timestamp {
 func (x *User) GetMfaEnabled() bool {
 	if x != nil {
 		return x.MfaEnabled
+	}
+	return false
+}
+
+func (x *User) GetGoogleLinked() bool {
+	if x != nil {
+		return x.GoogleLinked
+	}
+	return false
+}
+
+func (x *User) GetHasPassword() bool {
+	if x != nil {
+		return x.HasPassword
 	}
 	return false
 }
@@ -495,7 +515,7 @@ var File_vietgara_identity_v1_user_proto protoreflect.FileDescriptor
 
 const file_vietgara_identity_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x1fvietgara/identity/v1/user.proto\x12\x14vietgara.identity.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb9\x04\n" +
+	"\x1fvietgara/identity/v1/user.proto\x12\x14vietgara.identity.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8b\x05\n" +
 	"\x04User\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x19\n" +
 	"\x05email\x18\x02 \x01(\tB\x03\xe0A\x03R\x05email\x12\x19\n" +
@@ -512,7 +532,9 @@ const file_vietgara_identity_v1_user_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12$\n" +
 	"\vmfa_enabled\x18\f \x01(\bB\x03\xe0A\x03R\n" +
-	"mfaEnabledB\b\n" +
+	"mfaEnabled\x12(\n" +
+	"\rgoogle_linked\x18\r \x01(\bB\x03\xe0A\x03R\fgoogleLinked\x12&\n" +
+	"\fhas_password\x18\x0e \x01(\bB\x03\xe0A\x03R\vhasPasswordB\b\n" +
 	"\x06_phone\"\x0e\n" +
 	"\fGetMeRequest\"?\n" +
 	"\rGetMeResponse\x12.\n" +

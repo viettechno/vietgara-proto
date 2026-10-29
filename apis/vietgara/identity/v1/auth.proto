@@ -94,6 +94,43 @@ service AuthService {
     };
   }
 
+  // FR-IAM-06 (Release 10.3), web consoles: confirms the user's password and
+  // answers a single-use ticket (5 minutes) for the Google popup,
+  // GET /api/v1/auth/google/login?link=<ticket>, whose callback links the
+  // Google account chosen there to this user instead of signing in.
+  rpc StartGoogleLink(StartGoogleLinkRequest) returns (StartGoogleLinkResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/google-link:start"
+      body: "*"
+    };
+  }
+
+  // FR-IAM-06 (Release 10.3), mobile apps: links the Google account of a
+  // Google ID token (obtained natively, verified like SignInWithGoogleIdToken)
+  // to the signed-in user, who confirms with the password. Linking the account
+  // that is already linked changes nothing. Errors: PASSWORD_INCORRECT (403),
+  // NO_PASSWORD (412), GOOGLE_ALREADY_LINKED and GOOGLE_LINK_EXISTS (409),
+  // GOOGLE_TOKEN_INVALID (401) and GOOGLE_NOT_CONFIGURED.
+  rpc LinkGoogle(LinkGoogleRequest) returns (LinkGoogleResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/google-link"
+      body: "*"
+      response_body: "user"
+    };
+  }
+
+  // FR-IAM-06 (Release 10.3): removes the linked Google account, after the
+  // password. The last way to sign in is never removed (NO_PASSWORD), and a
+  // user with no Google account answers GOOGLE_NOT_LINKED (412). Every other
+  // session of the user is revoked, and the call answers a new one.
+  rpc UnlinkGoogle(UnlinkGoogleRequest) returns (UnlinkGoogleResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/google-link:unlink"
+      body: "*"
+      response_body: "session"
+    };
+  }
+
   // Starts a password reset (FR-IAM-04): e-mails an OTP valid for 2
   // minutes. Always succeeds so user existence is not revealed.
   rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse) {
@@ -168,6 +205,38 @@ message LoginRequest {
 }
 
 message LoginResponse {
+  Session session = 1;
+}
+
+message StartGoogleLinkRequest {
+  // The signed-in user's current password.
+  string password = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message StartGoogleLinkResponse {
+  // The ticket for the Google popup's `link` query parameter.
+  string link_token = 1 [(google.api.field_behavior) = REQUIRED];
+  google.protobuf.Timestamp expires_at = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message LinkGoogleRequest {
+  // The ID token (a JWT) returned by Google Sign-In on the device.
+  string id_token = 1 [(google.api.field_behavior) = REQUIRED];
+  // The signed-in user's current password.
+  string password = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message LinkGoogleResponse {
+  User user = 1;
+}
+
+message UnlinkGoogleRequest {
+  // The signed-in user's current password.
+  string password = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message UnlinkGoogleResponse {
+  // A new session: every other one of the user was revoked.
   Session session = 1;
 }
 
