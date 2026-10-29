@@ -67,6 +67,7 @@ Protocol Buffers. The same `.proto` files describe:
 | `vietgara.inventory.v1` | Inventory (HLD #7) | `InventoryService`: ListStockLevels, GetStockLevel, CreateStockReceipt, ListStockTransactions. Stock only; the part is in `vietgara.catalogue.v1` |
 | | | `ImportService`: DownloadImportTemplate, PreviewImport, ConfirmImport for parts, goods receipts and stock counts from Excel |
 | `vietgara.catalogue.v1` | Job catalogue | `JobService`: ListJobs, CreateJob, GetJob, UpdateJob, DeleteJob, ActivateJob (jobs and their suggested parts, FR-CAT-05). `QuoteService.AddQuoteJob` adds a job to a quote; `RepairOrderService` gains AddRepairOrderLine, DeleteRepairOrderLine and CancelRepairOrder |
+| `vietgara.notification.v1` | Notification (HLD #14) | `NotificationService`: GetNotificationSettings, UpdateNotificationSettings, ListNotificationLog (Release 10.1: the garage's e-mail switches, sender name and delivery log) |
 | `vietgara.file.v1` | File registry | `FileService`: UploadFile, GetFileUrl, DeleteFile |
 | `vietgara.common.v1` | Shared messages | `Pagination`, `BankDetails`, `DeleteOutcome`, `BillingParty` and `TaxProfileKind`, `ErrorResponse` and the OpenAPI document options (no services) |
 

@@ -106,7 +106,16 @@ type Customer struct {
 	// an inactive customer is left out of pickers.
 	IsActive bool `protobuf:"varint,12,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
 	// The state of the link with a user, UNSPECIFIED when never linked.
-	LinkStatus    CustomerUserLinkStatus `protobuf:"varint,13,opt,name=link_status,json=linkStatus,proto3,enum=vietgara.customer.v1.CustomerUserLinkStatus" json:"link_status,omitempty"`
+	LinkStatus CustomerUserLinkStatus `protobuf:"varint,13,opt,name=link_status,json=linkStatus,proto3,enum=vietgara.customer.v1.CustomerUserLinkStatus" json:"link_status,omitempty"`
+	// The language of the e-mails sent to the customer: `vi` (default) or `en`.
+	// A customer linked to a user gets e-mails in the user's language instead.
+	Locale string `protobuf:"bytes,14,opt,name=locale,proto3" json:"locale,omitempty"`
+	// Whether the customer opted out of non-essential e-mails (Release 10.1).
+	// Staff set it to record a customer's choice made outside the e-mail; every
+	// change is logged with the consent.
+	EmailOptOut bool `protobuf:"varint,15,opt,name=email_opt_out,json=emailOptOut,proto3" json:"email_opt_out,omitempty"`
+	// When the customer opted out; unset while opted in.
+	EmailOptOutAt *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=email_opt_out_at,json=emailOptOutAt,proto3" json:"email_opt_out_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -230,6 +239,27 @@ func (x *Customer) GetLinkStatus() CustomerUserLinkStatus {
 		return x.LinkStatus
 	}
 	return CustomerUserLinkStatus_CUSTOMER_USER_LINK_STATUS_UNSPECIFIED
+}
+
+func (x *Customer) GetLocale() string {
+	if x != nil {
+		return x.Locale
+	}
+	return ""
+}
+
+func (x *Customer) GetEmailOptOut() bool {
+	if x != nil {
+		return x.EmailOptOut
+	}
+	return false
+}
+
+func (x *Customer) GetEmailOptOutAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.EmailOptOutAt
+	}
+	return nil
 }
 
 type CreateCustomerRequest struct {
@@ -988,7 +1018,7 @@ var File_vietgara_customer_v1_customer_proto protoreflect.FileDescriptor
 
 const file_vietgara_customer_v1_customer_proto_rawDesc = "" +
 	"\n" +
-	"#vietgara/customer/v1/customer.proto\x12\x14vietgara.customer.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\"vietgara/common/v1/lifecycle.proto\x1a#vietgara/common/v1/pagination.proto\"\x86\x05\n" +
+	"#vietgara/customer/v1/customer.proto\x12\x14vietgara.customer.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\"vietgara/common/v1/lifecycle.proto\x1a#vietgara/common/v1/pagination.proto\"\x8c\x06\n" +
 	"\bCustomer\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
 	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12 \n" +
@@ -1006,7 +1036,10 @@ const file_vietgara_customer_v1_customer_proto_rawDesc = "" +
 	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12 \n" +
 	"\tis_active\x18\f \x01(\bB\x03\xe0A\x03R\bisActive\x12R\n" +
 	"\vlink_status\x18\r \x01(\x0e2,.vietgara.customer.v1.CustomerUserLinkStatusB\x03\xe0A\x03R\n" +
-	"linkStatusB\b\n" +
+	"linkStatus\x12\x16\n" +
+	"\x06locale\x18\x0e \x01(\tR\x06locale\x12\"\n" +
+	"\remail_opt_out\x18\x0f \x01(\bR\vemailOptOut\x12H\n" +
+	"\x10email_opt_out_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\remailOptOutAtB\b\n" +
 	"\x06_phoneB\b\n" +
 	"\x06_emailB\n" +
 	"\n" +
@@ -1119,36 +1152,37 @@ var file_vietgara_customer_v1_customer_proto_depIdxs = []int32{
 	16, // 1: vietgara.customer.v1.Customer.created_at:type_name -> google.protobuf.Timestamp
 	16, // 2: vietgara.customer.v1.Customer.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 3: vietgara.customer.v1.Customer.link_status:type_name -> vietgara.customer.v1.CustomerUserLinkStatus
-	1,  // 4: vietgara.customer.v1.CreateCustomerRequest.customer:type_name -> vietgara.customer.v1.Customer
-	1,  // 5: vietgara.customer.v1.CreateCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
-	1,  // 6: vietgara.customer.v1.GetCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
-	1,  // 7: vietgara.customer.v1.UpdateCustomerRequest.customer:type_name -> vietgara.customer.v1.Customer
-	17, // 8: vietgara.customer.v1.UpdateCustomerRequest.update_mask:type_name -> google.protobuf.FieldMask
-	1,  // 9: vietgara.customer.v1.UpdateCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
-	1,  // 10: vietgara.customer.v1.ListCustomersResponse.data:type_name -> vietgara.customer.v1.Customer
-	18, // 11: vietgara.customer.v1.ListCustomersResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	19, // 12: vietgara.customer.v1.DeleteCustomerResponse.outcome:type_name -> vietgara.common.v1.DeleteOutcome
-	1,  // 13: vietgara.customer.v1.ActivateCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
-	1,  // 14: vietgara.customer.v1.LookupCustomersResponse.data:type_name -> vietgara.customer.v1.Customer
-	8,  // 15: vietgara.customer.v1.CustomerService.ListCustomers:input_type -> vietgara.customer.v1.ListCustomersRequest
-	2,  // 16: vietgara.customer.v1.CustomerService.CreateCustomer:input_type -> vietgara.customer.v1.CreateCustomerRequest
-	4,  // 17: vietgara.customer.v1.CustomerService.GetCustomer:input_type -> vietgara.customer.v1.GetCustomerRequest
-	6,  // 18: vietgara.customer.v1.CustomerService.UpdateCustomer:input_type -> vietgara.customer.v1.UpdateCustomerRequest
-	10, // 19: vietgara.customer.v1.CustomerService.DeleteCustomer:input_type -> vietgara.customer.v1.DeleteCustomerRequest
-	12, // 20: vietgara.customer.v1.CustomerService.ActivateCustomer:input_type -> vietgara.customer.v1.ActivateCustomerRequest
-	14, // 21: vietgara.customer.v1.CustomerService.LookupCustomers:input_type -> vietgara.customer.v1.LookupCustomersRequest
-	9,  // 22: vietgara.customer.v1.CustomerService.ListCustomers:output_type -> vietgara.customer.v1.ListCustomersResponse
-	3,  // 23: vietgara.customer.v1.CustomerService.CreateCustomer:output_type -> vietgara.customer.v1.CreateCustomerResponse
-	5,  // 24: vietgara.customer.v1.CustomerService.GetCustomer:output_type -> vietgara.customer.v1.GetCustomerResponse
-	7,  // 25: vietgara.customer.v1.CustomerService.UpdateCustomer:output_type -> vietgara.customer.v1.UpdateCustomerResponse
-	11, // 26: vietgara.customer.v1.CustomerService.DeleteCustomer:output_type -> vietgara.customer.v1.DeleteCustomerResponse
-	13, // 27: vietgara.customer.v1.CustomerService.ActivateCustomer:output_type -> vietgara.customer.v1.ActivateCustomerResponse
-	15, // 28: vietgara.customer.v1.CustomerService.LookupCustomers:output_type -> vietgara.customer.v1.LookupCustomersResponse
-	22, // [22:29] is the sub-list for method output_type
-	15, // [15:22] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	16, // 4: vietgara.customer.v1.Customer.email_opt_out_at:type_name -> google.protobuf.Timestamp
+	1,  // 5: vietgara.customer.v1.CreateCustomerRequest.customer:type_name -> vietgara.customer.v1.Customer
+	1,  // 6: vietgara.customer.v1.CreateCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
+	1,  // 7: vietgara.customer.v1.GetCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
+	1,  // 8: vietgara.customer.v1.UpdateCustomerRequest.customer:type_name -> vietgara.customer.v1.Customer
+	17, // 9: vietgara.customer.v1.UpdateCustomerRequest.update_mask:type_name -> google.protobuf.FieldMask
+	1,  // 10: vietgara.customer.v1.UpdateCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
+	1,  // 11: vietgara.customer.v1.ListCustomersResponse.data:type_name -> vietgara.customer.v1.Customer
+	18, // 12: vietgara.customer.v1.ListCustomersResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	19, // 13: vietgara.customer.v1.DeleteCustomerResponse.outcome:type_name -> vietgara.common.v1.DeleteOutcome
+	1,  // 14: vietgara.customer.v1.ActivateCustomerResponse.customer:type_name -> vietgara.customer.v1.Customer
+	1,  // 15: vietgara.customer.v1.LookupCustomersResponse.data:type_name -> vietgara.customer.v1.Customer
+	8,  // 16: vietgara.customer.v1.CustomerService.ListCustomers:input_type -> vietgara.customer.v1.ListCustomersRequest
+	2,  // 17: vietgara.customer.v1.CustomerService.CreateCustomer:input_type -> vietgara.customer.v1.CreateCustomerRequest
+	4,  // 18: vietgara.customer.v1.CustomerService.GetCustomer:input_type -> vietgara.customer.v1.GetCustomerRequest
+	6,  // 19: vietgara.customer.v1.CustomerService.UpdateCustomer:input_type -> vietgara.customer.v1.UpdateCustomerRequest
+	10, // 20: vietgara.customer.v1.CustomerService.DeleteCustomer:input_type -> vietgara.customer.v1.DeleteCustomerRequest
+	12, // 21: vietgara.customer.v1.CustomerService.ActivateCustomer:input_type -> vietgara.customer.v1.ActivateCustomerRequest
+	14, // 22: vietgara.customer.v1.CustomerService.LookupCustomers:input_type -> vietgara.customer.v1.LookupCustomersRequest
+	9,  // 23: vietgara.customer.v1.CustomerService.ListCustomers:output_type -> vietgara.customer.v1.ListCustomersResponse
+	3,  // 24: vietgara.customer.v1.CustomerService.CreateCustomer:output_type -> vietgara.customer.v1.CreateCustomerResponse
+	5,  // 25: vietgara.customer.v1.CustomerService.GetCustomer:output_type -> vietgara.customer.v1.GetCustomerResponse
+	7,  // 26: vietgara.customer.v1.CustomerService.UpdateCustomer:output_type -> vietgara.customer.v1.UpdateCustomerResponse
+	11, // 27: vietgara.customer.v1.CustomerService.DeleteCustomer:output_type -> vietgara.customer.v1.DeleteCustomerResponse
+	13, // 28: vietgara.customer.v1.CustomerService.ActivateCustomer:output_type -> vietgara.customer.v1.ActivateCustomerResponse
+	15, // 29: vietgara.customer.v1.CustomerService.LookupCustomers:output_type -> vietgara.customer.v1.LookupCustomersResponse
+	23, // [23:30] is the sub-list for method output_type
+	16, // [16:23] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_customer_v1_customer_proto_init() }
