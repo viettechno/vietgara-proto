@@ -94,14 +94,19 @@ service AuthService {
     };
   }
 
-  // FR-IAM-06 (Release 10.3), web consoles: confirms the user's password and
-  // answers a single-use ticket (5 minutes) for the Google popup,
-  // GET /api/v1/auth/google/login?link=<ticket>, whose callback links the
-  // Google account chosen there to this user instead of signing in.
-  rpc StartGoogleLink(StartGoogleLinkRequest) returns (StartGoogleLinkResponse) {
+  // FR-IAM-06 (Release 10.3), web consoles: the console opens the Google popup
+  // (GET /api/v1/auth/google/login?link=1); its callback verifies the Google
+  // account and posts a single-use proof (5 minutes) to the console window
+  // that opened it, restricted to the console's origin. This call links that
+  // Google account to the signed-in user, who confirms with the password. The
+  // proof reaches only the page that opened the popup, so a page of another
+  // origin cannot make a user link their Google account to someone else.
+  // Errors as LinkGoogle, and LINK_PROOF_INVALID.
+  rpc CompleteGoogleLink(CompleteGoogleLinkRequest) returns (CompleteGoogleLinkResponse) {
     option (google.api.http) = {
-      post: "/api/v1/me/google-link:start"
+      post: "/api/v1/me/google-link:complete"
       body: "*"
+      response_body: "user"
     };
   }
 
@@ -208,15 +213,15 @@ message LoginResponse {
   Session session = 1;
 }
 
-message StartGoogleLinkRequest {
+message CompleteGoogleLinkRequest {
+  // The proof the Google popup posted to the console.
+  string link_proof = 1 [(google.api.field_behavior) = REQUIRED];
   // The signed-in user's current password.
-  string password = 1 [(google.api.field_behavior) = REQUIRED];
+  string password = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-message StartGoogleLinkResponse {
-  // The ticket for the Google popup's `link` query parameter.
-  string link_token = 1 [(google.api.field_behavior) = REQUIRED];
-  google.protobuf.Timestamp expires_at = 2 [(google.api.field_behavior) = REQUIRED];
+message CompleteGoogleLinkResponse {
+  User user = 1;
 }
 
 message LinkGoogleRequest {
