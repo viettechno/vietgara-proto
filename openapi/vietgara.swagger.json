@@ -8994,6 +8994,105 @@
         ]
       }
     },
+    "/api/v1/me/google-link": {
+      "post": {
+        "summary": "FR-IAM-06 (Release 10.3), mobile apps: links the Google account of a\nGoogle ID token (obtained natively, verified like SignInWithGoogleIdToken)\nto the signed-in user, who confirms with the password. Linking the account\nthat is already linked changes nothing. Errors: PASSWORD_INCORRECT (403),\nNO_PASSWORD (412), GOOGLE_ALREADY_LINKED and GOOGLE_LINK_EXISTS (409),\nGOOGLE_TOKEN_INVALID (401) and GOOGLE_NOT_CONFIGURED.",
+        "operationId": "AuthService_LinkGoogle",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1User"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1LinkGoogleRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/api/v1/me/google-link:start": {
+      "post": {
+        "summary": "FR-IAM-06 (Release 10.3), web consoles: confirms the user's password and\nanswers a single-use ticket (5 minutes) for the Google popup,\nGET /api/v1/auth/google/login?link=\u003cticket\u003e, whose callback links the\nGoogle account chosen there to this user instead of signing in.",
+        "operationId": "AuthService_StartGoogleLink",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1StartGoogleLinkResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1StartGoogleLinkRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/api/v1/me/google-link:unlink": {
+      "post": {
+        "summary": "FR-IAM-06 (Release 10.3): removes the linked Google account, after the\npassword. The last way to sign in is never removed (NO_PASSWORD), and a\nuser with no Google account answers GOOGLE_NOT_LINKED (412). Every other\nsession of the user is revoked, and the call answers a new one.",
+        "operationId": "AuthService_UnlinkGoogle",
+        "responses": {
+          "200": {
+            "description": "A new session: every other one of the user was revoked.",
+            "schema": {
+              "$ref": "#/definitions/v1Session"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UnlinkGoogleRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
     "/api/v1/me/invitations": {
       "get": {
         "operationId": "InvitationService_ListMyInvitations",
@@ -12766,6 +12865,31 @@
         "quantity"
       ]
     },
+    "v1LinkGoogleRequest": {
+      "type": "object",
+      "properties": {
+        "idToken": {
+          "type": "string",
+          "description": "The ID token (a JWT) returned by Google Sign-In on the device."
+        },
+        "password": {
+          "type": "string",
+          "description": "The signed-in user's current password."
+        }
+      },
+      "required": [
+        "idToken",
+        "password"
+      ]
+    },
+    "v1LinkGoogleResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1User"
+        }
+      }
+    },
     "v1ListAllPlansResponse": {
       "type": "object",
       "properties": {
@@ -15714,6 +15838,35 @@
       ],
       "description": "StaffStatus: inactive staff keep their record but lose access."
     },
+    "v1StartGoogleLinkRequest": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string",
+          "description": "The signed-in user's current password."
+        }
+      },
+      "required": [
+        "password"
+      ]
+    },
+    "v1StartGoogleLinkResponse": {
+      "type": "object",
+      "properties": {
+        "linkToken": {
+          "type": "string",
+          "description": "The ticket for the Google popup's `link` query parameter."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "linkToken",
+        "expiresAt"
+      ]
+    },
     "v1StockCount": {
       "type": "object",
       "properties": {
@@ -16833,6 +16986,27 @@
         }
       }
     },
+    "v1UnlinkGoogleRequest": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string",
+          "description": "The signed-in user's current password."
+        }
+      },
+      "required": [
+        "password"
+      ]
+    },
+    "v1UnlinkGoogleResponse": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/v1Session",
+          "description": "A new session: every other one of the user was revoked."
+        }
+      }
+    },
     "v1UpdateCustomerResponse": {
       "type": "object",
       "properties": {
@@ -17128,6 +17302,16 @@
         "mfaEnabled": {
           "type": "boolean",
           "description": "True when the user has turned on a TOTP second factor (FR-IAM-09).",
+          "readOnly": true
+        },
+        "googleLinked": {
+          "type": "boolean",
+          "description": "True when a Google account is linked: by signing in with Google or by\nLinkGoogle (FR-IAM-06).",
+          "readOnly": true
+        },
+        "hasPassword": {
+          "type": "boolean",
+          "description": "True when the user can sign in with a password. A user created by Google\nhas none until it resets one.",
           "readOnly": true
         }
       },

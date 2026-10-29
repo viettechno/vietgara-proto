@@ -50,6 +50,12 @@ message User {
   google.protobuf.Timestamp updated_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
   // True when the user has turned on a TOTP second factor (FR-IAM-09).
   bool mfa_enabled = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // True when a Google account is linked: by signing in with Google or by
+  // LinkGoogle (FR-IAM-06).
+  bool google_linked = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // True when the user can sign in with a password. A user created by Google
+  // has none until it resets one.
+  bool has_password = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message GetMeRequest {}
