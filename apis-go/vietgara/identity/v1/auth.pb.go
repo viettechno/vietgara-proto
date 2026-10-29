@@ -404,28 +404,30 @@ func (x *LoginResponse) GetSession() *Session {
 	return nil
 }
 
-type StartGoogleLinkRequest struct {
+type CompleteGoogleLinkRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// The proof the Google popup posted to the console.
+	LinkProof string `protobuf:"bytes,1,opt,name=link_proof,json=linkProof,proto3" json:"link_proof,omitempty"`
 	// The signed-in user's current password.
-	Password      string `protobuf:"bytes,1,opt,name=password,proto3" json:"password,omitempty"`
+	Password      string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *StartGoogleLinkRequest) Reset() {
-	*x = StartGoogleLinkRequest{}
+func (x *CompleteGoogleLinkRequest) Reset() {
+	*x = CompleteGoogleLinkRequest{}
 	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *StartGoogleLinkRequest) String() string {
+func (x *CompleteGoogleLinkRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*StartGoogleLinkRequest) ProtoMessage() {}
+func (*CompleteGoogleLinkRequest) ProtoMessage() {}
 
-func (x *StartGoogleLinkRequest) ProtoReflect() protoreflect.Message {
+func (x *CompleteGoogleLinkRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -437,41 +439,46 @@ func (x *StartGoogleLinkRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use StartGoogleLinkRequest.ProtoReflect.Descriptor instead.
-func (*StartGoogleLinkRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use CompleteGoogleLinkRequest.ProtoReflect.Descriptor instead.
+func (*CompleteGoogleLinkRequest) Descriptor() ([]byte, []int) {
 	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *StartGoogleLinkRequest) GetPassword() string {
+func (x *CompleteGoogleLinkRequest) GetLinkProof() string {
+	if x != nil {
+		return x.LinkProof
+	}
+	return ""
+}
+
+func (x *CompleteGoogleLinkRequest) GetPassword() string {
 	if x != nil {
 		return x.Password
 	}
 	return ""
 }
 
-type StartGoogleLinkResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// The ticket for the Google popup's `link` query parameter.
-	LinkToken     string                 `protobuf:"bytes,1,opt,name=link_token,json=linkToken,proto3" json:"link_token,omitempty"`
-	ExpiresAt     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+type CompleteGoogleLinkResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *StartGoogleLinkResponse) Reset() {
-	*x = StartGoogleLinkResponse{}
+func (x *CompleteGoogleLinkResponse) Reset() {
+	*x = CompleteGoogleLinkResponse{}
 	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *StartGoogleLinkResponse) String() string {
+func (x *CompleteGoogleLinkResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*StartGoogleLinkResponse) ProtoMessage() {}
+func (*CompleteGoogleLinkResponse) ProtoMessage() {}
 
-func (x *StartGoogleLinkResponse) ProtoReflect() protoreflect.Message {
+func (x *CompleteGoogleLinkResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -483,21 +490,14 @@ func (x *StartGoogleLinkResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use StartGoogleLinkResponse.ProtoReflect.Descriptor instead.
-func (*StartGoogleLinkResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use CompleteGoogleLinkResponse.ProtoReflect.Descriptor instead.
+func (*CompleteGoogleLinkResponse) Descriptor() ([]byte, []int) {
 	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *StartGoogleLinkResponse) GetLinkToken() string {
+func (x *CompleteGoogleLinkResponse) GetUser() *User {
 	if x != nil {
-		return x.LinkToken
-	}
-	return ""
-}
-
-func (x *StartGoogleLinkResponse) GetExpiresAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.ExpiresAt
+		return x.User
 	}
 	return nil
 }
@@ -1546,14 +1546,13 @@ const file_vietgara_identity_v1_auth_proto_rawDesc = "" +
 	"\x05email\x18\x01 \x01(\tB\x03\xe0A\x02R\x05email\x12\x1f\n" +
 	"\bpassword\x18\x02 \x01(\tB\x03\xe0A\x02R\bpassword\"H\n" +
 	"\rLoginResponse\x127\n" +
-	"\asession\x18\x01 \x01(\v2\x1d.vietgara.identity.v1.SessionR\asession\"9\n" +
-	"\x16StartGoogleLinkRequest\x12\x1f\n" +
-	"\bpassword\x18\x01 \x01(\tB\x03\xe0A\x02R\bpassword\"}\n" +
-	"\x17StartGoogleLinkResponse\x12\"\n" +
+	"\asession\x18\x01 \x01(\v2\x1d.vietgara.identity.v1.SessionR\asession\"`\n" +
+	"\x19CompleteGoogleLinkRequest\x12\"\n" +
 	"\n" +
-	"link_token\x18\x01 \x01(\tB\x03\xe0A\x02R\tlinkToken\x12>\n" +
-	"\n" +
-	"expires_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x02R\texpiresAt\"T\n" +
+	"link_proof\x18\x01 \x01(\tB\x03\xe0A\x02R\tlinkProof\x12\x1f\n" +
+	"\bpassword\x18\x02 \x01(\tB\x03\xe0A\x02R\bpassword\"L\n" +
+	"\x1aCompleteGoogleLinkResponse\x12.\n" +
+	"\x04user\x18\x01 \x01(\v2\x1a.vietgara.identity.v1.UserR\x04user\"T\n" +
 	"\x11LinkGoogleRequest\x12\x1e\n" +
 	"\bid_token\x18\x01 \x01(\tB\x03\xe0A\x02R\aidToken\x12\x1f\n" +
 	"\bpassword\x18\x02 \x01(\tB\x03\xe0A\x02R\bpassword\"D\n" +
@@ -1604,7 +1603,7 @@ const file_vietgara_identity_v1_auth_proto_rawDesc = "" +
 	"\vreset_token\x18\x01 \x01(\tB\x03\xe0A\x02R\n" +
 	"resetToken\x12&\n" +
 	"\fnew_password\x18\x02 \x01(\tB\x03\xe0A\x02R\vnewPassword\"\x17\n" +
-	"\x15ResetPasswordResponse2\xa4\x11\n" +
+	"\x15ResetPasswordResponse2\xb6\x11\n" +
 	"\vAuthService\x12\x84\x01\n" +
 	"\bRegister\x12%.vietgara.identity.v1.RegisterRequest\x1a&.vietgara.identity.v1.RegisterResponse\")\x82\xd3\xe4\x93\x02#:\x01*b\asession\"\x15/api/v1/auth/register\x12x\n" +
 	"\x05Login\x12\".vietgara.identity.v1.LoginRequest\x1a#.vietgara.identity.v1.LoginResponse\"&\x82\xd3\xe4\x93\x02 :\x01*b\asession\"\x12/api/v1/auth/login\x12\xb8\x01\n" +
@@ -1613,8 +1612,8 @@ const file_vietgara_identity_v1_auth_proto_rawDesc = "" +
 	"\fRefreshToken\x12).vietgara.identity.v1.RefreshTokenRequest\x1a*.vietgara.identity.v1.RefreshTokenResponse\"(\x82\xd3\xe4\x93\x02\":\x01*b\asession\"\x14/api/v1/auth/refresh\x12s\n" +
 	"\x06Logout\x12#.vietgara.identity.v1.LogoutRequest\x1a$.vietgara.identity.v1.LogoutResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/api/v1/auth/logout\x12\xc4\x01\n" +
 	"\x18SendEmailVerificationOtp\x125.vietgara.identity.v1.SendEmailVerificationOtpRequest\x1a6.vietgara.identity.v1.SendEmailVerificationOtpResponse\"9\x82\xd3\xe4\x93\x023:\x01*b\tchallenge\"#/api/v1/auth/email-verification/otp\x12\x97\x01\n" +
-	"\vVerifyEmail\x12(.vietgara.identity.v1.VerifyEmailRequest\x1a).vietgara.identity.v1.VerifyEmailResponse\"3\x82\xd3\xe4\x93\x02-:\x01*b\asession\"\x1f/api/v1/auth/email-verification\x12\x97\x01\n" +
-	"\x0fStartGoogleLink\x12,.vietgara.identity.v1.StartGoogleLinkRequest\x1a-.vietgara.identity.v1.StartGoogleLinkResponse\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/api/v1/me/google-link:start\x12\x88\x01\n" +
+	"\vVerifyEmail\x12(.vietgara.identity.v1.VerifyEmailRequest\x1a).vietgara.identity.v1.VerifyEmailResponse\"3\x82\xd3\xe4\x93\x02-:\x01*b\asession\"\x1f/api/v1/auth/email-verification\x12\xa9\x01\n" +
+	"\x12CompleteGoogleLink\x12/.vietgara.identity.v1.CompleteGoogleLinkRequest\x1a0.vietgara.identity.v1.CompleteGoogleLinkResponse\"0\x82\xd3\xe4\x93\x02*:\x01*b\x04user\"\x1f/api/v1/me/google-link:complete\x12\x88\x01\n" +
 	"\n" +
 	"LinkGoogle\x12'.vietgara.identity.v1.LinkGoogleRequest\x1a(.vietgara.identity.v1.LinkGoogleResponse\"'\x82\xd3\xe4\x93\x02!:\x01*b\x04user\"\x16/api/v1/me/google-link\x12\x98\x01\n" +
 	"\fUnlinkGoogle\x12).vietgara.identity.v1.UnlinkGoogleRequest\x1a*.vietgara.identity.v1.UnlinkGoogleResponse\"1\x82\xd3\xe4\x93\x02+:\x01*b\asession\"\x1d/api/v1/me/google-link:unlink\x12\xb4\x01\n" +
@@ -1642,8 +1641,8 @@ var file_vietgara_identity_v1_auth_proto_goTypes = []any{
 	(*RegisterResponse)(nil),                 // 3: vietgara.identity.v1.RegisterResponse
 	(*LoginRequest)(nil),                     // 4: vietgara.identity.v1.LoginRequest
 	(*LoginResponse)(nil),                    // 5: vietgara.identity.v1.LoginResponse
-	(*StartGoogleLinkRequest)(nil),           // 6: vietgara.identity.v1.StartGoogleLinkRequest
-	(*StartGoogleLinkResponse)(nil),          // 7: vietgara.identity.v1.StartGoogleLinkResponse
+	(*CompleteGoogleLinkRequest)(nil),        // 6: vietgara.identity.v1.CompleteGoogleLinkRequest
+	(*CompleteGoogleLinkResponse)(nil),       // 7: vietgara.identity.v1.CompleteGoogleLinkResponse
 	(*LinkGoogleRequest)(nil),                // 8: vietgara.identity.v1.LinkGoogleRequest
 	(*LinkGoogleResponse)(nil),               // 9: vietgara.identity.v1.LinkGoogleResponse
 	(*UnlinkGoogleRequest)(nil),              // 10: vietgara.identity.v1.UnlinkGoogleRequest
@@ -1678,7 +1677,7 @@ var file_vietgara_identity_v1_auth_proto_depIdxs = []int32{
 	32, // 4: vietgara.identity.v1.RegisterRequest.locale:type_name -> vietgara.identity.v1.Locale
 	0,  // 5: vietgara.identity.v1.RegisterResponse.session:type_name -> vietgara.identity.v1.Session
 	0,  // 6: vietgara.identity.v1.LoginResponse.session:type_name -> vietgara.identity.v1.Session
-	31, // 7: vietgara.identity.v1.StartGoogleLinkResponse.expires_at:type_name -> google.protobuf.Timestamp
+	30, // 7: vietgara.identity.v1.CompleteGoogleLinkResponse.user:type_name -> vietgara.identity.v1.User
 	30, // 8: vietgara.identity.v1.LinkGoogleResponse.user:type_name -> vietgara.identity.v1.User
 	0,  // 9: vietgara.identity.v1.UnlinkGoogleResponse.session:type_name -> vietgara.identity.v1.Session
 	32, // 10: vietgara.identity.v1.SignInWithGoogleIdTokenRequest.locale:type_name -> vietgara.identity.v1.Locale
@@ -1697,7 +1696,7 @@ var file_vietgara_identity_v1_auth_proto_depIdxs = []int32{
 	18, // 23: vietgara.identity.v1.AuthService.Logout:input_type -> vietgara.identity.v1.LogoutRequest
 	20, // 24: vietgara.identity.v1.AuthService.SendEmailVerificationOtp:input_type -> vietgara.identity.v1.SendEmailVerificationOtpRequest
 	22, // 25: vietgara.identity.v1.AuthService.VerifyEmail:input_type -> vietgara.identity.v1.VerifyEmailRequest
-	6,  // 26: vietgara.identity.v1.AuthService.StartGoogleLink:input_type -> vietgara.identity.v1.StartGoogleLinkRequest
+	6,  // 26: vietgara.identity.v1.AuthService.CompleteGoogleLink:input_type -> vietgara.identity.v1.CompleteGoogleLinkRequest
 	8,  // 27: vietgara.identity.v1.AuthService.LinkGoogle:input_type -> vietgara.identity.v1.LinkGoogleRequest
 	10, // 28: vietgara.identity.v1.AuthService.UnlinkGoogle:input_type -> vietgara.identity.v1.UnlinkGoogleRequest
 	24, // 29: vietgara.identity.v1.AuthService.RequestPasswordReset:input_type -> vietgara.identity.v1.RequestPasswordResetRequest
@@ -1711,7 +1710,7 @@ var file_vietgara_identity_v1_auth_proto_depIdxs = []int32{
 	19, // 37: vietgara.identity.v1.AuthService.Logout:output_type -> vietgara.identity.v1.LogoutResponse
 	21, // 38: vietgara.identity.v1.AuthService.SendEmailVerificationOtp:output_type -> vietgara.identity.v1.SendEmailVerificationOtpResponse
 	23, // 39: vietgara.identity.v1.AuthService.VerifyEmail:output_type -> vietgara.identity.v1.VerifyEmailResponse
-	7,  // 40: vietgara.identity.v1.AuthService.StartGoogleLink:output_type -> vietgara.identity.v1.StartGoogleLinkResponse
+	7,  // 40: vietgara.identity.v1.AuthService.CompleteGoogleLink:output_type -> vietgara.identity.v1.CompleteGoogleLinkResponse
 	9,  // 41: vietgara.identity.v1.AuthService.LinkGoogle:output_type -> vietgara.identity.v1.LinkGoogleResponse
 	11, // 42: vietgara.identity.v1.AuthService.UnlinkGoogle:output_type -> vietgara.identity.v1.UnlinkGoogleResponse
 	25, // 43: vietgara.identity.v1.AuthService.RequestPasswordReset:output_type -> vietgara.identity.v1.RequestPasswordResetResponse

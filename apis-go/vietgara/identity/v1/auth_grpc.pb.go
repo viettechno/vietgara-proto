@@ -27,7 +27,7 @@ const (
 	AuthService_Logout_FullMethodName                   = "/vietgara.identity.v1.AuthService/Logout"
 	AuthService_SendEmailVerificationOtp_FullMethodName = "/vietgara.identity.v1.AuthService/SendEmailVerificationOtp"
 	AuthService_VerifyEmail_FullMethodName              = "/vietgara.identity.v1.AuthService/VerifyEmail"
-	AuthService_StartGoogleLink_FullMethodName          = "/vietgara.identity.v1.AuthService/StartGoogleLink"
+	AuthService_CompleteGoogleLink_FullMethodName       = "/vietgara.identity.v1.AuthService/CompleteGoogleLink"
 	AuthService_LinkGoogle_FullMethodName               = "/vietgara.identity.v1.AuthService/LinkGoogle"
 	AuthService_UnlinkGoogle_FullMethodName             = "/vietgara.identity.v1.AuthService/UnlinkGoogle"
 	AuthService_RequestPasswordReset_FullMethodName     = "/vietgara.identity.v1.AuthService/RequestPasswordReset"
@@ -69,11 +69,15 @@ type AuthServiceClient interface {
 	// Confirms the signed-in user's e-mail with the OTP and returns a
 	// session whose token is marked verified.
 	VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error)
-	// FR-IAM-06 (Release 10.3), web consoles: confirms the user's password and
-	// answers a single-use ticket (5 minutes) for the Google popup,
-	// GET /api/v1/auth/google/login?link=<ticket>, whose callback links the
-	// Google account chosen there to this user instead of signing in.
-	StartGoogleLink(ctx context.Context, in *StartGoogleLinkRequest, opts ...grpc.CallOption) (*StartGoogleLinkResponse, error)
+	// FR-IAM-06 (Release 10.3), web consoles: the console opens the Google popup
+	// (GET /api/v1/auth/google/login?link=1); its callback verifies the Google
+	// account and posts a single-use proof (5 minutes) to the console window
+	// that opened it, restricted to the console's origin. This call links that
+	// Google account to the signed-in user, who confirms with the password. The
+	// proof reaches only the page that opened the popup, so a page of another
+	// origin cannot make a user link their Google account to someone else.
+	// Errors as LinkGoogle, and LINK_PROOF_INVALID.
+	CompleteGoogleLink(ctx context.Context, in *CompleteGoogleLinkRequest, opts ...grpc.CallOption) (*CompleteGoogleLinkResponse, error)
 	// FR-IAM-06 (Release 10.3), mobile apps: links the Google account of a
 	// Google ID token (obtained natively, verified like SignInWithGoogleIdToken)
 	// to the signed-in user, who confirms with the password. Linking the account
@@ -183,10 +187,10 @@ func (c *authServiceClient) VerifyEmail(ctx context.Context, in *VerifyEmailRequ
 	return out, nil
 }
 
-func (c *authServiceClient) StartGoogleLink(ctx context.Context, in *StartGoogleLinkRequest, opts ...grpc.CallOption) (*StartGoogleLinkResponse, error) {
+func (c *authServiceClient) CompleteGoogleLink(ctx context.Context, in *CompleteGoogleLinkRequest, opts ...grpc.CallOption) (*CompleteGoogleLinkResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(StartGoogleLinkResponse)
-	err := c.cc.Invoke(ctx, AuthService_StartGoogleLink_FullMethodName, in, out, cOpts...)
+	out := new(CompleteGoogleLinkResponse)
+	err := c.cc.Invoke(ctx, AuthService_CompleteGoogleLink_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -277,11 +281,15 @@ type AuthServiceServer interface {
 	// Confirms the signed-in user's e-mail with the OTP and returns a
 	// session whose token is marked verified.
 	VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error)
-	// FR-IAM-06 (Release 10.3), web consoles: confirms the user's password and
-	// answers a single-use ticket (5 minutes) for the Google popup,
-	// GET /api/v1/auth/google/login?link=<ticket>, whose callback links the
-	// Google account chosen there to this user instead of signing in.
-	StartGoogleLink(context.Context, *StartGoogleLinkRequest) (*StartGoogleLinkResponse, error)
+	// FR-IAM-06 (Release 10.3), web consoles: the console opens the Google popup
+	// (GET /api/v1/auth/google/login?link=1); its callback verifies the Google
+	// account and posts a single-use proof (5 minutes) to the console window
+	// that opened it, restricted to the console's origin. This call links that
+	// Google account to the signed-in user, who confirms with the password. The
+	// proof reaches only the page that opened the popup, so a page of another
+	// origin cannot make a user link their Google account to someone else.
+	// Errors as LinkGoogle, and LINK_PROOF_INVALID.
+	CompleteGoogleLink(context.Context, *CompleteGoogleLinkRequest) (*CompleteGoogleLinkResponse, error)
 	// FR-IAM-06 (Release 10.3), mobile apps: links the Google account of a
 	// Google ID token (obtained natively, verified like SignInWithGoogleIdToken)
 	// to the signed-in user, who confirms with the password. Linking the account
@@ -335,8 +343,8 @@ func (UnimplementedAuthServiceServer) SendEmailVerificationOtp(context.Context, 
 func (UnimplementedAuthServiceServer) VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method VerifyEmail not implemented")
 }
-func (UnimplementedAuthServiceServer) StartGoogleLink(context.Context, *StartGoogleLinkRequest) (*StartGoogleLinkResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method StartGoogleLink not implemented")
+func (UnimplementedAuthServiceServer) CompleteGoogleLink(context.Context, *CompleteGoogleLinkRequest) (*CompleteGoogleLinkResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteGoogleLink not implemented")
 }
 func (UnimplementedAuthServiceServer) LinkGoogle(context.Context, *LinkGoogleRequest) (*LinkGoogleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method LinkGoogle not implemented")
@@ -518,20 +526,20 @@ func _AuthService_VerifyEmail_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthService_StartGoogleLink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StartGoogleLinkRequest)
+func _AuthService_CompleteGoogleLink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompleteGoogleLinkRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServiceServer).StartGoogleLink(ctx, in)
+		return srv.(AuthServiceServer).CompleteGoogleLink(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AuthService_StartGoogleLink_FullMethodName,
+		FullMethod: AuthService_CompleteGoogleLink_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).StartGoogleLink(ctx, req.(*StartGoogleLinkRequest))
+		return srv.(AuthServiceServer).CompleteGoogleLink(ctx, req.(*CompleteGoogleLinkRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -666,8 +674,8 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthService_VerifyEmail_Handler,
 		},
 		{
-			MethodName: "StartGoogleLink",
-			Handler:    _AuthService_StartGoogleLink_Handler,
+			MethodName: "CompleteGoogleLink",
+			Handler:    _AuthService_CompleteGoogleLink_Handler,
 		},
 		{
 			MethodName: "LinkGoogle",
