@@ -45,6 +45,15 @@ message Customer {
   bool is_active = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The state of the link with a user, UNSPECIFIED when never linked.
   CustomerUserLinkStatus link_status = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The language of the e-mails sent to the customer: `vi` (default) or `en`.
+  // A customer linked to a user gets e-mails in the user's language instead.
+  string locale = 14;
+  // Whether the customer opted out of non-essential e-mails (Release 10.1).
+  // Staff set it to record a customer's choice made outside the e-mail; every
+  // change is logged with the consent.
+  bool email_opt_out = 15;
+  // When the customer opted out; unset while opted in.
+  google.protobuf.Timestamp email_opt_out_at = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message CreateCustomerRequest {

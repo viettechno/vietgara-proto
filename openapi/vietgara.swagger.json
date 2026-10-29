@@ -79,6 +79,10 @@
       "description": "LicenseAdminService is for platform admins only (FR-LIC-05, FR-LIC-08, FR-LIC-10)."
     },
     {
+      "name": "NotificationService",
+      "description": "NotificationService serves the garage's e-mail settings and delivery log\n(Release 10.1). The e-mails themselves are sent by consuming events, and\nthe customer's opt-out page and the provider's webhook are plain HTTP\nroutes, not RPCs."
+    },
+    {
       "name": "PlatformStaffService",
       "description": "PlatformStaffService manages platform roles, platform staff groups and\ntheir members (FR-IAM-10). Every call needs PLATFORM_PERMISSION_PLATFORM_\nSTAFF_READ (reads) or PLATFORM_PERMISSION_PLATFORM_STAFF_WRITE (changes);\na Platform Admin passes. A user without the Platform Admin right can only\ngive permissions they hold themselves."
     },
@@ -3759,6 +3763,146 @@
         ],
         "tags": [
           "GarageService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/notification-log": {
+      "get": {
+        "summary": "The garage's sends, newest first. Needs PERMISSION_GARAGE_WRITE: the\nlog holds customers' e-mail addresses.",
+        "operationId": "NotificationService_ListNotificationLog",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListNotificationLogResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "description": "Filters; unspecified means all.\n\n - NOTIFICATION_TYPE_QUOTE_READY: Customer: the quote with the link to approve it. Essential.\n - NOTIFICATION_TYPE_QUOTE_DECIDED: Staff: a quote was approved or rejected.\n - NOTIFICATION_TYPE_VEHICLE_READY: Customer: the vehicle is ready for pick-up.\n - NOTIFICATION_TYPE_PAYMENT_RECEIVED: Customer: a payment was recorded and a balance is left.\n - NOTIFICATION_TYPE_SETTLEMENT_RECEIPT: Customer: the settlement is paid; the receipt is attached. Essential.\n - NOTIFICATION_TYPE_SETTLEMENT_PAID: Staff: a settlement is fully paid.\n - NOTIFICATION_TYPE_LOW_STOCK: Staff: a part fell to or under its reorder threshold.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "NOTIFICATION_TYPE_QUOTE_READY",
+              "NOTIFICATION_TYPE_QUOTE_DECIDED",
+              "NOTIFICATION_TYPE_VEHICLE_READY",
+              "NOTIFICATION_TYPE_PAYMENT_RECEIVED",
+              "NOTIFICATION_TYPE_SETTLEMENT_RECEIPT",
+              "NOTIFICATION_TYPE_SETTLEMENT_PAID",
+              "NOTIFICATION_TYPE_LOW_STOCK"
+            ]
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "NOTIFICATION_STATUS_SENT",
+              "NOTIFICATION_STATUS_FAILED",
+              "NOTIFICATION_STATUS_SKIPPED"
+            ]
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "NotificationService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/notification-settings": {
+      "get": {
+        "summary": "Any member of the garage can read the settings (PERMISSION_GARAGE_READ).",
+        "operationId": "NotificationService_GetNotificationSettings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1NotificationSettings"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "NotificationService"
+        ]
+      },
+      "put": {
+        "summary": "Replaces the settings. Needs PERMISSION_GARAGE_WRITE.",
+        "operationId": "NotificationService_UpdateNotificationSettings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1NotificationSettings"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/NotificationServiceUpdateNotificationSettingsBody"
+            }
+          }
+        ],
+        "tags": [
+          "NotificationService"
         ]
       }
     },
@@ -10421,6 +10565,23 @@
         "transferredAmount"
       ]
     },
+    "NotificationServiceUpdateNotificationSettingsBody": {
+      "type": "object",
+      "properties": {
+        "senderName": {
+          "type": "string",
+          "description": "At most 100 characters."
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1NotificationTypeSetting"
+          },
+          "description": "The types to change; a type left out is switched on. An unspecified type\nor a duplicate is refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
     "PlatformAccessServiceAcceptPlatformInvitationBody": {
       "type": "object"
     },
@@ -11347,6 +11508,20 @@
         "linkStatus": {
           "$ref": "#/definitions/v1CustomerUserLinkStatus",
           "description": "The state of the link with a user, UNSPECIFIED when never linked.",
+          "readOnly": true
+        },
+        "locale": {
+          "type": "string",
+          "description": "The language of the e-mails sent to the customer: `vi` (default) or `en`.\nA customer linked to a user gets e-mails in the user's language instead."
+        },
+        "emailOptOut": {
+          "type": "boolean",
+          "description": "Whether the customer opted out of non-essential e-mails (Release 10.1).\nStaff set it to record a customer's choice made outside the e-mail; every\nchange is logged with the consent."
+        },
+        "emailOptOutAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the customer opted out; unset while opted in.",
           "readOnly": true
         }
       },
@@ -13135,6 +13310,21 @@
         }
       }
     },
+    "v1ListNotificationLogResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1NotificationLogEntry"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
     "v1ListPartCategoriesResponse": {
       "type": "object",
       "properties": {
@@ -13699,6 +13889,119 @@
         }
       },
       "description": "MyPlatformAccess is what the signed-in user may do on the platform: it\ndecides whether the admin web and the admin app open and which menus they\nshow."
+    },
+    "v1NotificationAudience": {
+      "type": "string",
+      "enum": [
+        "NOTIFICATION_AUDIENCE_CUSTOMER",
+        "NOTIFICATION_AUDIENCE_STAFF"
+      ]
+    },
+    "v1NotificationLogEntry": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/v1NotificationType"
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "customerId": {
+          "type": "string"
+        },
+        "entityType": {
+          "type": "string",
+          "description": "What the e-mail is about, for example `quote` and the quote's id."
+        },
+        "entityId": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1NotificationStatus"
+        },
+        "reason": {
+          "$ref": "#/definitions/v1NotificationSkipReason"
+        },
+        "error": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "NotificationLogEntry is one send, failed attempt or skip of a garage."
+    },
+    "v1NotificationSettings": {
+      "type": "object",
+      "properties": {
+        "senderName": {
+          "type": "string",
+          "description": "The display name of the sender; empty means the garage's name."
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1NotificationTypeSetting"
+          },
+          "description": "One entry for each type, defaults (enabled) filled in."
+        }
+      }
+    },
+    "v1NotificationSkipReason": {
+      "type": "string",
+      "enum": [
+        "NOTIFICATION_SKIP_REASON_DISABLED",
+        "NOTIFICATION_SKIP_REASON_OPTED_OUT",
+        "NOTIFICATION_SKIP_REASON_SUPPRESSED",
+        "NOTIFICATION_SKIP_REASON_NO_EMAIL"
+      ],
+      "description": "NotificationSkipReason says why a notification was not sent.\n\n - NOTIFICATION_SKIP_REASON_DISABLED: The garage switched the type off.\n - NOTIFICATION_SKIP_REASON_OPTED_OUT: The customer opted out of non-essential e-mails.\n - NOTIFICATION_SKIP_REASON_SUPPRESSED: The address bounced for good or complained.\n - NOTIFICATION_SKIP_REASON_NO_EMAIL: The customer has no e-mail address."
+    },
+    "v1NotificationStatus": {
+      "type": "string",
+      "enum": [
+        "NOTIFICATION_STATUS_SENT",
+        "NOTIFICATION_STATUS_FAILED",
+        "NOTIFICATION_STATUS_SKIPPED"
+      ]
+    },
+    "v1NotificationType": {
+      "type": "string",
+      "enum": [
+        "NOTIFICATION_TYPE_QUOTE_READY",
+        "NOTIFICATION_TYPE_QUOTE_DECIDED",
+        "NOTIFICATION_TYPE_VEHICLE_READY",
+        "NOTIFICATION_TYPE_PAYMENT_RECEIVED",
+        "NOTIFICATION_TYPE_SETTLEMENT_RECEIPT",
+        "NOTIFICATION_TYPE_SETTLEMENT_PAID",
+        "NOTIFICATION_TYPE_LOW_STOCK"
+      ],
+      "description": "NotificationType is one e-mail a garage can switch off (FR-NOT-05,\nFR-INV-04).\n\n - NOTIFICATION_TYPE_QUOTE_READY: Customer: the quote with the link to approve it. Essential.\n - NOTIFICATION_TYPE_QUOTE_DECIDED: Staff: a quote was approved or rejected.\n - NOTIFICATION_TYPE_VEHICLE_READY: Customer: the vehicle is ready for pick-up.\n - NOTIFICATION_TYPE_PAYMENT_RECEIVED: Customer: a payment was recorded and a balance is left.\n - NOTIFICATION_TYPE_SETTLEMENT_RECEIPT: Customer: the settlement is paid; the receipt is attached. Essential.\n - NOTIFICATION_TYPE_SETTLEMENT_PAID: Staff: a settlement is fully paid.\n - NOTIFICATION_TYPE_LOW_STOCK: Staff: a part fell to or under its reorder threshold."
+    },
+    "v1NotificationTypeSetting": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/v1NotificationType"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "audience": {
+          "$ref": "#/definitions/v1NotificationAudience",
+          "readOnly": true
+        },
+        "essential": {
+          "type": "boolean",
+          "description": "An essential e-mail carries what the customer needs to act and ignores a\ncustomer's opt-out; the garage can still switch it off.",
+          "readOnly": true
+        }
+      }
     },
     "v1NumberingTemplates": {
       "type": "object",
