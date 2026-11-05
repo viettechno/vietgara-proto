@@ -7,6 +7,7 @@
 package platformv1
 
 import (
+	v1 "github.com/viettechno/vietgara-proto/apis-go/vietgara/common/v1"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -2180,6 +2181,276 @@ func (x *RevokePlatformInvitationResponse) GetInvitation() *PlatformInvitation {
 	return nil
 }
 
+// One entry of the platform audit log: a change made at platform level (a
+// plan, platform staff, platform payment settings) or a platform sign-in.
+// Entries that belong to a garage are not here; the garage sees its own.
+type PlatformAuditEntry struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// The user who made the change; empty for the system.
+	ActorUserId string `protobuf:"bytes,2,opt,name=actor_user_id,json=actorUserId,proto3" json:"actor_user_id,omitempty"`
+	ActorName   string `protobuf:"bytes,3,opt,name=actor_name,json=actorName,proto3" json:"actor_name,omitempty"`
+	// For example "plan.updated" or "platform.signed_in".
+	Action     string `protobuf:"bytes,4,opt,name=action,proto3" json:"action,omitempty"`
+	EntityType string `protobuf:"bytes,5,opt,name=entity_type,json=entityType,proto3" json:"entity_type,omitempty"`
+	EntityId   string `protobuf:"bytes,6,opt,name=entity_id,json=entityId,proto3" json:"entity_id,omitempty"`
+	// The state before and after the change, as JSON text; empty when the
+	// entry has none.
+	BeforeJson    string                 `protobuf:"bytes,7,opt,name=before_json,json=beforeJson,proto3" json:"before_json,omitempty"`
+	AfterJson     string                 `protobuf:"bytes,8,opt,name=after_json,json=afterJson,proto3" json:"after_json,omitempty"`
+	Ip            string                 `protobuf:"bytes,9,opt,name=ip,proto3" json:"ip,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlatformAuditEntry) Reset() {
+	*x = PlatformAuditEntry{}
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlatformAuditEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlatformAuditEntry) ProtoMessage() {}
+
+func (x *PlatformAuditEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlatformAuditEntry.ProtoReflect.Descriptor instead.
+func (*PlatformAuditEntry) Descriptor() ([]byte, []int) {
+	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *PlatformAuditEntry) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *PlatformAuditEntry) GetActorUserId() string {
+	if x != nil {
+		return x.ActorUserId
+	}
+	return ""
+}
+
+func (x *PlatformAuditEntry) GetActorName() string {
+	if x != nil {
+		return x.ActorName
+	}
+	return ""
+}
+
+func (x *PlatformAuditEntry) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+func (x *PlatformAuditEntry) GetEntityType() string {
+	if x != nil {
+		return x.EntityType
+	}
+	return ""
+}
+
+func (x *PlatformAuditEntry) GetEntityId() string {
+	if x != nil {
+		return x.EntityId
+	}
+	return ""
+}
+
+func (x *PlatformAuditEntry) GetBeforeJson() string {
+	if x != nil {
+		return x.BeforeJson
+	}
+	return ""
+}
+
+func (x *PlatformAuditEntry) GetAfterJson() string {
+	if x != nil {
+		return x.AfterJson
+	}
+	return ""
+}
+
+func (x *PlatformAuditEntry) GetIp() string {
+	if x != nil {
+		return x.Ip
+	}
+	return ""
+}
+
+func (x *PlatformAuditEntry) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+type ListPlatformAuditLogRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Matches the start of the action, so "plan." finds every plan change.
+	Action      string `protobuf:"bytes,1,opt,name=action,proto3" json:"action,omitempty"`
+	EntityType  string `protobuf:"bytes,2,opt,name=entity_type,json=entityType,proto3" json:"entity_type,omitempty"`
+	ActorUserId string `protobuf:"bytes,3,opt,name=actor_user_id,json=actorUserId,proto3" json:"actor_user_id,omitempty"`
+	// Entries from this time on, and before this time.
+	From          *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=from,proto3" json:"from,omitempty"`
+	To            *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=to,proto3" json:"to,omitempty"`
+	Page          int32                  `protobuf:"varint,6,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,7,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPlatformAuditLogRequest) Reset() {
+	*x = ListPlatformAuditLogRequest{}
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPlatformAuditLogRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPlatformAuditLogRequest) ProtoMessage() {}
+
+func (x *ListPlatformAuditLogRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPlatformAuditLogRequest.ProtoReflect.Descriptor instead.
+func (*ListPlatformAuditLogRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *ListPlatformAuditLogRequest) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+func (x *ListPlatformAuditLogRequest) GetEntityType() string {
+	if x != nil {
+		return x.EntityType
+	}
+	return ""
+}
+
+func (x *ListPlatformAuditLogRequest) GetActorUserId() string {
+	if x != nil {
+		return x.ActorUserId
+	}
+	return ""
+}
+
+func (x *ListPlatformAuditLogRequest) GetFrom() *timestamppb.Timestamp {
+	if x != nil {
+		return x.From
+	}
+	return nil
+}
+
+func (x *ListPlatformAuditLogRequest) GetTo() *timestamppb.Timestamp {
+	if x != nil {
+		return x.To
+	}
+	return nil
+}
+
+func (x *ListPlatformAuditLogRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListPlatformAuditLogRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+type ListPlatformAuditLogResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Newest first.
+	Data          []*PlatformAuditEntry `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	Pagination    *v1.Pagination        `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPlatformAuditLogResponse) Reset() {
+	*x = ListPlatformAuditLogResponse{}
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPlatformAuditLogResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPlatformAuditLogResponse) ProtoMessage() {}
+
+func (x *ListPlatformAuditLogResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPlatformAuditLogResponse.ProtoReflect.Descriptor instead.
+func (*ListPlatformAuditLogResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *ListPlatformAuditLogResponse) GetData() []*PlatformAuditEntry {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *ListPlatformAuditLogResponse) GetPagination() *v1.Pagination {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
 type GetMyPlatformAccessRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -2188,7 +2459,7 @@ type GetMyPlatformAccessRequest struct {
 
 func (x *GetMyPlatformAccessRequest) Reset() {
 	*x = GetMyPlatformAccessRequest{}
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[39]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2200,7 +2471,7 @@ func (x *GetMyPlatformAccessRequest) String() string {
 func (*GetMyPlatformAccessRequest) ProtoMessage() {}
 
 func (x *GetMyPlatformAccessRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[39]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2213,7 +2484,7 @@ func (x *GetMyPlatformAccessRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyPlatformAccessRequest.ProtoReflect.Descriptor instead.
 func (*GetMyPlatformAccessRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{39}
+	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{42}
 }
 
 type GetMyPlatformAccessResponse struct {
@@ -2225,7 +2496,7 @@ type GetMyPlatformAccessResponse struct {
 
 func (x *GetMyPlatformAccessResponse) Reset() {
 	*x = GetMyPlatformAccessResponse{}
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[40]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2237,7 +2508,7 @@ func (x *GetMyPlatformAccessResponse) String() string {
 func (*GetMyPlatformAccessResponse) ProtoMessage() {}
 
 func (x *GetMyPlatformAccessResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[40]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2250,7 +2521,7 @@ func (x *GetMyPlatformAccessResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyPlatformAccessResponse.ProtoReflect.Descriptor instead.
 func (*GetMyPlatformAccessResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{40}
+	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *GetMyPlatformAccessResponse) GetAccess() *MyPlatformAccess {
@@ -2270,7 +2541,7 @@ type ListMyPlatformInvitationsRequest struct {
 
 func (x *ListMyPlatformInvitationsRequest) Reset() {
 	*x = ListMyPlatformInvitationsRequest{}
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[41]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2282,7 +2553,7 @@ func (x *ListMyPlatformInvitationsRequest) String() string {
 func (*ListMyPlatformInvitationsRequest) ProtoMessage() {}
 
 func (x *ListMyPlatformInvitationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[41]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2295,7 +2566,7 @@ func (x *ListMyPlatformInvitationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMyPlatformInvitationsRequest.ProtoReflect.Descriptor instead.
 func (*ListMyPlatformInvitationsRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{41}
+	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *ListMyPlatformInvitationsRequest) GetStatus() PlatformInvitationStatus {
@@ -2314,7 +2585,7 @@ type ListMyPlatformInvitationsResponse struct {
 
 func (x *ListMyPlatformInvitationsResponse) Reset() {
 	*x = ListMyPlatformInvitationsResponse{}
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[42]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2326,7 +2597,7 @@ func (x *ListMyPlatformInvitationsResponse) String() string {
 func (*ListMyPlatformInvitationsResponse) ProtoMessage() {}
 
 func (x *ListMyPlatformInvitationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[42]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2339,7 +2610,7 @@ func (x *ListMyPlatformInvitationsResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use ListMyPlatformInvitationsResponse.ProtoReflect.Descriptor instead.
 func (*ListMyPlatformInvitationsResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{42}
+	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *ListMyPlatformInvitationsResponse) GetData() []*PlatformInvitation {
@@ -2358,7 +2629,7 @@ type AcceptPlatformInvitationRequest struct {
 
 func (x *AcceptPlatformInvitationRequest) Reset() {
 	*x = AcceptPlatformInvitationRequest{}
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[43]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2370,7 +2641,7 @@ func (x *AcceptPlatformInvitationRequest) String() string {
 func (*AcceptPlatformInvitationRequest) ProtoMessage() {}
 
 func (x *AcceptPlatformInvitationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[43]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2383,7 +2654,7 @@ func (x *AcceptPlatformInvitationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AcceptPlatformInvitationRequest.ProtoReflect.Descriptor instead.
 func (*AcceptPlatformInvitationRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{43}
+	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *AcceptPlatformInvitationRequest) GetInvitationId() string {
@@ -2402,7 +2673,7 @@ type AcceptPlatformInvitationResponse struct {
 
 func (x *AcceptPlatformInvitationResponse) Reset() {
 	*x = AcceptPlatformInvitationResponse{}
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[44]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2414,7 +2685,7 @@ func (x *AcceptPlatformInvitationResponse) String() string {
 func (*AcceptPlatformInvitationResponse) ProtoMessage() {}
 
 func (x *AcceptPlatformInvitationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[44]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2427,7 +2698,7 @@ func (x *AcceptPlatformInvitationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AcceptPlatformInvitationResponse.ProtoReflect.Descriptor instead.
 func (*AcceptPlatformInvitationResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{44}
+	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *AcceptPlatformInvitationResponse) GetInvitation() *PlatformInvitation {
@@ -2446,7 +2717,7 @@ type DeclinePlatformInvitationRequest struct {
 
 func (x *DeclinePlatformInvitationRequest) Reset() {
 	*x = DeclinePlatformInvitationRequest{}
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[45]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2458,7 +2729,7 @@ func (x *DeclinePlatformInvitationRequest) String() string {
 func (*DeclinePlatformInvitationRequest) ProtoMessage() {}
 
 func (x *DeclinePlatformInvitationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[45]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2471,7 +2742,7 @@ func (x *DeclinePlatformInvitationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeclinePlatformInvitationRequest.ProtoReflect.Descriptor instead.
 func (*DeclinePlatformInvitationRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{45}
+	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *DeclinePlatformInvitationRequest) GetInvitationId() string {
@@ -2490,7 +2761,7 @@ type DeclinePlatformInvitationResponse struct {
 
 func (x *DeclinePlatformInvitationResponse) Reset() {
 	*x = DeclinePlatformInvitationResponse{}
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[46]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2502,7 +2773,7 @@ func (x *DeclinePlatformInvitationResponse) String() string {
 func (*DeclinePlatformInvitationResponse) ProtoMessage() {}
 
 func (x *DeclinePlatformInvitationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[46]
+	mi := &file_vietgara_platform_v1_staff_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2515,7 +2786,7 @@ func (x *DeclinePlatformInvitationResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use DeclinePlatformInvitationResponse.ProtoReflect.Descriptor instead.
 func (*DeclinePlatformInvitationResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{46}
+	return file_vietgara_platform_v1_staff_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *DeclinePlatformInvitationResponse) GetInvitation() *PlatformInvitation {
@@ -2529,7 +2800,7 @@ var File_vietgara_platform_v1_staff_proto protoreflect.FileDescriptor
 
 const file_vietgara_platform_v1_staff_proto_rawDesc = "" +
 	"\n" +
-	" vietgara/platform/v1/staff.proto\x12\x14vietgara.platform.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x92\x01\n" +
+	" vietgara/platform/v1/staff.proto\x12\x14vietgara.platform.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\x92\x01\n" +
 	"\x16PlatformPermissionInfo\x12H\n" +
 	"\n" +
 	"permission\x18\x01 \x01(\x0e2(.vietgara.platform.v1.PlatformPermissionR\n" +
@@ -2657,7 +2928,38 @@ const file_vietgara_platform_v1_staff_proto_rawDesc = "" +
 	" RevokePlatformInvitationResponse\x12H\n" +
 	"\n" +
 	"invitation\x18\x01 \x01(\v2(.vietgara.platform.v1.PlatformInvitationR\n" +
-	"invitation\"\x1c\n" +
+	"invitation\"\xfa\x02\n" +
+	"\x12PlatformAuditEntry\x12\x13\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12'\n" +
+	"\ractor_user_id\x18\x02 \x01(\tB\x03\xe0A\x03R\vactorUserId\x12\"\n" +
+	"\n" +
+	"actor_name\x18\x03 \x01(\tB\x03\xe0A\x03R\tactorName\x12\x1b\n" +
+	"\x06action\x18\x04 \x01(\tB\x03\xe0A\x03R\x06action\x12$\n" +
+	"\ventity_type\x18\x05 \x01(\tB\x03\xe0A\x03R\n" +
+	"entityType\x12 \n" +
+	"\tentity_id\x18\x06 \x01(\tB\x03\xe0A\x03R\bentityId\x12$\n" +
+	"\vbefore_json\x18\a \x01(\tB\x03\xe0A\x03R\n" +
+	"beforeJson\x12\"\n" +
+	"\n" +
+	"after_json\x18\b \x01(\tB\x03\xe0A\x03R\tafterJson\x12\x13\n" +
+	"\x02ip\x18\t \x01(\tB\x03\xe0A\x03R\x02ip\x12>\n" +
+	"\n" +
+	"created_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\"\x87\x02\n" +
+	"\x1bListPlatformAuditLogRequest\x12\x16\n" +
+	"\x06action\x18\x01 \x01(\tR\x06action\x12\x1f\n" +
+	"\ventity_type\x18\x02 \x01(\tR\n" +
+	"entityType\x12\"\n" +
+	"\ractor_user_id\x18\x03 \x01(\tR\vactorUserId\x12.\n" +
+	"\x04from\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x04from\x12*\n" +
+	"\x02to\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x02to\x12\x12\n" +
+	"\x04page\x18\x06 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\a \x01(\x05R\bpageSize\"\x9c\x01\n" +
+	"\x1cListPlatformAuditLogResponse\x12<\n" +
+	"\x04data\x18\x01 \x03(\v2(.vietgara.platform.v1.PlatformAuditEntryR\x04data\x12>\n" +
+	"\n" +
+	"pagination\x18\x02 \x01(\v2\x1e.vietgara.common.v1.PaginationR\n" +
+	"pagination\"\x1c\n" +
 	"\x1aGetMyPlatformAccessRequest\"]\n" +
 	"\x1bGetMyPlatformAccessResponse\x12>\n" +
 	"\x06access\x18\x01 \x01(\v2&.vietgara.platform.v1.MyPlatformAccessR\x06access\"j\n" +
@@ -2698,7 +3000,7 @@ const file_vietgara_platform_v1_staff_proto_rawDesc = "" +
 	"#PLATFORM_INVITATION_STATUS_ACCEPTED\x10\x02\x12'\n" +
 	"#PLATFORM_INVITATION_STATUS_DECLINED\x10\x03\x12&\n" +
 	"\"PLATFORM_INVITATION_STATUS_REVOKED\x10\x04\x12&\n" +
-	"\"PLATFORM_INVITATION_STATUS_EXPIRED\x10\x052\xca\x16\n" +
+	"\"PLATFORM_INVITATION_STATUS_EXPIRED\x10\x052\xeb\x17\n" +
 	"\x14PlatformStaffService\x12\xb2\x01\n" +
 	"\x17ListPlatformPermissions\x124.vietgara.platform.v1.ListPlatformPermissionsRequest\x1a5.vietgara.platform.v1.ListPlatformPermissionsResponse\"*\x82\xd3\xe4\x93\x02$\x12\"/api/v1/admin/platform-permissions\x12\x9a\x01\n" +
 	"\x11ListPlatformRoles\x12..vietgara.platform.v1.ListPlatformRolesRequest\x1a/.vietgara.platform.v1.ListPlatformRolesResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/api/v1/admin/platform-roles\x12\xa4\x01\n" +
@@ -2717,7 +3019,8 @@ const file_vietgara_platform_v1_staff_proto_rawDesc = "" +
 	"invitation\"\"/api/v1/admin/platform-invitations\x12\xb2\x01\n" +
 	"\x17ListPlatformInvitations\x124.vietgara.platform.v1.ListPlatformInvitationsRequest\x1a5.vietgara.platform.v1.ListPlatformInvitationsResponse\"*\x82\xd3\xe4\x93\x02$\x12\"/api/v1/admin/platform-invitations\x12\xdb\x01\n" +
 	"\x18RevokePlatformInvitation\x125.vietgara.platform.v1.RevokePlatformInvitationRequest\x1a6.vietgara.platform.v1.RevokePlatformInvitationResponse\"P\x82\xd3\xe4\x93\x02J:\x01*b\n" +
-	"invitation\"9/api/v1/admin/platform-invitations/{invitation_id}/revoke2\xb4\x06\n" +
+	"invitation\"9/api/v1/admin/platform-invitations/{invitation_id}/revoke\x12\x9e\x01\n" +
+	"\x14ListPlatformAuditLog\x121.vietgara.platform.v1.ListPlatformAuditLogRequest\x1a2.vietgara.platform.v1.ListPlatformAuditLogResponse\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/api/v1/admin/audit-log2\xb4\x06\n" +
 	"\x15PlatformAccessService\x12\xa8\x01\n" +
 	"\x13GetMyPlatformAccess\x120.vietgara.platform.v1.GetMyPlatformAccessRequest\x1a1.vietgara.platform.v1.GetMyPlatformAccessResponse\",\x82\xd3\xe4\x93\x02&b\x06access\x12\x1c/api/v1/admin/me/permissions\x12\xb5\x01\n" +
 	"\x19ListMyPlatformInvitations\x126.vietgara.platform.v1.ListMyPlatformInvitationsRequest\x1a7.vietgara.platform.v1.ListMyPlatformInvitationsResponse\"'\x82\xd3\xe4\x93\x02!\x12\x1f/api/v1/me/platform-invitations\x12\xd8\x01\n" +
@@ -2739,7 +3042,7 @@ func file_vietgara_platform_v1_staff_proto_rawDescGZIP() []byte {
 }
 
 var file_vietgara_platform_v1_staff_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_vietgara_platform_v1_staff_proto_msgTypes = make([]protoimpl.MessageInfo, 47)
+var file_vietgara_platform_v1_staff_proto_msgTypes = make([]protoimpl.MessageInfo, 50)
 var file_vietgara_platform_v1_staff_proto_goTypes = []any{
 	(PlatformPermission)(0),                   // 0: vietgara.platform.v1.PlatformPermission
 	(PlatformInvitationStatus)(0),             // 1: vietgara.platform.v1.PlatformInvitationStatus
@@ -2782,29 +3085,33 @@ var file_vietgara_platform_v1_staff_proto_goTypes = []any{
 	(*ListPlatformInvitationsResponse)(nil),   // 38: vietgara.platform.v1.ListPlatformInvitationsResponse
 	(*RevokePlatformInvitationRequest)(nil),   // 39: vietgara.platform.v1.RevokePlatformInvitationRequest
 	(*RevokePlatformInvitationResponse)(nil),  // 40: vietgara.platform.v1.RevokePlatformInvitationResponse
-	(*GetMyPlatformAccessRequest)(nil),        // 41: vietgara.platform.v1.GetMyPlatformAccessRequest
-	(*GetMyPlatformAccessResponse)(nil),       // 42: vietgara.platform.v1.GetMyPlatformAccessResponse
-	(*ListMyPlatformInvitationsRequest)(nil),  // 43: vietgara.platform.v1.ListMyPlatformInvitationsRequest
-	(*ListMyPlatformInvitationsResponse)(nil), // 44: vietgara.platform.v1.ListMyPlatformInvitationsResponse
-	(*AcceptPlatformInvitationRequest)(nil),   // 45: vietgara.platform.v1.AcceptPlatformInvitationRequest
-	(*AcceptPlatformInvitationResponse)(nil),  // 46: vietgara.platform.v1.AcceptPlatformInvitationResponse
-	(*DeclinePlatformInvitationRequest)(nil),  // 47: vietgara.platform.v1.DeclinePlatformInvitationRequest
-	(*DeclinePlatformInvitationResponse)(nil), // 48: vietgara.platform.v1.DeclinePlatformInvitationResponse
-	(*timestamppb.Timestamp)(nil),             // 49: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),             // 50: google.protobuf.FieldMask
+	(*PlatformAuditEntry)(nil),                // 41: vietgara.platform.v1.PlatformAuditEntry
+	(*ListPlatformAuditLogRequest)(nil),       // 42: vietgara.platform.v1.ListPlatformAuditLogRequest
+	(*ListPlatformAuditLogResponse)(nil),      // 43: vietgara.platform.v1.ListPlatformAuditLogResponse
+	(*GetMyPlatformAccessRequest)(nil),        // 44: vietgara.platform.v1.GetMyPlatformAccessRequest
+	(*GetMyPlatformAccessResponse)(nil),       // 45: vietgara.platform.v1.GetMyPlatformAccessResponse
+	(*ListMyPlatformInvitationsRequest)(nil),  // 46: vietgara.platform.v1.ListMyPlatformInvitationsRequest
+	(*ListMyPlatformInvitationsResponse)(nil), // 47: vietgara.platform.v1.ListMyPlatformInvitationsResponse
+	(*AcceptPlatformInvitationRequest)(nil),   // 48: vietgara.platform.v1.AcceptPlatformInvitationRequest
+	(*AcceptPlatformInvitationResponse)(nil),  // 49: vietgara.platform.v1.AcceptPlatformInvitationResponse
+	(*DeclinePlatformInvitationRequest)(nil),  // 50: vietgara.platform.v1.DeclinePlatformInvitationRequest
+	(*DeclinePlatformInvitationResponse)(nil), // 51: vietgara.platform.v1.DeclinePlatformInvitationResponse
+	(*timestamppb.Timestamp)(nil),             // 52: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),             // 53: google.protobuf.FieldMask
+	(*v1.Pagination)(nil),                     // 54: vietgara.common.v1.Pagination
 }
 var file_vietgara_platform_v1_staff_proto_depIdxs = []int32{
 	0,  // 0: vietgara.platform.v1.PlatformPermissionInfo.permission:type_name -> vietgara.platform.v1.PlatformPermission
 	0,  // 1: vietgara.platform.v1.PlatformRole.permissions:type_name -> vietgara.platform.v1.PlatformPermission
-	49, // 2: vietgara.platform.v1.PlatformRole.created_at:type_name -> google.protobuf.Timestamp
-	49, // 3: vietgara.platform.v1.PlatformRole.updated_at:type_name -> google.protobuf.Timestamp
-	49, // 4: vietgara.platform.v1.PlatformStaffGroup.created_at:type_name -> google.protobuf.Timestamp
-	49, // 5: vietgara.platform.v1.PlatformStaffGroup.updated_at:type_name -> google.protobuf.Timestamp
+	52, // 2: vietgara.platform.v1.PlatformRole.created_at:type_name -> google.protobuf.Timestamp
+	52, // 3: vietgara.platform.v1.PlatformRole.updated_at:type_name -> google.protobuf.Timestamp
+	52, // 4: vietgara.platform.v1.PlatformStaffGroup.created_at:type_name -> google.protobuf.Timestamp
+	52, // 5: vietgara.platform.v1.PlatformStaffGroup.updated_at:type_name -> google.protobuf.Timestamp
 	5,  // 6: vietgara.platform.v1.PlatformStaffMember.groups:type_name -> vietgara.platform.v1.GroupRef
 	1,  // 7: vietgara.platform.v1.PlatformInvitation.status:type_name -> vietgara.platform.v1.PlatformInvitationStatus
-	49, // 8: vietgara.platform.v1.PlatformInvitation.expires_at:type_name -> google.protobuf.Timestamp
-	49, // 9: vietgara.platform.v1.PlatformInvitation.responded_at:type_name -> google.protobuf.Timestamp
-	49, // 10: vietgara.platform.v1.PlatformInvitation.created_at:type_name -> google.protobuf.Timestamp
+	52, // 8: vietgara.platform.v1.PlatformInvitation.expires_at:type_name -> google.protobuf.Timestamp
+	52, // 9: vietgara.platform.v1.PlatformInvitation.responded_at:type_name -> google.protobuf.Timestamp
+	52, // 10: vietgara.platform.v1.PlatformInvitation.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 11: vietgara.platform.v1.MyPlatformAccess.permissions:type_name -> vietgara.platform.v1.PlatformPermission
 	2,  // 12: vietgara.platform.v1.ListPlatformPermissionsResponse.data:type_name -> vietgara.platform.v1.PlatformPermissionInfo
 	3,  // 13: vietgara.platform.v1.ListPlatformRolesResponse.data:type_name -> vietgara.platform.v1.PlatformRole
@@ -2812,7 +3119,7 @@ var file_vietgara_platform_v1_staff_proto_depIdxs = []int32{
 	3,  // 15: vietgara.platform.v1.CreatePlatformRoleRequest.role:type_name -> vietgara.platform.v1.PlatformRole
 	3,  // 16: vietgara.platform.v1.CreatePlatformRoleResponse.role:type_name -> vietgara.platform.v1.PlatformRole
 	3,  // 17: vietgara.platform.v1.UpdatePlatformRoleRequest.role:type_name -> vietgara.platform.v1.PlatformRole
-	50, // 18: vietgara.platform.v1.UpdatePlatformRoleRequest.update_mask:type_name -> google.protobuf.FieldMask
+	53, // 18: vietgara.platform.v1.UpdatePlatformRoleRequest.update_mask:type_name -> google.protobuf.FieldMask
 	3,  // 19: vietgara.platform.v1.UpdatePlatformRoleResponse.role:type_name -> vietgara.platform.v1.PlatformRole
 	4,  // 20: vietgara.platform.v1.ListPlatformGroupsResponse.data:type_name -> vietgara.platform.v1.PlatformStaffGroup
 	4,  // 21: vietgara.platform.v1.GetPlatformGroupResponse.group:type_name -> vietgara.platform.v1.PlatformStaffGroup
@@ -2820,63 +3127,70 @@ var file_vietgara_platform_v1_staff_proto_depIdxs = []int32{
 	4,  // 23: vietgara.platform.v1.CreatePlatformGroupRequest.group:type_name -> vietgara.platform.v1.PlatformStaffGroup
 	4,  // 24: vietgara.platform.v1.CreatePlatformGroupResponse.group:type_name -> vietgara.platform.v1.PlatformStaffGroup
 	4,  // 25: vietgara.platform.v1.UpdatePlatformGroupRequest.group:type_name -> vietgara.platform.v1.PlatformStaffGroup
-	50, // 26: vietgara.platform.v1.UpdatePlatformGroupRequest.update_mask:type_name -> google.protobuf.FieldMask
+	53, // 26: vietgara.platform.v1.UpdatePlatformGroupRequest.update_mask:type_name -> google.protobuf.FieldMask
 	4,  // 27: vietgara.platform.v1.UpdatePlatformGroupResponse.group:type_name -> vietgara.platform.v1.PlatformStaffGroup
 	6,  // 28: vietgara.platform.v1.ListPlatformStaffResponse.data:type_name -> vietgara.platform.v1.PlatformStaffMember
 	7,  // 29: vietgara.platform.v1.CreatePlatformInvitationResponse.invitation:type_name -> vietgara.platform.v1.PlatformInvitation
 	1,  // 30: vietgara.platform.v1.ListPlatformInvitationsRequest.status:type_name -> vietgara.platform.v1.PlatformInvitationStatus
 	7,  // 31: vietgara.platform.v1.ListPlatformInvitationsResponse.data:type_name -> vietgara.platform.v1.PlatformInvitation
 	7,  // 32: vietgara.platform.v1.RevokePlatformInvitationResponse.invitation:type_name -> vietgara.platform.v1.PlatformInvitation
-	8,  // 33: vietgara.platform.v1.GetMyPlatformAccessResponse.access:type_name -> vietgara.platform.v1.MyPlatformAccess
-	1,  // 34: vietgara.platform.v1.ListMyPlatformInvitationsRequest.status:type_name -> vietgara.platform.v1.PlatformInvitationStatus
-	7,  // 35: vietgara.platform.v1.ListMyPlatformInvitationsResponse.data:type_name -> vietgara.platform.v1.PlatformInvitation
-	7,  // 36: vietgara.platform.v1.AcceptPlatformInvitationResponse.invitation:type_name -> vietgara.platform.v1.PlatformInvitation
-	7,  // 37: vietgara.platform.v1.DeclinePlatformInvitationResponse.invitation:type_name -> vietgara.platform.v1.PlatformInvitation
-	9,  // 38: vietgara.platform.v1.PlatformStaffService.ListPlatformPermissions:input_type -> vietgara.platform.v1.ListPlatformPermissionsRequest
-	11, // 39: vietgara.platform.v1.PlatformStaffService.ListPlatformRoles:input_type -> vietgara.platform.v1.ListPlatformRolesRequest
-	13, // 40: vietgara.platform.v1.PlatformStaffService.GetPlatformRole:input_type -> vietgara.platform.v1.GetPlatformRoleRequest
-	15, // 41: vietgara.platform.v1.PlatformStaffService.CreatePlatformRole:input_type -> vietgara.platform.v1.CreatePlatformRoleRequest
-	17, // 42: vietgara.platform.v1.PlatformStaffService.UpdatePlatformRole:input_type -> vietgara.platform.v1.UpdatePlatformRoleRequest
-	19, // 43: vietgara.platform.v1.PlatformStaffService.DeletePlatformRole:input_type -> vietgara.platform.v1.DeletePlatformRoleRequest
-	21, // 44: vietgara.platform.v1.PlatformStaffService.ListPlatformGroups:input_type -> vietgara.platform.v1.ListPlatformGroupsRequest
-	23, // 45: vietgara.platform.v1.PlatformStaffService.GetPlatformGroup:input_type -> vietgara.platform.v1.GetPlatformGroupRequest
-	25, // 46: vietgara.platform.v1.PlatformStaffService.CreatePlatformGroup:input_type -> vietgara.platform.v1.CreatePlatformGroupRequest
-	27, // 47: vietgara.platform.v1.PlatformStaffService.UpdatePlatformGroup:input_type -> vietgara.platform.v1.UpdatePlatformGroupRequest
-	29, // 48: vietgara.platform.v1.PlatformStaffService.DeletePlatformGroup:input_type -> vietgara.platform.v1.DeletePlatformGroupRequest
-	31, // 49: vietgara.platform.v1.PlatformStaffService.ListPlatformStaff:input_type -> vietgara.platform.v1.ListPlatformStaffRequest
-	33, // 50: vietgara.platform.v1.PlatformStaffService.RemovePlatformStaffMember:input_type -> vietgara.platform.v1.RemovePlatformStaffMemberRequest
-	35, // 51: vietgara.platform.v1.PlatformStaffService.CreatePlatformInvitation:input_type -> vietgara.platform.v1.CreatePlatformInvitationRequest
-	37, // 52: vietgara.platform.v1.PlatformStaffService.ListPlatformInvitations:input_type -> vietgara.platform.v1.ListPlatformInvitationsRequest
-	39, // 53: vietgara.platform.v1.PlatformStaffService.RevokePlatformInvitation:input_type -> vietgara.platform.v1.RevokePlatformInvitationRequest
-	41, // 54: vietgara.platform.v1.PlatformAccessService.GetMyPlatformAccess:input_type -> vietgara.platform.v1.GetMyPlatformAccessRequest
-	43, // 55: vietgara.platform.v1.PlatformAccessService.ListMyPlatformInvitations:input_type -> vietgara.platform.v1.ListMyPlatformInvitationsRequest
-	45, // 56: vietgara.platform.v1.PlatformAccessService.AcceptPlatformInvitation:input_type -> vietgara.platform.v1.AcceptPlatformInvitationRequest
-	47, // 57: vietgara.platform.v1.PlatformAccessService.DeclinePlatformInvitation:input_type -> vietgara.platform.v1.DeclinePlatformInvitationRequest
-	10, // 58: vietgara.platform.v1.PlatformStaffService.ListPlatformPermissions:output_type -> vietgara.platform.v1.ListPlatformPermissionsResponse
-	12, // 59: vietgara.platform.v1.PlatformStaffService.ListPlatformRoles:output_type -> vietgara.platform.v1.ListPlatformRolesResponse
-	14, // 60: vietgara.platform.v1.PlatformStaffService.GetPlatformRole:output_type -> vietgara.platform.v1.GetPlatformRoleResponse
-	16, // 61: vietgara.platform.v1.PlatformStaffService.CreatePlatformRole:output_type -> vietgara.platform.v1.CreatePlatformRoleResponse
-	18, // 62: vietgara.platform.v1.PlatformStaffService.UpdatePlatformRole:output_type -> vietgara.platform.v1.UpdatePlatformRoleResponse
-	20, // 63: vietgara.platform.v1.PlatformStaffService.DeletePlatformRole:output_type -> vietgara.platform.v1.DeletePlatformRoleResponse
-	22, // 64: vietgara.platform.v1.PlatformStaffService.ListPlatformGroups:output_type -> vietgara.platform.v1.ListPlatformGroupsResponse
-	24, // 65: vietgara.platform.v1.PlatformStaffService.GetPlatformGroup:output_type -> vietgara.platform.v1.GetPlatformGroupResponse
-	26, // 66: vietgara.platform.v1.PlatformStaffService.CreatePlatformGroup:output_type -> vietgara.platform.v1.CreatePlatformGroupResponse
-	28, // 67: vietgara.platform.v1.PlatformStaffService.UpdatePlatformGroup:output_type -> vietgara.platform.v1.UpdatePlatformGroupResponse
-	30, // 68: vietgara.platform.v1.PlatformStaffService.DeletePlatformGroup:output_type -> vietgara.platform.v1.DeletePlatformGroupResponse
-	32, // 69: vietgara.platform.v1.PlatformStaffService.ListPlatformStaff:output_type -> vietgara.platform.v1.ListPlatformStaffResponse
-	34, // 70: vietgara.platform.v1.PlatformStaffService.RemovePlatformStaffMember:output_type -> vietgara.platform.v1.RemovePlatformStaffMemberResponse
-	36, // 71: vietgara.platform.v1.PlatformStaffService.CreatePlatformInvitation:output_type -> vietgara.platform.v1.CreatePlatformInvitationResponse
-	38, // 72: vietgara.platform.v1.PlatformStaffService.ListPlatformInvitations:output_type -> vietgara.platform.v1.ListPlatformInvitationsResponse
-	40, // 73: vietgara.platform.v1.PlatformStaffService.RevokePlatformInvitation:output_type -> vietgara.platform.v1.RevokePlatformInvitationResponse
-	42, // 74: vietgara.platform.v1.PlatformAccessService.GetMyPlatformAccess:output_type -> vietgara.platform.v1.GetMyPlatformAccessResponse
-	44, // 75: vietgara.platform.v1.PlatformAccessService.ListMyPlatformInvitations:output_type -> vietgara.platform.v1.ListMyPlatformInvitationsResponse
-	46, // 76: vietgara.platform.v1.PlatformAccessService.AcceptPlatformInvitation:output_type -> vietgara.platform.v1.AcceptPlatformInvitationResponse
-	48, // 77: vietgara.platform.v1.PlatformAccessService.DeclinePlatformInvitation:output_type -> vietgara.platform.v1.DeclinePlatformInvitationResponse
-	58, // [58:78] is the sub-list for method output_type
-	38, // [38:58] is the sub-list for method input_type
-	38, // [38:38] is the sub-list for extension type_name
-	38, // [38:38] is the sub-list for extension extendee
-	0,  // [0:38] is the sub-list for field type_name
+	52, // 33: vietgara.platform.v1.PlatformAuditEntry.created_at:type_name -> google.protobuf.Timestamp
+	52, // 34: vietgara.platform.v1.ListPlatformAuditLogRequest.from:type_name -> google.protobuf.Timestamp
+	52, // 35: vietgara.platform.v1.ListPlatformAuditLogRequest.to:type_name -> google.protobuf.Timestamp
+	41, // 36: vietgara.platform.v1.ListPlatformAuditLogResponse.data:type_name -> vietgara.platform.v1.PlatformAuditEntry
+	54, // 37: vietgara.platform.v1.ListPlatformAuditLogResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	8,  // 38: vietgara.platform.v1.GetMyPlatformAccessResponse.access:type_name -> vietgara.platform.v1.MyPlatformAccess
+	1,  // 39: vietgara.platform.v1.ListMyPlatformInvitationsRequest.status:type_name -> vietgara.platform.v1.PlatformInvitationStatus
+	7,  // 40: vietgara.platform.v1.ListMyPlatformInvitationsResponse.data:type_name -> vietgara.platform.v1.PlatformInvitation
+	7,  // 41: vietgara.platform.v1.AcceptPlatformInvitationResponse.invitation:type_name -> vietgara.platform.v1.PlatformInvitation
+	7,  // 42: vietgara.platform.v1.DeclinePlatformInvitationResponse.invitation:type_name -> vietgara.platform.v1.PlatformInvitation
+	9,  // 43: vietgara.platform.v1.PlatformStaffService.ListPlatformPermissions:input_type -> vietgara.platform.v1.ListPlatformPermissionsRequest
+	11, // 44: vietgara.platform.v1.PlatformStaffService.ListPlatformRoles:input_type -> vietgara.platform.v1.ListPlatformRolesRequest
+	13, // 45: vietgara.platform.v1.PlatformStaffService.GetPlatformRole:input_type -> vietgara.platform.v1.GetPlatformRoleRequest
+	15, // 46: vietgara.platform.v1.PlatformStaffService.CreatePlatformRole:input_type -> vietgara.platform.v1.CreatePlatformRoleRequest
+	17, // 47: vietgara.platform.v1.PlatformStaffService.UpdatePlatformRole:input_type -> vietgara.platform.v1.UpdatePlatformRoleRequest
+	19, // 48: vietgara.platform.v1.PlatformStaffService.DeletePlatformRole:input_type -> vietgara.platform.v1.DeletePlatformRoleRequest
+	21, // 49: vietgara.platform.v1.PlatformStaffService.ListPlatformGroups:input_type -> vietgara.platform.v1.ListPlatformGroupsRequest
+	23, // 50: vietgara.platform.v1.PlatformStaffService.GetPlatformGroup:input_type -> vietgara.platform.v1.GetPlatformGroupRequest
+	25, // 51: vietgara.platform.v1.PlatformStaffService.CreatePlatformGroup:input_type -> vietgara.platform.v1.CreatePlatformGroupRequest
+	27, // 52: vietgara.platform.v1.PlatformStaffService.UpdatePlatformGroup:input_type -> vietgara.platform.v1.UpdatePlatformGroupRequest
+	29, // 53: vietgara.platform.v1.PlatformStaffService.DeletePlatformGroup:input_type -> vietgara.platform.v1.DeletePlatformGroupRequest
+	31, // 54: vietgara.platform.v1.PlatformStaffService.ListPlatformStaff:input_type -> vietgara.platform.v1.ListPlatformStaffRequest
+	33, // 55: vietgara.platform.v1.PlatformStaffService.RemovePlatformStaffMember:input_type -> vietgara.platform.v1.RemovePlatformStaffMemberRequest
+	35, // 56: vietgara.platform.v1.PlatformStaffService.CreatePlatformInvitation:input_type -> vietgara.platform.v1.CreatePlatformInvitationRequest
+	37, // 57: vietgara.platform.v1.PlatformStaffService.ListPlatformInvitations:input_type -> vietgara.platform.v1.ListPlatformInvitationsRequest
+	39, // 58: vietgara.platform.v1.PlatformStaffService.RevokePlatformInvitation:input_type -> vietgara.platform.v1.RevokePlatformInvitationRequest
+	42, // 59: vietgara.platform.v1.PlatformStaffService.ListPlatformAuditLog:input_type -> vietgara.platform.v1.ListPlatformAuditLogRequest
+	44, // 60: vietgara.platform.v1.PlatformAccessService.GetMyPlatformAccess:input_type -> vietgara.platform.v1.GetMyPlatformAccessRequest
+	46, // 61: vietgara.platform.v1.PlatformAccessService.ListMyPlatformInvitations:input_type -> vietgara.platform.v1.ListMyPlatformInvitationsRequest
+	48, // 62: vietgara.platform.v1.PlatformAccessService.AcceptPlatformInvitation:input_type -> vietgara.platform.v1.AcceptPlatformInvitationRequest
+	50, // 63: vietgara.platform.v1.PlatformAccessService.DeclinePlatformInvitation:input_type -> vietgara.platform.v1.DeclinePlatformInvitationRequest
+	10, // 64: vietgara.platform.v1.PlatformStaffService.ListPlatformPermissions:output_type -> vietgara.platform.v1.ListPlatformPermissionsResponse
+	12, // 65: vietgara.platform.v1.PlatformStaffService.ListPlatformRoles:output_type -> vietgara.platform.v1.ListPlatformRolesResponse
+	14, // 66: vietgara.platform.v1.PlatformStaffService.GetPlatformRole:output_type -> vietgara.platform.v1.GetPlatformRoleResponse
+	16, // 67: vietgara.platform.v1.PlatformStaffService.CreatePlatformRole:output_type -> vietgara.platform.v1.CreatePlatformRoleResponse
+	18, // 68: vietgara.platform.v1.PlatformStaffService.UpdatePlatformRole:output_type -> vietgara.platform.v1.UpdatePlatformRoleResponse
+	20, // 69: vietgara.platform.v1.PlatformStaffService.DeletePlatformRole:output_type -> vietgara.platform.v1.DeletePlatformRoleResponse
+	22, // 70: vietgara.platform.v1.PlatformStaffService.ListPlatformGroups:output_type -> vietgara.platform.v1.ListPlatformGroupsResponse
+	24, // 71: vietgara.platform.v1.PlatformStaffService.GetPlatformGroup:output_type -> vietgara.platform.v1.GetPlatformGroupResponse
+	26, // 72: vietgara.platform.v1.PlatformStaffService.CreatePlatformGroup:output_type -> vietgara.platform.v1.CreatePlatformGroupResponse
+	28, // 73: vietgara.platform.v1.PlatformStaffService.UpdatePlatformGroup:output_type -> vietgara.platform.v1.UpdatePlatformGroupResponse
+	30, // 74: vietgara.platform.v1.PlatformStaffService.DeletePlatformGroup:output_type -> vietgara.platform.v1.DeletePlatformGroupResponse
+	32, // 75: vietgara.platform.v1.PlatformStaffService.ListPlatformStaff:output_type -> vietgara.platform.v1.ListPlatformStaffResponse
+	34, // 76: vietgara.platform.v1.PlatformStaffService.RemovePlatformStaffMember:output_type -> vietgara.platform.v1.RemovePlatformStaffMemberResponse
+	36, // 77: vietgara.platform.v1.PlatformStaffService.CreatePlatformInvitation:output_type -> vietgara.platform.v1.CreatePlatformInvitationResponse
+	38, // 78: vietgara.platform.v1.PlatformStaffService.ListPlatformInvitations:output_type -> vietgara.platform.v1.ListPlatformInvitationsResponse
+	40, // 79: vietgara.platform.v1.PlatformStaffService.RevokePlatformInvitation:output_type -> vietgara.platform.v1.RevokePlatformInvitationResponse
+	43, // 80: vietgara.platform.v1.PlatformStaffService.ListPlatformAuditLog:output_type -> vietgara.platform.v1.ListPlatformAuditLogResponse
+	45, // 81: vietgara.platform.v1.PlatformAccessService.GetMyPlatformAccess:output_type -> vietgara.platform.v1.GetMyPlatformAccessResponse
+	47, // 82: vietgara.platform.v1.PlatformAccessService.ListMyPlatformInvitations:output_type -> vietgara.platform.v1.ListMyPlatformInvitationsResponse
+	49, // 83: vietgara.platform.v1.PlatformAccessService.AcceptPlatformInvitation:output_type -> vietgara.platform.v1.AcceptPlatformInvitationResponse
+	51, // 84: vietgara.platform.v1.PlatformAccessService.DeclinePlatformInvitation:output_type -> vietgara.platform.v1.DeclinePlatformInvitationResponse
+	64, // [64:85] is the sub-list for method output_type
+	43, // [43:64] is the sub-list for method input_type
+	43, // [43:43] is the sub-list for extension type_name
+	43, // [43:43] is the sub-list for extension extendee
+	0,  // [0:43] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_platform_v1_staff_proto_init() }
@@ -2890,7 +3204,7 @@ func file_vietgara_platform_v1_staff_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_platform_v1_staff_proto_rawDesc), len(file_vietgara_platform_v1_staff_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   47,
+			NumMessages:   50,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

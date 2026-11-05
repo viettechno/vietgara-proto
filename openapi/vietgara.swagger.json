@@ -84,7 +84,7 @@
     },
     {
       "name": "PlatformStaffService",
-      "description": "PlatformStaffService manages platform roles, platform staff groups and\ntheir members (FR-IAM-10). Every call needs PLATFORM_PERMISSION_PLATFORM_\nSTAFF_READ (reads) or PLATFORM_PERMISSION_PLATFORM_STAFF_WRITE (changes);\na Platform Admin passes. A user without the Platform Admin right can only\ngive permissions they hold themselves."
+      "description": "PlatformStaffService manages platform roles, platform staff groups and\ntheir members (FR-IAM-10). Every call needs PLATFORM_PERMISSION_PLATFORM_\nSTAFF_READ (reads) or PLATFORM_PERMISSION_PLATFORM_STAFF_WRITE (changes),\nexcept reading the audit log, which needs PLATFORM_PERMISSION_AUDIT_READ;\na Platform Admin passes. A user without the Platform Admin right can only\ngive permissions they hold themselves."
     },
     {
       "name": "PlatformAccessService",
@@ -150,6 +150,79 @@
     "application/json"
   ],
   "paths": {
+    "/api/v1/admin/audit-log": {
+      "get": {
+        "summary": "Reads the platform audit log. Needs PLATFORM_PERMISSION_AUDIT_READ.",
+        "operationId": "PlatformStaffService_ListPlatformAuditLog",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPlatformAuditLogResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "action",
+            "description": "Matches the start of the action, so \"plan.\" finds every plan change.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "entityType",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "actorUserId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "description": "Entries from this time on, and before this time.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "PlatformStaffService"
+        ]
+      }
+    },
     "/api/v1/admin/garages": {
       "get": {
         "summary": "Searches garages by name, owner name or owner e-mail. Needs\nPLATFORM_PERMISSION_GARAGE_DIRECTORY_READ.",
@@ -13393,6 +13466,22 @@
         }
       }
     },
+    "v1ListPlatformAuditLogResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PlatformAuditEntry"
+          },
+          "description": "Newest first."
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
     "v1ListPlatformGroupsResponse": {
       "type": "object",
       "properties": {
@@ -14627,6 +14716,56 @@
         "PLAN_PAYMENT_STATUS_CANCELLED"
       ],
       "description": "PlanPaymentStatus is the state of a payment request (LLD 3.3).\n\n - PLAN_PAYMENT_STATUS_AWAITING_PAYMENT: Quoted, with its transfer reference; the owner has not declared the\ntransfer yet. A new request replaces it.\n - PLAN_PAYMENT_STATUS_SUBMITTED: The owner declared the transfer; a platform admin reviews it.\n - PLAN_PAYMENT_STATUS_APPROVED: Approved: the plan applied at once."
+    },
+    "v1PlatformAuditEntry": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "actorUserId": {
+          "type": "string",
+          "description": "The user who made the change; empty for the system.",
+          "readOnly": true
+        },
+        "actorName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "action": {
+          "type": "string",
+          "description": "For example \"plan.updated\" or \"platform.signed_in\".",
+          "readOnly": true
+        },
+        "entityType": {
+          "type": "string",
+          "readOnly": true
+        },
+        "entityId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "beforeJson": {
+          "type": "string",
+          "description": "The state before and after the change, as JSON text; empty when the\nentry has none.",
+          "readOnly": true
+        },
+        "afterJson": {
+          "type": "string",
+          "readOnly": true
+        },
+        "ip": {
+          "type": "string",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "One entry of the platform audit log: a change made at platform level (a\nplan, platform staff, platform payment settings) or a platform sign-in.\nEntries that belong to a garage are not here; the garage sees its own."
     },
     "v1PlatformInvitation": {
       "type": "object",
