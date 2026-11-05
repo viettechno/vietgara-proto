@@ -36,6 +36,12 @@ const (
 // PurchaseOrderService serves the purchase orders of a garage (FR-INV-16).
 // Reading needs inventory.read, changing needs inventory.write; prices are
 // shown and set only with inventory.cost.read.
+//
+// States: DRAFT -> SENT (a SENT order may be sent again) -> PARTIALLY_RECEIVED
+// -> RECEIVED, driven by completed goods receipts; CANCELLED is reachable from
+// DRAFT, SENT and PARTIALLY_RECEIVED (the quantities received stay received).
+// Any other transition is refused (FAILED_PRECONDITION). Only one draft goods
+// receipt may exist for an order at a time.
 type PurchaseOrderServiceClient interface {
 	ListPurchaseOrders(ctx context.Context, in *ListPurchaseOrdersRequest, opts ...grpc.CallOption) (*ListPurchaseOrdersResponse, error)
 	GetPurchaseOrder(ctx context.Context, in *GetPurchaseOrderRequest, opts ...grpc.CallOption) (*PurchaseOrder, error)
@@ -51,10 +57,13 @@ type PurchaseOrderServiceClient interface {
 	// it sent. A supplier with no e-mail on file is refused
 	// (SUPPLIER_EMAIL_REQUIRED).
 	SendPurchaseOrder(ctx context.Context, in *SendPurchaseOrderRequest, opts ...grpc.CallOption) (*PurchaseOrder, error)
-	// Cancels an order nothing was received against.
+	// Cancels an order that has no open draft goods receipt; what was already
+	// received stays received.
 	CancelPurchaseOrder(ctx context.Context, in *CancelPurchaseOrderRequest, opts ...grpc.CallOption) (*PurchaseOrder, error)
 	// Creates a draft goods receipt for what the order still waits for, with
-	// the supplier and the quantities pre-filled and linked to the order.
+	// the supplier and the quantities pre-filled and linked to the order. The
+	// order must be SENT or PARTIALLY_RECEIVED and have no open draft receipt
+	// (PURCHASE_ORDER_RECEIPT_OPEN).
 	ReceivePurchaseOrder(ctx context.Context, in *ReceivePurchaseOrderRequest, opts ...grpc.CallOption) (*GoodsReceipt, error)
 }
 
@@ -153,6 +162,12 @@ func (c *purchaseOrderServiceClient) ReceivePurchaseOrder(ctx context.Context, i
 // PurchaseOrderService serves the purchase orders of a garage (FR-INV-16).
 // Reading needs inventory.read, changing needs inventory.write; prices are
 // shown and set only with inventory.cost.read.
+//
+// States: DRAFT -> SENT (a SENT order may be sent again) -> PARTIALLY_RECEIVED
+// -> RECEIVED, driven by completed goods receipts; CANCELLED is reachable from
+// DRAFT, SENT and PARTIALLY_RECEIVED (the quantities received stay received).
+// Any other transition is refused (FAILED_PRECONDITION). Only one draft goods
+// receipt may exist for an order at a time.
 type PurchaseOrderServiceServer interface {
 	ListPurchaseOrders(context.Context, *ListPurchaseOrdersRequest) (*ListPurchaseOrdersResponse, error)
 	GetPurchaseOrder(context.Context, *GetPurchaseOrderRequest) (*PurchaseOrder, error)
@@ -168,10 +183,13 @@ type PurchaseOrderServiceServer interface {
 	// it sent. A supplier with no e-mail on file is refused
 	// (SUPPLIER_EMAIL_REQUIRED).
 	SendPurchaseOrder(context.Context, *SendPurchaseOrderRequest) (*PurchaseOrder, error)
-	// Cancels an order nothing was received against.
+	// Cancels an order that has no open draft goods receipt; what was already
+	// received stays received.
 	CancelPurchaseOrder(context.Context, *CancelPurchaseOrderRequest) (*PurchaseOrder, error)
 	// Creates a draft goods receipt for what the order still waits for, with
-	// the supplier and the quantities pre-filled and linked to the order.
+	// the supplier and the quantities pre-filled and linked to the order. The
+	// order must be SENT or PARTIALLY_RECEIVED and have no open draft receipt
+	// (PURCHASE_ORDER_RECEIPT_OPEN).
 	ReceivePurchaseOrder(context.Context, *ReceivePurchaseOrderRequest) (*GoodsReceipt, error)
 	mustEmbedUnimplementedPurchaseOrderServiceServer()
 }

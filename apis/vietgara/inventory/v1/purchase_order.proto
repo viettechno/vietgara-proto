@@ -42,9 +42,11 @@ message PurchaseOrderLine {
   // from answers when the caller lacks PERMISSION_INVENTORY_COST_READ; such
   // a caller cannot set it either. On update, lines are matched by id: a
   // caller without the permission keeps the stored cost of the lines it sends
-  // back, and a new line costs zero.
+  // back, and a new line costs zero; changing the part or unit of a line resets
+  // its cost to zero.
   optional int64 unit_cost = 11;
-  // entered_quantity times unit_cost, whole VND. Omitted without
+  // entered_quantity times unit_cost, rounded half up to whole VND per line
+  // as on a goods receipt; total_amount is the sum of these. Omitted without
   // PERMISSION_INVENTORY_COST_READ.
   optional int64 line_amount = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
@@ -124,9 +126,9 @@ message CreatePurchaseOrdersFromLowStockRequest {
 // UnassignedPart is a low-stock part that no order could take because it
 // has no default supplier.
 message UnassignedPart {
-  string part_id = 1;
-  string part_sku = 2;
-  string part_name = 3;
+  string part_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_sku = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message CreatePurchaseOrdersFromLowStockResponse {
@@ -156,6 +158,12 @@ message ReceivePurchaseOrderRequest {
 // PurchaseOrderService serves the purchase orders of a garage (FR-INV-16).
 // Reading needs inventory.read, changing needs inventory.write; prices are
 // shown and set only with inventory.cost.read.
+//
+// States: DRAFT -> SENT (a SENT order may be sent again) -> PARTIALLY_RECEIVED
+// -> RECEIVED, driven by completed goods receipts; CANCELLED is reachable from
+// DRAFT, SENT and PARTIALLY_RECEIVED (the quantities received stay received).
+// Any other transition is refused (FAILED_PRECONDITION). Only one draft goods
+// receipt may exist for an order at a time.
 service PurchaseOrderService {
   rpc ListPurchaseOrders(ListPurchaseOrdersRequest) returns (ListPurchaseOrdersResponse) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/purchase-orders"};
@@ -201,7 +209,8 @@ service PurchaseOrderService {
     };
   }
 
-  // Cancels an order nothing was received against.
+  // Cancels an order that has no open draft goods receipt; what was already
+  // received stays received.
   rpc CancelPurchaseOrder(CancelPurchaseOrderRequest) returns (PurchaseOrder) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}:cancel"
@@ -210,7 +219,9 @@ service PurchaseOrderService {
   }
 
   // Creates a draft goods receipt for what the order still waits for, with
-  // the supplier and the quantities pre-filled and linked to the order.
+  // the supplier and the quantities pre-filled and linked to the order. The
+  // order must be SENT or PARTIALLY_RECEIVED and have no open draft receipt
+  // (PURCHASE_ORDER_RECEIPT_OPEN).
   rpc ReceivePurchaseOrder(ReceivePurchaseOrderRequest) returns (GoodsReceipt) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}:receive"

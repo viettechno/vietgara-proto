@@ -664,12 +664,17 @@ func (x *GetProfitReportRequest) GetTo() string {
 type GetProfitReportResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Most profitable first.
-	Rows          []*ProfitRow `protobuf:"bytes,1,rep,name=rows,proto3" json:"rows,omitempty"`
-	TotalRevenue  int64        `protobuf:"varint,2,opt,name=total_revenue,json=totalRevenue,proto3" json:"total_revenue,omitempty"`
-	TotalCost     int64        `protobuf:"varint,3,opt,name=total_cost,json=totalCost,proto3" json:"total_cost,omitempty"`
-	TotalProfit   int64        `protobuf:"varint,4,opt,name=total_profit,json=totalProfit,proto3" json:"total_profit,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// A line shared by technicians is split between them, so the rows add up
+	// to the totals whichever way the report is grouped.
+	Rows         []*ProfitRow `protobuf:"bytes,1,rep,name=rows,proto3" json:"rows,omitempty"`
+	TotalRevenue int64        `protobuf:"varint,2,opt,name=total_revenue,json=totalRevenue,proto3" json:"total_revenue,omitempty"`
+	TotalCost    int64        `protobuf:"varint,3,opt,name=total_cost,json=totalCost,proto3" json:"total_cost,omitempty"`
+	TotalProfit  int64        `protobuf:"varint,4,opt,name=total_profit,json=totalProfit,proto3" json:"total_profit,omitempty"`
+	// Repair orders of the report whose stock issue is not posted yet: their
+	// cost counts as zero, so the profit is overstated by the cost to come.
+	OrdersWithoutCost int32 `protobuf:"varint,5,opt,name=orders_without_cost,json=ordersWithoutCost,proto3" json:"orders_without_cost,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *GetProfitReportResponse) Reset() {
@@ -726,6 +731,13 @@ func (x *GetProfitReportResponse) GetTotalCost() int64 {
 func (x *GetProfitReportResponse) GetTotalProfit() int64 {
 	if x != nil {
 		return x.TotalProfit
+	}
+	return 0
+}
+
+func (x *GetProfitReportResponse) GetOrdersWithoutCost() int32 {
+	if x != nil {
+		return x.OrdersWithoutCost
 	}
 	return 0
 }
@@ -892,13 +904,14 @@ const file_vietgara_reporting_v1_reporting_proto_rawDesc = "" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12D\n" +
 	"\bgroup_by\x18\x02 \x01(\x0e2$.vietgara.reporting.v1.ProfitGroupByB\x03\xe0A\x02R\agroupBy\x12\x17\n" +
 	"\x04from\x18\x03 \x01(\tB\x03\xe0A\x02R\x04from\x12\x13\n" +
-	"\x02to\x18\x04 \x01(\tB\x03\xe0A\x02R\x02to\"\xb6\x01\n" +
+	"\x02to\x18\x04 \x01(\tB\x03\xe0A\x02R\x02to\"\xe6\x01\n" +
 	"\x17GetProfitReportResponse\x124\n" +
 	"\x04rows\x18\x01 \x03(\v2 .vietgara.reporting.v1.ProfitRowR\x04rows\x12#\n" +
 	"\rtotal_revenue\x18\x02 \x01(\x03R\ftotalRevenue\x12\x1d\n" +
 	"\n" +
 	"total_cost\x18\x03 \x01(\x03R\ttotalCost\x12!\n" +
-	"\ftotal_profit\x18\x04 \x01(\x03R\vtotalProfit\"l\n" +
+	"\ftotal_profit\x18\x04 \x01(\x03R\vtotalProfit\x12.\n" +
+	"\x13orders_without_cost\x18\x05 \x01(\x05R\x11ordersWithoutCost\"l\n" +
 	"\x1bGetRepairOrderProfitRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12+\n" +
 	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\"\x8c\x01\n" +

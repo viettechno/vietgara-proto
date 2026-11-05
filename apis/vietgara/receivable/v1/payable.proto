@@ -42,8 +42,8 @@ message SupplierPayable {
 
 // SupplierPayablesSummary totals the open payables a list matched.
 message SupplierPayablesSummary {
-  int32 open_count = 1;
-  int64 outstanding_amount = 2;
+  int32 open_count = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 outstanding_amount = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message ListSupplierPayablesRequest {
@@ -63,17 +63,17 @@ message ListSupplierPayablesResponse {
 
 // SupplierAging is the open payables of one supplier by age of the receipt.
 message SupplierAging {
-  string supplier_id = 1;
-  string supplier_name = 2;
-  int64 total = 3;
+  string supplier_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string supplier_name = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 total = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
   // 0 to 30 days.
-  int64 current = 4;
+  int64 current = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
   // 31 to 60 days.
-  int64 days_31_60 = 5;
+  int64 days_31_60 = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
   // 61 to 90 days.
-  int64 days_61_90 = 6;
+  int64 days_61_90 = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // More than 90 days.
-  int64 over_90 = 7;
+  int64 over_90 = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message GetSupplierPayablesAgingRequest {
@@ -106,7 +106,12 @@ message PaymentOutVoucher {
   // Who received the money: defaults to the supplier's name.
   string payee_name = 6;
   string payee_address = 7;
-  // Integer VND, positive and at least the sum of the allocations.
+  // Integer VND, positive and at least the sum of the allocations. An
+  // allocation goes only to an OPEN payable of the voucher's supplier, once
+  // per payable and for at most its remaining amount, checked under a lock so
+  // that two vouchers cannot take the same remainder (INVALID_ALLOCATION).
+  // Voiding takes the allocations off the payables that still exist; one
+  // whose goods receipt was cancelled in the meantime stays cancelled.
   int64 amount = 8 [(google.api.field_behavior) = REQUIRED];
   vietgara.billing.v1.PaymentMethod method = 9 [(google.api.field_behavior) = REQUIRED];
   // Printed on the voucher; defaults to a standard text.

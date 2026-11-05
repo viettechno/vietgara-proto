@@ -87,26 +87,26 @@ type DataRequestStatus int32
 
 const (
 	DataRequestStatus_DATA_REQUEST_STATUS_UNSPECIFIED DataRequestStatus = 0
-	// Asked on the public page; waiting for the link in the e-mail.
-	DataRequestStatus_DATA_REQUEST_STATUS_PENDING_CONFIRMATION DataRequestStatus = 1
 	// Confirmed and waiting for the garage to act (a correction).
-	DataRequestStatus_DATA_REQUEST_STATUS_PENDING   DataRequestStatus = 2
-	DataRequestStatus_DATA_REQUEST_STATUS_COMPLETED DataRequestStatus = 3
+	DataRequestStatus_DATA_REQUEST_STATUS_PENDING   DataRequestStatus = 1
+	DataRequestStatus_DATA_REQUEST_STATUS_COMPLETED DataRequestStatus = 2
+	// The garage declined it, with the reason in `outcome`.
+	DataRequestStatus_DATA_REQUEST_STATUS_REJECTED DataRequestStatus = 3
 )
 
 // Enum value maps for DataRequestStatus.
 var (
 	DataRequestStatus_name = map[int32]string{
 		0: "DATA_REQUEST_STATUS_UNSPECIFIED",
-		1: "DATA_REQUEST_STATUS_PENDING_CONFIRMATION",
-		2: "DATA_REQUEST_STATUS_PENDING",
-		3: "DATA_REQUEST_STATUS_COMPLETED",
+		1: "DATA_REQUEST_STATUS_PENDING",
+		2: "DATA_REQUEST_STATUS_COMPLETED",
+		3: "DATA_REQUEST_STATUS_REJECTED",
 	}
 	DataRequestStatus_value = map[string]int32{
-		"DATA_REQUEST_STATUS_UNSPECIFIED":          0,
-		"DATA_REQUEST_STATUS_PENDING_CONFIRMATION": 1,
-		"DATA_REQUEST_STATUS_PENDING":              2,
-		"DATA_REQUEST_STATUS_COMPLETED":            3,
+		"DATA_REQUEST_STATUS_UNSPECIFIED": 0,
+		"DATA_REQUEST_STATUS_PENDING":     1,
+		"DATA_REQUEST_STATUS_COMPLETED":   2,
+		"DATA_REQUEST_STATUS_REJECTED":    3,
 	}
 )
 
@@ -593,8 +593,11 @@ type CompleteDataRequestRequest struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	GarageId  string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	RequestId string                 `protobuf:"bytes,2,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
-	// What was done; required, at most 2000 characters.
-	Outcome       string `protobuf:"bytes,3,opt,name=outcome,proto3" json:"outcome,omitempty"`
+	// What was done, or why the request is declined; required, at most 2000
+	// characters.
+	Outcome string `protobuf:"bytes,3,opt,name=outcome,proto3" json:"outcome,omitempty"`
+	// Declines the request instead of completing it.
+	Declined      bool `protobuf:"varint,4,opt,name=declined,proto3" json:"declined,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -648,6 +651,13 @@ func (x *CompleteDataRequestRequest) GetOutcome() string {
 		return x.Outcome
 	}
 	return ""
+}
+
+func (x *CompleteDataRequestRequest) GetDeclined() bool {
+	if x != nil {
+		return x.Declined
+	}
+	return false
 }
 
 type SubmitPublicDataRequestRequest struct {
@@ -891,12 +901,13 @@ const file_vietgara_customer_v1_data_request_proto_rawDesc = "" +
 	"\x15GetDataRequestRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\"\n" +
 	"\n" +
-	"request_id\x18\x02 \x01(\tB\x03\xe0A\x02R\trequestId\"\x81\x01\n" +
+	"request_id\x18\x02 \x01(\tB\x03\xe0A\x02R\trequestId\"\x9d\x01\n" +
 	"\x1aCompleteDataRequestRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\"\n" +
 	"\n" +
 	"request_id\x18\x02 \x01(\tB\x03\xe0A\x02R\trequestId\x12\x1d\n" +
-	"\aoutcome\x18\x03 \x01(\tB\x03\xe0A\x02R\aoutcome\"\xad\x01\n" +
+	"\aoutcome\x18\x03 \x01(\tB\x03\xe0A\x02R\aoutcome\x12\x1a\n" +
+	"\bdeclined\x18\x04 \x01(\bR\bdeclined\"\xad\x01\n" +
 	"\x1eSubmitPublicDataRequestRequest\x12\x19\n" +
 	"\x05email\x18\x01 \x01(\tB\x03\xe0A\x02R\x05email\x12>\n" +
 	"\x04type\x18\x02 \x01(\x0e2%.vietgara.customer.v1.DataRequestTypeB\x03\xe0A\x02R\x04type\x12\x18\n" +
@@ -904,19 +915,19 @@ const file_vietgara_customer_v1_data_request_proto_rawDesc = "" +
 	"\x06locale\x18\x04 \x01(\tR\x06locale\"!\n" +
 	"\x1fSubmitPublicDataRequestResponse\"<\n" +
 	"\x1fConfirmPublicDataRequestRequest\x12\x19\n" +
-	"\x05token\x18\x01 \x01(\tB\x03\xe0A\x02R\x05token\"E\n" +
-	" ConfirmPublicDataRequestResponse\x12!\n" +
-	"\fgarage_count\x18\x01 \x01(\x05R\vgarageCount*\x8d\x01\n" +
+	"\x05token\x18\x01 \x01(\tB\x03\xe0A\x02R\x05token\"J\n" +
+	" ConfirmPublicDataRequestResponse\x12&\n" +
+	"\fgarage_count\x18\x01 \x01(\x05B\x03\xe0A\x03R\vgarageCount*\x8d\x01\n" +
 	"\x0fDataRequestType\x12!\n" +
 	"\x1dDATA_REQUEST_TYPE_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16DATA_REQUEST_TYPE_VIEW\x10\x01\x12\x1d\n" +
 	"\x19DATA_REQUEST_TYPE_CORRECT\x10\x02\x12\x1c\n" +
-	"\x18DATA_REQUEST_TYPE_DELETE\x10\x03*\xaa\x01\n" +
+	"\x18DATA_REQUEST_TYPE_DELETE\x10\x03*\x9e\x01\n" +
 	"\x11DataRequestStatus\x12#\n" +
-	"\x1fDATA_REQUEST_STATUS_UNSPECIFIED\x10\x00\x12,\n" +
-	"(DATA_REQUEST_STATUS_PENDING_CONFIRMATION\x10\x01\x12\x1f\n" +
-	"\x1bDATA_REQUEST_STATUS_PENDING\x10\x02\x12!\n" +
-	"\x1dDATA_REQUEST_STATUS_COMPLETED\x10\x03*w\n" +
+	"\x1fDATA_REQUEST_STATUS_UNSPECIFIED\x10\x00\x12\x1f\n" +
+	"\x1bDATA_REQUEST_STATUS_PENDING\x10\x01\x12!\n" +
+	"\x1dDATA_REQUEST_STATUS_COMPLETED\x10\x02\x12 \n" +
+	"\x1cDATA_REQUEST_STATUS_REJECTED\x10\x03*w\n" +
 	"\x11DataRequestSource\x12#\n" +
 	"\x1fDATA_REQUEST_SOURCE_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19DATA_REQUEST_SOURCE_STAFF\x10\x01\x12\x1e\n" +

@@ -683,7 +683,12 @@ type PaymentOutVoucher struct {
 	// Who received the money: defaults to the supplier's name.
 	PayeeName    string `protobuf:"bytes,6,opt,name=payee_name,json=payeeName,proto3" json:"payee_name,omitempty"`
 	PayeeAddress string `protobuf:"bytes,7,opt,name=payee_address,json=payeeAddress,proto3" json:"payee_address,omitempty"`
-	// Integer VND, positive and at least the sum of the allocations.
+	// Integer VND, positive and at least the sum of the allocations. An
+	// allocation goes only to an OPEN payable of the voucher's supplier, once
+	// per payable and for at most its remaining amount, checked under a lock so
+	// that two vouchers cannot take the same remainder (INVALID_ALLOCATION).
+	// Voiding takes the allocations off the payables that still exist; one
+	// whose goods receipt was cancelled in the meantime stays cancelled.
 	Amount int64             `protobuf:"varint,8,opt,name=amount,proto3" json:"amount,omitempty"`
 	Method v11.PaymentMethod `protobuf:"varint,9,opt,name=method,proto3,enum=vietgara.billing.v1.PaymentMethod" json:"method,omitempty"`
 	// Printed on the voucher; defaults to a standard text.
@@ -1174,11 +1179,11 @@ const file_vietgara_receivable_v1_payable_proto_rawDesc = "" +
 	"\bage_days\x18\v \x01(\x05B\x03\xe0A\x03R\aageDays\x12B\n" +
 	"\x06status\x18\f \x01(\x0e2%.vietgara.receivable.v1.PayableStatusB\x03\xe0A\x03R\x06status\x12>\n" +
 	"\n" +
-	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\"g\n" +
-	"\x17SupplierPayablesSummary\x12\x1d\n" +
+	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\"q\n" +
+	"\x17SupplierPayablesSummary\x12\"\n" +
 	"\n" +
-	"open_count\x18\x01 \x01(\x05R\topenCount\x12-\n" +
-	"\x12outstanding_amount\x18\x02 \x01(\x03R\x11outstandingAmount\"\xb4\x01\n" +
+	"open_count\x18\x01 \x01(\x05B\x03\xe0A\x03R\topenCount\x122\n" +
+	"\x12outstanding_amount\x18\x02 \x01(\x03B\x03\xe0A\x03R\x11outstandingAmount\"\xb4\x01\n" +
 	"\x1bListSupplierPayablesRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1f\n" +
 	"\vsupplier_id\x18\x02 \x01(\tR\n" +
@@ -1191,18 +1196,18 @@ const file_vietgara_receivable_v1_payable_proto_rawDesc = "" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1e.vietgara.common.v1.PaginationR\n" +
 	"pagination\x12I\n" +
-	"\asummary\x18\x03 \x01(\v2/.vietgara.receivable.v1.SupplierPayablesSummaryR\asummary\"\xda\x01\n" +
-	"\rSupplierAging\x12\x1f\n" +
-	"\vsupplier_id\x18\x01 \x01(\tR\n" +
-	"supplierId\x12#\n" +
-	"\rsupplier_name\x18\x02 \x01(\tR\fsupplierName\x12\x14\n" +
-	"\x05total\x18\x03 \x01(\x03R\x05total\x12\x18\n" +
-	"\acurrent\x18\x04 \x01(\x03R\acurrent\x12\x1c\n" +
+	"\asummary\x18\x03 \x01(\v2/.vietgara.receivable.v1.SupplierPayablesSummaryR\asummary\"\xfd\x01\n" +
+	"\rSupplierAging\x12$\n" +
+	"\vsupplier_id\x18\x01 \x01(\tB\x03\xe0A\x03R\n" +
+	"supplierId\x12(\n" +
+	"\rsupplier_name\x18\x02 \x01(\tB\x03\xe0A\x03R\fsupplierName\x12\x19\n" +
+	"\x05total\x18\x03 \x01(\x03B\x03\xe0A\x03R\x05total\x12\x1d\n" +
+	"\acurrent\x18\x04 \x01(\x03B\x03\xe0A\x03R\acurrent\x12!\n" +
 	"\n" +
-	"days_31_60\x18\x05 \x01(\x03R\bdays3160\x12\x1c\n" +
+	"days_31_60\x18\x05 \x01(\x03B\x03\xe0A\x03R\bdays3160\x12!\n" +
 	"\n" +
-	"days_61_90\x18\x06 \x01(\x03R\bdays6190\x12\x17\n" +
-	"\aover_90\x18\a \x01(\x03R\x06over90\"C\n" +
+	"days_61_90\x18\x06 \x01(\x03B\x03\xe0A\x03R\bdays6190\x12\x1c\n" +
+	"\aover_90\x18\a \x01(\x03B\x03\xe0A\x03R\x06over90\"C\n" +
 	"\x1fGetSupplierPayablesAgingRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\"\xa6\x01\n" +
 	" GetSupplierPayablesAgingResponse\x12C\n" +

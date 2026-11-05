@@ -7,7 +7,8 @@
 package receivablev1
 
 import (
-	v1 "github.com/viettechno/vietgara-proto/apis-go/vietgara/common/v1"
+	v1 "github.com/viettechno/vietgara-proto/apis-go/vietgara/billing/v1"
+	v11 "github.com/viettechno/vietgara-proto/apis-go/vietgara/common/v1"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -197,9 +198,8 @@ type ReceivableEntry struct {
 	Amount int64 `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
 	// The settlement number for a charge, the voucher number otherwise.
 	Reference string `protobuf:"bytes,4,opt,name=reference,proto3" json:"reference,omitempty"`
-	// "cash", "bank_transfer" or "online" for a payment or void; empty for a
-	// charge.
-	Method        string                 `protobuf:"bytes,5,opt,name=method,proto3" json:"method,omitempty"`
+	// How the money was paid, for a payment or void; unspecified for a charge.
+	Method        v1.PaymentMethod       `protobuf:"varint,5,opt,name=method,proto3,enum=vietgara.billing.v1.PaymentMethod" json:"method,omitempty"`
 	OccurredAt    *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -263,11 +263,11 @@ func (x *ReceivableEntry) GetReference() string {
 	return ""
 }
 
-func (x *ReceivableEntry) GetMethod() string {
+func (x *ReceivableEntry) GetMethod() v1.PaymentMethod {
 	if x != nil {
 		return x.Method
 	}
-	return ""
+	return v1.PaymentMethod(0)
 }
 
 func (x *ReceivableEntry) GetOccurredAt() *timestamppb.Timestamp {
@@ -741,7 +741,7 @@ func (x *ListReceivablesRequest) GetPageSize() int32 {
 type ListReceivablesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Data          []*Receivable          `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	Pagination    *v1.Pagination         `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	Pagination    *v11.Pagination        `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	Summary       *ReceivablesSummary    `protobuf:"bytes,3,opt,name=summary,proto3" json:"summary,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -784,7 +784,7 @@ func (x *ListReceivablesResponse) GetData() []*Receivable {
 	return nil
 }
 
-func (x *ListReceivablesResponse) GetPagination() *v1.Pagination {
+func (x *ListReceivablesResponse) GetPagination() *v11.Pagination {
 	if x != nil {
 		return x.Pagination
 	}
@@ -852,12 +852,14 @@ func (x *GetReceivableRequest) GetReceivableId() string {
 
 // ReceivableSettings is a garage's payment terms and reminder schedule
 // (FR-REC-03). A garage that never saved them has 7 days of terms and
-// reminders at 3 and 7 days overdue.
+// reminders at 3 and 7 days overdue. An update replaces all of it: it is
+// refused (INVALID_ARGUMENT) when payment_terms_days or reminders_enabled is
+// missing, so that an incomplete request cannot switch reminders off.
 type ReceivableSettings struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Days from the settlement's date to its due date, 0 to 365.
-	PaymentTermsDays int32 `protobuf:"varint,1,opt,name=payment_terms_days,json=paymentTermsDays,proto3" json:"payment_terms_days,omitempty"`
-	RemindersEnabled bool  `protobuf:"varint,2,opt,name=reminders_enabled,json=remindersEnabled,proto3" json:"reminders_enabled,omitempty"`
+	PaymentTermsDays *int32 `protobuf:"varint,1,opt,name=payment_terms_days,json=paymentTermsDays,proto3,oneof" json:"payment_terms_days,omitempty"`
+	RemindersEnabled *bool  `protobuf:"varint,2,opt,name=reminders_enabled,json=remindersEnabled,proto3,oneof" json:"reminders_enabled,omitempty"`
 	// Days overdue at which a reminder goes out: up to 5 distinct values from
 	// 1 to 90, ascending.
 	ReminderOffsetDays []int32 `protobuf:"varint,3,rep,packed,name=reminder_offset_days,json=reminderOffsetDays,proto3" json:"reminder_offset_days,omitempty"`
@@ -896,15 +898,15 @@ func (*ReceivableSettings) Descriptor() ([]byte, []int) {
 }
 
 func (x *ReceivableSettings) GetPaymentTermsDays() int32 {
-	if x != nil {
-		return x.PaymentTermsDays
+	if x != nil && x.PaymentTermsDays != nil {
+		return *x.PaymentTermsDays
 	}
 	return 0
 }
 
 func (x *ReceivableSettings) GetRemindersEnabled() bool {
-	if x != nil {
-		return x.RemindersEnabled
+	if x != nil && x.RemindersEnabled != nil {
+		return *x.RemindersEnabled
 	}
 	return false
 }
@@ -1015,7 +1017,7 @@ func (x *UpdateReceivableSettingsRequest) GetSettings() *ReceivableSettings {
 // ReconciliationMethodTotal is the amount collected by one payment method.
 type ReconciliationMethodTotal struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Method        string                 `protobuf:"bytes,1,opt,name=method,proto3" json:"method,omitempty"`
+	Method        v1.PaymentMethod       `protobuf:"varint,1,opt,name=method,proto3,enum=vietgara.billing.v1.PaymentMethod" json:"method,omitempty"`
 	Amount        int64                  `protobuf:"varint,2,opt,name=amount,proto3" json:"amount,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1051,11 +1053,11 @@ func (*ReconciliationMethodTotal) Descriptor() ([]byte, []int) {
 	return file_vietgara_receivable_v1_receivable_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *ReconciliationMethodTotal) GetMethod() string {
+func (x *ReconciliationMethodTotal) GetMethod() v1.PaymentMethod {
 	if x != nil {
 		return x.Method
 	}
-	return ""
+	return v1.PaymentMethod(0)
 }
 
 func (x *ReconciliationMethodTotal) GetAmount() int64 {
@@ -1074,7 +1076,7 @@ type ReconciliationLine struct {
 	Reference     string              `protobuf:"bytes,3,opt,name=reference,proto3" json:"reference,omitempty"`
 	CustomerName  string              `protobuf:"bytes,4,opt,name=customer_name,json=customerName,proto3" json:"customer_name,omitempty"`
 	Amount        int64               `protobuf:"varint,5,opt,name=amount,proto3" json:"amount,omitempty"`
-	Method        string              `protobuf:"bytes,6,opt,name=method,proto3" json:"method,omitempty"`
+	Method        v1.PaymentMethod    `protobuf:"varint,6,opt,name=method,proto3,enum=vietgara.billing.v1.PaymentMethod" json:"method,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1144,17 +1146,17 @@ func (x *ReconciliationLine) GetAmount() int64 {
 	return 0
 }
 
-func (x *ReconciliationLine) GetMethod() string {
+func (x *ReconciliationLine) GetMethod() v1.PaymentMethod {
 	if x != nil {
 		return x.Method
 	}
-	return ""
+	return v1.PaymentMethod(0)
 }
 
 // ReconciliationReport reconciles a period's receivables with the
-// settlements and vouchers behind them (FR-REC-04): the opening balance plus
-// what was charged, less what was collected (and plus what was voided), is
-// the closing balance as of the end of the period. `matches` and `difference`
+// settlements and vouchers behind them (FR-REC-04):
+// closing_balance = opening_balance + charged_amount - collected_amount +
+// voided_amount, as of the end of the period. `matches` and `difference`
 // check the ledger itself: its balance today against the remaining amounts of
 // the receivables today, whatever the period.
 type ReconciliationReport struct {
@@ -1376,13 +1378,13 @@ var File_vietgara_receivable_v1_receivable_proto protoreflect.FileDescriptor
 
 const file_vietgara_receivable_v1_receivable_proto_rawDesc = "" +
 	"\n" +
-	"'vietgara/receivable/v1/receivable.proto\x12\x16vietgara.receivable.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a#vietgara/common/v1/pagination.proto\"\x8b\x02\n" +
+	"'vietgara/receivable/v1/receivable.proto\x12\x16vietgara.receivable.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a$vietgara/billing/v1/settlement.proto\x1a#vietgara/common/v1/pagination.proto\"\xaf\x02\n" +
 	"\x0fReceivableEntry\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12D\n" +
 	"\x04kind\x18\x02 \x01(\x0e2+.vietgara.receivable.v1.ReceivableEntryKindB\x03\xe0A\x03R\x04kind\x12\x1b\n" +
 	"\x06amount\x18\x03 \x01(\x03B\x03\xe0A\x03R\x06amount\x12!\n" +
-	"\treference\x18\x04 \x01(\tB\x03\xe0A\x03R\treference\x12\x1b\n" +
-	"\x06method\x18\x05 \x01(\tB\x03\xe0A\x03R\x06method\x12@\n" +
+	"\treference\x18\x04 \x01(\tB\x03\xe0A\x03R\treference\x12?\n" +
+	"\x06method\x18\x05 \x01(\x0e2\".vietgara.billing.v1.PaymentMethodB\x03\xe0A\x03R\x06method\x12@\n" +
 	"\voccurred_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\n" +
 	"occurredAt\"\x93\x02\n" +
 	"\x12ReceivableReminder\x12\x13\n" +
@@ -1420,13 +1422,13 @@ const file_vietgara_receivable_v1_receivable_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12F\n" +
 	"\aentries\x18\x13 \x03(\v2'.vietgara.receivable.v1.ReceivableEntryB\x03\xe0A\x03R\aentries\x12M\n" +
-	"\treminders\x18\x14 \x03(\v2*.vietgara.receivable.v1.ReceivableReminderB\x03\xe0A\x03R\treminders\"\xae\x01\n" +
-	"\x12ReceivablesSummary\x12\x1d\n" +
+	"\treminders\x18\x14 \x03(\v2*.vietgara.receivable.v1.ReceivableReminderB\x03\xe0A\x03R\treminders\"\xc2\x01\n" +
+	"\x12ReceivablesSummary\x12\"\n" +
 	"\n" +
-	"open_count\x18\x01 \x01(\x05R\topenCount\x12-\n" +
-	"\x12outstanding_amount\x18\x02 \x01(\x03R\x11outstandingAmount\x12#\n" +
-	"\roverdue_count\x18\x03 \x01(\x05R\foverdueCount\x12%\n" +
-	"\x0eoverdue_amount\x18\x04 \x01(\x03R\roverdueAmount\"\xe8\x01\n" +
+	"open_count\x18\x01 \x01(\x05B\x03\xe0A\x03R\topenCount\x122\n" +
+	"\x12outstanding_amount\x18\x02 \x01(\x03B\x03\xe0A\x03R\x11outstandingAmount\x12(\n" +
+	"\roverdue_count\x18\x03 \x01(\x05B\x03\xe0A\x03R\foverdueCount\x12*\n" +
+	"\x0eoverdue_amount\x18\x04 \x01(\x03B\x03\xe0A\x03R\roverdueAmount\"\xe8\x01\n" +
 	"\x16ListReceivablesRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1f\n" +
 	"\vcustomer_id\x18\x02 \x01(\tR\n" +
@@ -1444,44 +1446,46 @@ const file_vietgara_receivable_v1_receivable_proto_rawDesc = "" +
 	"\asummary\x18\x03 \x01(\v2*.vietgara.receivable.v1.ReceivablesSummaryR\asummary\"b\n" +
 	"\x14GetReceivableRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12(\n" +
-	"\rreceivable_id\x18\x02 \x01(\tB\x03\xe0A\x02R\freceivableId\"\xa1\x01\n" +
-	"\x12ReceivableSettings\x12,\n" +
-	"\x12payment_terms_days\x18\x01 \x01(\x05R\x10paymentTermsDays\x12+\n" +
-	"\x11reminders_enabled\x18\x02 \x01(\bR\x10remindersEnabled\x120\n" +
-	"\x14reminder_offset_days\x18\x03 \x03(\x05R\x12reminderOffsetDays\"@\n" +
+	"\rreceivable_id\x18\x02 \x01(\tB\x03\xe0A\x02R\freceivableId\"\xd8\x01\n" +
+	"\x12ReceivableSettings\x121\n" +
+	"\x12payment_terms_days\x18\x01 \x01(\x05H\x00R\x10paymentTermsDays\x88\x01\x01\x120\n" +
+	"\x11reminders_enabled\x18\x02 \x01(\bH\x01R\x10remindersEnabled\x88\x01\x01\x120\n" +
+	"\x14reminder_offset_days\x18\x03 \x03(\x05R\x12reminderOffsetDaysB\x15\n" +
+	"\x13_payment_terms_daysB\x14\n" +
+	"\x12_reminders_enabled\"@\n" +
 	"\x1cGetReceivableSettingsRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\"\x90\x01\n" +
 	"\x1fUpdateReceivableSettingsRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12K\n" +
-	"\bsettings\x18\x02 \x01(\v2*.vietgara.receivable.v1.ReceivableSettingsB\x03\xe0A\x02R\bsettings\"K\n" +
-	"\x19ReconciliationMethodTotal\x12\x16\n" +
-	"\x06method\x18\x01 \x01(\tR\x06method\x12\x16\n" +
-	"\x06amount\x18\x02 \x01(\x03R\x06amount\"\xdc\x01\n" +
-	"\x12ReconciliationLine\x12\x12\n" +
-	"\x04date\x18\x01 \x01(\tR\x04date\x12?\n" +
-	"\x04kind\x18\x02 \x01(\x0e2+.vietgara.receivable.v1.ReceivableEntryKindR\x04kind\x12\x1c\n" +
-	"\treference\x18\x03 \x01(\tR\treference\x12#\n" +
-	"\rcustomer_name\x18\x04 \x01(\tR\fcustomerName\x12\x16\n" +
-	"\x06amount\x18\x05 \x01(\x03R\x06amount\x12\x16\n" +
-	"\x06method\x18\x06 \x01(\tR\x06method\"\xda\x04\n" +
-	"\x14ReconciliationReport\x12\x12\n" +
-	"\x04from\x18\x01 \x01(\tR\x04from\x12\x0e\n" +
-	"\x02to\x18\x02 \x01(\tR\x02to\x12'\n" +
-	"\x0fopening_balance\x18\x03 \x01(\x03R\x0eopeningBalance\x12%\n" +
-	"\x0echarged_amount\x18\x04 \x01(\x03R\rchargedAmount\x12)\n" +
-	"\x10collected_amount\x18\x05 \x01(\x03R\x0fcollectedAmount\x12#\n" +
-	"\rvoided_amount\x18\x06 \x01(\x03R\fvoidedAmount\x12'\n" +
-	"\x0fclosing_balance\x18\a \x01(\x03R\x0eclosingBalance\x12)\n" +
-	"\x10settlement_count\x18\b \x01(\x05R\x0fsettlementCount\x12#\n" +
-	"\rpayment_count\x18\t \x01(\x05R\fpaymentCount\x12a\n" +
+	"\bsettings\x18\x02 \x01(\v2*.vietgara.receivable.v1.ReceivableSettingsB\x03\xe0A\x02R\bsettings\"y\n" +
+	"\x19ReconciliationMethodTotal\x12?\n" +
+	"\x06method\x18\x01 \x01(\x0e2\".vietgara.billing.v1.PaymentMethodB\x03\xe0A\x03R\x06method\x12\x1b\n" +
+	"\x06amount\x18\x02 \x01(\x03B\x03\xe0A\x03R\x06amount\"\x9e\x02\n" +
+	"\x12ReconciliationLine\x12\x17\n" +
+	"\x04date\x18\x01 \x01(\tB\x03\xe0A\x03R\x04date\x12D\n" +
+	"\x04kind\x18\x02 \x01(\x0e2+.vietgara.receivable.v1.ReceivableEntryKindB\x03\xe0A\x03R\x04kind\x12!\n" +
+	"\treference\x18\x03 \x01(\tB\x03\xe0A\x03R\treference\x12(\n" +
+	"\rcustomer_name\x18\x04 \x01(\tB\x03\xe0A\x03R\fcustomerName\x12\x1b\n" +
+	"\x06amount\x18\x05 \x01(\x03B\x03\xe0A\x03R\x06amount\x12?\n" +
+	"\x06method\x18\x06 \x01(\x0e2\".vietgara.billing.v1.PaymentMethodB\x03\xe0A\x03R\x06method\"\xa0\x05\n" +
+	"\x14ReconciliationReport\x12\x17\n" +
+	"\x04from\x18\x01 \x01(\tB\x03\xe0A\x03R\x04from\x12\x13\n" +
+	"\x02to\x18\x02 \x01(\tB\x03\xe0A\x03R\x02to\x12,\n" +
+	"\x0fopening_balance\x18\x03 \x01(\x03B\x03\xe0A\x03R\x0eopeningBalance\x12*\n" +
+	"\x0echarged_amount\x18\x04 \x01(\x03B\x03\xe0A\x03R\rchargedAmount\x12.\n" +
+	"\x10collected_amount\x18\x05 \x01(\x03B\x03\xe0A\x03R\x0fcollectedAmount\x12(\n" +
+	"\rvoided_amount\x18\x06 \x01(\x03B\x03\xe0A\x03R\fvoidedAmount\x12,\n" +
+	"\x0fclosing_balance\x18\a \x01(\x03B\x03\xe0A\x03R\x0eclosingBalance\x12.\n" +
+	"\x10settlement_count\x18\b \x01(\x05B\x03\xe0A\x03R\x0fsettlementCount\x12(\n" +
+	"\rpayment_count\x18\t \x01(\x05B\x03\xe0A\x03R\fpaymentCount\x12f\n" +
 	"\x13collected_by_method\x18\n" +
-	" \x03(\v21.vietgara.receivable.v1.ReconciliationMethodTotalR\x11collectedByMethod\x12&\n" +
-	"\x0fpaid_out_amount\x18\v \x01(\x03R\rpaidOutAmount\x12\x18\n" +
-	"\amatches\x18\f \x01(\bR\amatches\x12\x1e\n" +
+	" \x03(\v21.vietgara.receivable.v1.ReconciliationMethodTotalB\x03\xe0A\x03R\x11collectedByMethod\x12+\n" +
+	"\x0fpaid_out_amount\x18\v \x01(\x03B\x03\xe0A\x03R\rpaidOutAmount\x12\x1d\n" +
+	"\amatches\x18\f \x01(\bB\x03\xe0A\x03R\amatches\x12#\n" +
 	"\n" +
-	"difference\x18\r \x01(\x03R\n" +
-	"difference\x12@\n" +
-	"\x05lines\x18\x0e \x03(\v2*.vietgara.receivable.v1.ReconciliationLineR\x05lines\"p\n" +
+	"difference\x18\r \x01(\x03B\x03\xe0A\x03R\n" +
+	"difference\x12E\n" +
+	"\x05lines\x18\x0e \x03(\v2*.vietgara.receivable.v1.ReconciliationLineB\x03\xe0A\x03R\x05lines\"p\n" +
 	"\x1eGetReconciliationReportRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x17\n" +
 	"\x04from\x18\x02 \x01(\tB\x03\xe0A\x02R\x04from\x12\x13\n" +
@@ -1539,42 +1543,46 @@ var file_vietgara_receivable_v1_receivable_proto_goTypes = []any{
 	(*ReconciliationLine)(nil),              // 14: vietgara.receivable.v1.ReconciliationLine
 	(*ReconciliationReport)(nil),            // 15: vietgara.receivable.v1.ReconciliationReport
 	(*GetReconciliationReportRequest)(nil),  // 16: vietgara.receivable.v1.GetReconciliationReportRequest
-	(*timestamppb.Timestamp)(nil),           // 17: google.protobuf.Timestamp
-	(*v1.Pagination)(nil),                   // 18: vietgara.common.v1.Pagination
+	(v1.PaymentMethod)(0),                   // 17: vietgara.billing.v1.PaymentMethod
+	(*timestamppb.Timestamp)(nil),           // 18: google.protobuf.Timestamp
+	(*v11.Pagination)(nil),                  // 19: vietgara.common.v1.Pagination
 }
 var file_vietgara_receivable_v1_receivable_proto_depIdxs = []int32{
 	1,  // 0: vietgara.receivable.v1.ReceivableEntry.kind:type_name -> vietgara.receivable.v1.ReceivableEntryKind
-	17, // 1: vietgara.receivable.v1.ReceivableEntry.occurred_at:type_name -> google.protobuf.Timestamp
-	2,  // 2: vietgara.receivable.v1.ReceivableReminder.outcome:type_name -> vietgara.receivable.v1.ReminderOutcome
-	17, // 3: vietgara.receivable.v1.ReceivableReminder.created_at:type_name -> google.protobuf.Timestamp
-	0,  // 4: vietgara.receivable.v1.Receivable.status:type_name -> vietgara.receivable.v1.ReceivableStatus
-	17, // 5: vietgara.receivable.v1.Receivable.last_reminder_at:type_name -> google.protobuf.Timestamp
-	17, // 6: vietgara.receivable.v1.Receivable.created_at:type_name -> google.protobuf.Timestamp
-	17, // 7: vietgara.receivable.v1.Receivable.updated_at:type_name -> google.protobuf.Timestamp
-	3,  // 8: vietgara.receivable.v1.Receivable.entries:type_name -> vietgara.receivable.v1.ReceivableEntry
-	4,  // 9: vietgara.receivable.v1.Receivable.reminders:type_name -> vietgara.receivable.v1.ReceivableReminder
-	5,  // 10: vietgara.receivable.v1.ListReceivablesResponse.data:type_name -> vietgara.receivable.v1.Receivable
-	18, // 11: vietgara.receivable.v1.ListReceivablesResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	6,  // 12: vietgara.receivable.v1.ListReceivablesResponse.summary:type_name -> vietgara.receivable.v1.ReceivablesSummary
-	10, // 13: vietgara.receivable.v1.UpdateReceivableSettingsRequest.settings:type_name -> vietgara.receivable.v1.ReceivableSettings
-	1,  // 14: vietgara.receivable.v1.ReconciliationLine.kind:type_name -> vietgara.receivable.v1.ReceivableEntryKind
-	13, // 15: vietgara.receivable.v1.ReconciliationReport.collected_by_method:type_name -> vietgara.receivable.v1.ReconciliationMethodTotal
-	14, // 16: vietgara.receivable.v1.ReconciliationReport.lines:type_name -> vietgara.receivable.v1.ReconciliationLine
-	7,  // 17: vietgara.receivable.v1.ReceivableService.ListReceivables:input_type -> vietgara.receivable.v1.ListReceivablesRequest
-	9,  // 18: vietgara.receivable.v1.ReceivableService.GetReceivable:input_type -> vietgara.receivable.v1.GetReceivableRequest
-	11, // 19: vietgara.receivable.v1.ReceivableService.GetReceivableSettings:input_type -> vietgara.receivable.v1.GetReceivableSettingsRequest
-	12, // 20: vietgara.receivable.v1.ReceivableService.UpdateReceivableSettings:input_type -> vietgara.receivable.v1.UpdateReceivableSettingsRequest
-	16, // 21: vietgara.receivable.v1.ReceivableService.GetReconciliationReport:input_type -> vietgara.receivable.v1.GetReconciliationReportRequest
-	8,  // 22: vietgara.receivable.v1.ReceivableService.ListReceivables:output_type -> vietgara.receivable.v1.ListReceivablesResponse
-	5,  // 23: vietgara.receivable.v1.ReceivableService.GetReceivable:output_type -> vietgara.receivable.v1.Receivable
-	10, // 24: vietgara.receivable.v1.ReceivableService.GetReceivableSettings:output_type -> vietgara.receivable.v1.ReceivableSettings
-	10, // 25: vietgara.receivable.v1.ReceivableService.UpdateReceivableSettings:output_type -> vietgara.receivable.v1.ReceivableSettings
-	15, // 26: vietgara.receivable.v1.ReceivableService.GetReconciliationReport:output_type -> vietgara.receivable.v1.ReconciliationReport
-	22, // [22:27] is the sub-list for method output_type
-	17, // [17:22] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	17, // 1: vietgara.receivable.v1.ReceivableEntry.method:type_name -> vietgara.billing.v1.PaymentMethod
+	18, // 2: vietgara.receivable.v1.ReceivableEntry.occurred_at:type_name -> google.protobuf.Timestamp
+	2,  // 3: vietgara.receivable.v1.ReceivableReminder.outcome:type_name -> vietgara.receivable.v1.ReminderOutcome
+	18, // 4: vietgara.receivable.v1.ReceivableReminder.created_at:type_name -> google.protobuf.Timestamp
+	0,  // 5: vietgara.receivable.v1.Receivable.status:type_name -> vietgara.receivable.v1.ReceivableStatus
+	18, // 6: vietgara.receivable.v1.Receivable.last_reminder_at:type_name -> google.protobuf.Timestamp
+	18, // 7: vietgara.receivable.v1.Receivable.created_at:type_name -> google.protobuf.Timestamp
+	18, // 8: vietgara.receivable.v1.Receivable.updated_at:type_name -> google.protobuf.Timestamp
+	3,  // 9: vietgara.receivable.v1.Receivable.entries:type_name -> vietgara.receivable.v1.ReceivableEntry
+	4,  // 10: vietgara.receivable.v1.Receivable.reminders:type_name -> vietgara.receivable.v1.ReceivableReminder
+	5,  // 11: vietgara.receivable.v1.ListReceivablesResponse.data:type_name -> vietgara.receivable.v1.Receivable
+	19, // 12: vietgara.receivable.v1.ListReceivablesResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	6,  // 13: vietgara.receivable.v1.ListReceivablesResponse.summary:type_name -> vietgara.receivable.v1.ReceivablesSummary
+	10, // 14: vietgara.receivable.v1.UpdateReceivableSettingsRequest.settings:type_name -> vietgara.receivable.v1.ReceivableSettings
+	17, // 15: vietgara.receivable.v1.ReconciliationMethodTotal.method:type_name -> vietgara.billing.v1.PaymentMethod
+	1,  // 16: vietgara.receivable.v1.ReconciliationLine.kind:type_name -> vietgara.receivable.v1.ReceivableEntryKind
+	17, // 17: vietgara.receivable.v1.ReconciliationLine.method:type_name -> vietgara.billing.v1.PaymentMethod
+	13, // 18: vietgara.receivable.v1.ReconciliationReport.collected_by_method:type_name -> vietgara.receivable.v1.ReconciliationMethodTotal
+	14, // 19: vietgara.receivable.v1.ReconciliationReport.lines:type_name -> vietgara.receivable.v1.ReconciliationLine
+	7,  // 20: vietgara.receivable.v1.ReceivableService.ListReceivables:input_type -> vietgara.receivable.v1.ListReceivablesRequest
+	9,  // 21: vietgara.receivable.v1.ReceivableService.GetReceivable:input_type -> vietgara.receivable.v1.GetReceivableRequest
+	11, // 22: vietgara.receivable.v1.ReceivableService.GetReceivableSettings:input_type -> vietgara.receivable.v1.GetReceivableSettingsRequest
+	12, // 23: vietgara.receivable.v1.ReceivableService.UpdateReceivableSettings:input_type -> vietgara.receivable.v1.UpdateReceivableSettingsRequest
+	16, // 24: vietgara.receivable.v1.ReceivableService.GetReconciliationReport:input_type -> vietgara.receivable.v1.GetReconciliationReportRequest
+	8,  // 25: vietgara.receivable.v1.ReceivableService.ListReceivables:output_type -> vietgara.receivable.v1.ListReceivablesResponse
+	5,  // 26: vietgara.receivable.v1.ReceivableService.GetReceivable:output_type -> vietgara.receivable.v1.Receivable
+	10, // 27: vietgara.receivable.v1.ReceivableService.GetReceivableSettings:output_type -> vietgara.receivable.v1.ReceivableSettings
+	10, // 28: vietgara.receivable.v1.ReceivableService.UpdateReceivableSettings:output_type -> vietgara.receivable.v1.ReceivableSettings
+	15, // 29: vietgara.receivable.v1.ReceivableService.GetReconciliationReport:output_type -> vietgara.receivable.v1.ReconciliationReport
+	25, // [25:30] is the sub-list for method output_type
+	20, // [20:25] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_receivable_v1_receivable_proto_init() }
@@ -1582,6 +1590,7 @@ func file_vietgara_receivable_v1_receivable_proto_init() {
 	if File_vietgara_receivable_v1_receivable_proto != nil {
 		return
 	}
+	file_vietgara_receivable_v1_receivable_proto_msgTypes[7].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

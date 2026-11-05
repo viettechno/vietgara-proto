@@ -32,7 +32,7 @@
     },
     {
       "name": "PublicDataRequestService",
-      "description": "PublicDataRequestService is the request page for people without the app\n(FR-CUS-05). Both calls are public and throttled; the first always answers\nthe same whether or not the address is known, and sends the link only to\nthe address itself."
+      "description": "PublicDataRequestService is the request page for people without the app\n(FR-CUS-05). Both calls are public and throttled; the first always answers\nthe same whether or not the address is known, and sends the link only to\nthe address itself. A request waits for its link in a table of its own\n(not as a DataRequest), which is deleted after 7 days with its `details`;\na confirmed one acts on every customer profile that holds the confirmed\naddress, in every garage, and is logged in each as a DataRequest."
     },
     {
       "name": "CustomerTaxProfileService",
@@ -80,7 +80,7 @@
     },
     {
       "name": "PurchaseOrderService",
-      "description": "PurchaseOrderService serves the purchase orders of a garage (FR-INV-16).\nReading needs inventory.read, changing needs inventory.write; prices are\nshown and set only with inventory.cost.read."
+      "description": "PurchaseOrderService serves the purchase orders of a garage (FR-INV-16).\nReading needs inventory.read, changing needs inventory.write; prices are\nshown and set only with inventory.cost.read.\n\nStates: DRAFT -\u003e SENT (a SENT order may be sent again) -\u003e PARTIALLY_RECEIVED\n-\u003e RECEIVED, driven by completed goods receipts; CANCELLED is reachable from\nDRAFT, SENT and PARTIALLY_RECEIVED (the quantities received stay received).\nAny other transition is refused (FAILED_PRECONDITION). Only one draft goods\nreceipt may exist for an order at a time."
     },
     {
       "name": "LicenseService",
@@ -2852,14 +2852,14 @@
           },
           {
             "name": "status",
-            "description": " - DATA_REQUEST_STATUS_PENDING_CONFIRMATION: Asked on the public page; waiting for the link in the e-mail.\n - DATA_REQUEST_STATUS_PENDING: Confirmed and waiting for the garage to act (a correction).",
+            "description": " - DATA_REQUEST_STATUS_PENDING: Confirmed and waiting for the garage to act (a correction).\n - DATA_REQUEST_STATUS_REJECTED: The garage declined it, with the reason in `outcome`.",
             "in": "query",
             "required": false,
             "type": "string",
             "enum": [
-              "DATA_REQUEST_STATUS_PENDING_CONFIRMATION",
               "DATA_REQUEST_STATUS_PENDING",
-              "DATA_REQUEST_STATUS_COMPLETED"
+              "DATA_REQUEST_STATUS_COMPLETED",
+              "DATA_REQUEST_STATUS_REJECTED"
             ]
           },
           {
@@ -2920,7 +2920,7 @@
     },
     "/api/v1/garages/{garageId}/data-requests/{requestId}:complete": {
       "post": {
-        "summary": "Completes a waiting correction with what was done.",
+        "summary": "Completes a waiting correction with what was done, or declines it.",
         "operationId": "DataRequestService_CompleteDataRequest",
         "responses": {
           "200": {
@@ -5478,7 +5478,7 @@
     },
     "/api/v1/garages/{garageId}/purchase-orders/{purchaseOrderId}:cancel": {
       "post": {
-        "summary": "Cancels an order nothing was received against.",
+        "summary": "Cancels an order that has no open draft goods receipt; what was already\nreceived stays received.",
         "operationId": "PurchaseOrderService_CancelPurchaseOrder",
         "responses": {
           "200": {
@@ -5523,7 +5523,7 @@
     },
     "/api/v1/garages/{garageId}/purchase-orders/{purchaseOrderId}:receive": {
       "post": {
-        "summary": "Creates a draft goods receipt for what the order still waits for, with\nthe supplier and the quantities pre-filled and linked to the order.",
+        "summary": "Creates a draft goods receipt for what the order still waits for, with\nthe supplier and the quantities pre-filled and linked to the order. The\norder must be SENT or PARTIALLY_RECEIVED and have no open draft receipt\n(PURCHASE_ORDER_RECEIPT_OPEN).",
         "operationId": "PurchaseOrderService_ReceivePurchaseOrder",
         "responses": {
           "200": {
@@ -11918,7 +11918,11 @@
       "properties": {
         "outcome": {
           "type": "string",
-          "description": "What was done; required, at most 2000 characters."
+          "description": "What was done, or why the request is declined; required, at most 2000\ncharacters."
+        },
+        "declined": {
+          "type": "boolean",
+          "description": "Declines the request instead of completing it."
         }
       },
       "required": [
@@ -12895,7 +12899,8 @@
         "garageCount": {
           "type": "integer",
           "format": "int32",
-          "description": "How many garages' records the request reached. A view is e-mailed to the\nconfirmed address, a deletion is carried out, a correction is passed to\neach garage."
+          "description": "How many garages' records the request reached. A view is e-mailed to the\nconfirmed address, a deletion is carried out, a correction is passed to\neach garage.",
+          "readOnly": true
         }
       }
     },
@@ -13481,11 +13486,11 @@
     "v1DataRequestStatus": {
       "type": "string",
       "enum": [
-        "DATA_REQUEST_STATUS_PENDING_CONFIRMATION",
         "DATA_REQUEST_STATUS_PENDING",
-        "DATA_REQUEST_STATUS_COMPLETED"
+        "DATA_REQUEST_STATUS_COMPLETED",
+        "DATA_REQUEST_STATUS_REJECTED"
       ],
-      "description": "DataRequestStatus is where a request stands.\n\n - DATA_REQUEST_STATUS_PENDING_CONFIRMATION: Asked on the public page; waiting for the link in the e-mail.\n - DATA_REQUEST_STATUS_PENDING: Confirmed and waiting for the garage to act (a correction)."
+      "description": "DataRequestStatus is where a request stands.\n\n - DATA_REQUEST_STATUS_PENDING: Confirmed and waiting for the garage to act (a correction).\n - DATA_REQUEST_STATUS_REJECTED: The garage declined it, with the reason in `outcome`."
     },
     "v1DataRequestType": {
       "type": "string",
@@ -14268,7 +14273,7 @@
             "type": "object",
             "$ref": "#/definitions/v1ProfitRow"
           },
-          "description": "Most profitable first."
+          "description": "Most profitable first.\nA line shared by technicians is split between them, so the rows add up\nto the totals whichever way the report is grouped."
         },
         "totalRevenue": {
           "type": "string",
@@ -14281,6 +14286,11 @@
         "totalProfit": {
           "type": "string",
           "format": "int64"
+        },
+        "ordersWithoutCost": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Repair orders of the report whose stock issue is not posted yet: their\ncost counts as zero, so the profit is overstated by the cost to come."
         }
       }
     },
@@ -16431,7 +16441,7 @@
         "amount": {
           "type": "string",
           "format": "int64",
-          "description": "Integer VND, positive and at least the sum of the allocations."
+          "description": "Integer VND, positive and at least the sum of the allocations. An\nallocation goes only to an OPEN payable of the voucher's supplier, once\nper payable and for at most its remaining amount, checked under a lock so\nthat two vouchers cannot take the same remainder (INVALID_ALLOCATION).\nVoiding takes the allocations off the payables that still exist; one\nwhose goods receipt was cancelled in the meantime stays cancelled."
         },
         "method": {
           "$ref": "#/definitions/v1PaymentMethod"
@@ -17352,12 +17362,12 @@
         "unitCost": {
           "type": "string",
           "format": "int64",
-          "description": "The expected price in VND per entered unit; zero means unknown. Omitted\nfrom answers when the caller lacks PERMISSION_INVENTORY_COST_READ; such\na caller cannot set it either. On update, lines are matched by id: a\ncaller without the permission keeps the stored cost of the lines it sends\nback, and a new line costs zero."
+          "description": "The expected price in VND per entered unit; zero means unknown. Omitted\nfrom answers when the caller lacks PERMISSION_INVENTORY_COST_READ; such\na caller cannot set it either. On update, lines are matched by id: a\ncaller without the permission keeps the stored cost of the lines it sends\nback, and a new line costs zero; changing the part or unit of a line resets\nits cost to zero."
         },
         "lineAmount": {
           "type": "string",
           "format": "int64",
-          "description": "entered_quantity times unit_cost, whole VND. Omitted without\nPERMISSION_INVENTORY_COST_READ.",
+          "description": "entered_quantity times unit_cost, rounded half up to whole VND per line\nas on a goods receipt; total_amount is the sum of these. Omitted without\nPERMISSION_INVENTORY_COST_READ.",
           "readOnly": true
         }
       },
@@ -17723,8 +17733,8 @@
           "readOnly": true
         },
         "method": {
-          "type": "string",
-          "description": "\"cash\", \"bank_transfer\" or \"online\" for a payment or void; empty for a\ncharge.",
+          "$ref": "#/definitions/v1PaymentMethod",
+          "description": "How the money was paid, for a payment or void; unspecified for a charge.",
           "readOnly": true
         },
         "occurredAt": {
@@ -17799,7 +17809,7 @@
           "description": "Days overdue at which a reminder goes out: up to 5 distinct values from\n1 to 90, ascending."
         }
       },
-      "description": "ReceivableSettings is a garage's payment terms and reminder schedule\n(FR-REC-03). A garage that never saved them has 7 days of terms and\nreminders at 3 and 7 days overdue."
+      "description": "ReceivableSettings is a garage's payment terms and reminder schedule\n(FR-REC-03). A garage that never saved them has 7 days of terms and\nreminders at 3 and 7 days overdue. An update replaces all of it: it is\nrefused (INVALID_ARGUMENT) when payment_terms_days or reminders_enabled is\nmissing, so that an incomplete request cannot switch reminders off."
     },
     "v1ReceivableStatus": {
       "type": "string",
@@ -17814,19 +17824,23 @@
       "properties": {
         "openCount": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "readOnly": true
         },
         "outstandingAmount": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "readOnly": true
         },
         "overdueCount": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "readOnly": true
         },
         "overdueAmount": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "readOnly": true
         }
       },
       "description": "ReceivablesSummary totals the open receivables a list matched, across all\nits pages."
@@ -17836,23 +17850,29 @@
       "properties": {
         "date": {
           "type": "string",
-          "description": "\"YYYY-MM-DD\" in the garage's timezone."
+          "description": "\"YYYY-MM-DD\" in the garage's timezone.",
+          "readOnly": true
         },
         "kind": {
-          "$ref": "#/definitions/v1ReceivableEntryKind"
+          "$ref": "#/definitions/v1ReceivableEntryKind",
+          "readOnly": true
         },
         "reference": {
-          "type": "string"
+          "type": "string",
+          "readOnly": true
         },
         "customerName": {
-          "type": "string"
+          "type": "string",
+          "readOnly": true
         },
         "amount": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "readOnly": true
         },
         "method": {
-          "type": "string"
+          "$ref": "#/definitions/v1PaymentMethod",
+          "readOnly": true
         }
       },
       "description": "ReconciliationLine is one movement of the period."
@@ -17861,11 +17881,13 @@
       "type": "object",
       "properties": {
         "method": {
-          "type": "string"
+          "$ref": "#/definitions/v1PaymentMethod",
+          "readOnly": true
         },
         "amount": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "readOnly": true
         }
       },
       "description": "ReconciliationMethodTotal is the amount collected by one payment method."
@@ -17874,69 +17896,83 @@
       "type": "object",
       "properties": {
         "from": {
-          "type": "string"
+          "type": "string",
+          "readOnly": true
         },
         "to": {
-          "type": "string"
+          "type": "string",
+          "readOnly": true
         },
         "openingBalance": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "readOnly": true
         },
         "chargedAmount": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "readOnly": true
         },
         "collectedAmount": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "readOnly": true
         },
         "voidedAmount": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "readOnly": true
         },
         "closingBalance": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "readOnly": true
         },
         "settlementCount": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "readOnly": true
         },
         "paymentCount": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "readOnly": true
         },
         "collectedByMethod": {
           "type": "array",
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1ReconciliationMethodTotal"
-          }
+          },
+          "readOnly": true
         },
         "paidOutAmount": {
           "type": "string",
           "format": "int64",
-          "description": "Payment-out vouchers (phiếu chi) issued in the period, net of voids;\nshown beside the receivables, not part of the balance."
+          "description": "Payment-out vouchers (phiếu chi) issued in the period, net of voids;\nshown beside the receivables, not part of the balance.",
+          "readOnly": true
         },
         "matches": {
           "type": "boolean",
-          "description": "Whether the ledger's balance today equals the sum of the receivables'\nremaining amounts today."
+          "description": "Whether the ledger's balance today equals the sum of the receivables'\nremaining amounts today.",
+          "readOnly": true
         },
         "difference": {
           "type": "string",
           "format": "int64",
-          "description": "The ledger's balance today less the sum of the remaining amounts."
+          "description": "The ledger's balance today less the sum of the remaining amounts.",
+          "readOnly": true
         },
         "lines": {
           "type": "array",
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1ReconciliationLine"
-          }
+          },
+          "readOnly": true
         }
       },
-      "description": "ReconciliationReport reconciles a period's receivables with the\nsettlements and vouchers behind them (FR-REC-04): the opening balance plus\nwhat was charged, less what was collected (and plus what was voided), is\nthe closing balance as of the end of the period. `matches` and `difference`\ncheck the ledger itself: its balance today against the remaining amounts of\nthe receivables today, whatever the period."
+      "description": "ReconciliationReport reconciles a period's receivables with the\nsettlements and vouchers behind them (FR-REC-04):\nclosing_balance = opening_balance + charged_amount - collected_amount +\nvoided_amount, as of the end of the period. `matches` and `difference`\ncheck the ledger itself: its balance today against the remaining amounts of\nthe receivables today, whatever the period."
     },
     "v1RecordQuoteDecisionResponse": {
       "type": "object",
@@ -19678,34 +19714,41 @@
       "type": "object",
       "properties": {
         "supplierId": {
-          "type": "string"
+          "type": "string",
+          "readOnly": true
         },
         "supplierName": {
-          "type": "string"
+          "type": "string",
+          "readOnly": true
         },
         "total": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "readOnly": true
         },
         "current": {
           "type": "string",
           "format": "int64",
-          "description": "0 to 30 days."
+          "description": "0 to 30 days.",
+          "readOnly": true
         },
         "days3160": {
           "type": "string",
           "format": "int64",
-          "description": "31 to 60 days."
+          "description": "31 to 60 days.",
+          "readOnly": true
         },
         "days6190": {
           "type": "string",
           "format": "int64",
-          "description": "61 to 90 days."
+          "description": "61 to 90 days.",
+          "readOnly": true
         },
         "over90": {
           "type": "string",
           "format": "int64",
-          "description": "More than 90 days."
+          "description": "More than 90 days.",
+          "readOnly": true
         }
       },
       "description": "SupplierAging is the open payables of one supplier by age of the receipt."
@@ -19797,11 +19840,13 @@
       "properties": {
         "openCount": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "readOnly": true
         },
         "outstandingAmount": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "readOnly": true
         }
       },
       "description": "SupplierPayablesSummary totals the open payables a list matched."
@@ -20158,13 +20203,16 @@
       "type": "object",
       "properties": {
         "partId": {
-          "type": "string"
+          "type": "string",
+          "readOnly": true
         },
         "partSku": {
-          "type": "string"
+          "type": "string",
+          "readOnly": true
         },
         "partName": {
-          "type": "string"
+          "type": "string",
+          "readOnly": true
         }
       },
       "description": "UnassignedPart is a low-stock part that no order could take because it\nhas no default supplier."

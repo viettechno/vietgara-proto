@@ -106,9 +106,11 @@ type PurchaseOrderLine struct {
 	// from answers when the caller lacks PERMISSION_INVENTORY_COST_READ; such
 	// a caller cannot set it either. On update, lines are matched by id: a
 	// caller without the permission keeps the stored cost of the lines it sends
-	// back, and a new line costs zero.
+	// back, and a new line costs zero; changing the part or unit of a line resets
+	// its cost to zero.
 	UnitCost *int64 `protobuf:"varint,11,opt,name=unit_cost,json=unitCost,proto3,oneof" json:"unit_cost,omitempty"`
-	// entered_quantity times unit_cost, whole VND. Omitted without
+	// entered_quantity times unit_cost, rounded half up to whole VND per line
+	// as on a goods receipt; total_amount is the sum of these. Omitted without
 	// PERMISSION_INVENTORY_COST_READ.
 	LineAmount    *int64 `protobuf:"varint,12,opt,name=line_amount,json=lineAmount,proto3,oneof" json:"line_amount,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -1133,11 +1135,11 @@ const file_vietgara_inventory_v1_purchase_order_proto_rawDesc = "" +
 	"'CreatePurchaseOrdersFromLowStockRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x19\n" +
 	"\bpart_ids\x18\x02 \x03(\tR\apartIds\x12#\n" +
-	"\rexpected_date\x18\x03 \x01(\tR\fexpectedDate\"a\n" +
-	"\x0eUnassignedPart\x12\x17\n" +
-	"\apart_id\x18\x01 \x01(\tR\x06partId\x12\x19\n" +
-	"\bpart_sku\x18\x02 \x01(\tR\apartSku\x12\x1b\n" +
-	"\tpart_name\x18\x03 \x01(\tR\bpartName\"\xba\x01\n" +
+	"\rexpected_date\x18\x03 \x01(\tR\fexpectedDate\"p\n" +
+	"\x0eUnassignedPart\x12\x1c\n" +
+	"\apart_id\x18\x01 \x01(\tB\x03\xe0A\x03R\x06partId\x12\x1e\n" +
+	"\bpart_sku\x18\x02 \x01(\tB\x03\xe0A\x03R\apartSku\x12 \n" +
+	"\tpart_name\x18\x03 \x01(\tB\x03\xe0A\x03R\bpartName\"\xba\x01\n" +
 	"(CreatePurchaseOrdersFromLowStockResponse\x12<\n" +
 	"\x06orders\x18\x01 \x03(\v2$.vietgara.inventory.v1.PurchaseOrderR\x06orders\x12P\n" +
 	"\x10unassigned_parts\x18\x02 \x03(\v2%.vietgara.inventory.v1.UnassignedPartR\x0funassignedParts\"\x87\x01\n" +

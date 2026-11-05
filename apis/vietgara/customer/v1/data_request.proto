@@ -25,11 +25,11 @@ enum DataRequestType {
 // DataRequestStatus is where a request stands.
 enum DataRequestStatus {
   DATA_REQUEST_STATUS_UNSPECIFIED = 0;
-  // Asked on the public page; waiting for the link in the e-mail.
-  DATA_REQUEST_STATUS_PENDING_CONFIRMATION = 1;
   // Confirmed and waiting for the garage to act (a correction).
-  DATA_REQUEST_STATUS_PENDING = 2;
-  DATA_REQUEST_STATUS_COMPLETED = 3;
+  DATA_REQUEST_STATUS_PENDING = 1;
+  DATA_REQUEST_STATUS_COMPLETED = 2;
+  // The garage declined it, with the reason in `outcome`.
+  DATA_REQUEST_STATUS_REJECTED = 3;
 }
 
 // DataRequestSource is how a request reached the garage.
@@ -97,8 +97,11 @@ message GetDataRequestRequest {
 message CompleteDataRequestRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string request_id = 2 [(google.api.field_behavior) = REQUIRED];
-  // What was done; required, at most 2000 characters.
+  // What was done, or why the request is declined; required, at most 2000
+  // characters.
   string outcome = 3 [(google.api.field_behavior) = REQUIRED];
+  // Declines the request instead of completing it.
+  bool declined = 4;
 }
 
 // DataRequestService serves the data requests of a garage's customers
@@ -124,7 +127,7 @@ service DataRequestService {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/data-requests/{request_id}"};
   }
 
-  // Completes a waiting correction with what was done.
+  // Completes a waiting correction with what was done, or declines it.
   rpc CompleteDataRequest(CompleteDataRequestRequest) returns (DataRequest) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/data-requests/{request_id}:complete"
@@ -153,13 +156,16 @@ message ConfirmPublicDataRequestResponse {
   // How many garages' records the request reached. A view is e-mailed to the
   // confirmed address, a deletion is carried out, a correction is passed to
   // each garage.
-  int32 garage_count = 1;
+  int32 garage_count = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // PublicDataRequestService is the request page for people without the app
 // (FR-CUS-05). Both calls are public and throttled; the first always answers
 // the same whether or not the address is known, and sends the link only to
-// the address itself.
+// the address itself. A request waits for its link in a table of its own
+// (not as a DataRequest), which is deleted after 7 days with its `details`;
+// a confirmed one acts on every customer profile that holds the confirmed
+// address, in every garage, and is logged in each as a DataRequest.
 service PublicDataRequestService {
   rpc SubmitPublicDataRequest(SubmitPublicDataRequestRequest) returns (SubmitPublicDataRequestResponse) {
     option (google.api.http) = {

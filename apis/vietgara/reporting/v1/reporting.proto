@@ -103,10 +103,15 @@ message GetProfitReportRequest {
 
 message GetProfitReportResponse {
   // Most profitable first.
+  // A line shared by technicians is split between them, so the rows add up
+  // to the totals whichever way the report is grouped.
   repeated ProfitRow rows = 1;
   int64 total_revenue = 2;
   int64 total_cost = 3;
   int64 total_profit = 4;
+  // Repair orders of the report whose stock issue is not posted yet: their
+  // cost counts as zero, so the profit is overstated by the cost to come.
+  int32 orders_without_cost = 5;
 }
 
 message GetRepairOrderProfitRequest {

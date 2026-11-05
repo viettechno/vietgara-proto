@@ -5,6 +5,7 @@ package vietgara.receivable.v1;
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/timestamp.proto";
+import "vietgara/billing/v1/settlement.proto";
 import "vietgara/common/v1/pagination.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/receivable/v1;receivablev1";
@@ -48,9 +49,8 @@ message ReceivableEntry {
   int64 amount = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The settlement number for a charge, the voucher number otherwise.
   string reference = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // "cash", "bank_transfer" or "online" for a payment or void; empty for a
-  // charge.
-  string method = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // How the money was paid, for a payment or void; unspecified for a charge.
+  vietgara.billing.v1.PaymentMethod method = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp occurred_at = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
@@ -104,10 +104,10 @@ message Receivable {
 // ReceivablesSummary totals the open receivables a list matched, across all
 // its pages.
 message ReceivablesSummary {
-  int32 open_count = 1;
-  int64 outstanding_amount = 2;
-  int32 overdue_count = 3;
-  int64 overdue_amount = 4;
+  int32 open_count = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 outstanding_amount = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int32 overdue_count = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 overdue_amount = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message ListReceivablesRequest {
@@ -137,11 +137,13 @@ message GetReceivableRequest {
 
 // ReceivableSettings is a garage's payment terms and reminder schedule
 // (FR-REC-03). A garage that never saved them has 7 days of terms and
-// reminders at 3 and 7 days overdue.
+// reminders at 3 and 7 days overdue. An update replaces all of it: it is
+// refused (INVALID_ARGUMENT) when payment_terms_days or reminders_enabled is
+// missing, so that an incomplete request cannot switch reminders off.
 message ReceivableSettings {
   // Days from the settlement's date to its due date, 0 to 365.
-  int32 payment_terms_days = 1;
-  bool reminders_enabled = 2;
+  optional int32 payment_terms_days = 1;
+  optional bool reminders_enabled = 2;
   // Days overdue at which a reminder goes out: up to 5 distinct values from
   // 1 to 90, ascending.
   repeated int32 reminder_offset_days = 3;
@@ -158,47 +160,47 @@ message UpdateReceivableSettingsRequest {
 
 // ReconciliationMethodTotal is the amount collected by one payment method.
 message ReconciliationMethodTotal {
-  string method = 1;
-  int64 amount = 2;
+  vietgara.billing.v1.PaymentMethod method = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 amount = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // ReconciliationLine is one movement of the period.
 message ReconciliationLine {
   // "YYYY-MM-DD" in the garage's timezone.
-  string date = 1;
-  ReceivableEntryKind kind = 2;
-  string reference = 3;
-  string customer_name = 4;
-  int64 amount = 5;
-  string method = 6;
+  string date = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  ReceivableEntryKind kind = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string reference = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string customer_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 amount = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  vietgara.billing.v1.PaymentMethod method = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // ReconciliationReport reconciles a period's receivables with the
-// settlements and vouchers behind them (FR-REC-04): the opening balance plus
-// what was charged, less what was collected (and plus what was voided), is
-// the closing balance as of the end of the period. `matches` and `difference`
+// settlements and vouchers behind them (FR-REC-04):
+// closing_balance = opening_balance + charged_amount - collected_amount +
+// voided_amount, as of the end of the period. `matches` and `difference`
 // check the ledger itself: its balance today against the remaining amounts of
 // the receivables today, whatever the period.
 message ReconciliationReport {
-  string from = 1;
-  string to = 2;
-  int64 opening_balance = 3;
-  int64 charged_amount = 4;
-  int64 collected_amount = 5;
-  int64 voided_amount = 6;
-  int64 closing_balance = 7;
-  int32 settlement_count = 8;
-  int32 payment_count = 9;
-  repeated ReconciliationMethodTotal collected_by_method = 10;
+  string from = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string to = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 opening_balance = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 charged_amount = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 collected_amount = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 voided_amount = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 closing_balance = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int32 settlement_count = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int32 payment_count = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated ReconciliationMethodTotal collected_by_method = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Payment-out vouchers (phiếu chi) issued in the period, net of voids;
   // shown beside the receivables, not part of the balance.
-  int64 paid_out_amount = 11;
+  int64 paid_out_amount = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Whether the ledger's balance today equals the sum of the receivables'
   // remaining amounts today.
-  bool matches = 12;
+  bool matches = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The ledger's balance today less the sum of the remaining amounts.
-  int64 difference = 13;
-  repeated ReconciliationLine lines = 14;
+  int64 difference = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated ReconciliationLine lines = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message GetReconciliationReportRequest {

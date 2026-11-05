@@ -40,7 +40,7 @@ type DataRequestServiceClient interface {
 	CreateDataRequest(ctx context.Context, in *CreateDataRequestRequest, opts ...grpc.CallOption) (*DataRequest, error)
 	ListDataRequests(ctx context.Context, in *ListDataRequestsRequest, opts ...grpc.CallOption) (*ListDataRequestsResponse, error)
 	GetDataRequest(ctx context.Context, in *GetDataRequestRequest, opts ...grpc.CallOption) (*DataRequest, error)
-	// Completes a waiting correction with what was done.
+	// Completes a waiting correction with what was done, or declines it.
 	CompleteDataRequest(ctx context.Context, in *CompleteDataRequestRequest, opts ...grpc.CallOption) (*DataRequest, error)
 }
 
@@ -107,7 +107,7 @@ type DataRequestServiceServer interface {
 	CreateDataRequest(context.Context, *CreateDataRequestRequest) (*DataRequest, error)
 	ListDataRequests(context.Context, *ListDataRequestsRequest) (*ListDataRequestsResponse, error)
 	GetDataRequest(context.Context, *GetDataRequestRequest) (*DataRequest, error)
-	// Completes a waiting correction with what was done.
+	// Completes a waiting correction with what was done, or declines it.
 	CompleteDataRequest(context.Context, *CompleteDataRequestRequest) (*DataRequest, error)
 	mustEmbedUnimplementedDataRequestServiceServer()
 }
@@ -264,7 +264,10 @@ const (
 // PublicDataRequestService is the request page for people without the app
 // (FR-CUS-05). Both calls are public and throttled; the first always answers
 // the same whether or not the address is known, and sends the link only to
-// the address itself.
+// the address itself. A request waits for its link in a table of its own
+// (not as a DataRequest), which is deleted after 7 days with its `details`;
+// a confirmed one acts on every customer profile that holds the confirmed
+// address, in every garage, and is logged in each as a DataRequest.
 type PublicDataRequestServiceClient interface {
 	SubmitPublicDataRequest(ctx context.Context, in *SubmitPublicDataRequestRequest, opts ...grpc.CallOption) (*SubmitPublicDataRequestResponse, error)
 	ConfirmPublicDataRequest(ctx context.Context, in *ConfirmPublicDataRequestRequest, opts ...grpc.CallOption) (*ConfirmPublicDataRequestResponse, error)
@@ -305,7 +308,10 @@ func (c *publicDataRequestServiceClient) ConfirmPublicDataRequest(ctx context.Co
 // PublicDataRequestService is the request page for people without the app
 // (FR-CUS-05). Both calls are public and throttled; the first always answers
 // the same whether or not the address is known, and sends the link only to
-// the address itself.
+// the address itself. A request waits for its link in a table of its own
+// (not as a DataRequest), which is deleted after 7 days with its `details`;
+// a confirmed one acts on every customer profile that holds the confirmed
+// address, in every garage, and is logged in each as a DataRequest.
 type PublicDataRequestServiceServer interface {
 	SubmitPublicDataRequest(context.Context, *SubmitPublicDataRequestRequest) (*SubmitPublicDataRequestResponse, error)
 	ConfirmPublicDataRequest(context.Context, *ConfirmPublicDataRequestRequest) (*ConfirmPublicDataRequestResponse, error)
