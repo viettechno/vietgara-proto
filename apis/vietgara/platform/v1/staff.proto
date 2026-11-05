@@ -6,6 +6,7 @@ import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/pagination.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/platform/v1;platformv1";
 
@@ -255,9 +256,48 @@ message RevokePlatformInvitationResponse {
   PlatformInvitation invitation = 1;
 }
 
+// One entry of the platform audit log: a change made at platform level (a
+// plan, platform staff, platform payment settings) or a platform sign-in.
+// Entries that belong to a garage are not here; the garage sees its own.
+message PlatformAuditEntry {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The user who made the change; empty for the system.
+  string actor_user_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string actor_name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // For example "plan.updated" or "platform.signed_in".
+  string action = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string entity_type = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string entity_id = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The state before and after the change, as JSON text; empty when the
+  // entry has none.
+  string before_json = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string after_json = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string ip = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListPlatformAuditLogRequest {
+  // Matches the start of the action, so "plan." finds every plan change.
+  string action = 1;
+  string entity_type = 2;
+  string actor_user_id = 3;
+  // Entries from this time on, and before this time.
+  google.protobuf.Timestamp from = 4;
+  google.protobuf.Timestamp to = 5;
+  int32 page = 6;
+  int32 page_size = 7;
+}
+
+message ListPlatformAuditLogResponse {
+  // Newest first.
+  repeated PlatformAuditEntry data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
 // PlatformStaffService manages platform roles, platform staff groups and
 // their members (FR-IAM-10). Every call needs PLATFORM_PERMISSION_PLATFORM_
-// STAFF_READ (reads) or PLATFORM_PERMISSION_PLATFORM_STAFF_WRITE (changes);
+// STAFF_READ (reads) or PLATFORM_PERMISSION_PLATFORM_STAFF_WRITE (changes),
+// except reading the audit log, which needs PLATFORM_PERMISSION_AUDIT_READ;
 // a Platform Admin passes. A user without the Platform Admin right can only
 // give permissions they hold themselves.
 service PlatformStaffService {
@@ -358,6 +398,11 @@ service PlatformStaffService {
       body: "*"
       response_body: "invitation"
     };
+  }
+
+  // Reads the platform audit log. Needs PLATFORM_PERMISSION_AUDIT_READ.
+  rpc ListPlatformAuditLog(ListPlatformAuditLogRequest) returns (ListPlatformAuditLogResponse) {
+    option (google.api.http) = {get: "/api/v1/admin/audit-log"};
   }
 }
 

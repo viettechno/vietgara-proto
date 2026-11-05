@@ -35,6 +35,7 @@ const (
 	PlatformStaffService_CreatePlatformInvitation_FullMethodName  = "/vietgara.platform.v1.PlatformStaffService/CreatePlatformInvitation"
 	PlatformStaffService_ListPlatformInvitations_FullMethodName   = "/vietgara.platform.v1.PlatformStaffService/ListPlatformInvitations"
 	PlatformStaffService_RevokePlatformInvitation_FullMethodName  = "/vietgara.platform.v1.PlatformStaffService/RevokePlatformInvitation"
+	PlatformStaffService_ListPlatformAuditLog_FullMethodName      = "/vietgara.platform.v1.PlatformStaffService/ListPlatformAuditLog"
 )
 
 // PlatformStaffServiceClient is the client API for PlatformStaffService service.
@@ -43,7 +44,8 @@ const (
 //
 // PlatformStaffService manages platform roles, platform staff groups and
 // their members (FR-IAM-10). Every call needs PLATFORM_PERMISSION_PLATFORM_
-// STAFF_READ (reads) or PLATFORM_PERMISSION_PLATFORM_STAFF_WRITE (changes);
+// STAFF_READ (reads) or PLATFORM_PERMISSION_PLATFORM_STAFF_WRITE (changes),
+// except reading the audit log, which needs PLATFORM_PERMISSION_AUDIT_READ;
 // a Platform Admin passes. A user without the Platform Admin right can only
 // give permissions they hold themselves.
 type PlatformStaffServiceClient interface {
@@ -71,6 +73,8 @@ type PlatformStaffServiceClient interface {
 	CreatePlatformInvitation(ctx context.Context, in *CreatePlatformInvitationRequest, opts ...grpc.CallOption) (*CreatePlatformInvitationResponse, error)
 	ListPlatformInvitations(ctx context.Context, in *ListPlatformInvitationsRequest, opts ...grpc.CallOption) (*ListPlatformInvitationsResponse, error)
 	RevokePlatformInvitation(ctx context.Context, in *RevokePlatformInvitationRequest, opts ...grpc.CallOption) (*RevokePlatformInvitationResponse, error)
+	// Reads the platform audit log. Needs PLATFORM_PERMISSION_AUDIT_READ.
+	ListPlatformAuditLog(ctx context.Context, in *ListPlatformAuditLogRequest, opts ...grpc.CallOption) (*ListPlatformAuditLogResponse, error)
 }
 
 type platformStaffServiceClient struct {
@@ -241,13 +245,24 @@ func (c *platformStaffServiceClient) RevokePlatformInvitation(ctx context.Contex
 	return out, nil
 }
 
+func (c *platformStaffServiceClient) ListPlatformAuditLog(ctx context.Context, in *ListPlatformAuditLogRequest, opts ...grpc.CallOption) (*ListPlatformAuditLogResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPlatformAuditLogResponse)
+	err := c.cc.Invoke(ctx, PlatformStaffService_ListPlatformAuditLog_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PlatformStaffServiceServer is the server API for PlatformStaffService service.
 // All implementations must embed UnimplementedPlatformStaffServiceServer
 // for forward compatibility.
 //
 // PlatformStaffService manages platform roles, platform staff groups and
 // their members (FR-IAM-10). Every call needs PLATFORM_PERMISSION_PLATFORM_
-// STAFF_READ (reads) or PLATFORM_PERMISSION_PLATFORM_STAFF_WRITE (changes);
+// STAFF_READ (reads) or PLATFORM_PERMISSION_PLATFORM_STAFF_WRITE (changes),
+// except reading the audit log, which needs PLATFORM_PERMISSION_AUDIT_READ;
 // a Platform Admin passes. A user without the Platform Admin right can only
 // give permissions they hold themselves.
 type PlatformStaffServiceServer interface {
@@ -275,6 +290,8 @@ type PlatformStaffServiceServer interface {
 	CreatePlatformInvitation(context.Context, *CreatePlatformInvitationRequest) (*CreatePlatformInvitationResponse, error)
 	ListPlatformInvitations(context.Context, *ListPlatformInvitationsRequest) (*ListPlatformInvitationsResponse, error)
 	RevokePlatformInvitation(context.Context, *RevokePlatformInvitationRequest) (*RevokePlatformInvitationResponse, error)
+	// Reads the platform audit log. Needs PLATFORM_PERMISSION_AUDIT_READ.
+	ListPlatformAuditLog(context.Context, *ListPlatformAuditLogRequest) (*ListPlatformAuditLogResponse, error)
 	mustEmbedUnimplementedPlatformStaffServiceServer()
 }
 
@@ -332,6 +349,9 @@ func (UnimplementedPlatformStaffServiceServer) ListPlatformInvitations(context.C
 }
 func (UnimplementedPlatformStaffServiceServer) RevokePlatformInvitation(context.Context, *RevokePlatformInvitationRequest) (*RevokePlatformInvitationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RevokePlatformInvitation not implemented")
+}
+func (UnimplementedPlatformStaffServiceServer) ListPlatformAuditLog(context.Context, *ListPlatformAuditLogRequest) (*ListPlatformAuditLogResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListPlatformAuditLog not implemented")
 }
 func (UnimplementedPlatformStaffServiceServer) mustEmbedUnimplementedPlatformStaffServiceServer() {}
 func (UnimplementedPlatformStaffServiceServer) testEmbeddedByValue()                              {}
@@ -642,6 +662,24 @@ func _PlatformStaffService_RevokePlatformInvitation_Handler(srv interface{}, ctx
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PlatformStaffService_ListPlatformAuditLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPlatformAuditLogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlatformStaffServiceServer).ListPlatformAuditLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PlatformStaffService_ListPlatformAuditLog_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlatformStaffServiceServer).ListPlatformAuditLog(ctx, req.(*ListPlatformAuditLogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PlatformStaffService_ServiceDesc is the grpc.ServiceDesc for PlatformStaffService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -712,6 +750,10 @@ var PlatformStaffService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RevokePlatformInvitation",
 			Handler:    _PlatformStaffService_RevokePlatformInvitation_Handler,
+		},
+		{
+			MethodName: "ListPlatformAuditLog",
+			Handler:    _PlatformStaffService_ListPlatformAuditLog_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
