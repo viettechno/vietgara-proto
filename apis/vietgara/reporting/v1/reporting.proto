@@ -92,6 +92,7 @@ message ProfitRow {
 
 message GetProfitReportRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Required: PROFIT_GROUP_BY_UNSPECIFIED is refused (INVALID_ARGUMENT).
   ProfitGroupBy group_by = 2 [(google.api.field_behavior) = REQUIRED];
   // Repair orders closed from this day, inclusive, "YYYY-MM-DD" in the
   // garage's timezone.

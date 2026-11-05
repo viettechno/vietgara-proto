@@ -104,7 +104,9 @@ type PurchaseOrderLine struct {
 	ReceivedQuantity string `protobuf:"bytes,10,opt,name=received_quantity,json=receivedQuantity,proto3" json:"received_quantity,omitempty"`
 	// The expected price in VND per entered unit; zero means unknown. Omitted
 	// from answers when the caller lacks PERMISSION_INVENTORY_COST_READ; such
-	// a caller cannot set it either.
+	// a caller cannot set it either. On update, lines are matched by id: a
+	// caller without the permission keeps the stored cost of the lines it sends
+	// back, and a new line costs zero.
 	UnitCost *int64 `protobuf:"varint,11,opt,name=unit_cost,json=unitCost,proto3,oneof" json:"unit_cost,omitempty"`
 	// entered_quantity times unit_cost, whole VND. Omitted without
 	// PERMISSION_INVENTORY_COST_READ.
@@ -894,10 +896,9 @@ type SendPurchaseOrderRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	GarageId        string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	PurchaseOrderId string                 `protobuf:"bytes,2,opt,name=purchase_order_id,json=purchaseOrderId,proto3" json:"purchase_order_id,omitempty"`
-	// Overrides the supplier's e-mail on file; one address.
-	ToEmail string `protobuf:"bytes,3,opt,name=to_email,json=toEmail,proto3" json:"to_email,omitempty"`
-	// Added to the e-mail above the order.
-	Message       string `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
+	// Plain text added to the e-mail above the order, at most 1000
+	// characters. The order always goes to the supplier's e-mail on file.
+	Message       string `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -942,13 +943,6 @@ func (x *SendPurchaseOrderRequest) GetGarageId() string {
 func (x *SendPurchaseOrderRequest) GetPurchaseOrderId() string {
 	if x != nil {
 		return x.PurchaseOrderId
-	}
-	return ""
-}
-
-func (x *SendPurchaseOrderRequest) GetToEmail() string {
-	if x != nil {
-		return x.ToEmail
 	}
 	return ""
 }
@@ -1146,12 +1140,11 @@ const file_vietgara_inventory_v1_purchase_order_proto_rawDesc = "" +
 	"\tpart_name\x18\x03 \x01(\tR\bpartName\"\xba\x01\n" +
 	"(CreatePurchaseOrdersFromLowStockResponse\x12<\n" +
 	"\x06orders\x18\x01 \x03(\v2$.vietgara.inventory.v1.PurchaseOrderR\x06orders\x12P\n" +
-	"\x10unassigned_parts\x18\x02 \x03(\v2%.vietgara.inventory.v1.UnassignedPartR\x0funassignedParts\"\xa2\x01\n" +
+	"\x10unassigned_parts\x18\x02 \x03(\v2%.vietgara.inventory.v1.UnassignedPartR\x0funassignedParts\"\x87\x01\n" +
 	"\x18SendPurchaseOrderRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12/\n" +
-	"\x11purchase_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0fpurchaseOrderId\x12\x19\n" +
-	"\bto_email\x18\x03 \x01(\tR\atoEmail\x12\x18\n" +
-	"\amessage\x18\x04 \x01(\tR\amessage\"o\n" +
+	"\x11purchase_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0fpurchaseOrderId\x12\x18\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage\"o\n" +
 	"\x1aCancelPurchaseOrderRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12/\n" +
 	"\x11purchase_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0fpurchaseOrderId\"p\n" +

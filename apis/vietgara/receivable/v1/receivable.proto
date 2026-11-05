@@ -176,8 +176,9 @@ message ReconciliationLine {
 // ReconciliationReport reconciles a period's receivables with the
 // settlements and vouchers behind them (FR-REC-04): the opening balance plus
 // what was charged, less what was collected (and plus what was voided), is
-// the closing balance, which must equal the open receivables' remaining
-// amounts.
+// the closing balance as of the end of the period. `matches` and `difference`
+// check the ledger itself: its balance today against the remaining amounts of
+// the receivables today, whatever the period.
 message ReconciliationReport {
   string from = 1;
   string to = 2;
@@ -192,10 +193,10 @@ message ReconciliationReport {
   // Payment-out vouchers (phiếu chi) issued in the period, net of voids;
   // shown beside the receivables, not part of the balance.
   int64 paid_out_amount = 11;
-  // Whether the closing balance equals the remaining amounts of the
-  // receivables as the module holds them now.
+  // Whether the ledger's balance today equals the sum of the receivables'
+  // remaining amounts today.
   bool matches = 12;
-  // closing_balance less the sum of the receivables' remaining amounts.
+  // The ledger's balance today less the sum of the remaining amounts.
   int64 difference = 13;
   repeated ReconciliationLine lines = 14;
 }

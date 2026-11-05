@@ -67,11 +67,10 @@ Protocol Buffers. The same `.proto` files describe:
 | `vietgara.inventory.v1` | Inventory (HLD #7) | `InventoryService`: ListStockLevels, GetStockLevel, CreateStockReceipt, ListStockTransactions. Stock only; the part is in `vietgara.catalogue.v1` |
 | | | `ImportService`: DownloadImportTemplate, PreviewImport, ConfirmImport for parts, goods receipts and stock counts from Excel |
 | `vietgara.catalogue.v1` | Job catalogue | `JobService`: ListJobs, CreateJob, GetJob, UpdateJob, DeleteJob, ActivateJob (jobs and their suggested parts, FR-CAT-05). `QuoteService.AddQuoteJob` adds a job to a quote; `RepairOrderService` gains AddRepairOrderLine, DeleteRepairOrderLine and CancelRepairOrder |
+| `vietgara.inventory.v1` (Release 13.0) | Inventory (HLD #7) | `PurchaseOrderService` (FR-INV-16): purchase orders, from the low-stock list, e-mailed to the supplier, received into a goods receipt |
+| `vietgara.customer.v1` (Release 13.1) | Customer & Vehicle (HLD #4) | `DataRequestService` and `PublicDataRequestService` (FR-CUS-05): requests to view, correct or delete personal data |
 | `vietgara.notification.v1` | Notification (HLD #14) | `NotificationService`: GetNotificationSettings, UpdateNotificationSettings, ListNotificationLog (Release 10.1: the garage's e-mail switches, sender name and delivery log) |
-| | | `PurchaseOrderService` (Release 13.0, FR-INV-16): purchase orders, from the low-stock list, e-mailed to the supplier, received into a goods receipt |
-| `vietgara.receivable.v1` | Receivables (HLD #9) | `ReceivableService`: ListReceivables, GetReceivable, receivable settings, GetReconciliationReport (Release 13.0, FR-REC-01, 03, 04) |
-| | | `PayableService`: supplier payables and their aging, payment-out vouchers (Release 13.0, FR-INV-17, FR-BIL-07) |
-| | | `DataRequestService` and `PublicDataRequestService` in `vietgara.customer.v1` (Release 13.1, FR-CUS-05): requests to view, correct or delete personal data |
+| `vietgara.receivable.v1` | Receivables (HLD #9) | `ReceivableService`: ListReceivables, GetReceivable, receivable settings, GetReconciliationReport (Release 13.0, FR-REC-01, 03, 04); `PayableService`: supplier payables and their aging, payment-out vouchers (FR-INV-17, FR-BIL-07) |
 | `vietgara.file.v1` | File registry | `FileService`: UploadFile, GetFileUrl, DeleteFile |
 | `vietgara.common.v1` | Shared messages | `Pagination`, `BankDetails`, `DeleteOutcome`, `BillingParty` and `TaxProfileKind`, `ErrorResponse` and the OpenAPI document options (no services) |
 

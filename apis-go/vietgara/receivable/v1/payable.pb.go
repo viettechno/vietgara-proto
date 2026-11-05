@@ -32,6 +32,8 @@ const (
 	PayableStatus_PAYABLE_STATUS_UNSPECIFIED PayableStatus = 0
 	PayableStatus_PAYABLE_STATUS_OPEN        PayableStatus = 1
 	PayableStatus_PAYABLE_STATUS_PAID        PayableStatus = 2
+	// Its goods receipt was cancelled; it leaves the lists and the aging.
+	PayableStatus_PAYABLE_STATUS_CANCELLED PayableStatus = 3
 )
 
 // Enum value maps for PayableStatus.
@@ -40,11 +42,13 @@ var (
 		0: "PAYABLE_STATUS_UNSPECIFIED",
 		1: "PAYABLE_STATUS_OPEN",
 		2: "PAYABLE_STATUS_PAID",
+		3: "PAYABLE_STATUS_CANCELLED",
 	}
 	PayableStatus_value = map[string]int32{
 		"PAYABLE_STATUS_UNSPECIFIED": 0,
 		"PAYABLE_STATUS_OPEN":        1,
 		"PAYABLE_STATUS_PAID":        2,
+		"PAYABLE_STATUS_CANCELLED":   3,
 	}
 )
 
@@ -679,7 +683,7 @@ type PaymentOutVoucher struct {
 	// Who received the money: defaults to the supplier's name.
 	PayeeName    string `protobuf:"bytes,6,opt,name=payee_name,json=payeeName,proto3" json:"payee_name,omitempty"`
 	PayeeAddress string `protobuf:"bytes,7,opt,name=payee_address,json=payeeAddress,proto3" json:"payee_address,omitempty"`
-	// Integer VND.
+	// Integer VND, positive and at least the sum of the allocations.
 	Amount int64             `protobuf:"varint,8,opt,name=amount,proto3" json:"amount,omitempty"`
 	Method v11.PaymentMethod `protobuf:"varint,9,opt,name=method,proto3,enum=vietgara.billing.v1.PaymentMethod" json:"method,omitempty"`
 	// Printed on the voucher; defaults to a standard text.
@@ -1208,19 +1212,19 @@ const file_vietgara_receivable_v1_payable_proto_rawDesc = "" +
 	"\n" +
 	"payable_id\x18\x01 \x01(\tB\x03\xe0A\x02R\tpayableId\x125\n" +
 	"\x14goods_receipt_number\x18\x02 \x01(\tB\x03\xe0A\x03R\x12goodsReceiptNumber\x12\x1b\n" +
-	"\x06amount\x18\x03 \x01(\x03B\x03\xe0A\x02R\x06amount\"\xe1\x05\n" +
+	"\x06amount\x18\x03 \x01(\x03B\x03\xe0A\x02R\x06amount\"\xf0\x05\n" +
 	"\x11PaymentOutVoucher\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
 	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\x1b\n" +
-	"\x06number\x18\x03 \x01(\tB\x03\xe0A\x03R\x06number\x12\x1f\n" +
-	"\vsupplier_id\x18\x04 \x01(\tR\n" +
+	"\x06number\x18\x03 \x01(\tB\x03\xe0A\x03R\x06number\x12$\n" +
+	"\vsupplier_id\x18\x04 \x01(\tB\x03\xe0A\x02R\n" +
 	"supplierId\x12(\n" +
 	"\rsupplier_name\x18\x05 \x01(\tB\x03\xe0A\x03R\fsupplierName\x12\x1d\n" +
 	"\n" +
 	"payee_name\x18\x06 \x01(\tR\tpayeeName\x12#\n" +
-	"\rpayee_address\x18\a \x01(\tR\fpayeeAddress\x12\x16\n" +
-	"\x06amount\x18\b \x01(\x03R\x06amount\x12:\n" +
-	"\x06method\x18\t \x01(\x0e2\".vietgara.billing.v1.PaymentMethodR\x06method\x12\x16\n" +
+	"\rpayee_address\x18\a \x01(\tR\fpayeeAddress\x12\x1b\n" +
+	"\x06amount\x18\b \x01(\x03B\x03\xe0A\x02R\x06amount\x12?\n" +
+	"\x06method\x18\t \x01(\x0e2\".vietgara.billing.v1.PaymentMethodB\x03\xe0A\x02R\x06method\x12\x16\n" +
 	"\x06reason\x18\n" +
 	" \x01(\tR\x06reason\x12\x12\n" +
 	"\x04note\x18\v \x01(\tR\x04note\x12N\n" +
@@ -1257,11 +1261,12 @@ const file_vietgara_receivable_v1_payable_proto_rawDesc = "" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\"\n" +
 	"\n" +
 	"voucher_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tvoucherId\x12\x1b\n" +
-	"\x06reason\x18\x03 \x01(\tB\x03\xe0A\x02R\x06reason*a\n" +
+	"\x06reason\x18\x03 \x01(\tB\x03\xe0A\x02R\x06reason*\x7f\n" +
 	"\rPayableStatus\x12\x1e\n" +
 	"\x1aPAYABLE_STATUS_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13PAYABLE_STATUS_OPEN\x10\x01\x12\x17\n" +
-	"\x13PAYABLE_STATUS_PAID\x10\x022\xa8\t\n" +
+	"\x13PAYABLE_STATUS_PAID\x10\x02\x12\x1c\n" +
+	"\x18PAYABLE_STATUS_CANCELLED\x10\x032\xa8\t\n" +
 	"\x0ePayableService\x12\xb8\x01\n" +
 	"\x14ListSupplierPayables\x123.vietgara.receivable.v1.ListSupplierPayablesRequest\x1a4.vietgara.receivable.v1.ListSupplierPayablesResponse\"5\x82\xd3\xe4\x93\x02/\x12-/api/v1/garages/{garage_id}/supplier-payables\x12\xca\x01\n" +
 	"\x18GetSupplierPayablesAging\x127.vietgara.receivable.v1.GetSupplierPayablesAgingRequest\x1a8.vietgara.receivable.v1.GetSupplierPayablesAgingResponse\";\x82\xd3\xe4\x93\x025\x123/api/v1/garages/{garage_id}/supplier-payables/aging\x12\xc1\x01\n" +

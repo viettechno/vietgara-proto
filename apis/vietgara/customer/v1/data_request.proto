@@ -42,8 +42,10 @@ enum DataRequestSource {
 }
 
 // DataRequest is one request about one customer's data, with its outcome. It
-// is kept as a record of the garage's answer, and holds no personal data
-// beyond the customer id.
+// is kept as a record of the garage's answer. It holds the customer id and,
+// for a correction, the text of what to correct (`details`); anonymizing the
+// customer clears the `details` of all their requests. The data a view
+// returns is never stored.
 message DataRequest {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -57,8 +59,8 @@ message DataRequest {
   // What the garage did, for example "Anonymized 1 customer and 2
   // vehicles"; filled when the request is completed.
   string outcome = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // For a view request: the data held, as JSON text, answered once when the
-  // request is created.
+  // For a view request: the data held, as JSON text. Answered only by
+  // CreateDataRequest, never stored, and empty in List and Get.
   string export_json = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp requested_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp completed_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -168,7 +170,7 @@ service PublicDataRequestService {
 
   rpc ConfirmPublicDataRequest(ConfirmPublicDataRequestRequest) returns (ConfirmPublicDataRequestResponse) {
     option (google.api.http) = {
-      post: "/api/v1/public/data-requests/{token}:confirm"
+      post: "/api/v1/public/data-requests:confirm"
       body: "*"
     };
   }

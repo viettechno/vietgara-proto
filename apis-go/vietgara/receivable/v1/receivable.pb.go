@@ -1154,8 +1154,9 @@ func (x *ReconciliationLine) GetMethod() string {
 // ReconciliationReport reconciles a period's receivables with the
 // settlements and vouchers behind them (FR-REC-04): the opening balance plus
 // what was charged, less what was collected (and plus what was voided), is
-// the closing balance, which must equal the open receivables' remaining
-// amounts.
+// the closing balance as of the end of the period. `matches` and `difference`
+// check the ledger itself: its balance today against the remaining amounts of
+// the receivables today, whatever the period.
 type ReconciliationReport struct {
 	state             protoimpl.MessageState       `protogen:"open.v1"`
 	From              string                       `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
@@ -1171,10 +1172,10 @@ type ReconciliationReport struct {
 	// Payment-out vouchers (phiếu chi) issued in the period, net of voids;
 	// shown beside the receivables, not part of the balance.
 	PaidOutAmount int64 `protobuf:"varint,11,opt,name=paid_out_amount,json=paidOutAmount,proto3" json:"paid_out_amount,omitempty"`
-	// Whether the closing balance equals the remaining amounts of the
-	// receivables as the module holds them now.
+	// Whether the ledger's balance today equals the sum of the receivables'
+	// remaining amounts today.
 	Matches bool `protobuf:"varint,12,opt,name=matches,proto3" json:"matches,omitempty"`
-	// closing_balance less the sum of the receivables' remaining amounts.
+	// The ledger's balance today less the sum of the remaining amounts.
 	Difference    int64                 `protobuf:"varint,13,opt,name=difference,proto3" json:"difference,omitempty"`
 	Lines         []*ReconciliationLine `protobuf:"bytes,14,rep,name=lines,proto3" json:"lines,omitempty"`
 	unknownFields protoimpl.UnknownFields

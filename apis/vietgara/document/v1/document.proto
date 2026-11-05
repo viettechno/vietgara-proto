@@ -102,6 +102,7 @@ message ExportReceivablesExcelRequest {
   string customer_id = 2;
   bool overdue_only = 3;
   bool include_paid = 4;
+  string query = 5;
 }
 
 message ExportReceivableReconciliationExcelRequest {

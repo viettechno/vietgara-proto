@@ -15,6 +15,8 @@ enum PayableStatus {
   PAYABLE_STATUS_UNSPECIFIED = 0;
   PAYABLE_STATUS_OPEN = 1;
   PAYABLE_STATUS_PAID = 2;
+  // Its goods receipt was cancelled; it leaves the lists and the aging.
+  PAYABLE_STATUS_CANCELLED = 3;
 }
 
 // SupplierPayable is what the garage owes one supplier for the lines of one
@@ -99,14 +101,14 @@ message PaymentOutVoucher {
   string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Numbered from the garage's payment-out voucher template.
   string number = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
-  string supplier_id = 4;
+  string supplier_id = 4 [(google.api.field_behavior) = REQUIRED];
   string supplier_name = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Who received the money: defaults to the supplier's name.
   string payee_name = 6;
   string payee_address = 7;
-  // Integer VND.
-  int64 amount = 8;
-  vietgara.billing.v1.PaymentMethod method = 9;
+  // Integer VND, positive and at least the sum of the allocations.
+  int64 amount = 8 [(google.api.field_behavior) = REQUIRED];
+  vietgara.billing.v1.PaymentMethod method = 9 [(google.api.field_behavior) = REQUIRED];
   // Printed on the voucher; defaults to a standard text.
   string reason = 10;
   string note = 11;

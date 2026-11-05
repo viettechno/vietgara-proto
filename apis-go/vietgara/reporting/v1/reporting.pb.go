@@ -592,7 +592,8 @@ func (x *ProfitRow) GetProfit() int64 {
 type GetProfitReportRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	GroupBy  ProfitGroupBy          `protobuf:"varint,2,opt,name=group_by,json=groupBy,proto3,enum=vietgara.reporting.v1.ProfitGroupBy" json:"group_by,omitempty"`
+	// Required: PROFIT_GROUP_BY_UNSPECIFIED is refused (INVALID_ARGUMENT).
+	GroupBy ProfitGroupBy `protobuf:"varint,2,opt,name=group_by,json=groupBy,proto3,enum=vietgara.reporting.v1.ProfitGroupBy" json:"group_by,omitempty"`
 	// Repair orders closed from this day, inclusive, "YYYY-MM-DD" in the
 	// garage's timezone.
 	From string `protobuf:"bytes,3,opt,name=from,proto3" json:"from,omitempty"`

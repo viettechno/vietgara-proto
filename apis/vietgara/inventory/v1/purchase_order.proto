@@ -40,7 +40,9 @@ message PurchaseOrderLine {
   string received_quantity = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The expected price in VND per entered unit; zero means unknown. Omitted
   // from answers when the caller lacks PERMISSION_INVENTORY_COST_READ; such
-  // a caller cannot set it either.
+  // a caller cannot set it either. On update, lines are matched by id: a
+  // caller without the permission keeps the stored cost of the lines it sends
+  // back, and a new line costs zero.
   optional int64 unit_cost = 11;
   // entered_quantity times unit_cost, whole VND. Omitted without
   // PERMISSION_INVENTORY_COST_READ.
@@ -136,10 +138,9 @@ message CreatePurchaseOrdersFromLowStockResponse {
 message SendPurchaseOrderRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string purchase_order_id = 2 [(google.api.field_behavior) = REQUIRED];
-  // Overrides the supplier's e-mail on file; one address.
-  string to_email = 3;
-  // Added to the e-mail above the order.
-  string message = 4;
+  // Plain text added to the e-mail above the order, at most 1000
+  // characters. The order always goes to the supplier's e-mail on file.
+  string message = 3;
 }
 
 message CancelPurchaseOrderRequest {
@@ -190,7 +191,9 @@ service PurchaseOrderService {
     };
   }
 
-  // E-mails the order, as a PDF, to the supplier and marks it sent.
+  // E-mails the order, as a PDF, to the supplier's e-mail on file and marks
+  // it sent. A supplier with no e-mail on file is refused
+  // (SUPPLIER_EMAIL_REQUIRED).
   rpc SendPurchaseOrder(SendPurchaseOrderRequest) returns (PurchaseOrder) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}:send"

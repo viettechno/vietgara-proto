@@ -47,7 +47,9 @@ type PurchaseOrderServiceClient interface {
 	// back to twice its reorder threshold. Parts without a default supplier
 	// are returned, not ordered.
 	CreatePurchaseOrdersFromLowStock(ctx context.Context, in *CreatePurchaseOrdersFromLowStockRequest, opts ...grpc.CallOption) (*CreatePurchaseOrdersFromLowStockResponse, error)
-	// E-mails the order, as a PDF, to the supplier and marks it sent.
+	// E-mails the order, as a PDF, to the supplier's e-mail on file and marks
+	// it sent. A supplier with no e-mail on file is refused
+	// (SUPPLIER_EMAIL_REQUIRED).
 	SendPurchaseOrder(ctx context.Context, in *SendPurchaseOrderRequest, opts ...grpc.CallOption) (*PurchaseOrder, error)
 	// Cancels an order nothing was received against.
 	CancelPurchaseOrder(ctx context.Context, in *CancelPurchaseOrderRequest, opts ...grpc.CallOption) (*PurchaseOrder, error)
@@ -162,7 +164,9 @@ type PurchaseOrderServiceServer interface {
 	// back to twice its reorder threshold. Parts without a default supplier
 	// are returned, not ordered.
 	CreatePurchaseOrdersFromLowStock(context.Context, *CreatePurchaseOrdersFromLowStockRequest) (*CreatePurchaseOrdersFromLowStockResponse, error)
-	// E-mails the order, as a PDF, to the supplier and marks it sent.
+	// E-mails the order, as a PDF, to the supplier's e-mail on file and marks
+	// it sent. A supplier with no e-mail on file is refused
+	// (SUPPLIER_EMAIL_REQUIRED).
 	SendPurchaseOrder(context.Context, *SendPurchaseOrderRequest) (*PurchaseOrder, error)
 	// Cancels an order nothing was received against.
 	CancelPurchaseOrder(context.Context, *CancelPurchaseOrderRequest) (*PurchaseOrder, error)

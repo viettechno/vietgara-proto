@@ -4086,7 +4086,7 @@
           },
           {
             "name": "type",
-            "description": "Filters; unspecified means all.\n\n - NOTIFICATION_TYPE_QUOTE_READY: Customer: the quote with the link to approve it. Essential.\n - NOTIFICATION_TYPE_QUOTE_DECIDED: Staff: a quote was approved or rejected.\n - NOTIFICATION_TYPE_VEHICLE_READY: Customer: the vehicle is ready for pick-up.\n - NOTIFICATION_TYPE_PAYMENT_RECEIVED: Customer: a payment was recorded and a balance is left.\n - NOTIFICATION_TYPE_SETTLEMENT_RECEIPT: Customer: the settlement is paid; the receipt is attached. Essential.\n - NOTIFICATION_TYPE_SETTLEMENT_PAID: Staff: a settlement is fully paid.\n - NOTIFICATION_TYPE_LOW_STOCK: Staff: a part fell to or under its reorder threshold.\n - NOTIFICATION_TYPE_PAYMENT_REMINDER: Release 13.0 (FR-REC-03): a reminder that a settlement is overdue.",
+            "description": "Filters; unspecified means all.\n\n - NOTIFICATION_TYPE_QUOTE_READY: Customer: the quote with the link to approve it. Essential.\n - NOTIFICATION_TYPE_QUOTE_DECIDED: Staff: a quote was approved or rejected.\n - NOTIFICATION_TYPE_VEHICLE_READY: Customer: the vehicle is ready for pick-up.\n - NOTIFICATION_TYPE_PAYMENT_RECEIVED: Customer: a payment was recorded and a balance is left.\n - NOTIFICATION_TYPE_SETTLEMENT_RECEIPT: Customer: the settlement is paid; the receipt is attached. Essential.\n - NOTIFICATION_TYPE_SETTLEMENT_PAID: Staff: a settlement is fully paid.\n - NOTIFICATION_TYPE_LOW_STOCK: Staff: a part fell to or under its reorder threshold.\n - NOTIFICATION_TYPE_PAYMENT_REMINDER: Release 13.0 (FR-REC-03): a reminder that a settlement is overdue.\n - NOTIFICATION_TYPE_PURCHASE_ORDER: Release 13.0 (FR-INV-16): a purchase order e-mailed to a supplier. Not\nswitchable: it appears in the log only, never in the settings.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -4098,7 +4098,8 @@
               "NOTIFICATION_TYPE_SETTLEMENT_RECEIPT",
               "NOTIFICATION_TYPE_SETTLEMENT_PAID",
               "NOTIFICATION_TYPE_LOW_STOCK",
-              "NOTIFICATION_TYPE_PAYMENT_REMINDER"
+              "NOTIFICATION_TYPE_PAYMENT_REMINDER",
+              "NOTIFICATION_TYPE_PURCHASE_ORDER"
             ]
           },
           {
@@ -5567,7 +5568,7 @@
     },
     "/api/v1/garages/{garageId}/purchase-orders/{purchaseOrderId}:send": {
       "post": {
-        "summary": "E-mails the order, as a PDF, to the supplier and marks it sent.",
+        "summary": "E-mails the order, as a PDF, to the supplier's e-mail on file and marks\nit sent. A supplier with no e-mail on file is refused\n(SUPPLIER_EMAIL_REQUIRED).",
         "operationId": "PurchaseOrderService_SendPurchaseOrder",
         "responses": {
           "200": {
@@ -7003,6 +7004,7 @@
           },
           {
             "name": "groupBy",
+            "description": "Required: PROFIT_GROUP_BY_UNSPECIFIED is refused (INVALID_ARGUMENT).",
             "in": "query",
             "required": true,
             "type": "string",
@@ -7268,6 +7270,12 @@
             "in": "query",
             "required": false,
             "type": "boolean"
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -11562,7 +11570,7 @@
         ]
       }
     },
-    "/api/v1/public/data-requests/{token}:confirm": {
+    "/api/v1/public/data-requests:confirm": {
       "post": {
         "operationId": "PublicDataRequestService_ConfirmPublicDataRequest",
         "responses": {
@@ -11581,17 +11589,11 @@
         },
         "parameters": [
           {
-            "name": "token",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/PublicDataRequestServiceConfirmPublicDataRequestBody"
+              "$ref": "#/definitions/v1ConfirmPublicDataRequestRequest"
             }
           }
         ],
@@ -12264,9 +12266,6 @@
     "PlatformStaffServiceRevokePlatformInvitationBody": {
       "type": "object"
     },
-    "PublicDataRequestServiceConfirmPublicDataRequestBody": {
-      "type": "object"
-    },
     "PublicQuoteServiceDecidePublicQuoteBody": {
       "type": "object",
       "properties": {
@@ -12307,13 +12306,9 @@
     "PurchaseOrderServiceSendPurchaseOrderBody": {
       "type": "object",
       "properties": {
-        "toEmail": {
-          "type": "string",
-          "description": "Overrides the supplier's e-mail on file; one address."
-        },
         "message": {
           "type": "string",
-          "description": "Added to the e-mail above the order."
+          "description": "Plain text added to the e-mail above the order, at most 1000\ncharacters. The order always goes to the supplier's e-mail on file."
         }
       }
     },
@@ -12883,6 +12878,17 @@
         }
       }
     },
+    "v1ConfirmPublicDataRequestRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "token"
+      ]
+    },
     "v1ConfirmPublicDataRequestResponse": {
       "type": "object",
       "properties": {
@@ -13443,7 +13449,7 @@
         },
         "exportJson": {
           "type": "string",
-          "description": "For a view request: the data held, as JSON text, answered once when the\nrequest is created.",
+          "description": "For a view request: the data held, as JSON text. Answered only by\nCreateDataRequest, never stored, and empty in List and Get.",
           "readOnly": true
         },
         "requestedAt": {
@@ -13462,7 +13468,7 @@
           "readOnly": true
         }
       },
-      "description": "DataRequest is one request about one customer's data, with its outcome. It\nis kept as a record of the garage's answer, and holds no personal data\nbeyond the customer id."
+      "description": "DataRequest is one request about one customer's data, with its outcome. It\nis kept as a record of the garage's answer. It holds the customer id and,\nfor a correction, the text of what to correct (`details`); anonymizing the\ncustomer clears the `details` of all their requests. The data a view\nreturns is never stored."
     },
     "v1DataRequestSource": {
       "type": "string",
@@ -15966,9 +15972,10 @@
         "NOTIFICATION_TYPE_SETTLEMENT_RECEIPT",
         "NOTIFICATION_TYPE_SETTLEMENT_PAID",
         "NOTIFICATION_TYPE_LOW_STOCK",
-        "NOTIFICATION_TYPE_PAYMENT_REMINDER"
+        "NOTIFICATION_TYPE_PAYMENT_REMINDER",
+        "NOTIFICATION_TYPE_PURCHASE_ORDER"
       ],
-      "description": "NotificationType is one e-mail a garage can switch off (FR-NOT-05,\nFR-INV-04).\n\n - NOTIFICATION_TYPE_QUOTE_READY: Customer: the quote with the link to approve it. Essential.\n - NOTIFICATION_TYPE_QUOTE_DECIDED: Staff: a quote was approved or rejected.\n - NOTIFICATION_TYPE_VEHICLE_READY: Customer: the vehicle is ready for pick-up.\n - NOTIFICATION_TYPE_PAYMENT_RECEIVED: Customer: a payment was recorded and a balance is left.\n - NOTIFICATION_TYPE_SETTLEMENT_RECEIPT: Customer: the settlement is paid; the receipt is attached. Essential.\n - NOTIFICATION_TYPE_SETTLEMENT_PAID: Staff: a settlement is fully paid.\n - NOTIFICATION_TYPE_LOW_STOCK: Staff: a part fell to or under its reorder threshold.\n - NOTIFICATION_TYPE_PAYMENT_REMINDER: Release 13.0 (FR-REC-03): a reminder that a settlement is overdue."
+      "description": "NotificationType is one e-mail a garage can switch off (FR-NOT-05,\nFR-INV-04).\n\n - NOTIFICATION_TYPE_QUOTE_READY: Customer: the quote with the link to approve it. Essential.\n - NOTIFICATION_TYPE_QUOTE_DECIDED: Staff: a quote was approved or rejected.\n - NOTIFICATION_TYPE_VEHICLE_READY: Customer: the vehicle is ready for pick-up.\n - NOTIFICATION_TYPE_PAYMENT_RECEIVED: Customer: a payment was recorded and a balance is left.\n - NOTIFICATION_TYPE_SETTLEMENT_RECEIPT: Customer: the settlement is paid; the receipt is attached. Essential.\n - NOTIFICATION_TYPE_SETTLEMENT_PAID: Staff: a settlement is fully paid.\n - NOTIFICATION_TYPE_LOW_STOCK: Staff: a part fell to or under its reorder threshold.\n - NOTIFICATION_TYPE_PAYMENT_REMINDER: Release 13.0 (FR-REC-03): a reminder that a settlement is overdue.\n - NOTIFICATION_TYPE_PURCHASE_ORDER: Release 13.0 (FR-INV-16): a purchase order e-mailed to a supplier. Not\nswitchable: it appears in the log only, never in the settings."
     },
     "v1NotificationTypeSetting": {
       "type": "object",
@@ -16311,9 +16318,10 @@
       "type": "string",
       "enum": [
         "PAYABLE_STATUS_OPEN",
-        "PAYABLE_STATUS_PAID"
+        "PAYABLE_STATUS_PAID",
+        "PAYABLE_STATUS_CANCELLED"
       ],
-      "description": "PayableStatus is the payment state of one supplier payable (FR-INV-17)."
+      "description": "PayableStatus is the payment state of one supplier payable (FR-INV-17).\n\n - PAYABLE_STATUS_CANCELLED: Its goods receipt was cancelled; it leaves the lists and the aging."
     },
     "v1PaymentEvidence": {
       "type": "object",
@@ -16423,7 +16431,7 @@
         "amount": {
           "type": "string",
           "format": "int64",
-          "description": "Integer VND."
+          "description": "Integer VND, positive and at least the sum of the allocations."
         },
         "method": {
           "$ref": "#/definitions/v1PaymentMethod"
@@ -16472,7 +16480,12 @@
           "readOnly": true
         }
       },
-      "description": "PaymentOutVoucher is a payment-out voucher (phiếu chi, FR-BIL-07): money\nthe garage paid out, here to a supplier. It has its own numbering and is\nnever deleted, only voided."
+      "description": "PaymentOutVoucher is a payment-out voucher (phiếu chi, FR-BIL-07): money\nthe garage paid out, here to a supplier. It has its own numbering and is\nnever deleted, only voided.",
+      "required": [
+        "supplierId",
+        "amount",
+        "method"
+      ]
     },
     "v1Permission": {
       "type": "string",
@@ -17339,7 +17352,7 @@
         "unitCost": {
           "type": "string",
           "format": "int64",
-          "description": "The expected price in VND per entered unit; zero means unknown. Omitted\nfrom answers when the caller lacks PERMISSION_INVENTORY_COST_READ; such\na caller cannot set it either."
+          "description": "The expected price in VND per entered unit; zero means unknown. Omitted\nfrom answers when the caller lacks PERMISSION_INVENTORY_COST_READ; such\na caller cannot set it either. On update, lines are matched by id: a\ncaller without the permission keeps the stored cost of the lines it sends\nback, and a new line costs zero."
         },
         "lineAmount": {
           "type": "string",
@@ -17908,12 +17921,12 @@
         },
         "matches": {
           "type": "boolean",
-          "description": "Whether the closing balance equals the remaining amounts of the\nreceivables as the module holds them now."
+          "description": "Whether the ledger's balance today equals the sum of the receivables'\nremaining amounts today."
         },
         "difference": {
           "type": "string",
           "format": "int64",
-          "description": "closing_balance less the sum of the receivables' remaining amounts."
+          "description": "The ledger's balance today less the sum of the remaining amounts."
         },
         "lines": {
           "type": "array",
@@ -17923,7 +17936,7 @@
           }
         }
       },
-      "description": "ReconciliationReport reconciles a period's receivables with the\nsettlements and vouchers behind them (FR-REC-04): the opening balance plus\nwhat was charged, less what was collected (and plus what was voided), is\nthe closing balance, which must equal the open receivables' remaining\namounts."
+      "description": "ReconciliationReport reconciles a period's receivables with the\nsettlements and vouchers behind them (FR-REC-04): the opening balance plus\nwhat was charged, less what was collected (and plus what was voided), is\nthe closing balance as of the end of the period. `matches` and `difference`\ncheck the ledger itself: its balance today against the remaining amounts of\nthe receivables today, whatever the period."
     },
     "v1RecordQuoteDecisionResponse": {
       "type": "object",

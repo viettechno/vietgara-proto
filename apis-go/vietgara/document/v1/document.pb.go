@@ -979,6 +979,7 @@ type ExportReceivablesExcelRequest struct {
 	CustomerId    string `protobuf:"bytes,2,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
 	OverdueOnly   bool   `protobuf:"varint,3,opt,name=overdue_only,json=overdueOnly,proto3" json:"overdue_only,omitempty"`
 	IncludePaid   bool   `protobuf:"varint,4,opt,name=include_paid,json=includePaid,proto3" json:"include_paid,omitempty"`
+	Query         string `protobuf:"bytes,5,opt,name=query,proto3" json:"query,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1039,6 +1040,13 @@ func (x *ExportReceivablesExcelRequest) GetIncludePaid() bool {
 		return x.IncludePaid
 	}
 	return false
+}
+
+func (x *ExportReceivablesExcelRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
 }
 
 type ExportReceivableReconciliationExcelRequest struct {
@@ -1772,13 +1780,14 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"voucher_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tvoucherId\"q\n" +
 	"\x1cPrintPurchaseOrderPdfRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12/\n" +
-	"\x11purchase_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0fpurchaseOrderId\"\xa8\x01\n" +
+	"\x11purchase_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0fpurchaseOrderId\"\xbe\x01\n" +
 	"\x1dExportReceivablesExcelRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1f\n" +
 	"\vcustomer_id\x18\x02 \x01(\tR\n" +
 	"customerId\x12!\n" +
 	"\foverdue_only\x18\x03 \x01(\bR\voverdueOnly\x12!\n" +
-	"\finclude_paid\x18\x04 \x01(\bR\vincludePaid\"|\n" +
+	"\finclude_paid\x18\x04 \x01(\bR\vincludePaid\x12\x14\n" +
+	"\x05query\x18\x05 \x01(\tR\x05query\"|\n" +
 	"*ExportReceivableReconciliationExcelRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x17\n" +
 	"\x04from\x18\x02 \x01(\tB\x03\xe0A\x02R\x04from\x12\x13\n" +

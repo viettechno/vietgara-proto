@@ -296,18 +296,9 @@ func request_PublicDataRequestService_ConfirmPublicDataRequest_0(ctx context.Con
 	var (
 		protoReq ConfirmPublicDataRequestRequest
 		metadata runtime.ServerMetadata
-		err      error
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	val, ok := pathParams["token"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "token")
-	}
-	protoReq.Token, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "token", err)
 	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
@@ -320,18 +311,9 @@ func local_request_PublicDataRequestService_ConfirmPublicDataRequest_0(ctx conte
 	var (
 		protoReq ConfirmPublicDataRequestRequest
 		metadata runtime.ServerMetadata
-		err      error
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	val, ok := pathParams["token"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "token")
-	}
-	protoReq.Token, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "token", err)
 	}
 	msg, err := server.ConfirmPublicDataRequest(ctx, &protoReq)
 	return msg, metadata, err
@@ -459,7 +441,7 @@ func RegisterPublicDataRequestServiceHandlerServer(ctx context.Context, mux *run
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.customer.v1.PublicDataRequestService/ConfirmPublicDataRequest", runtime.WithHTTPPathPattern("/api/v1/public/data-requests/{token}:confirm"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.customer.v1.PublicDataRequestService/ConfirmPublicDataRequest", runtime.WithHTTPPathPattern("/api/v1/public/data-requests:confirm"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -655,7 +637,7 @@ func RegisterPublicDataRequestServiceHandlerClient(ctx context.Context, mux *run
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.customer.v1.PublicDataRequestService/ConfirmPublicDataRequest", runtime.WithHTTPPathPattern("/api/v1/public/data-requests/{token}:confirm"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.customer.v1.PublicDataRequestService/ConfirmPublicDataRequest", runtime.WithHTTPPathPattern("/api/v1/public/data-requests:confirm"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -673,7 +655,7 @@ func RegisterPublicDataRequestServiceHandlerClient(ctx context.Context, mux *run
 
 var (
 	pattern_PublicDataRequestService_SubmitPublicDataRequest_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "public", "data-requests"}, ""))
-	pattern_PublicDataRequestService_ConfirmPublicDataRequest_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "public", "data-requests", "token"}, "confirm"))
+	pattern_PublicDataRequestService_ConfirmPublicDataRequest_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "public", "data-requests"}, "confirm"))
 )
 
 var (

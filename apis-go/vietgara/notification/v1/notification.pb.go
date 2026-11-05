@@ -46,6 +46,9 @@ const (
 	NotificationType_NOTIFICATION_TYPE_LOW_STOCK NotificationType = 7
 	// Release 13.0 (FR-REC-03): a reminder that a settlement is overdue.
 	NotificationType_NOTIFICATION_TYPE_PAYMENT_REMINDER NotificationType = 8
+	// Release 13.0 (FR-INV-16): a purchase order e-mailed to a supplier. Not
+	// switchable: it appears in the log only, never in the settings.
+	NotificationType_NOTIFICATION_TYPE_PURCHASE_ORDER NotificationType = 9
 )
 
 // Enum value maps for NotificationType.
@@ -60,6 +63,7 @@ var (
 		6: "NOTIFICATION_TYPE_SETTLEMENT_PAID",
 		7: "NOTIFICATION_TYPE_LOW_STOCK",
 		8: "NOTIFICATION_TYPE_PAYMENT_REMINDER",
+		9: "NOTIFICATION_TYPE_PURCHASE_ORDER",
 	}
 	NotificationType_value = map[string]int32{
 		"NOTIFICATION_TYPE_UNSPECIFIED":        0,
@@ -71,6 +75,7 @@ var (
 		"NOTIFICATION_TYPE_SETTLEMENT_PAID":    6,
 		"NOTIFICATION_TYPE_LOW_STOCK":          7,
 		"NOTIFICATION_TYPE_PAYMENT_REMINDER":   8,
+		"NOTIFICATION_TYPE_PURCHASE_ORDER":     9,
 	}
 )
 
@@ -786,7 +791,7 @@ const file_vietgara_notification_v1_notification_proto_rawDesc = "" +
 	"\x04data\x18\x01 \x03(\v2..vietgara.notification.v1.NotificationLogEntryR\x04data\x12>\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1e.vietgara.common.v1.PaginationR\n" +
-	"pagination*\xe4\x02\n" +
+	"pagination*\x8a\x03\n" +
 	"\x10NotificationType\x12!\n" +
 	"\x1dNOTIFICATION_TYPE_UNSPECIFIED\x10\x00\x12!\n" +
 	"\x1dNOTIFICATION_TYPE_QUOTE_READY\x10\x01\x12#\n" +
@@ -796,7 +801,8 @@ const file_vietgara_notification_v1_notification_proto_rawDesc = "" +
 	"$NOTIFICATION_TYPE_SETTLEMENT_RECEIPT\x10\x05\x12%\n" +
 	"!NOTIFICATION_TYPE_SETTLEMENT_PAID\x10\x06\x12\x1f\n" +
 	"\x1bNOTIFICATION_TYPE_LOW_STOCK\x10\a\x12&\n" +
-	"\"NOTIFICATION_TYPE_PAYMENT_REMINDER\x10\b*\x82\x01\n" +
+	"\"NOTIFICATION_TYPE_PAYMENT_REMINDER\x10\b\x12$\n" +
+	" NOTIFICATION_TYPE_PURCHASE_ORDER\x10\t*\x82\x01\n" +
 	"\x14NotificationAudience\x12%\n" +
 	"!NOTIFICATION_AUDIENCE_UNSPECIFIED\x10\x00\x12\"\n" +
 	"\x1eNOTIFICATION_AUDIENCE_CUSTOMER\x10\x01\x12\x1f\n" +

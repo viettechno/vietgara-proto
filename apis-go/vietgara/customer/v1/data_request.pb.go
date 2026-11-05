@@ -190,8 +190,10 @@ func (DataRequestSource) EnumDescriptor() ([]byte, []int) {
 }
 
 // DataRequest is one request about one customer's data, with its outcome. It
-// is kept as a record of the garage's answer, and holds no personal data
-// beyond the customer id.
+// is kept as a record of the garage's answer. It holds the customer id and,
+// for a correction, the text of what to correct (`details`); anonymizing the
+// customer clears the `details` of all their requests. The data a view
+// returns is never stored.
 type DataRequest struct {
 	state      protoimpl.MessageState `protogen:"open.v1"`
 	Id         string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -206,8 +208,8 @@ type DataRequest struct {
 	// What the garage did, for example "Anonymized 1 customer and 2
 	// vehicles"; filled when the request is completed.
 	Outcome string `protobuf:"bytes,8,opt,name=outcome,proto3" json:"outcome,omitempty"`
-	// For a view request: the data held, as JSON text, answered once when the
-	// request is created.
+	// For a view request: the data held, as JSON text. Answered only by
+	// CreateDataRequest, never stored, and empty in List and Get.
 	ExportJson  string                 `protobuf:"bytes,9,opt,name=export_json,json=exportJson,proto3" json:"export_json,omitempty"`
 	RequestedAt *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=requested_at,json=requestedAt,proto3" json:"requested_at,omitempty"`
 	CompletedAt *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
@@ -923,10 +925,10 @@ const file_vietgara_customer_v1_data_request_proto_rawDesc = "" +
 	"\x11CreateDataRequest\x12..vietgara.customer.v1.CreateDataRequestRequest\x1a!.vietgara.customer.v1.DataRequest\"L\x82\xd3\xe4\x93\x02F:\x01*\"A/api/v1/garages/{garage_id}/customers/{customer_id}/data-requests\x12\xa4\x01\n" +
 	"\x10ListDataRequests\x12-.vietgara.customer.v1.ListDataRequestsRequest\x1a..vietgara.customer.v1.ListDataRequestsResponse\"1\x82\xd3\xe4\x93\x02+\x12)/api/v1/garages/{garage_id}/data-requests\x12\xa0\x01\n" +
 	"\x0eGetDataRequest\x12+.vietgara.customer.v1.GetDataRequestRequest\x1a!.vietgara.customer.v1.DataRequest\">\x82\xd3\xe4\x93\x028\x126/api/v1/garages/{garage_id}/data-requests/{request_id}\x12\xb6\x01\n" +
-	"\x13CompleteDataRequest\x120.vietgara.customer.v1.CompleteDataRequestRequest\x1a!.vietgara.customer.v1.DataRequest\"J\x82\xd3\xe4\x93\x02D:\x01*\"?/api/v1/garages/{garage_id}/data-requests/{request_id}:complete2\x91\x03\n" +
+	"\x13CompleteDataRequest\x120.vietgara.customer.v1.CompleteDataRequestRequest\x1a!.vietgara.customer.v1.DataRequest\"J\x82\xd3\xe4\x93\x02D:\x01*\"?/api/v1/garages/{garage_id}/data-requests/{request_id}:complete2\x89\x03\n" +
 	"\x18PublicDataRequestService\x12\xaf\x01\n" +
-	"\x17SubmitPublicDataRequest\x124.vietgara.customer.v1.SubmitPublicDataRequestRequest\x1a5.vietgara.customer.v1.SubmitPublicDataRequestResponse\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/api/v1/public/data-requests\x12\xc2\x01\n" +
-	"\x18ConfirmPublicDataRequest\x125.vietgara.customer.v1.ConfirmPublicDataRequestRequest\x1a6.vietgara.customer.v1.ConfirmPublicDataRequestResponse\"7\x82\xd3\xe4\x93\x021:\x01*\",/api/v1/public/data-requests/{token}:confirmBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1b\x06proto3"
+	"\x17SubmitPublicDataRequest\x124.vietgara.customer.v1.SubmitPublicDataRequestRequest\x1a5.vietgara.customer.v1.SubmitPublicDataRequestResponse\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/api/v1/public/data-requests\x12\xba\x01\n" +
+	"\x18ConfirmPublicDataRequest\x125.vietgara.customer.v1.ConfirmPublicDataRequestRequest\x1a6.vietgara.customer.v1.ConfirmPublicDataRequestResponse\"/\x82\xd3\xe4\x93\x02):\x01*\"$/api/v1/public/data-requests:confirmBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1b\x06proto3"
 
 var (
 	file_vietgara_customer_v1_data_request_proto_rawDescOnce sync.Once

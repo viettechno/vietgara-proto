@@ -235,7 +235,7 @@ message GoodsReceipt {
   google.protobuf.Timestamp updated_at = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The purchase order this receipt was created from (FR-INV-16); completing
   // the receipt counts its lines against that order.
-  optional string purchase_order_id = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string purchase_order_id = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
   string purchase_order_number = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
