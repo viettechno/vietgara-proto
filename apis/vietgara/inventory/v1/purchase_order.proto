@@ -1,0 +1,217 @@
+syntax = "proto3";
+
+package vietgara.inventory.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/pagination.proto";
+import "vietgara/inventory/v1/inventory.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/inventory/v1;inventoryv1";
+
+// PurchaseOrderStatus is the lifecycle of a purchase order (FR-INV-16):
+// saved as a draft, sent to the supplier, received in part or in full, or
+// cancelled.
+enum PurchaseOrderStatus {
+  PURCHASE_ORDER_STATUS_UNSPECIFIED = 0;
+  PURCHASE_ORDER_STATUS_DRAFT = 1;
+  PURCHASE_ORDER_STATUS_SENT = 2;
+  PURCHASE_ORDER_STATUS_PARTIALLY_RECEIVED = 3;
+  PURCHASE_ORDER_STATUS_RECEIVED = 4;
+  PURCHASE_ORDER_STATUS_CANCELLED = 5;
+}
+
+// PurchaseOrderLine is one part on a purchase order.
+message PurchaseOrderLine {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string part_sku = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string part_name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string base_unit_abbreviation = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The packaging unit the quantity is typed in; unset means the base unit.
+  optional string unit_id = 6;
+  string unit_abbreviation = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // In the entered unit unless unit_id is unset. Positive.
+  string entered_quantity = 8;
+  // The base-unit amount derived from entered_quantity on save.
+  string quantity = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The base-unit amount delivered so far by completed goods receipts.
+  string received_quantity = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The expected price in VND per entered unit; zero means unknown. Omitted
+  // from answers when the caller lacks PERMISSION_INVENTORY_COST_READ; such
+  // a caller cannot set it either.
+  optional int64 unit_cost = 11;
+  // entered_quantity times unit_cost, whole VND. Omitted without
+  // PERMISSION_INVENTORY_COST_READ.
+  optional int64 line_amount = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// PurchaseOrder is a numbered order to one supplier (FR-INV-16). It can be
+// printed and e-mailed to the supplier, and a goods receipt can be pre-filled
+// from what it still waits for.
+message PurchaseOrder {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Rendered from the garage's purchase_order numbering template.
+  string number = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  PurchaseOrderStatus status = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string supplier_id = 5;
+  string supplier_name = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The supplier's e-mail on file; the order is sent to it.
+  string supplier_email = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // "YYYY-MM-DD" in the garage's timezone: the day the order was created.
+  string order_date = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // "YYYY-MM-DD"; empty when no date is expected.
+  string expected_date = 9;
+  string notes = 10;
+  repeated PurchaseOrderLine lines = 11;
+  // Sum of the lines' amounts. Omitted without
+  // PERMISSION_INVENTORY_COST_READ.
+  optional int64 total_amount = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp sent_at = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The address the order was sent to.
+  string sent_to = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp cancelled_at = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListPurchaseOrdersRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Matches the number, the supplier's name or notes.
+  string query = 2;
+  string supplier_id = 3;
+  PurchaseOrderStatus status = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+message ListPurchaseOrdersResponse {
+  repeated PurchaseOrder data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message GetPurchaseOrderRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string purchase_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreatePurchaseOrderRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  PurchaseOrder purchase_order = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// UpdatePurchaseOrderRequest replaces the supplier, expected date, notes and
+// lines of a draft order.
+message UpdatePurchaseOrderRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string purchase_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+  PurchaseOrder purchase_order = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreatePurchaseOrdersFromLowStockRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Limits the order to these parts; empty means every part at or below its
+  // reorder threshold.
+  repeated string part_ids = 2;
+  // "YYYY-MM-DD"; copied to every order created.
+  string expected_date = 3;
+}
+
+// UnassignedPart is a low-stock part that no order could take because it
+// has no default supplier.
+message UnassignedPart {
+  string part_id = 1;
+  string part_sku = 2;
+  string part_name = 3;
+}
+
+message CreatePurchaseOrdersFromLowStockResponse {
+  // One draft order per supplier.
+  repeated PurchaseOrder orders = 1;
+  repeated UnassignedPart unassigned_parts = 2;
+}
+
+message SendPurchaseOrderRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string purchase_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Overrides the supplier's e-mail on file; one address.
+  string to_email = 3;
+  // Added to the e-mail above the order.
+  string message = 4;
+}
+
+message CancelPurchaseOrderRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string purchase_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ReceivePurchaseOrderRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string purchase_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// PurchaseOrderService serves the purchase orders of a garage (FR-INV-16).
+// Reading needs inventory.read, changing needs inventory.write; prices are
+// shown and set only with inventory.cost.read.
+service PurchaseOrderService {
+  rpc ListPurchaseOrders(ListPurchaseOrdersRequest) returns (ListPurchaseOrdersResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/purchase-orders"};
+  }
+
+  rpc GetPurchaseOrder(GetPurchaseOrderRequest) returns (PurchaseOrder) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}"};
+  }
+
+  rpc CreatePurchaseOrder(CreatePurchaseOrderRequest) returns (PurchaseOrder) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/purchase-orders"
+      body: "purchase_order"
+    };
+  }
+
+  // Replaces a draft order's supplier, expected date, notes and lines.
+  rpc UpdatePurchaseOrder(UpdatePurchaseOrderRequest) returns (PurchaseOrder) {
+    option (google.api.http) = {
+      put: "/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}"
+      body: "purchase_order"
+    };
+  }
+
+  // From the low-stock list: one draft order per supplier, each part on the
+  // order of its default supplier, for the quantity that brings the stock
+  // back to twice its reorder threshold. Parts without a default supplier
+  // are returned, not ordered.
+  rpc CreatePurchaseOrdersFromLowStock(CreatePurchaseOrdersFromLowStockRequest) returns (CreatePurchaseOrdersFromLowStockResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/purchase-orders:from-low-stock"
+      body: "*"
+    };
+  }
+
+  // E-mails the order, as a PDF, to the supplier and marks it sent.
+  rpc SendPurchaseOrder(SendPurchaseOrderRequest) returns (PurchaseOrder) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}:send"
+      body: "*"
+    };
+  }
+
+  // Cancels an order nothing was received against.
+  rpc CancelPurchaseOrder(CancelPurchaseOrderRequest) returns (PurchaseOrder) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}:cancel"
+      body: "*"
+    };
+  }
+
+  // Creates a draft goods receipt for what the order still waits for, with
+  // the supplier and the quantities pre-filled and linked to the order.
+  rpc ReceivePurchaseOrder(ReceivePurchaseOrderRequest) returns (GoodsReceipt) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}:receive"
+      body: "*"
+    };
+  }
+}

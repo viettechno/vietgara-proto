@@ -19,7 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ReportingService_GetRevenueReport_FullMethodName = "/vietgara.reporting.v1.ReportingService/GetRevenueReport"
+	ReportingService_GetRevenueReport_FullMethodName     = "/vietgara.reporting.v1.ReportingService/GetRevenueReport"
+	ReportingService_GetTechnicianReport_FullMethodName  = "/vietgara.reporting.v1.ReportingService/GetTechnicianReport"
+	ReportingService_GetProfitReport_FullMethodName      = "/vietgara.reporting.v1.ReportingService/GetProfitReport"
+	ReportingService_GetRepairOrderProfit_FullMethodName = "/vietgara.reporting.v1.ReportingService/GetRepairOrderProfit"
 )
 
 // ReportingServiceClient is the client API for ReportingService service.
@@ -36,6 +39,16 @@ const (
 // this is the one figure not already exposed anywhere.
 type ReportingServiceClient interface {
 	GetRevenueReport(ctx context.Context, in *GetRevenueReportRequest, opts ...grpc.CallOption) (*GetRevenueReportResponse, error)
+	// FR-RPT-02: completed lines and average turnaround per technician for a
+	// period. Needs report.read.
+	GetTechnicianReport(ctx context.Context, in *GetTechnicianReportRequest, opts ...grpc.CallOption) (*GetTechnicianReportResponse, error)
+	// FR-RPT-05: revenue less the cost snapshots of the consumed parts, by
+	// repair order, job or technician, for the repair orders closed in a
+	// period. Needs report.read and inventory.cost.read.
+	GetProfitReport(ctx context.Context, in *GetProfitReportRequest, opts ...grpc.CallOption) (*GetProfitReportResponse, error)
+	// FR-RPT-05: the profit of one repair order. Needs repair_order.read and
+	// inventory.cost.read.
+	GetRepairOrderProfit(ctx context.Context, in *GetRepairOrderProfitRequest, opts ...grpc.CallOption) (*RepairOrderProfit, error)
 }
 
 type reportingServiceClient struct {
@@ -56,6 +69,36 @@ func (c *reportingServiceClient) GetRevenueReport(ctx context.Context, in *GetRe
 	return out, nil
 }
 
+func (c *reportingServiceClient) GetTechnicianReport(ctx context.Context, in *GetTechnicianReportRequest, opts ...grpc.CallOption) (*GetTechnicianReportResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetTechnicianReportResponse)
+	err := c.cc.Invoke(ctx, ReportingService_GetTechnicianReport_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *reportingServiceClient) GetProfitReport(ctx context.Context, in *GetProfitReportRequest, opts ...grpc.CallOption) (*GetProfitReportResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetProfitReportResponse)
+	err := c.cc.Invoke(ctx, ReportingService_GetProfitReport_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *reportingServiceClient) GetRepairOrderProfit(ctx context.Context, in *GetRepairOrderProfitRequest, opts ...grpc.CallOption) (*RepairOrderProfit, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RepairOrderProfit)
+	err := c.cc.Invoke(ctx, ReportingService_GetRepairOrderProfit_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ReportingServiceServer is the server API for ReportingService service.
 // All implementations must embed UnimplementedReportingServiceServer
 // for forward compatibility.
@@ -70,6 +113,16 @@ func (c *reportingServiceClient) GetRevenueReport(ctx context.Context, in *GetRe
 // this is the one figure not already exposed anywhere.
 type ReportingServiceServer interface {
 	GetRevenueReport(context.Context, *GetRevenueReportRequest) (*GetRevenueReportResponse, error)
+	// FR-RPT-02: completed lines and average turnaround per technician for a
+	// period. Needs report.read.
+	GetTechnicianReport(context.Context, *GetTechnicianReportRequest) (*GetTechnicianReportResponse, error)
+	// FR-RPT-05: revenue less the cost snapshots of the consumed parts, by
+	// repair order, job or technician, for the repair orders closed in a
+	// period. Needs report.read and inventory.cost.read.
+	GetProfitReport(context.Context, *GetProfitReportRequest) (*GetProfitReportResponse, error)
+	// FR-RPT-05: the profit of one repair order. Needs repair_order.read and
+	// inventory.cost.read.
+	GetRepairOrderProfit(context.Context, *GetRepairOrderProfitRequest) (*RepairOrderProfit, error)
 	mustEmbedUnimplementedReportingServiceServer()
 }
 
@@ -82,6 +135,15 @@ type UnimplementedReportingServiceServer struct{}
 
 func (UnimplementedReportingServiceServer) GetRevenueReport(context.Context, *GetRevenueReportRequest) (*GetRevenueReportResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetRevenueReport not implemented")
+}
+func (UnimplementedReportingServiceServer) GetTechnicianReport(context.Context, *GetTechnicianReportRequest) (*GetTechnicianReportResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetTechnicianReport not implemented")
+}
+func (UnimplementedReportingServiceServer) GetProfitReport(context.Context, *GetProfitReportRequest) (*GetProfitReportResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetProfitReport not implemented")
+}
+func (UnimplementedReportingServiceServer) GetRepairOrderProfit(context.Context, *GetRepairOrderProfitRequest) (*RepairOrderProfit, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRepairOrderProfit not implemented")
 }
 func (UnimplementedReportingServiceServer) mustEmbedUnimplementedReportingServiceServer() {}
 func (UnimplementedReportingServiceServer) testEmbeddedByValue()                          {}
@@ -122,6 +184,60 @@ func _ReportingService_GetRevenueReport_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ReportingService_GetTechnicianReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTechnicianReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReportingServiceServer).GetTechnicianReport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ReportingService_GetTechnicianReport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReportingServiceServer).GetTechnicianReport(ctx, req.(*GetTechnicianReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ReportingService_GetProfitReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProfitReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReportingServiceServer).GetProfitReport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ReportingService_GetProfitReport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReportingServiceServer).GetProfitReport(ctx, req.(*GetProfitReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ReportingService_GetRepairOrderProfit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRepairOrderProfitRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReportingServiceServer).GetRepairOrderProfit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ReportingService_GetRepairOrderProfit_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReportingServiceServer).GetRepairOrderProfit(ctx, req.(*GetRepairOrderProfitRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ReportingService_ServiceDesc is the grpc.ServiceDesc for ReportingService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -132,6 +248,18 @@ var ReportingService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRevenueReport",
 			Handler:    _ReportingService_GetRevenueReport_Handler,
+		},
+		{
+			MethodName: "GetTechnicianReport",
+			Handler:    _ReportingService_GetTechnicianReport_Handler,
+		},
+		{
+			MethodName: "GetProfitReport",
+			Handler:    _ReportingService_GetProfitReport_Handler,
+		},
+		{
+			MethodName: "GetRepairOrderProfit",
+			Handler:    _ReportingService_GetRepairOrderProfit_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -20,25 +20,32 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DocumentService_ExportQuotePdf_FullMethodName             = "/vietgara.document.v1.DocumentService/ExportQuotePdf"
-	DocumentService_ExportRepairOrderPdf_FullMethodName       = "/vietgara.document.v1.DocumentService/ExportRepairOrderPdf"
-	DocumentService_ExportSettlementReceiptPdf_FullMethodName = "/vietgara.document.v1.DocumentService/ExportSettlementReceiptPdf"
-	DocumentService_ExportPaymentVoucherPdf_FullMethodName    = "/vietgara.document.v1.DocumentService/ExportPaymentVoucherPdf"
-	DocumentService_ExportStockMovementsExcel_FullMethodName  = "/vietgara.document.v1.DocumentService/ExportStockMovementsExcel"
-	DocumentService_ExportRevenueExcel_FullMethodName         = "/vietgara.document.v1.DocumentService/ExportRevenueExcel"
-	DocumentService_ExportGoodsReceiptPdf_FullMethodName      = "/vietgara.document.v1.DocumentService/ExportGoodsReceiptPdf"
-	DocumentService_ExportStockIssuePdf_FullMethodName        = "/vietgara.document.v1.DocumentService/ExportStockIssuePdf"
-	DocumentService_ExportStockCountExcel_FullMethodName      = "/vietgara.document.v1.DocumentService/ExportStockCountExcel"
-	DocumentService_ExportPurchasesExcel_FullMethodName       = "/vietgara.document.v1.DocumentService/ExportPurchasesExcel"
-	DocumentService_ExportStockValuationExcel_FullMethodName  = "/vietgara.document.v1.DocumentService/ExportStockValuationExcel"
-	DocumentService_GetPrintSettings_FullMethodName           = "/vietgara.document.v1.DocumentService/GetPrintSettings"
-	DocumentService_UpdatePrintSetting_FullMethodName         = "/vietgara.document.v1.DocumentService/UpdatePrintSetting"
-	DocumentService_PrintQuotePdf_FullMethodName              = "/vietgara.document.v1.DocumentService/PrintQuotePdf"
-	DocumentService_PrintRepairOrderPdf_FullMethodName        = "/vietgara.document.v1.DocumentService/PrintRepairOrderPdf"
-	DocumentService_PrintSettlementReceiptPdf_FullMethodName  = "/vietgara.document.v1.DocumentService/PrintSettlementReceiptPdf"
-	DocumentService_PrintPaymentVoucherPdf_FullMethodName     = "/vietgara.document.v1.DocumentService/PrintPaymentVoucherPdf"
-	DocumentService_PrintGoodsReceiptPdf_FullMethodName       = "/vietgara.document.v1.DocumentService/PrintGoodsReceiptPdf"
-	DocumentService_PrintStockIssuePdf_FullMethodName         = "/vietgara.document.v1.DocumentService/PrintStockIssuePdf"
+	DocumentService_ExportQuotePdf_FullMethodName                      = "/vietgara.document.v1.DocumentService/ExportQuotePdf"
+	DocumentService_ExportRepairOrderPdf_FullMethodName                = "/vietgara.document.v1.DocumentService/ExportRepairOrderPdf"
+	DocumentService_ExportSettlementReceiptPdf_FullMethodName          = "/vietgara.document.v1.DocumentService/ExportSettlementReceiptPdf"
+	DocumentService_ExportPaymentVoucherPdf_FullMethodName             = "/vietgara.document.v1.DocumentService/ExportPaymentVoucherPdf"
+	DocumentService_ExportStockMovementsExcel_FullMethodName           = "/vietgara.document.v1.DocumentService/ExportStockMovementsExcel"
+	DocumentService_ExportRevenueExcel_FullMethodName                  = "/vietgara.document.v1.DocumentService/ExportRevenueExcel"
+	DocumentService_ExportGoodsReceiptPdf_FullMethodName               = "/vietgara.document.v1.DocumentService/ExportGoodsReceiptPdf"
+	DocumentService_ExportStockIssuePdf_FullMethodName                 = "/vietgara.document.v1.DocumentService/ExportStockIssuePdf"
+	DocumentService_ExportStockCountExcel_FullMethodName               = "/vietgara.document.v1.DocumentService/ExportStockCountExcel"
+	DocumentService_ExportPurchasesExcel_FullMethodName                = "/vietgara.document.v1.DocumentService/ExportPurchasesExcel"
+	DocumentService_ExportStockValuationExcel_FullMethodName           = "/vietgara.document.v1.DocumentService/ExportStockValuationExcel"
+	DocumentService_GetPrintSettings_FullMethodName                    = "/vietgara.document.v1.DocumentService/GetPrintSettings"
+	DocumentService_UpdatePrintSetting_FullMethodName                  = "/vietgara.document.v1.DocumentService/UpdatePrintSetting"
+	DocumentService_PrintQuotePdf_FullMethodName                       = "/vietgara.document.v1.DocumentService/PrintQuotePdf"
+	DocumentService_PrintRepairOrderPdf_FullMethodName                 = "/vietgara.document.v1.DocumentService/PrintRepairOrderPdf"
+	DocumentService_PrintSettlementReceiptPdf_FullMethodName           = "/vietgara.document.v1.DocumentService/PrintSettlementReceiptPdf"
+	DocumentService_PrintPaymentVoucherPdf_FullMethodName              = "/vietgara.document.v1.DocumentService/PrintPaymentVoucherPdf"
+	DocumentService_PrintGoodsReceiptPdf_FullMethodName                = "/vietgara.document.v1.DocumentService/PrintGoodsReceiptPdf"
+	DocumentService_PrintStockIssuePdf_FullMethodName                  = "/vietgara.document.v1.DocumentService/PrintStockIssuePdf"
+	DocumentService_ExportPaymentOutVoucherPdf_FullMethodName          = "/vietgara.document.v1.DocumentService/ExportPaymentOutVoucherPdf"
+	DocumentService_PrintPaymentOutVoucherPdf_FullMethodName           = "/vietgara.document.v1.DocumentService/PrintPaymentOutVoucherPdf"
+	DocumentService_ExportPurchaseOrderPdf_FullMethodName              = "/vietgara.document.v1.DocumentService/ExportPurchaseOrderPdf"
+	DocumentService_PrintPurchaseOrderPdf_FullMethodName               = "/vietgara.document.v1.DocumentService/PrintPurchaseOrderPdf"
+	DocumentService_ExportReceivablesExcel_FullMethodName              = "/vietgara.document.v1.DocumentService/ExportReceivablesExcel"
+	DocumentService_ExportReceivableReconciliationExcel_FullMethodName = "/vietgara.document.v1.DocumentService/ExportReceivableReconciliationExcel"
+	DocumentService_ExportSupplierPayablesExcel_FullMethodName         = "/vietgara.document.v1.DocumentService/ExportSupplierPayablesExcel"
 )
 
 // DocumentServiceClient is the client API for DocumentService service.
@@ -109,6 +116,20 @@ type DocumentServiceClient interface {
 	PrintPaymentVoucherPdf(ctx context.Context, in *PrintPaymentVoucherPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	PrintGoodsReceiptPdf(ctx context.Context, in *PrintGoodsReceiptPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	PrintStockIssuePdf(ctx context.Context, in *PrintStockIssuePdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	// FR-BIL-07 (Release 13.0): a payment-out voucher (phiếu chi) as a PDF.
+	ExportPaymentOutVoucherPdf(ctx context.Context, in *ExportPaymentOutVoucherPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	PrintPaymentOutVoucherPdf(ctx context.Context, in *PrintPaymentOutVoucherPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	// FR-INV-16 (Release 13.0): a purchase order as a PDF.
+	ExportPurchaseOrderPdf(ctx context.Context, in *ExportPurchaseOrderPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	PrintPurchaseOrderPdf(ctx context.Context, in *PrintPurchaseOrderPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	// FR-DOC-02 (Release 13.0): the receivables list
+	// (ReceivableService.ListReceivables) as an Excel workbook.
+	ExportReceivablesExcel(ctx context.Context, in *ExportReceivablesExcelRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	// FR-REC-04 (Release 13.0): the reconciliation of a period
+	// (ReceivableService.GetReconciliationReport) as an Excel workbook.
+	ExportReceivableReconciliationExcel(ctx context.Context, in *ExportReceivableReconciliationExcelRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	// FR-INV-17 (Release 13.0): the supplier payables as an Excel workbook.
+	ExportSupplierPayablesExcel(ctx context.Context, in *ExportSupplierPayablesExcelRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 }
 
 type documentServiceClient struct {
@@ -309,6 +330,76 @@ func (c *documentServiceClient) PrintStockIssuePdf(ctx context.Context, in *Prin
 	return out, nil
 }
 
+func (c *documentServiceClient) ExportPaymentOutVoucherPdf(ctx context.Context, in *ExportPaymentOutVoucherPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_ExportPaymentOutVoucherPdf_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) PrintPaymentOutVoucherPdf(ctx context.Context, in *PrintPaymentOutVoucherPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_PrintPaymentOutVoucherPdf_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) ExportPurchaseOrderPdf(ctx context.Context, in *ExportPurchaseOrderPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_ExportPurchaseOrderPdf_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) PrintPurchaseOrderPdf(ctx context.Context, in *PrintPurchaseOrderPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_PrintPurchaseOrderPdf_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) ExportReceivablesExcel(ctx context.Context, in *ExportReceivablesExcelRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_ExportReceivablesExcel_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) ExportReceivableReconciliationExcel(ctx context.Context, in *ExportReceivableReconciliationExcelRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_ExportReceivableReconciliationExcel_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) ExportSupplierPayablesExcel(ctx context.Context, in *ExportSupplierPayablesExcelRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_ExportSupplierPayablesExcel_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DocumentServiceServer is the server API for DocumentService service.
 // All implementations must embed UnimplementedDocumentServiceServer
 // for forward compatibility.
@@ -377,6 +468,20 @@ type DocumentServiceServer interface {
 	PrintPaymentVoucherPdf(context.Context, *PrintPaymentVoucherPdfRequest) (*httpbody.HttpBody, error)
 	PrintGoodsReceiptPdf(context.Context, *PrintGoodsReceiptPdfRequest) (*httpbody.HttpBody, error)
 	PrintStockIssuePdf(context.Context, *PrintStockIssuePdfRequest) (*httpbody.HttpBody, error)
+	// FR-BIL-07 (Release 13.0): a payment-out voucher (phiếu chi) as a PDF.
+	ExportPaymentOutVoucherPdf(context.Context, *ExportPaymentOutVoucherPdfRequest) (*httpbody.HttpBody, error)
+	PrintPaymentOutVoucherPdf(context.Context, *PrintPaymentOutVoucherPdfRequest) (*httpbody.HttpBody, error)
+	// FR-INV-16 (Release 13.0): a purchase order as a PDF.
+	ExportPurchaseOrderPdf(context.Context, *ExportPurchaseOrderPdfRequest) (*httpbody.HttpBody, error)
+	PrintPurchaseOrderPdf(context.Context, *PrintPurchaseOrderPdfRequest) (*httpbody.HttpBody, error)
+	// FR-DOC-02 (Release 13.0): the receivables list
+	// (ReceivableService.ListReceivables) as an Excel workbook.
+	ExportReceivablesExcel(context.Context, *ExportReceivablesExcelRequest) (*httpbody.HttpBody, error)
+	// FR-REC-04 (Release 13.0): the reconciliation of a period
+	// (ReceivableService.GetReconciliationReport) as an Excel workbook.
+	ExportReceivableReconciliationExcel(context.Context, *ExportReceivableReconciliationExcelRequest) (*httpbody.HttpBody, error)
+	// FR-INV-17 (Release 13.0): the supplier payables as an Excel workbook.
+	ExportSupplierPayablesExcel(context.Context, *ExportSupplierPayablesExcelRequest) (*httpbody.HttpBody, error)
 	mustEmbedUnimplementedDocumentServiceServer()
 }
 
@@ -443,6 +548,27 @@ func (UnimplementedDocumentServiceServer) PrintGoodsReceiptPdf(context.Context, 
 }
 func (UnimplementedDocumentServiceServer) PrintStockIssuePdf(context.Context, *PrintStockIssuePdfRequest) (*httpbody.HttpBody, error) {
 	return nil, status.Error(codes.Unimplemented, "method PrintStockIssuePdf not implemented")
+}
+func (UnimplementedDocumentServiceServer) ExportPaymentOutVoucherPdf(context.Context, *ExportPaymentOutVoucherPdfRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method ExportPaymentOutVoucherPdf not implemented")
+}
+func (UnimplementedDocumentServiceServer) PrintPaymentOutVoucherPdf(context.Context, *PrintPaymentOutVoucherPdfRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method PrintPaymentOutVoucherPdf not implemented")
+}
+func (UnimplementedDocumentServiceServer) ExportPurchaseOrderPdf(context.Context, *ExportPurchaseOrderPdfRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method ExportPurchaseOrderPdf not implemented")
+}
+func (UnimplementedDocumentServiceServer) PrintPurchaseOrderPdf(context.Context, *PrintPurchaseOrderPdfRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method PrintPurchaseOrderPdf not implemented")
+}
+func (UnimplementedDocumentServiceServer) ExportReceivablesExcel(context.Context, *ExportReceivablesExcelRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method ExportReceivablesExcel not implemented")
+}
+func (UnimplementedDocumentServiceServer) ExportReceivableReconciliationExcel(context.Context, *ExportReceivableReconciliationExcelRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method ExportReceivableReconciliationExcel not implemented")
+}
+func (UnimplementedDocumentServiceServer) ExportSupplierPayablesExcel(context.Context, *ExportSupplierPayablesExcelRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method ExportSupplierPayablesExcel not implemented")
 }
 func (UnimplementedDocumentServiceServer) mustEmbedUnimplementedDocumentServiceServer() {}
 func (UnimplementedDocumentServiceServer) testEmbeddedByValue()                         {}
@@ -807,6 +933,132 @@ func _DocumentService_PrintStockIssuePdf_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DocumentService_ExportPaymentOutVoucherPdf_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportPaymentOutVoucherPdfRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).ExportPaymentOutVoucherPdf(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_ExportPaymentOutVoucherPdf_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).ExportPaymentOutVoucherPdf(ctx, req.(*ExportPaymentOutVoucherPdfRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_PrintPaymentOutVoucherPdf_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrintPaymentOutVoucherPdfRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).PrintPaymentOutVoucherPdf(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_PrintPaymentOutVoucherPdf_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).PrintPaymentOutVoucherPdf(ctx, req.(*PrintPaymentOutVoucherPdfRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_ExportPurchaseOrderPdf_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportPurchaseOrderPdfRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).ExportPurchaseOrderPdf(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_ExportPurchaseOrderPdf_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).ExportPurchaseOrderPdf(ctx, req.(*ExportPurchaseOrderPdfRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_PrintPurchaseOrderPdf_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrintPurchaseOrderPdfRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).PrintPurchaseOrderPdf(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_PrintPurchaseOrderPdf_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).PrintPurchaseOrderPdf(ctx, req.(*PrintPurchaseOrderPdfRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_ExportReceivablesExcel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportReceivablesExcelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).ExportReceivablesExcel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_ExportReceivablesExcel_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).ExportReceivablesExcel(ctx, req.(*ExportReceivablesExcelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_ExportReceivableReconciliationExcel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportReceivableReconciliationExcelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).ExportReceivableReconciliationExcel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_ExportReceivableReconciliationExcel_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).ExportReceivableReconciliationExcel(ctx, req.(*ExportReceivableReconciliationExcelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_ExportSupplierPayablesExcel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportSupplierPayablesExcelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).ExportSupplierPayablesExcel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_ExportSupplierPayablesExcel_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).ExportSupplierPayablesExcel(ctx, req.(*ExportSupplierPayablesExcelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DocumentService_ServiceDesc is the grpc.ServiceDesc for DocumentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -889,6 +1141,34 @@ var DocumentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PrintStockIssuePdf",
 			Handler:    _DocumentService_PrintStockIssuePdf_Handler,
+		},
+		{
+			MethodName: "ExportPaymentOutVoucherPdf",
+			Handler:    _DocumentService_ExportPaymentOutVoucherPdf_Handler,
+		},
+		{
+			MethodName: "PrintPaymentOutVoucherPdf",
+			Handler:    _DocumentService_PrintPaymentOutVoucherPdf_Handler,
+		},
+		{
+			MethodName: "ExportPurchaseOrderPdf",
+			Handler:    _DocumentService_ExportPurchaseOrderPdf_Handler,
+		},
+		{
+			MethodName: "PrintPurchaseOrderPdf",
+			Handler:    _DocumentService_PrintPurchaseOrderPdf_Handler,
+		},
+		{
+			MethodName: "ExportReceivablesExcel",
+			Handler:    _DocumentService_ExportReceivablesExcel_Handler,
+		},
+		{
+			MethodName: "ExportReceivableReconciliationExcel",
+			Handler:    _DocumentService_ExportReceivableReconciliationExcel_Handler,
+		},
+		{
+			MethodName: "ExportSupplierPayablesExcel",
+			Handler:    _DocumentService_ExportSupplierPayablesExcel_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

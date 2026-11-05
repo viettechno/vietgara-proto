@@ -40,6 +40,89 @@ message GetRevenueReportResponse {
   int64 total_amount = 2;
 }
 
+// TechnicianPerformance is one technician's work in a period (FR-RPT-02).
+message TechnicianPerformance {
+  string technician_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string technician_name = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Lines the technician was assigned to that were completed in the period;
+  // a line shared by two technicians counts for both.
+  int32 completed_lines = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Repair orders those lines belong to.
+  int32 repair_orders = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Mean time from a line being started to it being completed, in whole
+  // minutes; 0 when no completed line has both times.
+  int64 average_turnaround_minutes = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message GetTechnicianReportRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Inclusive, "YYYY-MM-DD" in the garage's timezone.
+  string from = 2 [(google.api.field_behavior) = REQUIRED];
+  // Exclusive, "YYYY-MM-DD".
+  string to = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetTechnicianReportResponse {
+  // Most completed lines first.
+  repeated TechnicianPerformance technicians = 1;
+}
+
+// ProfitGroupBy chooses what a profit report adds up by (FR-RPT-05).
+enum ProfitGroupBy {
+  PROFIT_GROUP_BY_UNSPECIFIED = 0;
+  PROFIT_GROUP_BY_REPAIR_ORDER = 1;
+  PROFIT_GROUP_BY_JOB = 2;
+  PROFIT_GROUP_BY_TECHNICIAN = 3;
+}
+
+// ProfitRow is the profit of one repair order, job or technician.
+message ProfitRow {
+  // The repair order, job or technician id; empty for the row of lines
+  // that belong to no job or no technician.
+  string key = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The repair order number, job name or technician name.
+  string label = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int32 repair_orders = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The billable lines' totals, integer VND.
+  int64 revenue = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The cost snapshots of the parts consumed, integer VND.
+  int64 cost = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 profit = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message GetProfitReportRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  ProfitGroupBy group_by = 2 [(google.api.field_behavior) = REQUIRED];
+  // Repair orders closed from this day, inclusive, "YYYY-MM-DD" in the
+  // garage's timezone.
+  string from = 3 [(google.api.field_behavior) = REQUIRED];
+  // Exclusive, "YYYY-MM-DD".
+  string to = 4 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetProfitReportResponse {
+  // Most profitable first.
+  repeated ProfitRow rows = 1;
+  int64 total_revenue = 2;
+  int64 total_cost = 3;
+  int64 total_profit = 4;
+}
+
+message GetRepairOrderProfitRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// RepairOrderProfit is the profit of one repair order, shown on its detail
+// (FR-RPT-05). Cost is known once the stock issue is posted; before that
+// `cost_known` is false and the profit is not shown.
+message RepairOrderProfit {
+  int64 revenue = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 cost = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 profit = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  bool cost_known = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
 // ReportingService serves the revenue-by-period report (FR-RPT-01) that
 // backs the Web Admin Dashboard's KPI card and revenue chart (UI Design
 // Spec 3.1). It owns no tables of its own -- revenue is aggregated fresh
@@ -51,5 +134,24 @@ message GetRevenueReportResponse {
 service ReportingService {
   rpc GetRevenueReport(GetRevenueReportRequest) returns (GetRevenueReportResponse) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/revenue"};
+  }
+
+  // FR-RPT-02: completed lines and average turnaround per technician for a
+  // period. Needs report.read.
+  rpc GetTechnicianReport(GetTechnicianReportRequest) returns (GetTechnicianReportResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/technicians"};
+  }
+
+  // FR-RPT-05: revenue less the cost snapshots of the consumed parts, by
+  // repair order, job or technician, for the repair orders closed in a
+  // period. Needs report.read and inventory.cost.read.
+  rpc GetProfitReport(GetProfitReportRequest) returns (GetProfitReportResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/profit"};
+  }
+
+  // FR-RPT-05: the profit of one repair order. Needs repair_order.read and
+  // inventory.cost.read.
+  rpc GetRepairOrderProfit(GetRepairOrderProfitRequest) returns (RepairOrderProfit) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/profit"};
   }
 }

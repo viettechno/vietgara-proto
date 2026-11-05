@@ -27,6 +27,8 @@ enum NotificationType {
   NOTIFICATION_TYPE_SETTLEMENT_PAID = 6;
   // Staff: a part fell to or under its reorder threshold.
   NOTIFICATION_TYPE_LOW_STOCK = 7;
+  // Release 13.0 (FR-REC-03): a reminder that a settlement is overdue.
+  NOTIFICATION_TYPE_PAYMENT_REMINDER = 8;
 }
 
 enum NotificationAudience {

@@ -1443,12 +1443,16 @@ type GoodsReceipt struct {
 	// PERMISSION_INVENTORY_COST_READ.
 	TotalAmount *int64 `protobuf:"varint,11,opt,name=total_amount,json=totalAmount,proto3,oneof" json:"total_amount,omitempty"`
 	// Set when the receipt is completed / cancelled.
-	CompletedAt   *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
-	CancelledAt   *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=cancelled_at,json=cancelledAt,proto3" json:"cancelled_at,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	CompletedAt *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
+	CancelledAt *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=cancelled_at,json=cancelledAt,proto3" json:"cancelled_at,omitempty"`
+	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt   *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	// The purchase order this receipt was created from (FR-INV-16); completing
+	// the receipt counts its lines against that order.
+	PurchaseOrderId     *string `protobuf:"bytes,16,opt,name=purchase_order_id,json=purchaseOrderId,proto3,oneof" json:"purchase_order_id,omitempty"`
+	PurchaseOrderNumber string  `protobuf:"bytes,17,opt,name=purchase_order_number,json=purchaseOrderNumber,proto3" json:"purchase_order_number,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *GoodsReceipt) Reset() {
@@ -1584,6 +1588,20 @@ func (x *GoodsReceipt) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *GoodsReceipt) GetPurchaseOrderId() string {
+	if x != nil && x.PurchaseOrderId != nil {
+		return *x.PurchaseOrderId
+	}
+	return ""
+}
+
+func (x *GoodsReceipt) GetPurchaseOrderNumber() string {
+	if x != nil {
+		return x.PurchaseOrderNumber
+	}
+	return ""
 }
 
 type ListGoodsReceiptsRequest struct {
@@ -6910,7 +6928,7 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\b_unit_idB\f\n" +
 	"\n" +
 	"_unit_costB\x0e\n" +
-	"\f_line_amount\"\xa0\x06\n" +
+	"\f_line_amount\"\xa5\a\n" +
 	"\fGoodsReceipt\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12 \n" +
 	"\tgarage_id\x18\x02 \x01(\tB\x03\xe0A\x03R\bgarageId\x12\x1b\n" +
@@ -6929,9 +6947,12 @@ const file_vietgara_inventory_v1_inventory_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAtB\x16\n" +
+	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x124\n" +
+	"\x11purchase_order_id\x18\x10 \x01(\tB\x03\xe0A\x03H\x02R\x0fpurchaseOrderId\x88\x01\x01\x127\n" +
+	"\x15purchase_order_number\x18\x11 \x01(\tB\x03\xe0A\x03R\x13purchaseOrderNumberB\x16\n" +
 	"\x14_default_supplier_idB\x0f\n" +
-	"\r_total_amount\"\xe7\x01\n" +
+	"\r_total_amountB\x14\n" +
+	"\x12_purchase_order_id\"\xe7\x01\n" +
 	"\x18ListGoodsReceiptsRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x14\n" +
 	"\x05query\x18\x02 \x01(\tR\x05query\x12\x1f\n" +

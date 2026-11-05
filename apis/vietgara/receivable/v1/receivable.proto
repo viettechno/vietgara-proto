@@ -1,0 +1,245 @@
+syntax = "proto3";
+
+package vietgara.receivable.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/pagination.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/receivable/v1;receivablev1";
+
+// ReceivableStatus is the collection state of one receivable (FR-REC-01).
+enum ReceivableStatus {
+  RECEIVABLE_STATUS_UNSPECIFIED = 0;
+  // Something is still to be collected.
+  RECEIVABLE_STATUS_OPEN = 1;
+  // Fully collected.
+  RECEIVABLE_STATUS_PAID = 2;
+}
+
+// ReceivableEntryKind is one movement of a receivable's ledger.
+enum ReceivableEntryKind {
+  RECEIVABLE_ENTRY_KIND_UNSPECIFIED = 0;
+  // The settlement was issued: the amount becomes receivable.
+  RECEIVABLE_ENTRY_KIND_CHARGE = 1;
+  // A payment voucher was recorded against it.
+  RECEIVABLE_ENTRY_KIND_PAYMENT = 2;
+  // A payment voucher was voided: the amount is receivable again.
+  RECEIVABLE_ENTRY_KIND_VOID = 3;
+}
+
+// ReminderOutcome is what became of one scheduled reminder (FR-REC-03).
+enum ReminderOutcome {
+  REMINDER_OUTCOME_UNSPECIFIED = 0;
+  REMINDER_OUTCOME_SENT = 1;
+  // Not sent, with a reason: the customer has no e-mail, opted out or is
+  // suppressed, the garage switched the type off, or a later reminder
+  // replaced it.
+  REMINDER_OUTCOME_SKIPPED = 2;
+  REMINDER_OUTCOME_FAILED = 3;
+}
+
+// ReceivableEntry is one line of a receivable's ledger.
+message ReceivableEntry {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  ReceivableEntryKind kind = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Integer VND, always positive; the kind gives the sign.
+  int64 amount = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The settlement number for a charge, the voucher number otherwise.
+  string reference = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // "cash", "bank_transfer" or "online" for a payment or void; empty for a
+  // charge.
+  string method = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp occurred_at = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// ReceivableReminder is one reminder the schedule produced; each
+// (receivable, offset) pair is logged once.
+message ReceivableReminder {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Days after the due date this reminder was scheduled for.
+  int32 offset_days = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // "email" today; push joins with Release 11.0.
+  string channel = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  ReminderOutcome outcome = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // For a skip: DISABLED, OPTED_OUT, SUPPRESSED, NO_EMAIL or SUPERSEDED.
+  string reason = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// Receivable is what a customer still owes for one settlement (FR-REC-01).
+// The module keeps its own state, fed by the settlement and payment events
+// of Billing & Settlement.
+message Receivable {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string settlement_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string settlement_number = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The customer the settlement is billed through; empty when unknown.
+  string customer_id = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string customer_name = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string vehicle_license_plate = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Integer VND.
+  int64 total_amount = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 paid_amount = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 remaining_amount = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // "YYYY-MM-DD" in the garage's timezone: the settlement's date plus the
+  // garage's payment terms.
+  string due_date = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Open and past its due date.
+  bool overdue = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Days past the due date; 0 when not overdue.
+  int32 days_overdue = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  ReceivableStatus status = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int32 reminders_sent = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp last_reminder_at = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Only on GetReceivable.
+  repeated ReceivableEntry entries = 19 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated ReceivableReminder reminders = 20 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// ReceivablesSummary totals the open receivables a list matched, across all
+// its pages.
+message ReceivablesSummary {
+  int32 open_count = 1;
+  int64 outstanding_amount = 2;
+  int32 overdue_count = 3;
+  int64 overdue_amount = 4;
+}
+
+message ListReceivablesRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Only this customer's receivables.
+  string customer_id = 2;
+  // Only the open ones past their due date.
+  bool overdue_only = 3;
+  // Paid receivables are left out unless this is set.
+  bool include_paid = 4;
+  // Matches the settlement number, customer name or license plate.
+  string query = 5;
+  int32 page = 6;
+  int32 page_size = 7;
+}
+
+message ListReceivablesResponse {
+  repeated Receivable data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+  ReceivablesSummary summary = 3;
+}
+
+message GetReceivableRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string receivable_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// ReceivableSettings is a garage's payment terms and reminder schedule
+// (FR-REC-03). A garage that never saved them has 7 days of terms and
+// reminders at 3 and 7 days overdue.
+message ReceivableSettings {
+  // Days from the settlement's date to its due date, 0 to 365.
+  int32 payment_terms_days = 1;
+  bool reminders_enabled = 2;
+  // Days overdue at which a reminder goes out: up to 5 distinct values from
+  // 1 to 90, ascending.
+  repeated int32 reminder_offset_days = 3;
+}
+
+message GetReceivableSettingsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message UpdateReceivableSettingsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  ReceivableSettings settings = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// ReconciliationMethodTotal is the amount collected by one payment method.
+message ReconciliationMethodTotal {
+  string method = 1;
+  int64 amount = 2;
+}
+
+// ReconciliationLine is one movement of the period.
+message ReconciliationLine {
+  // "YYYY-MM-DD" in the garage's timezone.
+  string date = 1;
+  ReceivableEntryKind kind = 2;
+  string reference = 3;
+  string customer_name = 4;
+  int64 amount = 5;
+  string method = 6;
+}
+
+// ReconciliationReport reconciles a period's receivables with the
+// settlements and vouchers behind them (FR-REC-04): the opening balance plus
+// what was charged, less what was collected (and plus what was voided), is
+// the closing balance, which must equal the open receivables' remaining
+// amounts.
+message ReconciliationReport {
+  string from = 1;
+  string to = 2;
+  int64 opening_balance = 3;
+  int64 charged_amount = 4;
+  int64 collected_amount = 5;
+  int64 voided_amount = 6;
+  int64 closing_balance = 7;
+  int32 settlement_count = 8;
+  int32 payment_count = 9;
+  repeated ReconciliationMethodTotal collected_by_method = 10;
+  // Payment-out vouchers (phiếu chi) issued in the period, net of voids;
+  // shown beside the receivables, not part of the balance.
+  int64 paid_out_amount = 11;
+  // Whether the closing balance equals the remaining amounts of the
+  // receivables as the module holds them now.
+  bool matches = 12;
+  // closing_balance less the sum of the receivables' remaining amounts.
+  int64 difference = 13;
+  repeated ReconciliationLine lines = 14;
+}
+
+message GetReconciliationReportRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Inclusive, "YYYY-MM-DD" in the garage's timezone.
+  string from = 2 [(google.api.field_behavior) = REQUIRED];
+  // Exclusive, "YYYY-MM-DD".
+  string to = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+// ReceivableService serves the receivables of a garage (FR-REC-01, 03, 04).
+// Billing & Settlement stays the owner of settlements and vouchers; this
+// module keeps its own copy of what is owed, fed by their events, so that
+// reminders and reconciliation have state of their own. Needs the billing
+// permissions.
+service ReceivableService {
+  // FR-REC-01: the garage's receivables, most overdue first, with totals.
+  rpc ListReceivables(ListReceivablesRequest) returns (ListReceivablesResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/receivables"};
+  }
+
+  // One receivable with its ledger and reminder log.
+  rpc GetReceivable(GetReceivableRequest) returns (Receivable) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/receivables/{receivable_id}"};
+  }
+
+  // The payment terms and reminder schedule.
+  rpc GetReceivableSettings(GetReceivableSettingsRequest) returns (ReceivableSettings) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/receivable-settings"};
+  }
+
+  // Replaces the payment terms and reminder schedule (FR-REC-03). New terms
+  // apply to settlements issued afterwards; the schedule applies at once.
+  rpc UpdateReceivableSettings(UpdateReceivableSettingsRequest) returns (ReceivableSettings) {
+    option (google.api.http) = {
+      put: "/api/v1/garages/{garage_id}/receivable-settings"
+      body: "settings"
+    };
+  }
+
+  // FR-REC-04: the reconciliation of a period.
+  rpc GetReconciliationReport(GetReconciliationReportRequest) returns (ReconciliationReport) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/receivable-reconciliation"};
+  }
+}
