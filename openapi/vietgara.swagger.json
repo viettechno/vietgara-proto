@@ -27,6 +27,14 @@
       "description": "CustomerLinkService links a garage's customer profile with a VietGara\nuser, with the user's consent (FR-CUS-06). Suppliers use their own link\nin Phase 17. Needs PERMISSION_CUSTOMER_WRITE."
     },
     {
+      "name": "DataRequestService",
+      "description": "DataRequestService serves the data requests of a garage's customers\n(FR-CUS-05). Listing needs customer.read; recording, completing and\nanswering a request need customer.write."
+    },
+    {
+      "name": "PublicDataRequestService",
+      "description": "PublicDataRequestService is the request page for people without the app\n(FR-CUS-05). Both calls are public and throttled; the first always answers\nthe same whether or not the address is known, and sends the link only to\nthe address itself. A request waits for its link in a table of its own\n(not as a DataRequest), which is deleted after 7 days with its `details`;\na confirmed one acts on every customer profile that holds the confirmed\naddress, in every garage, and is logged in each as a DataRequest."
+    },
+    {
       "name": "CustomerTaxProfileService",
       "description": "CustomerTaxProfileService manages a customer's tax profiles (FR-CUS-07).\nReads need PERMISSION_CUSTOMER_READ, changes PERMISSION_CUSTOMER_WRITE."
     },
@@ -71,6 +79,10 @@
       "description": "InventoryService manages how many of each part a garage has (FRD 3.7).\nReads need PERMISSION_INVENTORY_READ, changes PERMISSION_INVENTORY_WRITE\n(stock counts need PERMISSION_INVENTORY_COUNT, write-offs, supplier\nreturns and repair order part returns PERMISSION_INVENTORY_ADJUST).\nThe parts themselves are managed by CatalogueService."
     },
     {
+      "name": "PurchaseOrderService",
+      "description": "PurchaseOrderService serves the purchase orders of a garage (FR-INV-16).\nReading needs inventory.read, changing needs inventory.write; prices are\nshown and set only with inventory.cost.read.\n\nStates: DRAFT -\u003e SENT (a SENT order may be sent again) -\u003e PARTIALLY_RECEIVED\n-\u003e RECEIVED, driven by completed goods receipts; CANCELLED is reachable from\nDRAFT, SENT and PARTIALLY_RECEIVED (the quantities received stay received).\nAny other transition is refused (FAILED_PRECONDITION). Only one draft goods\nreceipt may exist for an order at a time."
+    },
+    {
       "name": "LicenseService",
       "description": "LicenseService is the garage-facing side of License Management."
     },
@@ -97,6 +109,14 @@
     {
       "name": "PublicQuoteService",
       "description": "PublicQuoteService serves the customer-facing approval link (FR-QUO-02),\nreachable with no access token: the token in the path is the\nauthorization (Security Architecture Section 2, public link pattern)."
+    },
+    {
+      "name": "PayableService",
+      "description": "PayableService serves the supplier payables and the payment-out vouchers\nthat settle them (FR-INV-17, FR-BIL-07). Reading needs billing.read,\nchanging needs billing.write."
+    },
+    {
+      "name": "ReceivableService",
+      "description": "ReceivableService serves the receivables of a garage (FR-REC-01, 03, 04).\nBilling \u0026 Settlement stays the owner of settlements and vouchers; this\nmodule keeps its own copy of what is owed, fed by their events, so that\nreminders and reconciliation have state of their own. Needs the billing\npermissions."
     },
     {
       "name": "RepairOrderService",
@@ -2297,6 +2317,51 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/customers/{customerId}/data-requests": {
+      "post": {
+        "summary": "Records a request a customer made in person and acts on it at once: a\nview is answered with the data held, a deletion anonymizes the customer\nand their vehicles, and a correction waits for the garage to make it and\ncomplete the request.",
+        "operationId": "DataRequestService_CreateDataRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DataRequest"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DataRequestServiceCreateDataRequestBody"
+            }
+          }
+        ],
+        "tags": [
+          "DataRequestService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/customers/{customerId}/tax-profiles": {
       "get": {
         "operationId": "CustomerTaxProfileService_ListCustomerTaxProfiles",
@@ -2740,6 +2805,161 @@
         ],
         "tags": [
           "CustomerService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/data-requests": {
+      "get": {
+        "operationId": "DataRequestService_ListDataRequests",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListDataRequestsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "description": " - DATA_REQUEST_TYPE_VIEW: To see what the garage holds.\n - DATA_REQUEST_TYPE_CORRECT: To correct it.\n - DATA_REQUEST_TYPE_DELETE: To erase it. The customer's and vehicles' personal fields are made\nanonymous; the financial documents the law requires stay.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "DATA_REQUEST_TYPE_VIEW",
+              "DATA_REQUEST_TYPE_CORRECT",
+              "DATA_REQUEST_TYPE_DELETE"
+            ]
+          },
+          {
+            "name": "status",
+            "description": " - DATA_REQUEST_STATUS_PENDING: Confirmed and waiting for the garage to act (a correction).\n - DATA_REQUEST_STATUS_REJECTED: The garage declined it, with the reason in `outcome`.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "DATA_REQUEST_STATUS_PENDING",
+              "DATA_REQUEST_STATUS_COMPLETED",
+              "DATA_REQUEST_STATUS_REJECTED"
+            ]
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "DataRequestService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/data-requests/{requestId}": {
+      "get": {
+        "operationId": "DataRequestService_GetDataRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DataRequest"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DataRequestService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/data-requests/{requestId}:complete": {
+      "post": {
+        "summary": "Completes a waiting correction with what was done, or declines it.",
+        "operationId": "DataRequestService_CompleteDataRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DataRequest"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DataRequestServiceCompleteDataRequestBody"
+            }
+          }
+        ],
+        "tags": [
+          "DataRequestService"
         ]
       }
     },
@@ -3866,7 +4086,7 @@
           },
           {
             "name": "type",
-            "description": "Filters; unspecified means all.\n\n - NOTIFICATION_TYPE_QUOTE_READY: Customer: the quote with the link to approve it. Essential.\n - NOTIFICATION_TYPE_QUOTE_DECIDED: Staff: a quote was approved or rejected.\n - NOTIFICATION_TYPE_VEHICLE_READY: Customer: the vehicle is ready for pick-up.\n - NOTIFICATION_TYPE_PAYMENT_RECEIVED: Customer: a payment was recorded and a balance is left.\n - NOTIFICATION_TYPE_SETTLEMENT_RECEIPT: Customer: the settlement is paid; the receipt is attached. Essential.\n - NOTIFICATION_TYPE_SETTLEMENT_PAID: Staff: a settlement is fully paid.\n - NOTIFICATION_TYPE_LOW_STOCK: Staff: a part fell to or under its reorder threshold.",
+            "description": "Filters; unspecified means all.\n\n - NOTIFICATION_TYPE_QUOTE_READY: Customer: the quote with the link to approve it. Essential.\n - NOTIFICATION_TYPE_QUOTE_DECIDED: Staff: a quote was approved or rejected.\n - NOTIFICATION_TYPE_VEHICLE_READY: Customer: the vehicle is ready for pick-up.\n - NOTIFICATION_TYPE_PAYMENT_RECEIVED: Customer: a payment was recorded and a balance is left.\n - NOTIFICATION_TYPE_SETTLEMENT_RECEIPT: Customer: the settlement is paid; the receipt is attached. Essential.\n - NOTIFICATION_TYPE_SETTLEMENT_PAID: Staff: a settlement is fully paid.\n - NOTIFICATION_TYPE_LOW_STOCK: Staff: a part fell to or under its reorder threshold.\n - NOTIFICATION_TYPE_PAYMENT_REMINDER: Release 13.0 (FR-REC-03): a reminder that a settlement is overdue.\n - NOTIFICATION_TYPE_PURCHASE_ORDER: Release 13.0 (FR-INV-16): a purchase order e-mailed to a supplier. Not\nswitchable: it appears in the log only, never in the settings.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -3877,7 +4097,9 @@
               "NOTIFICATION_TYPE_PAYMENT_RECEIVED",
               "NOTIFICATION_TYPE_SETTLEMENT_RECEIPT",
               "NOTIFICATION_TYPE_SETTLEMENT_PAID",
-              "NOTIFICATION_TYPE_LOW_STOCK"
+              "NOTIFICATION_TYPE_LOW_STOCK",
+              "NOTIFICATION_TYPE_PAYMENT_REMINDER",
+              "NOTIFICATION_TYPE_PURCHASE_ORDER"
             ]
           },
           {
@@ -4662,6 +4884,254 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/payment-out-vouchers": {
+      "get": {
+        "operationId": "PayableService_ListPaymentOutVouchers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPaymentOutVouchersResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supplierId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "includeVoided",
+            "description": "Voided vouchers are left out unless this is set.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "PayableService"
+        ]
+      },
+      "post": {
+        "summary": "Issues a voucher and applies its allocations to the payables of the\nsame supplier, in one transaction.",
+        "operationId": "PayableService_CreatePaymentOutVoucher",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PaymentOutVoucher"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "voucher",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PaymentOutVoucher"
+            }
+          }
+        ],
+        "tags": [
+          "PayableService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/payment-out-vouchers/{voucherId}": {
+      "get": {
+        "operationId": "PayableService_GetPaymentOutVoucher",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PaymentOutVoucher"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "voucherId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PayableService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/payment-out-vouchers/{voucherId}/pdf": {
+      "get": {
+        "summary": "FR-BIL-07 (Release 13.0): a payment-out voucher (phiếu chi) as a PDF.",
+        "operationId": "DocumentService_ExportPaymentOutVoucherPdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "voucherId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/payment-out-vouchers/{voucherId}/pdf:print": {
+      "post": {
+        "operationId": "DocumentService_PrintPaymentOutVoucherPdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "voucherId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/payment-out-vouchers/{voucherId}:void": {
+      "post": {
+        "summary": "Voids a voucher: it stays on file with its number and reason, and its\nallocations are taken back off the payables.",
+        "operationId": "PayableService_VoidPaymentOutVoucher",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PaymentOutVoucher"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "voucherId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PayableServiceVoidPaymentOutVoucherBody"
+            }
+          }
+        ],
+        "tags": [
+          "PayableService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/print-settings": {
       "get": {
         "summary": "FR-DOC-04, FR-DOC-05 (Release 10.0): the garage's print choice for each\ndocument type, defaults filled in. Needs membership of the garage.",
@@ -4729,7 +5199,9 @@
               "DOCUMENT_TYPE_SETTLEMENT",
               "DOCUMENT_TYPE_PAYMENT_VOUCHER",
               "DOCUMENT_TYPE_GOODS_RECEIPT",
-              "DOCUMENT_TYPE_STOCK_ISSUE"
+              "DOCUMENT_TYPE_STOCK_ISSUE",
+              "DOCUMENT_TYPE_PAYMENT_OUT_VOUCHER",
+              "DOCUMENT_TYPE_PURCHASE_ORDER"
             ]
           },
           {
@@ -4743,6 +5215,438 @@
         ],
         "tags": [
           "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/purchase-orders": {
+      "get": {
+        "operationId": "PurchaseOrderService_ListPurchaseOrders",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPurchaseOrdersResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "query",
+            "description": "Matches the number, the supplier's name or notes.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "supplierId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PURCHASE_ORDER_STATUS_DRAFT",
+              "PURCHASE_ORDER_STATUS_SENT",
+              "PURCHASE_ORDER_STATUS_PARTIALLY_RECEIVED",
+              "PURCHASE_ORDER_STATUS_RECEIVED",
+              "PURCHASE_ORDER_STATUS_CANCELLED"
+            ]
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "PurchaseOrderService"
+        ]
+      },
+      "post": {
+        "operationId": "PurchaseOrderService_CreatePurchaseOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PurchaseOrder"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "purchaseOrder",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PurchaseOrder"
+            }
+          }
+        ],
+        "tags": [
+          "PurchaseOrderService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/purchase-orders/{purchaseOrderId}": {
+      "get": {
+        "operationId": "PurchaseOrderService_GetPurchaseOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PurchaseOrder"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "purchaseOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PurchaseOrderService"
+        ]
+      },
+      "put": {
+        "summary": "Replaces a draft order's supplier, expected date, notes and lines.",
+        "operationId": "PurchaseOrderService_UpdatePurchaseOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PurchaseOrder"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "purchaseOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "purchaseOrder",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PurchaseOrder"
+            }
+          }
+        ],
+        "tags": [
+          "PurchaseOrderService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/purchase-orders/{purchaseOrderId}/pdf": {
+      "get": {
+        "summary": "FR-INV-16 (Release 13.0): a purchase order as a PDF.",
+        "operationId": "DocumentService_ExportPurchaseOrderPdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "purchaseOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/purchase-orders/{purchaseOrderId}/pdf:print": {
+      "post": {
+        "operationId": "DocumentService_PrintPurchaseOrderPdf",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "purchaseOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/purchase-orders/{purchaseOrderId}:cancel": {
+      "post": {
+        "summary": "Cancels an order that has no open draft goods receipt; what was already\nreceived stays received.",
+        "operationId": "PurchaseOrderService_CancelPurchaseOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PurchaseOrder"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "purchaseOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PurchaseOrderServiceCancelPurchaseOrderBody"
+            }
+          }
+        ],
+        "tags": [
+          "PurchaseOrderService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/purchase-orders/{purchaseOrderId}:receive": {
+      "post": {
+        "summary": "Creates a draft goods receipt for what the order still waits for, with\nthe supplier and the quantities pre-filled and linked to the order. The\norder must be SENT or PARTIALLY_RECEIVED and have no open draft receipt\n(PURCHASE_ORDER_RECEIPT_OPEN).",
+        "operationId": "PurchaseOrderService_ReceivePurchaseOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GoodsReceipt"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "purchaseOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PurchaseOrderServiceReceivePurchaseOrderBody"
+            }
+          }
+        ],
+        "tags": [
+          "PurchaseOrderService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/purchase-orders/{purchaseOrderId}:send": {
+      "post": {
+        "summary": "E-mails the order, as a PDF, to the supplier's e-mail on file and marks\nit sent. A supplier with no e-mail on file is refused\n(SUPPLIER_EMAIL_REQUIRED).",
+        "operationId": "PurchaseOrderService_SendPurchaseOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PurchaseOrder"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "purchaseOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PurchaseOrderServiceSendPurchaseOrderBody"
+            }
+          }
+        ],
+        "tags": [
+          "PurchaseOrderService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/purchase-orders:from-low-stock": {
+      "post": {
+        "summary": "From the low-stock list: one draft order per supplier, each part on the\norder of its default supplier, for the quantity that brings the stock\nback to twice its reorder threshold. Parts without a default supplier\nare returned, not ordered.",
+        "operationId": "PurchaseOrderService_CreatePurchaseOrdersFromLowStock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreatePurchaseOrdersFromLowStockResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PurchaseOrderServiceCreatePurchaseOrdersFromLowStockBody"
+            }
+          }
+        ],
+        "tags": [
+          "PurchaseOrderService"
         ]
       }
     },
@@ -5218,6 +6122,184 @@
         ],
         "tags": [
           "QuoteService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/receivable-settings": {
+      "get": {
+        "summary": "The payment terms and reminder schedule.",
+        "operationId": "ReceivableService_GetReceivableSettings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReceivableSettings"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ReceivableService"
+        ]
+      },
+      "put": {
+        "summary": "Replaces the payment terms and reminder schedule (FR-REC-03). New terms\napply to settlements issued afterwards; the schedule applies at once.",
+        "operationId": "ReceivableService_UpdateReceivableSettings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReceivableSettings"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "settings",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ReceivableSettings"
+            }
+          }
+        ],
+        "tags": [
+          "ReceivableService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/receivables": {
+      "get": {
+        "summary": "FR-REC-01: the garage's receivables, most overdue first, with totals.",
+        "operationId": "ReceivableService_ListReceivables",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListReceivablesResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "description": "Only this customer's receivables.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "overdueOnly",
+            "description": "Only the open ones past their due date.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "includePaid",
+            "description": "Paid receivables are left out unless this is set.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "query",
+            "description": "Matches the settlement number, customer name or license plate.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "ReceivableService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/receivables/{receivableId}": {
+      "get": {
+        "summary": "One receivable with its ledger and reminder log.",
+        "operationId": "ReceivableService_GetReceivable",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Receivable"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "receivableId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ReceivableService"
         ]
       }
     },
@@ -5748,6 +6830,43 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/profit": {
+      "get": {
+        "summary": "FR-RPT-05: the profit of one repair order. Needs repair_order.read and\ninventory.cost.read.",
+        "operationId": "ReportingService_GetRepairOrderProfit",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RepairOrderProfit"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repairOrderId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ReportingService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/repair-orders/{repairOrderId}/stock-issue": {
       "get": {
         "summary": "The repair order's stock issue document (FR-INV-20, Release 7.0),\ncreated with the order and, while a draft, following its part lines.",
@@ -5858,6 +6977,63 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/reports/profit": {
+      "get": {
+        "summary": "FR-RPT-05: revenue less the cost snapshots of the consumed parts, by\nrepair order, job or technician, for the repair orders closed in a\nperiod. Needs report.read and inventory.cost.read.",
+        "operationId": "ReportingService_GetProfitReport",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetProfitReportResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "groupBy",
+            "description": "Required: PROFIT_GROUP_BY_UNSPECIFIED is refused (INVALID_ARGUMENT).",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "PROFIT_GROUP_BY_REPAIR_ORDER",
+              "PROFIT_GROUP_BY_JOB",
+              "PROFIT_GROUP_BY_TECHNICIAN"
+            ]
+          },
+          {
+            "name": "from",
+            "description": "Repair orders closed from this day, inclusive, \"YYYY-MM-DD\" in the\ngarage's timezone.",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "to",
+            "description": "Exclusive, \"YYYY-MM-DD\".",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ReportingService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/reports/purchases": {
       "get": {
         "summary": "Purchases by supplier and period (FR-INV-19), from completed goods\nreceipts. Needs PERMISSION_INVENTORY_COST_READ; without it the whole call\nis refused with PERMISSION_DENIED (its cost fields are not omitted).",
@@ -5951,6 +7127,152 @@
           {
             "name": "to",
             "description": "Exclusive, \"YYYY-MM-DD\".",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/reports/receivable-reconciliation": {
+      "get": {
+        "summary": "FR-REC-04: the reconciliation of a period.",
+        "operationId": "ReceivableService_GetReconciliationReport",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReconciliationReport"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "description": "Inclusive, \"YYYY-MM-DD\" in the garage's timezone.",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "to",
+            "description": "Exclusive, \"YYYY-MM-DD\".",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ReceivableService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/reports/receivable-reconciliation/excel": {
+      "get": {
+        "summary": "FR-REC-04 (Release 13.0): the reconciliation of a period\n(ReceivableService.GetReconciliationReport) as an Excel workbook.",
+        "operationId": "DocumentService_ExportReceivableReconciliationExcel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "description": "Inclusive, \"YYYY-MM-DD\" in the garage's timezone.",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "to",
+            "description": "Exclusive, \"YYYY-MM-DD\".",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/reports/receivables/excel": {
+      "get": {
+        "summary": "FR-DOC-02 (Release 13.0): the receivables list\n(ReceivableService.ListReceivables) as an Excel workbook.",
+        "operationId": "DocumentService_ExportReceivablesExcel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "description": "Same optional filters as ReceivableService.ListReceivables.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "overdueOnly",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "includePaid",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "query",
             "in": "query",
             "required": false,
             "type": "string"
@@ -6263,6 +7585,95 @@
         ],
         "tags": [
           "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/reports/supplier-payables/excel": {
+      "get": {
+        "summary": "FR-INV-17 (Release 13.0): the supplier payables as an Excel workbook.",
+        "operationId": "DocumentService_ExportSupplierPayablesExcel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supplierId",
+            "description": "Same optional filters as PayableService.ListSupplierPayables.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "includePaid",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/reports/technicians": {
+      "get": {
+        "summary": "FR-RPT-02: completed lines and average turnaround per technician for a\nperiod. Needs report.read.",
+        "operationId": "ReportingService_GetTechnicianReport",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetTechnicianReportResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "description": "Inclusive, \"YYYY-MM-DD\" in the garage's timezone.",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "to",
+            "description": "Exclusive, \"YYYY-MM-DD\".",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ReportingService"
         ]
       }
     },
@@ -7629,6 +9040,95 @@
         ],
         "tags": [
           "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/supplier-payables": {
+      "get": {
+        "summary": "The payables, oldest first.",
+        "operationId": "PayableService_ListSupplierPayables",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListSupplierPayablesResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supplierId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "includePaid",
+            "description": "Paid payables are left out unless this is set.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "PayableService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/supplier-payables/aging": {
+      "get": {
+        "summary": "The open payables by supplier and age.",
+        "operationId": "PayableService_GetSupplierPayablesAging",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetSupplierPayablesAgingResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PayableService"
         ]
       }
     },
@@ -10038,6 +11538,70 @@
         ]
       }
     },
+    "/api/v1/public/data-requests": {
+      "post": {
+        "operationId": "PublicDataRequestService_SubmitPublicDataRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SubmitPublicDataRequestResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SubmitPublicDataRequestRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PublicDataRequestService"
+        ]
+      }
+    },
+    "/api/v1/public/data-requests:confirm": {
+      "post": {
+        "operationId": "PublicDataRequestService_ConfirmPublicDataRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ConfirmPublicDataRequestResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ConfirmPublicDataRequestRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PublicDataRequestService"
+        ]
+      }
+    },
     "/api/v1/public/quotes/{token}": {
       "get": {
         "operationId": "PublicQuoteService_GetPublicQuote",
@@ -10349,6 +11913,36 @@
     "CustomerTaxProfileServiceActivateCustomerTaxProfileBody": {
       "type": "object"
     },
+    "DataRequestServiceCompleteDataRequestBody": {
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "type": "string",
+          "description": "What was done, or why the request is declined; required, at most 2000\ncharacters."
+        },
+        "declined": {
+          "type": "boolean",
+          "description": "Declines the request instead of completing it."
+        }
+      },
+      "required": [
+        "outcome"
+      ]
+    },
+    "DataRequestServiceCreateDataRequestBody": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/v1DataRequestType"
+        },
+        "details": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ]
+    },
     "DocumentServiceUpdatePrintSettingBody": {
       "type": "object",
       "properties": {
@@ -10655,6 +12249,18 @@
         }
       }
     },
+    "PayableServiceVoidPaymentOutVoucherBody": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "description": "Required, at most 500 characters."
+        }
+      },
+      "required": [
+        "reason"
+      ]
+    },
     "PlatformAccessServiceAcceptPlatformInvitationBody": {
       "type": "object"
     },
@@ -10678,6 +12284,37 @@
       "required": [
         "decisions"
       ]
+    },
+    "PurchaseOrderServiceCancelPurchaseOrderBody": {
+      "type": "object"
+    },
+    "PurchaseOrderServiceCreatePurchaseOrdersFromLowStockBody": {
+      "type": "object",
+      "properties": {
+        "partIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Limits the order to these parts; empty means every part at or below its\nreorder threshold."
+        },
+        "expectedDate": {
+          "type": "string",
+          "description": "\"YYYY-MM-DD\"; copied to every order created."
+        }
+      }
+    },
+    "PurchaseOrderServiceReceivePurchaseOrderBody": {
+      "type": "object"
+    },
+    "PurchaseOrderServiceSendPurchaseOrderBody": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Plain text added to the e-mail above the order, at most 1000\ncharacters. The order always goes to the supplier's e-mail on file."
+        }
+      }
     },
     "QuoteServiceAddQuoteJobBody": {
       "type": "object",
@@ -11245,6 +12882,28 @@
         }
       }
     },
+    "v1ConfirmPublicDataRequestRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "token"
+      ]
+    },
+    "v1ConfirmPublicDataRequestResponse": {
+      "type": "object",
+      "properties": {
+        "garageCount": {
+          "type": "integer",
+          "format": "int32",
+          "description": "How many garages' records the request reached. A view is e-mailed to the\nconfirmed address, a deletion is carried out, a correction is passed to\neach garage.",
+          "readOnly": true
+        }
+      }
+    },
     "v1ConvertQuoteResponse": {
       "type": "object",
       "properties": {
@@ -11397,6 +13056,26 @@
       "properties": {
         "role": {
           "$ref": "#/definitions/v1PlatformRole"
+        }
+      }
+    },
+    "v1CreatePurchaseOrdersFromLowStockResponse": {
+      "type": "object",
+      "properties": {
+        "orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PurchaseOrder"
+          },
+          "description": "One draft order per supplier."
+        },
+        "unassignedParts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1UnassignedPart"
+          }
         }
       }
     },
@@ -11738,6 +13417,90 @@
       },
       "description": "DailyHours is the opening time of one weekday (FR-TEN-05)."
     },
+    "v1DataRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "customerId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "type": {
+          "$ref": "#/definitions/v1DataRequestType"
+        },
+        "status": {
+          "$ref": "#/definitions/v1DataRequestStatus",
+          "readOnly": true
+        },
+        "source": {
+          "$ref": "#/definitions/v1DataRequestSource",
+          "readOnly": true
+        },
+        "details": {
+          "type": "string",
+          "description": "What the person asked to correct; required for a correction, at most\n2000 characters."
+        },
+        "outcome": {
+          "type": "string",
+          "description": "What the garage did, for example \"Anonymized 1 customer and 2\nvehicles\"; filled when the request is completed.",
+          "readOnly": true
+        },
+        "exportJson": {
+          "type": "string",
+          "description": "For a view request: the data held, as JSON text. Answered only by\nCreateDataRequest, never stored, and empty in List and Get.",
+          "readOnly": true
+        },
+        "requestedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "completedByName": {
+          "type": "string",
+          "description": "The staff member who completed it; empty when it completed itself.",
+          "readOnly": true
+        }
+      },
+      "description": "DataRequest is one request about one customer's data, with its outcome. It\nis kept as a record of the garage's answer. It holds the customer id and,\nfor a correction, the text of what to correct (`details`); anonymizing the\ncustomer clears the `details` of all their requests. The data a view\nreturns is never stored."
+    },
+    "v1DataRequestSource": {
+      "type": "string",
+      "enum": [
+        "DATA_REQUEST_SOURCE_STAFF",
+        "DATA_REQUEST_SOURCE_PUBLIC"
+      ],
+      "description": "DataRequestSource is how a request reached the garage.\n\n - DATA_REQUEST_SOURCE_STAFF: Recorded by a staff member for a customer who asked in person.\n - DATA_REQUEST_SOURCE_PUBLIC: The public page, confirmed by e-mail."
+    },
+    "v1DataRequestStatus": {
+      "type": "string",
+      "enum": [
+        "DATA_REQUEST_STATUS_PENDING",
+        "DATA_REQUEST_STATUS_COMPLETED",
+        "DATA_REQUEST_STATUS_REJECTED"
+      ],
+      "description": "DataRequestStatus is where a request stands.\n\n - DATA_REQUEST_STATUS_PENDING: Confirmed and waiting for the garage to act (a correction).\n - DATA_REQUEST_STATUS_REJECTED: The garage declined it, with the reason in `outcome`."
+    },
+    "v1DataRequestType": {
+      "type": "string",
+      "enum": [
+        "DATA_REQUEST_TYPE_VIEW",
+        "DATA_REQUEST_TYPE_CORRECT",
+        "DATA_REQUEST_TYPE_DELETE"
+      ],
+      "description": "DataRequestType is what a person asks about their personal data (FR-CUS-05,\nDecree 13/2023/ND-CP).\n\n - DATA_REQUEST_TYPE_VIEW: To see what the garage holds.\n - DATA_REQUEST_TYPE_CORRECT: To correct it.\n - DATA_REQUEST_TYPE_DELETE: To erase it. The customer's and vehicles' personal fields are made\nanonymous; the financial documents the law requires stay."
+    },
     "v1DecidePublicQuoteResponse": {
       "type": "object",
       "properties": {
@@ -11915,9 +13678,11 @@
         "DOCUMENT_TYPE_SETTLEMENT",
         "DOCUMENT_TYPE_PAYMENT_VOUCHER",
         "DOCUMENT_TYPE_GOODS_RECEIPT",
-        "DOCUMENT_TYPE_STOCK_ISSUE"
+        "DOCUMENT_TYPE_STOCK_ISSUE",
+        "DOCUMENT_TYPE_PAYMENT_OUT_VOUCHER",
+        "DOCUMENT_TYPE_PURCHASE_ORDER"
       ],
-      "description": "DocumentType is a document a garage can print (FR-DOC-04)."
+      "description": "DocumentType is a document a garage can print (FR-DOC-04).\n\n - DOCUMENT_TYPE_PAYMENT_OUT_VOUCHER: Release 13.0 (FR-BIL-07): the payment-out voucher (phiếu chi).\n - DOCUMENT_TYPE_PURCHASE_ORDER: Release 13.0 (FR-INV-16): the purchase order."
     },
     "v1EndSupportGrantResponse": {
       "type": "object",
@@ -12499,6 +14264,36 @@
         }
       }
     },
+    "v1GetProfitReportResponse": {
+      "type": "object",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ProfitRow"
+          },
+          "description": "Most profitable first.\nA line shared by technicians is split between them, so the rows add up\nto the totals whichever way the report is grouped."
+        },
+        "totalRevenue": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalCost": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalProfit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ordersWithoutCost": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Repair orders of the report whose stock issue is not posted yet: their\ncost counts as zero, so the profit is overstated by the cost to come."
+        }
+      }
+    },
     "v1GetPublicQuoteResponse": {
       "type": "object",
       "properties": {
@@ -12625,6 +14420,21 @@
         }
       }
     },
+    "v1GetSupplierPayablesAgingResponse": {
+      "type": "object",
+      "properties": {
+        "suppliers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SupplierAging"
+          }
+        },
+        "totals": {
+          "$ref": "#/definitions/v1SupplierAging"
+        }
+      }
+    },
     "v1GetSupplierResponse": {
       "type": "object",
       "properties": {
@@ -12638,6 +14448,19 @@
       "properties": {
         "supplierReturn": {
           "$ref": "#/definitions/v1SupplierReturn"
+        }
+      }
+    },
+    "v1GetTechnicianReportResponse": {
+      "type": "object",
+      "properties": {
+        "technicians": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1TechnicianPerformance"
+          },
+          "description": "Most completed lines first."
         }
       }
     },
@@ -12740,6 +14563,15 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time",
+          "readOnly": true
+        },
+        "purchaseOrderId": {
+          "type": "string",
+          "description": "The purchase order this receipt was created from (FR-INV-16); completing\nthe receipt counts its lines against that order.",
+          "readOnly": true
+        },
+        "purchaseOrderNumber": {
+          "type": "string",
           "readOnly": true
         }
       },
@@ -13202,6 +15034,21 @@
         }
       }
     },
+    "v1ListDataRequestsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1DataRequest"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
     "v1ListGarageDirectoryResponse": {
       "type": "object",
       "properties": {
@@ -13426,6 +15273,21 @@
         }
       }
     },
+    "v1ListPaymentOutVouchersResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PaymentOutVoucher"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
     "v1ListPermissionsResponse": {
       "type": "object",
       "properties": {
@@ -13542,6 +15404,21 @@
         }
       }
     },
+    "v1ListPurchaseOrdersResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PurchaseOrder"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
     "v1ListQuotesResponse": {
       "type": "object",
       "properties": {
@@ -13554,6 +15431,24 @@
         },
         "pagination": {
           "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1ListReceivablesResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Receivable"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        },
+        "summary": {
+          "$ref": "#/definitions/v1ReceivablesSummary"
         }
       }
     },
@@ -13692,6 +15587,24 @@
         },
         "pagination": {
           "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1ListSupplierPayablesResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SupplierPayable"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        },
+        "summary": {
+          "$ref": "#/definitions/v1SupplierPayablesSummary"
         }
       }
     },
@@ -14068,9 +15981,11 @@
         "NOTIFICATION_TYPE_PAYMENT_RECEIVED",
         "NOTIFICATION_TYPE_SETTLEMENT_RECEIPT",
         "NOTIFICATION_TYPE_SETTLEMENT_PAID",
-        "NOTIFICATION_TYPE_LOW_STOCK"
+        "NOTIFICATION_TYPE_LOW_STOCK",
+        "NOTIFICATION_TYPE_PAYMENT_REMINDER",
+        "NOTIFICATION_TYPE_PURCHASE_ORDER"
       ],
-      "description": "NotificationType is one e-mail a garage can switch off (FR-NOT-05,\nFR-INV-04).\n\n - NOTIFICATION_TYPE_QUOTE_READY: Customer: the quote with the link to approve it. Essential.\n - NOTIFICATION_TYPE_QUOTE_DECIDED: Staff: a quote was approved or rejected.\n - NOTIFICATION_TYPE_VEHICLE_READY: Customer: the vehicle is ready for pick-up.\n - NOTIFICATION_TYPE_PAYMENT_RECEIVED: Customer: a payment was recorded and a balance is left.\n - NOTIFICATION_TYPE_SETTLEMENT_RECEIPT: Customer: the settlement is paid; the receipt is attached. Essential.\n - NOTIFICATION_TYPE_SETTLEMENT_PAID: Staff: a settlement is fully paid.\n - NOTIFICATION_TYPE_LOW_STOCK: Staff: a part fell to or under its reorder threshold."
+      "description": "NotificationType is one e-mail a garage can switch off (FR-NOT-05,\nFR-INV-04).\n\n - NOTIFICATION_TYPE_QUOTE_READY: Customer: the quote with the link to approve it. Essential.\n - NOTIFICATION_TYPE_QUOTE_DECIDED: Staff: a quote was approved or rejected.\n - NOTIFICATION_TYPE_VEHICLE_READY: Customer: the vehicle is ready for pick-up.\n - NOTIFICATION_TYPE_PAYMENT_RECEIVED: Customer: a payment was recorded and a balance is left.\n - NOTIFICATION_TYPE_SETTLEMENT_RECEIPT: Customer: the settlement is paid; the receipt is attached. Essential.\n - NOTIFICATION_TYPE_SETTLEMENT_PAID: Staff: a settlement is fully paid.\n - NOTIFICATION_TYPE_LOW_STOCK: Staff: a part fell to or under its reorder threshold.\n - NOTIFICATION_TYPE_PAYMENT_REMINDER: Release 13.0 (FR-REC-03): a reminder that a settlement is overdue.\n - NOTIFICATION_TYPE_PURCHASE_ORDER: Release 13.0 (FR-INV-16): a purchase order e-mailed to a supplier. Not\nswitchable: it appears in the log only, never in the settings."
     },
     "v1NotificationTypeSetting": {
       "type": "object",
@@ -14409,6 +16324,15 @@
         "supplierId"
       ]
     },
+    "v1PayableStatus": {
+      "type": "string",
+      "enum": [
+        "PAYABLE_STATUS_OPEN",
+        "PAYABLE_STATUS_PAID",
+        "PAYABLE_STATUS_CANCELLED"
+      ],
+      "description": "PayableStatus is the payment state of one supplier payable (FR-INV-17).\n\n - PAYABLE_STATUS_CANCELLED: Its goods receipt was cancelled; it leaves the lists and the aging."
+    },
     "v1PaymentEvidence": {
       "type": "object",
       "properties": {
@@ -14461,6 +16385,117 @@
         "PAYMENT_METHOD_ONLINE"
       ],
       "description": "PaymentMethod: how a payment was actually collected (FR-BIL-03). ONLINE\nis recorded manually in Release 1.4 (staff sees a bank app or gateway\ndashboard confirmation and records it); automatic confirmation via a\npayment gateway webhook is Release 2.0 (FR-PAY-02)."
+    },
+    "v1PaymentOutAllocation": {
+      "type": "object",
+      "properties": {
+        "payableId": {
+          "type": "string"
+        },
+        "goodsReceiptNumber": {
+          "type": "string",
+          "readOnly": true
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Integer VND, positive, not more than the payable's remaining amount."
+        }
+      },
+      "description": "PaymentOutAllocation applies part of a voucher to one payable.",
+      "required": [
+        "payableId",
+        "amount"
+      ]
+    },
+    "v1PaymentOutVoucher": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "number": {
+          "type": "string",
+          "description": "Numbered from the garage's payment-out voucher template.",
+          "readOnly": true
+        },
+        "supplierId": {
+          "type": "string"
+        },
+        "supplierName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "payeeName": {
+          "type": "string",
+          "description": "Who received the money: defaults to the supplier's name."
+        },
+        "payeeAddress": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Integer VND, positive and at least the sum of the allocations. An\nallocation goes only to an OPEN payable of the voucher's supplier, once\nper payable and for at most its remaining amount, checked under a lock so\nthat two vouchers cannot take the same remainder (INVALID_ALLOCATION).\nVoiding takes the allocations off the payables that still exist; one\nwhose goods receipt was cancelled in the meantime stays cancelled."
+        },
+        "method": {
+          "$ref": "#/definitions/v1PaymentMethod"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Printed on the voucher; defaults to a standard text."
+        },
+        "note": {
+          "type": "string"
+        },
+        "allocations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PaymentOutAllocation"
+          }
+        },
+        "unallocatedAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "The part of the amount applied to no payable (an advance).",
+          "readOnly": true
+        },
+        "issuerName": {
+          "type": "string",
+          "description": "The staff member who issued it.",
+          "readOnly": true
+        },
+        "voided": {
+          "type": "boolean",
+          "readOnly": true
+        },
+        "voidReason": {
+          "type": "string",
+          "readOnly": true
+        },
+        "voidedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "PaymentOutVoucher is a payment-out voucher (phiếu chi, FR-BIL-07): money\nthe garage paid out, here to a supplier. It has its own numbering and is\nnever deleted, only voided.",
+      "required": [
+        "supplierId",
+        "amount",
+        "method"
+      ]
     },
     "v1Permission": {
       "type": "string",
@@ -15048,6 +17083,53 @@
       },
       "description": "PrintSetting is a garage's printing choice for one document type\n(FR-DOC-04). A garage that never changed it prints on A4 without the\ncopy mark."
     },
+    "v1ProfitGroupBy": {
+      "type": "string",
+      "enum": [
+        "PROFIT_GROUP_BY_REPAIR_ORDER",
+        "PROFIT_GROUP_BY_JOB",
+        "PROFIT_GROUP_BY_TECHNICIAN"
+      ],
+      "description": "ProfitGroupBy chooses what a profit report adds up by (FR-RPT-05)."
+    },
+    "v1ProfitRow": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "The repair order, job or technician id; empty for the row of lines\nthat belong to no job or no technician.",
+          "readOnly": true
+        },
+        "label": {
+          "type": "string",
+          "description": "The repair order number, job name or technician name.",
+          "readOnly": true
+        },
+        "repairOrders": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true
+        },
+        "revenue": {
+          "type": "string",
+          "format": "int64",
+          "description": "The billable lines' totals, integer VND.",
+          "readOnly": true
+        },
+        "cost": {
+          "type": "string",
+          "format": "int64",
+          "description": "The cost snapshots of the parts consumed, integer VND.",
+          "readOnly": true
+        },
+        "profit": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        }
+      },
+      "description": "ProfitRow is the profit of one repair order, job or technician."
+    },
     "v1PublicQuote": {
       "type": "object",
       "properties": {
@@ -15147,6 +17229,163 @@
         }
       },
       "description": "PurchaseLine is one line of a completed goods receipt in the purchases\nreport (FR-INV-19)."
+    },
+    "v1PurchaseOrder": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "number": {
+          "type": "string",
+          "description": "Rendered from the garage's purchase_order numbering template.",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1PurchaseOrderStatus",
+          "readOnly": true
+        },
+        "supplierId": {
+          "type": "string"
+        },
+        "supplierName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "supplierEmail": {
+          "type": "string",
+          "description": "The supplier's e-mail on file; the order is sent to it.",
+          "readOnly": true
+        },
+        "orderDate": {
+          "type": "string",
+          "description": "\"YYYY-MM-DD\" in the garage's timezone: the day the order was created.",
+          "readOnly": true
+        },
+        "expectedDate": {
+          "type": "string",
+          "description": "\"YYYY-MM-DD\"; empty when no date is expected."
+        },
+        "notes": {
+          "type": "string"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PurchaseOrderLine"
+          }
+        },
+        "totalAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Sum of the lines' amounts. Omitted without\nPERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        },
+        "sentAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "sentTo": {
+          "type": "string",
+          "description": "The address the order was sent to.",
+          "readOnly": true
+        },
+        "cancelledAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "PurchaseOrder is a numbered order to one supplier (FR-INV-16). It can be\nprinted and e-mailed to the supplier, and a goods receipt can be pre-filled\nfrom what it still waits for."
+    },
+    "v1PurchaseOrderLine": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partId": {
+          "type": "string"
+        },
+        "partSku": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "baseUnitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "unitId": {
+          "type": "string",
+          "description": "The packaging unit the quantity is typed in; unset means the base unit."
+        },
+        "unitAbbreviation": {
+          "type": "string",
+          "readOnly": true
+        },
+        "enteredQuantity": {
+          "type": "string",
+          "description": "In the entered unit unless unit_id is unset. Positive."
+        },
+        "quantity": {
+          "type": "string",
+          "description": "The base-unit amount derived from entered_quantity on save.",
+          "readOnly": true
+        },
+        "receivedQuantity": {
+          "type": "string",
+          "description": "The base-unit amount delivered so far by completed goods receipts.",
+          "readOnly": true
+        },
+        "unitCost": {
+          "type": "string",
+          "format": "int64",
+          "description": "The expected price in VND per entered unit; zero means unknown. Omitted\nfrom answers when the caller lacks PERMISSION_INVENTORY_COST_READ; such\na caller cannot set it either. On update, lines are matched by id: a\ncaller without the permission keeps the stored cost of the lines it sends\nback, and a new line costs zero; changing the part or unit of a line resets\nits cost to zero."
+        },
+        "lineAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "entered_quantity times unit_cost, rounded half up to whole VND per line\nas on a goods receipt; total_amount is the sum of these. Omitted without\nPERMISSION_INVENTORY_COST_READ.",
+          "readOnly": true
+        }
+      },
+      "description": "PurchaseOrderLine is one part on a purchase order.",
+      "required": [
+        "partId"
+      ]
+    },
+    "v1PurchaseOrderStatus": {
+      "type": "string",
+      "enum": [
+        "PURCHASE_ORDER_STATUS_DRAFT",
+        "PURCHASE_ORDER_STATUS_SENT",
+        "PURCHASE_ORDER_STATUS_PARTIALLY_RECEIVED",
+        "PURCHASE_ORDER_STATUS_RECEIVED",
+        "PURCHASE_ORDER_STATUS_CANCELLED"
+      ],
+      "description": "PurchaseOrderStatus is the lifecycle of a purchase order (FR-INV-16):\nsaved as a draft, sent to the supplier, received in part or in full, or\ncancelled."
     },
     "v1PutPartSuppliersResponse": {
       "type": "object",
@@ -15363,6 +17602,378 @@
       ],
       "description": "QuoteStatus is the lifecycle of a quote (FR-QUO-01..04).\n\n - QUOTE_STATUS_DRAFT: Being edited by the service advisor; not visible to the customer yet.\n - QUOTE_STATUS_SENT: A LINK-mode quote waiting on the customer's decision.\n - QUOTE_STATUS_APPROVED: At least one line was approved.\n - QUOTE_STATUS_REJECTED: Every line was rejected.\n - QUOTE_STATUS_CONVERTED: Converted into a repair order (FR-QUO-04); no further edits."
     },
+    "v1Receivable": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "settlementId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "settlementNumber": {
+          "type": "string",
+          "readOnly": true
+        },
+        "customerId": {
+          "type": "string",
+          "description": "The customer the settlement is billed through; empty when unknown.",
+          "readOnly": true
+        },
+        "customerName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "vehicleLicensePlate": {
+          "type": "string",
+          "readOnly": true
+        },
+        "totalAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Integer VND.",
+          "readOnly": true
+        },
+        "paidAmount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "remainingAmount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "\"YYYY-MM-DD\" in the garage's timezone: the settlement's date plus the\ngarage's payment terms.",
+          "readOnly": true
+        },
+        "overdue": {
+          "type": "boolean",
+          "description": "Open and past its due date.",
+          "readOnly": true
+        },
+        "daysOverdue": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Days past the due date; 0 when not overdue.",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1ReceivableStatus",
+          "readOnly": true
+        },
+        "remindersSent": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true
+        },
+        "lastReminderAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ReceivableEntry"
+          },
+          "description": "Only on GetReceivable.",
+          "readOnly": true
+        },
+        "reminders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ReceivableReminder"
+          },
+          "readOnly": true
+        }
+      },
+      "description": "Receivable is what a customer still owes for one settlement (FR-REC-01).\nThe module keeps its own state, fed by the settlement and payment events\nof Billing \u0026 Settlement."
+    },
+    "v1ReceivableEntry": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "kind": {
+          "$ref": "#/definitions/v1ReceivableEntryKind",
+          "readOnly": true
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Integer VND, always positive; the kind gives the sign.",
+          "readOnly": true
+        },
+        "reference": {
+          "type": "string",
+          "description": "The settlement number for a charge, the voucher number otherwise.",
+          "readOnly": true
+        },
+        "method": {
+          "$ref": "#/definitions/v1PaymentMethod",
+          "description": "How the money was paid, for a payment or void; unspecified for a charge.",
+          "readOnly": true
+        },
+        "occurredAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "ReceivableEntry is one line of a receivable's ledger."
+    },
+    "v1ReceivableEntryKind": {
+      "type": "string",
+      "enum": [
+        "RECEIVABLE_ENTRY_KIND_CHARGE",
+        "RECEIVABLE_ENTRY_KIND_PAYMENT",
+        "RECEIVABLE_ENTRY_KIND_VOID"
+      ],
+      "description": "ReceivableEntryKind is one movement of a receivable's ledger.\n\n - RECEIVABLE_ENTRY_KIND_CHARGE: The settlement was issued: the amount becomes receivable.\n - RECEIVABLE_ENTRY_KIND_PAYMENT: A payment voucher was recorded against it.\n - RECEIVABLE_ENTRY_KIND_VOID: A payment voucher was voided: the amount is receivable again."
+    },
+    "v1ReceivableReminder": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "offsetDays": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Days after the due date this reminder was scheduled for.",
+          "readOnly": true
+        },
+        "channel": {
+          "type": "string",
+          "description": "\"email\" today; push joins with Release 11.0.",
+          "readOnly": true
+        },
+        "outcome": {
+          "$ref": "#/definitions/v1ReminderOutcome",
+          "readOnly": true
+        },
+        "reason": {
+          "type": "string",
+          "description": "For a skip: DISABLED, OPTED_OUT, SUPPRESSED, NO_EMAIL or SUPERSEDED.",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "ReceivableReminder is one reminder the schedule produced; each\n(receivable, offset) pair is logged once."
+    },
+    "v1ReceivableSettings": {
+      "type": "object",
+      "properties": {
+        "paymentTermsDays": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Days from the settlement's date to its due date, 0 to 365."
+        },
+        "remindersEnabled": {
+          "type": "boolean"
+        },
+        "reminderOffsetDays": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": "Days overdue at which a reminder goes out: up to 5 distinct values from\n1 to 90, ascending."
+        }
+      },
+      "description": "ReceivableSettings is a garage's payment terms and reminder schedule\n(FR-REC-03). A garage that never saved them has 7 days of terms and\nreminders at 3 and 7 days overdue. An update replaces all of it: it is\nrefused (INVALID_ARGUMENT) when payment_terms_days or reminders_enabled is\nmissing, so that an incomplete request cannot switch reminders off."
+    },
+    "v1ReceivableStatus": {
+      "type": "string",
+      "enum": [
+        "RECEIVABLE_STATUS_OPEN",
+        "RECEIVABLE_STATUS_PAID"
+      ],
+      "description": "ReceivableStatus is the collection state of one receivable (FR-REC-01).\n\n - RECEIVABLE_STATUS_OPEN: Something is still to be collected.\n - RECEIVABLE_STATUS_PAID: Fully collected."
+    },
+    "v1ReceivablesSummary": {
+      "type": "object",
+      "properties": {
+        "openCount": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true
+        },
+        "outstandingAmount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "overdueCount": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true
+        },
+        "overdueAmount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        }
+      },
+      "description": "ReceivablesSummary totals the open receivables a list matched, across all\nits pages."
+    },
+    "v1ReconciliationLine": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "description": "\"YYYY-MM-DD\" in the garage's timezone.",
+          "readOnly": true
+        },
+        "kind": {
+          "$ref": "#/definitions/v1ReceivableEntryKind",
+          "readOnly": true
+        },
+        "reference": {
+          "type": "string",
+          "readOnly": true
+        },
+        "customerName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "method": {
+          "$ref": "#/definitions/v1PaymentMethod",
+          "readOnly": true
+        }
+      },
+      "description": "ReconciliationLine is one movement of the period."
+    },
+    "v1ReconciliationMethodTotal": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "$ref": "#/definitions/v1PaymentMethod",
+          "readOnly": true
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        }
+      },
+      "description": "ReconciliationMethodTotal is the amount collected by one payment method."
+    },
+    "v1ReconciliationReport": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string",
+          "readOnly": true
+        },
+        "to": {
+          "type": "string",
+          "readOnly": true
+        },
+        "openingBalance": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "chargedAmount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "collectedAmount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "voidedAmount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "closingBalance": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "settlementCount": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true
+        },
+        "paymentCount": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true
+        },
+        "collectedByMethod": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ReconciliationMethodTotal"
+          },
+          "readOnly": true
+        },
+        "paidOutAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Payment-out vouchers (phiếu chi) issued in the period, net of voids;\nshown beside the receivables, not part of the balance.",
+          "readOnly": true
+        },
+        "matches": {
+          "type": "boolean",
+          "description": "Whether the ledger's balance today equals the sum of the receivables'\nremaining amounts today.",
+          "readOnly": true
+        },
+        "difference": {
+          "type": "string",
+          "format": "int64",
+          "description": "The ledger's balance today less the sum of the remaining amounts.",
+          "readOnly": true
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ReconciliationLine"
+          },
+          "readOnly": true
+        }
+      },
+      "description": "ReconciliationReport reconciles a period's receivables with the\nsettlements and vouchers behind them (FR-REC-04):\nclosing_balance = opening_balance + charged_amount - collected_amount +\nvoided_amount, as of the end of the period. `matches` and `difference`\ncheck the ledger itself: its balance today against the remaining amounts of\nthe receivables today, whatever the period."
+    },
     "v1RecordQuoteDecisionResponse": {
       "type": "object",
       "properties": {
@@ -15463,6 +18074,15 @@
           "$ref": "#/definitions/v1PlanPaymentRequest"
         }
       }
+    },
+    "v1ReminderOutcome": {
+      "type": "string",
+      "enum": [
+        "REMINDER_OUTCOME_SENT",
+        "REMINDER_OUTCOME_SKIPPED",
+        "REMINDER_OUTCOME_FAILED"
+      ],
+      "description": "ReminderOutcome is what became of one scheduled reminder (FR-REC-03).\n\n - REMINDER_OUTCOME_SKIPPED: Not sent, with a reason: the customer has no e-mail, opted out or is\nsuppressed, the garage switched the type off, or a later reminder\nreplaced it."
     },
     "v1RemovePartImageResponse": {
       "type": "object",
@@ -15714,6 +18334,31 @@
         "enteredQuantity",
         "reason"
       ]
+    },
+    "v1RepairOrderProfit": {
+      "type": "object",
+      "properties": {
+        "revenue": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "cost": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "profit": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "costKnown": {
+          "type": "boolean",
+          "readOnly": true
+        }
+      },
+      "description": "RepairOrderProfit is the profit of one repair order, shown on its detail\n(FR-RPT-05). Cost is known once the stock issue is posted; before that\n`cost_known` is false and the profit is not shown."
     },
     "v1RepairOrderStatus": {
       "type": "string",
@@ -16902,6 +19547,33 @@
         }
       }
     },
+    "v1SubmitPublicDataRequestRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "The address the person is known by; the confirmation goes to it."
+        },
+        "type": {
+          "$ref": "#/definitions/v1DataRequestType"
+        },
+        "details": {
+          "type": "string",
+          "description": "What to correct; required for a correction."
+        },
+        "locale": {
+          "type": "string",
+          "description": "The language of the confirmation e-mail: \"vi\" (default) or \"en\"."
+        }
+      },
+      "required": [
+        "email",
+        "type"
+      ]
+    },
+    "v1SubmitPublicDataRequestResponse": {
+      "type": "object"
+    },
     "v1Subscription": {
       "type": "object",
       "properties": {
@@ -17038,6 +19710,49 @@
         "name"
       ]
     },
+    "v1SupplierAging": {
+      "type": "object",
+      "properties": {
+        "supplierId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "supplierName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "total": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "current": {
+          "type": "string",
+          "format": "int64",
+          "description": "0 to 30 days.",
+          "readOnly": true
+        },
+        "days3160": {
+          "type": "string",
+          "format": "int64",
+          "description": "31 to 60 days.",
+          "readOnly": true
+        },
+        "days6190": {
+          "type": "string",
+          "format": "int64",
+          "description": "61 to 90 days.",
+          "readOnly": true
+        },
+        "over90": {
+          "type": "string",
+          "format": "int64",
+          "description": "More than 90 days.",
+          "readOnly": true
+        }
+      },
+      "description": "SupplierAging is the open payables of one supplier by age of the receipt."
+    },
     "v1SupplierContact": {
       "type": "object",
       "properties": {
@@ -17054,6 +19769,87 @@
           "type": "string"
         }
       }
+    },
+    "v1SupplierPayable": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "garageId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "goodsReceiptId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "goodsReceiptNumber": {
+          "type": "string",
+          "readOnly": true
+        },
+        "supplierId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "supplierName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "receiptDate": {
+          "type": "string",
+          "description": "The receipt's date, \"YYYY-MM-DD\"; the age of the payable counts from it.",
+          "readOnly": true
+        },
+        "totalAmount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Integer VND.",
+          "readOnly": true
+        },
+        "paidAmount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "remainingAmount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        },
+        "ageDays": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1PayableStatus",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "SupplierPayable is what the garage owes one supplier for the lines of one\ncompleted goods receipt (FR-INV-17). A receipt with lines from two\nsuppliers produces two payables."
+    },
+    "v1SupplierPayablesSummary": {
+      "type": "object",
+      "properties": {
+        "openCount": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true
+        },
+        "outstandingAmount": {
+          "type": "string",
+          "format": "int64",
+          "readOnly": true
+        }
+      },
+      "description": "SupplierPayablesSummary totals the open payables a list matched."
     },
     "v1SupplierReturn": {
       "type": "object",
@@ -17370,6 +20166,56 @@
         "TAX_PROFILE_KIND_COMPANY"
       ],
       "description": "TaxProfileKind: a customer has at most one personal tax profile and any\nnumber of company tax profiles (FR-CUS-07)."
+    },
+    "v1TechnicianPerformance": {
+      "type": "object",
+      "properties": {
+        "technicianId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "technicianName": {
+          "type": "string",
+          "readOnly": true
+        },
+        "completedLines": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Lines the technician was assigned to that were completed in the period;\na line shared by two technicians counts for both.",
+          "readOnly": true
+        },
+        "repairOrders": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Repair orders those lines belong to.",
+          "readOnly": true
+        },
+        "averageTurnaroundMinutes": {
+          "type": "string",
+          "format": "int64",
+          "description": "Mean time from a line being started to it being completed, in whole\nminutes; 0 when no completed line has both times.",
+          "readOnly": true
+        }
+      },
+      "description": "TechnicianPerformance is one technician's work in a period (FR-RPT-02)."
+    },
+    "v1UnassignedPart": {
+      "type": "object",
+      "properties": {
+        "partId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partSku": {
+          "type": "string",
+          "readOnly": true
+        },
+        "partName": {
+          "type": "string",
+          "readOnly": true
+        }
+      },
+      "description": "UnassignedPart is a low-stock part that no order could take because it\nhas no default supplier."
     },
     "v1Unit": {
       "type": "object",

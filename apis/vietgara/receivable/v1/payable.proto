@@ -1,0 +1,201 @@
+syntax = "proto3";
+
+package vietgara.receivable.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/billing/v1/settlement.proto";
+import "vietgara/common/v1/pagination.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/receivable/v1;receivablev1";
+
+// PayableStatus is the payment state of one supplier payable (FR-INV-17).
+enum PayableStatus {
+  PAYABLE_STATUS_UNSPECIFIED = 0;
+  PAYABLE_STATUS_OPEN = 1;
+  PAYABLE_STATUS_PAID = 2;
+  // Its goods receipt was cancelled; it leaves the lists and the aging.
+  PAYABLE_STATUS_CANCELLED = 3;
+}
+
+// SupplierPayable is what the garage owes one supplier for the lines of one
+// completed goods receipt (FR-INV-17). A receipt with lines from two
+// suppliers produces two payables.
+message SupplierPayable {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string goods_receipt_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string goods_receipt_number = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string supplier_id = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string supplier_name = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The receipt's date, "YYYY-MM-DD"; the age of the payable counts from it.
+  string receipt_date = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Integer VND.
+  int64 total_amount = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 paid_amount = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 remaining_amount = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int32 age_days = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  PayableStatus status = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// SupplierPayablesSummary totals the open payables a list matched.
+message SupplierPayablesSummary {
+  int32 open_count = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 outstanding_amount = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListSupplierPayablesRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string supplier_id = 2;
+  // Paid payables are left out unless this is set.
+  bool include_paid = 3;
+  int32 page = 4;
+  int32 page_size = 5;
+}
+
+message ListSupplierPayablesResponse {
+  repeated SupplierPayable data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+  SupplierPayablesSummary summary = 3;
+}
+
+// SupplierAging is the open payables of one supplier by age of the receipt.
+message SupplierAging {
+  string supplier_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string supplier_name = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int64 total = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // 0 to 30 days.
+  int64 current = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // 31 to 60 days.
+  int64 days_31_60 = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // 61 to 90 days.
+  int64 days_61_90 = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // More than 90 days.
+  int64 over_90 = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message GetSupplierPayablesAgingRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetSupplierPayablesAgingResponse {
+  repeated SupplierAging suppliers = 1;
+  SupplierAging totals = 2;
+}
+
+// PaymentOutAllocation applies part of a voucher to one payable.
+message PaymentOutAllocation {
+  string payable_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string goods_receipt_number = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Integer VND, positive, not more than the payable's remaining amount.
+  int64 amount = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+// PaymentOutVoucher is a payment-out voucher (phiếu chi, FR-BIL-07): money
+// the garage paid out, here to a supplier. It has its own numbering and is
+// never deleted, only voided.
+message PaymentOutVoucher {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Numbered from the garage's payment-out voucher template.
+  string number = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string supplier_id = 4 [(google.api.field_behavior) = REQUIRED];
+  string supplier_name = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Who received the money: defaults to the supplier's name.
+  string payee_name = 6;
+  string payee_address = 7;
+  // Integer VND, positive and at least the sum of the allocations. An
+  // allocation goes only to an OPEN payable of the voucher's supplier, once
+  // per payable and for at most its remaining amount, checked under a lock so
+  // that two vouchers cannot take the same remainder (INVALID_ALLOCATION).
+  // Voiding takes the allocations off the payables that still exist; one
+  // whose goods receipt was cancelled in the meantime stays cancelled.
+  int64 amount = 8 [(google.api.field_behavior) = REQUIRED];
+  vietgara.billing.v1.PaymentMethod method = 9 [(google.api.field_behavior) = REQUIRED];
+  // Printed on the voucher; defaults to a standard text.
+  string reason = 10;
+  string note = 11;
+  repeated PaymentOutAllocation allocations = 12;
+  // The part of the amount applied to no payable (an advance).
+  int64 unallocated_amount = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The staff member who issued it.
+  string issuer_name = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  bool voided = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string void_reason = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp voided_at = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListPaymentOutVouchersRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string supplier_id = 2;
+  // Voided vouchers are left out unless this is set.
+  bool include_voided = 3;
+  int32 page = 4;
+  int32 page_size = 5;
+}
+
+message ListPaymentOutVouchersResponse {
+  repeated PaymentOutVoucher data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message GetPaymentOutVoucherRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string voucher_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreatePaymentOutVoucherRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  PaymentOutVoucher voucher = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message VoidPaymentOutVoucherRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string voucher_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Required, at most 500 characters.
+  string reason = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+// PayableService serves the supplier payables and the payment-out vouchers
+// that settle them (FR-INV-17, FR-BIL-07). Reading needs billing.read,
+// changing needs billing.write.
+service PayableService {
+  // The payables, oldest first.
+  rpc ListSupplierPayables(ListSupplierPayablesRequest) returns (ListSupplierPayablesResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/supplier-payables"};
+  }
+
+  // The open payables by supplier and age.
+  rpc GetSupplierPayablesAging(GetSupplierPayablesAgingRequest) returns (GetSupplierPayablesAgingResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/supplier-payables/aging"};
+  }
+
+  rpc ListPaymentOutVouchers(ListPaymentOutVouchersRequest) returns (ListPaymentOutVouchersResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/payment-out-vouchers"};
+  }
+
+  rpc GetPaymentOutVoucher(GetPaymentOutVoucherRequest) returns (PaymentOutVoucher) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}"};
+  }
+
+  // Issues a voucher and applies its allocations to the payables of the
+  // same supplier, in one transaction.
+  rpc CreatePaymentOutVoucher(CreatePaymentOutVoucherRequest) returns (PaymentOutVoucher) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/payment-out-vouchers"
+      body: "voucher"
+    };
+  }
+
+  // Voids a voucher: it stays on file with its number and reason, and its
+  // allocations are taken back off the payables.
+  rpc VoidPaymentOutVoucher(VoidPaymentOutVoucherRequest) returns (PaymentOutVoucher) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}:void"
+      body: "*"
+    };
+  }
+}

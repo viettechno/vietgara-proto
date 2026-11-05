@@ -78,6 +78,59 @@ func (RevenuePeriod) EnumDescriptor() ([]byte, []int) {
 	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{0}
 }
 
+// ProfitGroupBy chooses what a profit report adds up by (FR-RPT-05).
+type ProfitGroupBy int32
+
+const (
+	ProfitGroupBy_PROFIT_GROUP_BY_UNSPECIFIED  ProfitGroupBy = 0
+	ProfitGroupBy_PROFIT_GROUP_BY_REPAIR_ORDER ProfitGroupBy = 1
+	ProfitGroupBy_PROFIT_GROUP_BY_JOB          ProfitGroupBy = 2
+	ProfitGroupBy_PROFIT_GROUP_BY_TECHNICIAN   ProfitGroupBy = 3
+)
+
+// Enum value maps for ProfitGroupBy.
+var (
+	ProfitGroupBy_name = map[int32]string{
+		0: "PROFIT_GROUP_BY_UNSPECIFIED",
+		1: "PROFIT_GROUP_BY_REPAIR_ORDER",
+		2: "PROFIT_GROUP_BY_JOB",
+		3: "PROFIT_GROUP_BY_TECHNICIAN",
+	}
+	ProfitGroupBy_value = map[string]int32{
+		"PROFIT_GROUP_BY_UNSPECIFIED":  0,
+		"PROFIT_GROUP_BY_REPAIR_ORDER": 1,
+		"PROFIT_GROUP_BY_JOB":          2,
+		"PROFIT_GROUP_BY_TECHNICIAN":   3,
+	}
+)
+
+func (x ProfitGroupBy) Enum() *ProfitGroupBy {
+	p := new(ProfitGroupBy)
+	*p = x
+	return p
+}
+
+func (x ProfitGroupBy) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ProfitGroupBy) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_reporting_v1_reporting_proto_enumTypes[1].Descriptor()
+}
+
+func (ProfitGroupBy) Type() protoreflect.EnumType {
+	return &file_vietgara_reporting_v1_reporting_proto_enumTypes[1]
+}
+
+func (x ProfitGroupBy) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ProfitGroupBy.Descriptor instead.
+func (ProfitGroupBy) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{1}
+}
+
 // RevenuePoint is one bucket of a revenue report.
 type RevenuePoint struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -257,6 +310,561 @@ func (x *GetRevenueReportResponse) GetTotalAmount() int64 {
 	return 0
 }
 
+// TechnicianPerformance is one technician's work in a period (FR-RPT-02).
+type TechnicianPerformance struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	TechnicianId   string                 `protobuf:"bytes,1,opt,name=technician_id,json=technicianId,proto3" json:"technician_id,omitempty"`
+	TechnicianName string                 `protobuf:"bytes,2,opt,name=technician_name,json=technicianName,proto3" json:"technician_name,omitempty"`
+	// Lines the technician was assigned to that were completed in the period;
+	// a line shared by two technicians counts for both.
+	CompletedLines int32 `protobuf:"varint,3,opt,name=completed_lines,json=completedLines,proto3" json:"completed_lines,omitempty"`
+	// Repair orders those lines belong to.
+	RepairOrders int32 `protobuf:"varint,4,opt,name=repair_orders,json=repairOrders,proto3" json:"repair_orders,omitempty"`
+	// Mean time from a line being started to it being completed, in whole
+	// minutes; 0 when no completed line has both times.
+	AverageTurnaroundMinutes int64 `protobuf:"varint,5,opt,name=average_turnaround_minutes,json=averageTurnaroundMinutes,proto3" json:"average_turnaround_minutes,omitempty"`
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
+}
+
+func (x *TechnicianPerformance) Reset() {
+	*x = TechnicianPerformance{}
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TechnicianPerformance) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TechnicianPerformance) ProtoMessage() {}
+
+func (x *TechnicianPerformance) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TechnicianPerformance.ProtoReflect.Descriptor instead.
+func (*TechnicianPerformance) Descriptor() ([]byte, []int) {
+	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *TechnicianPerformance) GetTechnicianId() string {
+	if x != nil {
+		return x.TechnicianId
+	}
+	return ""
+}
+
+func (x *TechnicianPerformance) GetTechnicianName() string {
+	if x != nil {
+		return x.TechnicianName
+	}
+	return ""
+}
+
+func (x *TechnicianPerformance) GetCompletedLines() int32 {
+	if x != nil {
+		return x.CompletedLines
+	}
+	return 0
+}
+
+func (x *TechnicianPerformance) GetRepairOrders() int32 {
+	if x != nil {
+		return x.RepairOrders
+	}
+	return 0
+}
+
+func (x *TechnicianPerformance) GetAverageTurnaroundMinutes() int64 {
+	if x != nil {
+		return x.AverageTurnaroundMinutes
+	}
+	return 0
+}
+
+type GetTechnicianReportRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	// Inclusive, "YYYY-MM-DD" in the garage's timezone.
+	From string `protobuf:"bytes,2,opt,name=from,proto3" json:"from,omitempty"`
+	// Exclusive, "YYYY-MM-DD".
+	To            string `protobuf:"bytes,3,opt,name=to,proto3" json:"to,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTechnicianReportRequest) Reset() {
+	*x = GetTechnicianReportRequest{}
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTechnicianReportRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTechnicianReportRequest) ProtoMessage() {}
+
+func (x *GetTechnicianReportRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTechnicianReportRequest.ProtoReflect.Descriptor instead.
+func (*GetTechnicianReportRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetTechnicianReportRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *GetTechnicianReportRequest) GetFrom() string {
+	if x != nil {
+		return x.From
+	}
+	return ""
+}
+
+func (x *GetTechnicianReportRequest) GetTo() string {
+	if x != nil {
+		return x.To
+	}
+	return ""
+}
+
+type GetTechnicianReportResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Most completed lines first.
+	Technicians   []*TechnicianPerformance `protobuf:"bytes,1,rep,name=technicians,proto3" json:"technicians,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTechnicianReportResponse) Reset() {
+	*x = GetTechnicianReportResponse{}
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTechnicianReportResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTechnicianReportResponse) ProtoMessage() {}
+
+func (x *GetTechnicianReportResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTechnicianReportResponse.ProtoReflect.Descriptor instead.
+func (*GetTechnicianReportResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetTechnicianReportResponse) GetTechnicians() []*TechnicianPerformance {
+	if x != nil {
+		return x.Technicians
+	}
+	return nil
+}
+
+// ProfitRow is the profit of one repair order, job or technician.
+type ProfitRow struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The repair order, job or technician id; empty for the row of lines
+	// that belong to no job or no technician.
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	// The repair order number, job name or technician name.
+	Label        string `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
+	RepairOrders int32  `protobuf:"varint,3,opt,name=repair_orders,json=repairOrders,proto3" json:"repair_orders,omitempty"`
+	// The billable lines' totals, integer VND.
+	Revenue int64 `protobuf:"varint,4,opt,name=revenue,proto3" json:"revenue,omitempty"`
+	// The cost snapshots of the parts consumed, integer VND.
+	Cost          int64 `protobuf:"varint,5,opt,name=cost,proto3" json:"cost,omitempty"`
+	Profit        int64 `protobuf:"varint,6,opt,name=profit,proto3" json:"profit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ProfitRow) Reset() {
+	*x = ProfitRow{}
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ProfitRow) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProfitRow) ProtoMessage() {}
+
+func (x *ProfitRow) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProfitRow.ProtoReflect.Descriptor instead.
+func (*ProfitRow) Descriptor() ([]byte, []int) {
+	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ProfitRow) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *ProfitRow) GetLabel() string {
+	if x != nil {
+		return x.Label
+	}
+	return ""
+}
+
+func (x *ProfitRow) GetRepairOrders() int32 {
+	if x != nil {
+		return x.RepairOrders
+	}
+	return 0
+}
+
+func (x *ProfitRow) GetRevenue() int64 {
+	if x != nil {
+		return x.Revenue
+	}
+	return 0
+}
+
+func (x *ProfitRow) GetCost() int64 {
+	if x != nil {
+		return x.Cost
+	}
+	return 0
+}
+
+func (x *ProfitRow) GetProfit() int64 {
+	if x != nil {
+		return x.Profit
+	}
+	return 0
+}
+
+type GetProfitReportRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	// Required: PROFIT_GROUP_BY_UNSPECIFIED is refused (INVALID_ARGUMENT).
+	GroupBy ProfitGroupBy `protobuf:"varint,2,opt,name=group_by,json=groupBy,proto3,enum=vietgara.reporting.v1.ProfitGroupBy" json:"group_by,omitempty"`
+	// Repair orders closed from this day, inclusive, "YYYY-MM-DD" in the
+	// garage's timezone.
+	From string `protobuf:"bytes,3,opt,name=from,proto3" json:"from,omitempty"`
+	// Exclusive, "YYYY-MM-DD".
+	To            string `protobuf:"bytes,4,opt,name=to,proto3" json:"to,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetProfitReportRequest) Reset() {
+	*x = GetProfitReportRequest{}
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetProfitReportRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetProfitReportRequest) ProtoMessage() {}
+
+func (x *GetProfitReportRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetProfitReportRequest.ProtoReflect.Descriptor instead.
+func (*GetProfitReportRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetProfitReportRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *GetProfitReportRequest) GetGroupBy() ProfitGroupBy {
+	if x != nil {
+		return x.GroupBy
+	}
+	return ProfitGroupBy_PROFIT_GROUP_BY_UNSPECIFIED
+}
+
+func (x *GetProfitReportRequest) GetFrom() string {
+	if x != nil {
+		return x.From
+	}
+	return ""
+}
+
+func (x *GetProfitReportRequest) GetTo() string {
+	if x != nil {
+		return x.To
+	}
+	return ""
+}
+
+type GetProfitReportResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Most profitable first.
+	// A line shared by technicians is split between them, so the rows add up
+	// to the totals whichever way the report is grouped.
+	Rows         []*ProfitRow `protobuf:"bytes,1,rep,name=rows,proto3" json:"rows,omitempty"`
+	TotalRevenue int64        `protobuf:"varint,2,opt,name=total_revenue,json=totalRevenue,proto3" json:"total_revenue,omitempty"`
+	TotalCost    int64        `protobuf:"varint,3,opt,name=total_cost,json=totalCost,proto3" json:"total_cost,omitempty"`
+	TotalProfit  int64        `protobuf:"varint,4,opt,name=total_profit,json=totalProfit,proto3" json:"total_profit,omitempty"`
+	// Repair orders of the report whose stock issue is not posted yet: their
+	// cost counts as zero, so the profit is overstated by the cost to come.
+	OrdersWithoutCost int32 `protobuf:"varint,5,opt,name=orders_without_cost,json=ordersWithoutCost,proto3" json:"orders_without_cost,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *GetProfitReportResponse) Reset() {
+	*x = GetProfitReportResponse{}
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetProfitReportResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetProfitReportResponse) ProtoMessage() {}
+
+func (x *GetProfitReportResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetProfitReportResponse.ProtoReflect.Descriptor instead.
+func (*GetProfitReportResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GetProfitReportResponse) GetRows() []*ProfitRow {
+	if x != nil {
+		return x.Rows
+	}
+	return nil
+}
+
+func (x *GetProfitReportResponse) GetTotalRevenue() int64 {
+	if x != nil {
+		return x.TotalRevenue
+	}
+	return 0
+}
+
+func (x *GetProfitReportResponse) GetTotalCost() int64 {
+	if x != nil {
+		return x.TotalCost
+	}
+	return 0
+}
+
+func (x *GetProfitReportResponse) GetTotalProfit() int64 {
+	if x != nil {
+		return x.TotalProfit
+	}
+	return 0
+}
+
+func (x *GetProfitReportResponse) GetOrdersWithoutCost() int32 {
+	if x != nil {
+		return x.OrdersWithoutCost
+	}
+	return 0
+}
+
+type GetRepairOrderProfitRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	RepairOrderId string                 `protobuf:"bytes,2,opt,name=repair_order_id,json=repairOrderId,proto3" json:"repair_order_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRepairOrderProfitRequest) Reset() {
+	*x = GetRepairOrderProfitRequest{}
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRepairOrderProfitRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRepairOrderProfitRequest) ProtoMessage() {}
+
+func (x *GetRepairOrderProfitRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRepairOrderProfitRequest.ProtoReflect.Descriptor instead.
+func (*GetRepairOrderProfitRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GetRepairOrderProfitRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *GetRepairOrderProfitRequest) GetRepairOrderId() string {
+	if x != nil {
+		return x.RepairOrderId
+	}
+	return ""
+}
+
+// RepairOrderProfit is the profit of one repair order, shown on its detail
+// (FR-RPT-05). Cost is known once the stock issue is posted; before that
+// `cost_known` is false and the profit is not shown.
+type RepairOrderProfit struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Revenue       int64                  `protobuf:"varint,1,opt,name=revenue,proto3" json:"revenue,omitempty"`
+	Cost          int64                  `protobuf:"varint,2,opt,name=cost,proto3" json:"cost,omitempty"`
+	Profit        int64                  `protobuf:"varint,3,opt,name=profit,proto3" json:"profit,omitempty"`
+	CostKnown     bool                   `protobuf:"varint,4,opt,name=cost_known,json=costKnown,proto3" json:"cost_known,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RepairOrderProfit) Reset() {
+	*x = RepairOrderProfit{}
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RepairOrderProfit) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RepairOrderProfit) ProtoMessage() {}
+
+func (x *RepairOrderProfit) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_reporting_v1_reporting_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RepairOrderProfit.ProtoReflect.Descriptor instead.
+func (*RepairOrderProfit) Descriptor() ([]byte, []int) {
+	return file_vietgara_reporting_v1_reporting_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *RepairOrderProfit) GetRevenue() int64 {
+	if x != nil {
+		return x.Revenue
+	}
+	return 0
+}
+
+func (x *RepairOrderProfit) GetCost() int64 {
+	if x != nil {
+		return x.Cost
+	}
+	return 0
+}
+
+func (x *RepairOrderProfit) GetProfit() int64 {
+	if x != nil {
+		return x.Profit
+	}
+	return 0
+}
+
+func (x *RepairOrderProfit) GetCostKnown() bool {
+	if x != nil {
+		return x.CostKnown
+	}
+	return false
+}
+
 var File_vietgara_reporting_v1_reporting_proto protoreflect.FileDescriptor
 
 const file_vietgara_reporting_v1_reporting_proto_rawDesc = "" +
@@ -272,15 +880,63 @@ const file_vietgara_reporting_v1_reporting_proto_rawDesc = "" +
 	"\x02to\x18\x04 \x01(\tB\x03\xe0A\x02R\x02to\"z\n" +
 	"\x18GetRevenueReportResponse\x12;\n" +
 	"\x06points\x18\x01 \x03(\v2#.vietgara.reporting.v1.RevenuePointR\x06points\x12!\n" +
-	"\ftotal_amount\x18\x02 \x01(\x03R\vtotalAmount*\x96\x01\n" +
+	"\ftotal_amount\x18\x02 \x01(\x03R\vtotalAmount\"\x8a\x02\n" +
+	"\x15TechnicianPerformance\x12(\n" +
+	"\rtechnician_id\x18\x01 \x01(\tB\x03\xe0A\x03R\ftechnicianId\x12,\n" +
+	"\x0ftechnician_name\x18\x02 \x01(\tB\x03\xe0A\x03R\x0etechnicianName\x12,\n" +
+	"\x0fcompleted_lines\x18\x03 \x01(\x05B\x03\xe0A\x03R\x0ecompletedLines\x12(\n" +
+	"\rrepair_orders\x18\x04 \x01(\x05B\x03\xe0A\x03R\frepairOrders\x12A\n" +
+	"\x1aaverage_turnaround_minutes\x18\x05 \x01(\x03B\x03\xe0A\x03R\x18averageTurnaroundMinutes\"l\n" +
+	"\x1aGetTechnicianReportRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x17\n" +
+	"\x04from\x18\x02 \x01(\tB\x03\xe0A\x02R\x04from\x12\x13\n" +
+	"\x02to\x18\x03 \x01(\tB\x03\xe0A\x02R\x02to\"m\n" +
+	"\x1bGetTechnicianReportResponse\x12N\n" +
+	"\vtechnicians\x18\x01 \x03(\v2,.vietgara.reporting.v1.TechnicianPerformanceR\vtechnicians\"\xbc\x01\n" +
+	"\tProfitRow\x12\x15\n" +
+	"\x03key\x18\x01 \x01(\tB\x03\xe0A\x03R\x03key\x12\x19\n" +
+	"\x05label\x18\x02 \x01(\tB\x03\xe0A\x03R\x05label\x12(\n" +
+	"\rrepair_orders\x18\x03 \x01(\x05B\x03\xe0A\x03R\frepairOrders\x12\x1d\n" +
+	"\arevenue\x18\x04 \x01(\x03B\x03\xe0A\x03R\arevenue\x12\x17\n" +
+	"\x04cost\x18\x05 \x01(\x03B\x03\xe0A\x03R\x04cost\x12\x1b\n" +
+	"\x06profit\x18\x06 \x01(\x03B\x03\xe0A\x03R\x06profit\"\xae\x01\n" +
+	"\x16GetProfitReportRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12D\n" +
+	"\bgroup_by\x18\x02 \x01(\x0e2$.vietgara.reporting.v1.ProfitGroupByB\x03\xe0A\x02R\agroupBy\x12\x17\n" +
+	"\x04from\x18\x03 \x01(\tB\x03\xe0A\x02R\x04from\x12\x13\n" +
+	"\x02to\x18\x04 \x01(\tB\x03\xe0A\x02R\x02to\"\xe6\x01\n" +
+	"\x17GetProfitReportResponse\x124\n" +
+	"\x04rows\x18\x01 \x03(\v2 .vietgara.reporting.v1.ProfitRowR\x04rows\x12#\n" +
+	"\rtotal_revenue\x18\x02 \x01(\x03R\ftotalRevenue\x12\x1d\n" +
+	"\n" +
+	"total_cost\x18\x03 \x01(\x03R\ttotalCost\x12!\n" +
+	"\ftotal_profit\x18\x04 \x01(\x03R\vtotalProfit\x12.\n" +
+	"\x13orders_without_cost\x18\x05 \x01(\x05R\x11ordersWithoutCost\"l\n" +
+	"\x1bGetRepairOrderProfitRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12+\n" +
+	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\"\x8c\x01\n" +
+	"\x11RepairOrderProfit\x12\x1d\n" +
+	"\arevenue\x18\x01 \x01(\x03B\x03\xe0A\x03R\arevenue\x12\x17\n" +
+	"\x04cost\x18\x02 \x01(\x03B\x03\xe0A\x03R\x04cost\x12\x1b\n" +
+	"\x06profit\x18\x03 \x01(\x03B\x03\xe0A\x03R\x06profit\x12\"\n" +
+	"\n" +
+	"cost_known\x18\x04 \x01(\bB\x03\xe0A\x03R\tcostKnown*\x96\x01\n" +
 	"\rRevenuePeriod\x12\x1e\n" +
 	"\x1aREVENUE_PERIOD_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12REVENUE_PERIOD_DAY\x10\x01\x12\x18\n" +
 	"\x14REVENUE_PERIOD_MONTH\x10\x02\x12\x1a\n" +
 	"\x16REVENUE_PERIOD_QUARTER\x10\x03\x12\x17\n" +
-	"\x13REVENUE_PERIOD_YEAR\x10\x042\xbd\x01\n" +
+	"\x13REVENUE_PERIOD_YEAR\x10\x04*\x8b\x01\n" +
+	"\rProfitGroupBy\x12\x1f\n" +
+	"\x1bPROFIT_GROUP_BY_UNSPECIFIED\x10\x00\x12 \n" +
+	"\x1cPROFIT_GROUP_BY_REPAIR_ORDER\x10\x01\x12\x17\n" +
+	"\x13PROFIT_GROUP_BY_JOB\x10\x02\x12\x1e\n" +
+	"\x1aPROFIT_GROUP_BY_TECHNICIAN\x10\x032\xdf\x05\n" +
 	"\x10ReportingService\x12\xa8\x01\n" +
-	"\x10GetRevenueReport\x12..vietgara.reporting.v1.GetRevenueReportRequest\x1a/.vietgara.reporting.v1.GetRevenueReportResponse\"3\x82\xd3\xe4\x93\x02-\x12+/api/v1/garages/{garage_id}/reports/revenueBPZNgithub.com/viettechno/vietgara-proto/apis-go/vietgara/reporting/v1;reportingv1b\x06proto3"
+	"\x10GetRevenueReport\x12..vietgara.reporting.v1.GetRevenueReportRequest\x1a/.vietgara.reporting.v1.GetRevenueReportResponse\"3\x82\xd3\xe4\x93\x02-\x12+/api/v1/garages/{garage_id}/reports/revenue\x12\xb5\x01\n" +
+	"\x13GetTechnicianReport\x121.vietgara.reporting.v1.GetTechnicianReportRequest\x1a2.vietgara.reporting.v1.GetTechnicianReportResponse\"7\x82\xd3\xe4\x93\x021\x12//api/v1/garages/{garage_id}/reports/technicians\x12\xa4\x01\n" +
+	"\x0fGetProfitReport\x12-.vietgara.reporting.v1.GetProfitReportRequest\x1a..vietgara.reporting.v1.GetProfitReportResponse\"2\x82\xd3\xe4\x93\x02,\x12*/api/v1/garages/{garage_id}/reports/profit\x12\xc0\x01\n" +
+	"\x14GetRepairOrderProfit\x122.vietgara.reporting.v1.GetRepairOrderProfitRequest\x1a(.vietgara.reporting.v1.RepairOrderProfit\"J\x82\xd3\xe4\x93\x02D\x12B/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/profitBPZNgithub.com/viettechno/vietgara-proto/apis-go/vietgara/reporting/v1;reportingv1b\x06proto3"
 
 var (
 	file_vietgara_reporting_v1_reporting_proto_rawDescOnce sync.Once
@@ -294,24 +950,42 @@ func file_vietgara_reporting_v1_reporting_proto_rawDescGZIP() []byte {
 	return file_vietgara_reporting_v1_reporting_proto_rawDescData
 }
 
-var file_vietgara_reporting_v1_reporting_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_vietgara_reporting_v1_reporting_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_vietgara_reporting_v1_reporting_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_vietgara_reporting_v1_reporting_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_vietgara_reporting_v1_reporting_proto_goTypes = []any{
-	(RevenuePeriod)(0),               // 0: vietgara.reporting.v1.RevenuePeriod
-	(*RevenuePoint)(nil),             // 1: vietgara.reporting.v1.RevenuePoint
-	(*GetRevenueReportRequest)(nil),  // 2: vietgara.reporting.v1.GetRevenueReportRequest
-	(*GetRevenueReportResponse)(nil), // 3: vietgara.reporting.v1.GetRevenueReportResponse
+	(RevenuePeriod)(0),                  // 0: vietgara.reporting.v1.RevenuePeriod
+	(ProfitGroupBy)(0),                  // 1: vietgara.reporting.v1.ProfitGroupBy
+	(*RevenuePoint)(nil),                // 2: vietgara.reporting.v1.RevenuePoint
+	(*GetRevenueReportRequest)(nil),     // 3: vietgara.reporting.v1.GetRevenueReportRequest
+	(*GetRevenueReportResponse)(nil),    // 4: vietgara.reporting.v1.GetRevenueReportResponse
+	(*TechnicianPerformance)(nil),       // 5: vietgara.reporting.v1.TechnicianPerformance
+	(*GetTechnicianReportRequest)(nil),  // 6: vietgara.reporting.v1.GetTechnicianReportRequest
+	(*GetTechnicianReportResponse)(nil), // 7: vietgara.reporting.v1.GetTechnicianReportResponse
+	(*ProfitRow)(nil),                   // 8: vietgara.reporting.v1.ProfitRow
+	(*GetProfitReportRequest)(nil),      // 9: vietgara.reporting.v1.GetProfitReportRequest
+	(*GetProfitReportResponse)(nil),     // 10: vietgara.reporting.v1.GetProfitReportResponse
+	(*GetRepairOrderProfitRequest)(nil), // 11: vietgara.reporting.v1.GetRepairOrderProfitRequest
+	(*RepairOrderProfit)(nil),           // 12: vietgara.reporting.v1.RepairOrderProfit
 }
 var file_vietgara_reporting_v1_reporting_proto_depIdxs = []int32{
-	0, // 0: vietgara.reporting.v1.GetRevenueReportRequest.period:type_name -> vietgara.reporting.v1.RevenuePeriod
-	1, // 1: vietgara.reporting.v1.GetRevenueReportResponse.points:type_name -> vietgara.reporting.v1.RevenuePoint
-	2, // 2: vietgara.reporting.v1.ReportingService.GetRevenueReport:input_type -> vietgara.reporting.v1.GetRevenueReportRequest
-	3, // 3: vietgara.reporting.v1.ReportingService.GetRevenueReport:output_type -> vietgara.reporting.v1.GetRevenueReportResponse
-	3, // [3:4] is the sub-list for method output_type
-	2, // [2:3] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0,  // 0: vietgara.reporting.v1.GetRevenueReportRequest.period:type_name -> vietgara.reporting.v1.RevenuePeriod
+	2,  // 1: vietgara.reporting.v1.GetRevenueReportResponse.points:type_name -> vietgara.reporting.v1.RevenuePoint
+	5,  // 2: vietgara.reporting.v1.GetTechnicianReportResponse.technicians:type_name -> vietgara.reporting.v1.TechnicianPerformance
+	1,  // 3: vietgara.reporting.v1.GetProfitReportRequest.group_by:type_name -> vietgara.reporting.v1.ProfitGroupBy
+	8,  // 4: vietgara.reporting.v1.GetProfitReportResponse.rows:type_name -> vietgara.reporting.v1.ProfitRow
+	3,  // 5: vietgara.reporting.v1.ReportingService.GetRevenueReport:input_type -> vietgara.reporting.v1.GetRevenueReportRequest
+	6,  // 6: vietgara.reporting.v1.ReportingService.GetTechnicianReport:input_type -> vietgara.reporting.v1.GetTechnicianReportRequest
+	9,  // 7: vietgara.reporting.v1.ReportingService.GetProfitReport:input_type -> vietgara.reporting.v1.GetProfitReportRequest
+	11, // 8: vietgara.reporting.v1.ReportingService.GetRepairOrderProfit:input_type -> vietgara.reporting.v1.GetRepairOrderProfitRequest
+	4,  // 9: vietgara.reporting.v1.ReportingService.GetRevenueReport:output_type -> vietgara.reporting.v1.GetRevenueReportResponse
+	7,  // 10: vietgara.reporting.v1.ReportingService.GetTechnicianReport:output_type -> vietgara.reporting.v1.GetTechnicianReportResponse
+	10, // 11: vietgara.reporting.v1.ReportingService.GetProfitReport:output_type -> vietgara.reporting.v1.GetProfitReportResponse
+	12, // 12: vietgara.reporting.v1.ReportingService.GetRepairOrderProfit:output_type -> vietgara.reporting.v1.RepairOrderProfit
+	9,  // [9:13] is the sub-list for method output_type
+	5,  // [5:9] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_reporting_v1_reporting_proto_init() }
@@ -324,8 +998,8 @@ func file_vietgara_reporting_v1_reporting_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_reporting_v1_reporting_proto_rawDesc), len(file_vietgara_reporting_v1_reporting_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   3,
+			NumEnums:      2,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

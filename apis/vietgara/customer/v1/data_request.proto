@@ -1,0 +1,183 @@
+syntax = "proto3";
+
+package vietgara.customer.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "vietgara/common/v1/pagination.proto";
+
+option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/customer/v1;customerv1";
+
+// DataRequestType is what a person asks about their personal data (FR-CUS-05,
+// Decree 13/2023/ND-CP).
+enum DataRequestType {
+  DATA_REQUEST_TYPE_UNSPECIFIED = 0;
+  // To see what the garage holds.
+  DATA_REQUEST_TYPE_VIEW = 1;
+  // To correct it.
+  DATA_REQUEST_TYPE_CORRECT = 2;
+  // To erase it. The customer's and vehicles' personal fields are made
+  // anonymous; the financial documents the law requires stay.
+  DATA_REQUEST_TYPE_DELETE = 3;
+}
+
+// DataRequestStatus is where a request stands.
+enum DataRequestStatus {
+  DATA_REQUEST_STATUS_UNSPECIFIED = 0;
+  // Confirmed and waiting for the garage to act (a correction).
+  DATA_REQUEST_STATUS_PENDING = 1;
+  DATA_REQUEST_STATUS_COMPLETED = 2;
+  // The garage declined it, with the reason in `outcome`.
+  DATA_REQUEST_STATUS_REJECTED = 3;
+}
+
+// DataRequestSource is how a request reached the garage.
+enum DataRequestSource {
+  DATA_REQUEST_SOURCE_UNSPECIFIED = 0;
+  // Recorded by a staff member for a customer who asked in person.
+  DATA_REQUEST_SOURCE_STAFF = 1;
+  // The public page, confirmed by e-mail.
+  DATA_REQUEST_SOURCE_PUBLIC = 2;
+}
+
+// DataRequest is one request about one customer's data, with its outcome. It
+// is kept as a record of the garage's answer. It holds the customer id and,
+// for a correction, the text of what to correct (`details`); anonymizing the
+// customer clears the `details` of all their requests. The data a view
+// returns is never stored.
+message DataRequest {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string customer_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  DataRequestType type = 4;
+  DataRequestStatus status = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  DataRequestSource source = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // What the person asked to correct; required for a correction, at most
+  // 2000 characters.
+  string details = 7;
+  // What the garage did, for example "Anonymized 1 customer and 2
+  // vehicles"; filled when the request is completed.
+  string outcome = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // For a view request: the data held, as JSON text. Answered only by
+  // CreateDataRequest, never stored, and empty in List and Get.
+  string export_json = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp requested_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp completed_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The staff member who completed it; empty when it completed itself.
+  string completed_by_name = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message CreateDataRequestRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2 [(google.api.field_behavior) = REQUIRED];
+  DataRequestType type = 3 [(google.api.field_behavior) = REQUIRED];
+  string details = 4;
+}
+
+message ListDataRequestsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string customer_id = 2;
+  DataRequestType type = 3;
+  DataRequestStatus status = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+message ListDataRequestsResponse {
+  repeated DataRequest data = 1;
+  vietgara.common.v1.Pagination pagination = 2;
+}
+
+message GetDataRequestRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string request_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CompleteDataRequestRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string request_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // What was done, or why the request is declined; required, at most 2000
+  // characters.
+  string outcome = 3 [(google.api.field_behavior) = REQUIRED];
+  // Declines the request instead of completing it.
+  bool declined = 4;
+}
+
+// DataRequestService serves the data requests of a garage's customers
+// (FR-CUS-05). Listing needs customer.read; recording, completing and
+// answering a request need customer.write.
+service DataRequestService {
+  // Records a request a customer made in person and acts on it at once: a
+  // view is answered with the data held, a deletion anonymizes the customer
+  // and their vehicles, and a correction waits for the garage to make it and
+  // complete the request.
+  rpc CreateDataRequest(CreateDataRequestRequest) returns (DataRequest) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/customers/{customer_id}/data-requests"
+      body: "*"
+    };
+  }
+
+  rpc ListDataRequests(ListDataRequestsRequest) returns (ListDataRequestsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/data-requests"};
+  }
+
+  rpc GetDataRequest(GetDataRequestRequest) returns (DataRequest) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/data-requests/{request_id}"};
+  }
+
+  // Completes a waiting correction with what was done, or declines it.
+  rpc CompleteDataRequest(CompleteDataRequestRequest) returns (DataRequest) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/data-requests/{request_id}:complete"
+      body: "*"
+    };
+  }
+}
+
+message SubmitPublicDataRequestRequest {
+  // The address the person is known by; the confirmation goes to it.
+  string email = 1 [(google.api.field_behavior) = REQUIRED];
+  DataRequestType type = 2 [(google.api.field_behavior) = REQUIRED];
+  // What to correct; required for a correction.
+  string details = 3;
+  // The language of the confirmation e-mail: "vi" (default) or "en".
+  string locale = 4;
+}
+
+message SubmitPublicDataRequestResponse {}
+
+message ConfirmPublicDataRequestRequest {
+  string token = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ConfirmPublicDataRequestResponse {
+  // How many garages' records the request reached. A view is e-mailed to the
+  // confirmed address, a deletion is carried out, a correction is passed to
+  // each garage.
+  int32 garage_count = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// PublicDataRequestService is the request page for people without the app
+// (FR-CUS-05). Both calls are public and throttled; the first always answers
+// the same whether or not the address is known, and sends the link only to
+// the address itself. A request waits for its link in a table of its own
+// (not as a DataRequest), which is deleted after 7 days with its `details`;
+// a confirmed one acts on every customer profile that holds the confirmed
+// address, in every garage, and is logged in each as a DataRequest.
+service PublicDataRequestService {
+  rpc SubmitPublicDataRequest(SubmitPublicDataRequestRequest) returns (SubmitPublicDataRequestResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/public/data-requests"
+      body: "*"
+    };
+  }
+
+  rpc ConfirmPublicDataRequest(ConfirmPublicDataRequestRequest) returns (ConfirmPublicDataRequestResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/public/data-requests:confirm"
+      body: "*"
+    };
+  }
+}

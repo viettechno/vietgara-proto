@@ -76,6 +76,50 @@ message ExportStockValuationExcelRequest {
   string at = 2;
 }
 
+message ExportPaymentOutVoucherPdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string voucher_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ExportPurchaseOrderPdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string purchase_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PrintPaymentOutVoucherPdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string voucher_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PrintPurchaseOrderPdfRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string purchase_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ExportReceivablesExcelRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Same optional filters as ReceivableService.ListReceivables.
+  string customer_id = 2;
+  bool overdue_only = 3;
+  bool include_paid = 4;
+  string query = 5;
+}
+
+message ExportReceivableReconciliationExcelRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Inclusive, "YYYY-MM-DD" in the garage's timezone.
+  string from = 2 [(google.api.field_behavior) = REQUIRED];
+  // Exclusive, "YYYY-MM-DD".
+  string to = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ExportSupplierPayablesExcelRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Same optional filters as PayableService.ListSupplierPayables.
+  string supplier_id = 2;
+  bool include_paid = 3;
+}
+
 // DocumentType is a document a garage can print (FR-DOC-04).
 enum DocumentType {
   DOCUMENT_TYPE_UNSPECIFIED = 0;
@@ -85,6 +129,10 @@ enum DocumentType {
   DOCUMENT_TYPE_PAYMENT_VOUCHER = 4;
   DOCUMENT_TYPE_GOODS_RECEIPT = 5;
   DOCUMENT_TYPE_STOCK_ISSUE = 6;
+  // Release 13.0 (FR-BIL-07): the payment-out voucher (phiếu chi).
+  DOCUMENT_TYPE_PAYMENT_OUT_VOUCHER = 7;
+  // Release 13.0 (FR-INV-16): the purchase order.
+  DOCUMENT_TYPE_PURCHASE_ORDER = 8;
 }
 
 // PaperSize is the paper a document prints on: A4 (210 x 297 mm) or A5
@@ -276,5 +324,40 @@ service DocumentService {
 
   rpc PrintStockIssuePdf(PrintStockIssuePdfRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {post: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue/pdf:print"};
+  }
+
+  // FR-BIL-07 (Release 13.0): a payment-out voucher (phiếu chi) as a PDF.
+  rpc ExportPaymentOutVoucherPdf(ExportPaymentOutVoucherPdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}/pdf"};
+  }
+
+  rpc PrintPaymentOutVoucherPdf(PrintPaymentOutVoucherPdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}/pdf:print"};
+  }
+
+  // FR-INV-16 (Release 13.0): a purchase order as a PDF.
+  rpc ExportPurchaseOrderPdf(ExportPurchaseOrderPdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}/pdf"};
+  }
+
+  rpc PrintPurchaseOrderPdf(PrintPurchaseOrderPdfRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}/pdf:print"};
+  }
+
+  // FR-DOC-02 (Release 13.0): the receivables list
+  // (ReceivableService.ListReceivables) as an Excel workbook.
+  rpc ExportReceivablesExcel(ExportReceivablesExcelRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/receivables/excel"};
+  }
+
+  // FR-REC-04 (Release 13.0): the reconciliation of a period
+  // (ReceivableService.GetReconciliationReport) as an Excel workbook.
+  rpc ExportReceivableReconciliationExcel(ExportReceivableReconciliationExcelRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/receivable-reconciliation/excel"};
+  }
+
+  // FR-INV-17 (Release 13.0): the supplier payables as an Excel workbook.
+  rpc ExportSupplierPayablesExcel(ExportSupplierPayablesExcelRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/supplier-payables/excel"};
   }
 }

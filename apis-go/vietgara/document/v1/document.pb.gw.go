@@ -1098,6 +1098,385 @@ func local_request_DocumentService_PrintStockIssuePdf_0(ctx context.Context, mar
 	return msg, metadata, err
 }
 
+func request_DocumentService_ExportPaymentOutVoucherPdf_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ExportPaymentOutVoucherPdfRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["voucher_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "voucher_id")
+	}
+	protoReq.VoucherId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "voucher_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ExportPaymentOutVoucherPdf(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_DocumentService_ExportPaymentOutVoucherPdf_0(ctx context.Context, marshaler runtime.Marshaler, server DocumentServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ExportPaymentOutVoucherPdfRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["voucher_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "voucher_id")
+	}
+	protoReq.VoucherId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "voucher_id", err)
+	}
+	msg, err := server.ExportPaymentOutVoucherPdf(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_DocumentService_PrintPaymentOutVoucherPdf_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq PrintPaymentOutVoucherPdfRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["voucher_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "voucher_id")
+	}
+	protoReq.VoucherId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "voucher_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.PrintPaymentOutVoucherPdf(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_DocumentService_PrintPaymentOutVoucherPdf_0(ctx context.Context, marshaler runtime.Marshaler, server DocumentServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq PrintPaymentOutVoucherPdfRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["voucher_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "voucher_id")
+	}
+	protoReq.VoucherId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "voucher_id", err)
+	}
+	msg, err := server.PrintPaymentOutVoucherPdf(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_DocumentService_ExportPurchaseOrderPdf_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ExportPurchaseOrderPdfRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["purchase_order_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "purchase_order_id")
+	}
+	protoReq.PurchaseOrderId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "purchase_order_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ExportPurchaseOrderPdf(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_DocumentService_ExportPurchaseOrderPdf_0(ctx context.Context, marshaler runtime.Marshaler, server DocumentServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ExportPurchaseOrderPdfRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["purchase_order_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "purchase_order_id")
+	}
+	protoReq.PurchaseOrderId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "purchase_order_id", err)
+	}
+	msg, err := server.ExportPurchaseOrderPdf(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_DocumentService_PrintPurchaseOrderPdf_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq PrintPurchaseOrderPdfRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["purchase_order_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "purchase_order_id")
+	}
+	protoReq.PurchaseOrderId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "purchase_order_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.PrintPurchaseOrderPdf(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_DocumentService_PrintPurchaseOrderPdf_0(ctx context.Context, marshaler runtime.Marshaler, server DocumentServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq PrintPurchaseOrderPdfRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	val, ok = pathParams["purchase_order_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "purchase_order_id")
+	}
+	protoReq.PurchaseOrderId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "purchase_order_id", err)
+	}
+	msg, err := server.PrintPurchaseOrderPdf(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+var filter_DocumentService_ExportReceivablesExcel_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+
+func request_DocumentService_ExportReceivablesExcel_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ExportReceivablesExcelRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_ExportReceivablesExcel_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ExportReceivablesExcel(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_DocumentService_ExportReceivablesExcel_0(ctx context.Context, marshaler runtime.Marshaler, server DocumentServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ExportReceivablesExcelRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_ExportReceivablesExcel_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.ExportReceivablesExcel(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+var filter_DocumentService_ExportReceivableReconciliationExcel_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+
+func request_DocumentService_ExportReceivableReconciliationExcel_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ExportReceivableReconciliationExcelRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_ExportReceivableReconciliationExcel_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ExportReceivableReconciliationExcel(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_DocumentService_ExportReceivableReconciliationExcel_0(ctx context.Context, marshaler runtime.Marshaler, server DocumentServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ExportReceivableReconciliationExcelRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_ExportReceivableReconciliationExcel_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.ExportReceivableReconciliationExcel(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+var filter_DocumentService_ExportSupplierPayablesExcel_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+
+func request_DocumentService_ExportSupplierPayablesExcel_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ExportSupplierPayablesExcelRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_ExportSupplierPayablesExcel_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ExportSupplierPayablesExcel(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_DocumentService_ExportSupplierPayablesExcel_0(ctx context.Context, marshaler runtime.Marshaler, server DocumentServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ExportSupplierPayablesExcelRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["garage_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "garage_id")
+	}
+	protoReq.GarageId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_ExportSupplierPayablesExcel_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.ExportSupplierPayablesExcel(ctx, &protoReq)
+	return msg, metadata, err
+}
+
 // RegisterDocumentServiceHandlerServer registers the http handlers for service DocumentService to "mux".
 // UnaryRPC     :call DocumentServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -1484,6 +1863,146 @@ func RegisterDocumentServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		}
 		forward_DocumentService_PrintStockIssuePdf_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodGet, pattern_DocumentService_ExportPaymentOutVoucherPdf_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/ExportPaymentOutVoucherPdf", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}/pdf"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DocumentService_ExportPaymentOutVoucherPdf_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_DocumentService_ExportPaymentOutVoucherPdf_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_DocumentService_PrintPaymentOutVoucherPdf_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/PrintPaymentOutVoucherPdf", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}/pdf:print"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DocumentService_PrintPaymentOutVoucherPdf_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_DocumentService_PrintPaymentOutVoucherPdf_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_DocumentService_ExportPurchaseOrderPdf_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/ExportPurchaseOrderPdf", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}/pdf"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DocumentService_ExportPurchaseOrderPdf_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_DocumentService_ExportPurchaseOrderPdf_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_DocumentService_PrintPurchaseOrderPdf_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/PrintPurchaseOrderPdf", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}/pdf:print"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DocumentService_PrintPurchaseOrderPdf_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_DocumentService_PrintPurchaseOrderPdf_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_DocumentService_ExportReceivablesExcel_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/ExportReceivablesExcel", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/reports/receivables/excel"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DocumentService_ExportReceivablesExcel_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_DocumentService_ExportReceivablesExcel_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_DocumentService_ExportReceivableReconciliationExcel_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/ExportReceivableReconciliationExcel", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/reports/receivable-reconciliation/excel"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DocumentService_ExportReceivableReconciliationExcel_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_DocumentService_ExportReceivableReconciliationExcel_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_DocumentService_ExportSupplierPayablesExcel_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/ExportSupplierPayablesExcel", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/reports/supplier-payables/excel"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DocumentService_ExportSupplierPayablesExcel_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_DocumentService_ExportSupplierPayablesExcel_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
 
 	return nil
 }
@@ -1847,49 +2366,182 @@ func RegisterDocumentServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 		}
 		forward_DocumentService_PrintStockIssuePdf_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodGet, pattern_DocumentService_ExportPaymentOutVoucherPdf_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/ExportPaymentOutVoucherPdf", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}/pdf"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_DocumentService_ExportPaymentOutVoucherPdf_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_DocumentService_ExportPaymentOutVoucherPdf_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_DocumentService_PrintPaymentOutVoucherPdf_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/PrintPaymentOutVoucherPdf", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}/pdf:print"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_DocumentService_PrintPaymentOutVoucherPdf_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_DocumentService_PrintPaymentOutVoucherPdf_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_DocumentService_ExportPurchaseOrderPdf_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/ExportPurchaseOrderPdf", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}/pdf"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_DocumentService_ExportPurchaseOrderPdf_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_DocumentService_ExportPurchaseOrderPdf_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_DocumentService_PrintPurchaseOrderPdf_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/PrintPurchaseOrderPdf", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}/pdf:print"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_DocumentService_PrintPurchaseOrderPdf_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_DocumentService_PrintPurchaseOrderPdf_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_DocumentService_ExportReceivablesExcel_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/ExportReceivablesExcel", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/reports/receivables/excel"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_DocumentService_ExportReceivablesExcel_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_DocumentService_ExportReceivablesExcel_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_DocumentService_ExportReceivableReconciliationExcel_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/ExportReceivableReconciliationExcel", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/reports/receivable-reconciliation/excel"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_DocumentService_ExportReceivableReconciliationExcel_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_DocumentService_ExportReceivableReconciliationExcel_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_DocumentService_ExportSupplierPayablesExcel_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/ExportSupplierPayablesExcel", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/reports/supplier-payables/excel"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_DocumentService_ExportSupplierPayablesExcel_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_DocumentService_ExportSupplierPayablesExcel_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
 	return nil
 }
 
 var (
-	pattern_DocumentService_ExportQuotePdf_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "quotes", "quote_id", "pdf"}, ""))
-	pattern_DocumentService_ExportRepairOrderPdf_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "repair-orders", "repair_order_id", "pdf"}, ""))
-	pattern_DocumentService_ExportSettlementReceiptPdf_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "settlements", "settlement_id", "receipt-pdf"}, ""))
-	pattern_DocumentService_ExportPaymentVoucherPdf_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7, 2, 8}, []string{"api", "v1", "garages", "garage_id", "settlements", "settlement_id", "payments", "payment_id", "voucher-pdf"}, ""))
-	pattern_DocumentService_ExportStockMovementsExcel_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "reports", "stock-movements", "excel"}, ""))
-	pattern_DocumentService_ExportRevenueExcel_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "reports", "revenue", "excel"}, ""))
-	pattern_DocumentService_ExportGoodsReceiptPdf_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id", "pdf"}, ""))
-	pattern_DocumentService_ExportStockIssuePdf_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 2, 7}, []string{"api", "v1", "garages", "garage_id", "repair-orders", "repair_order_id", "stock-issue", "pdf"}, ""))
-	pattern_DocumentService_ExportStockCountExcel_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "stock-counts", "stock_count_id", "excel"}, ""))
-	pattern_DocumentService_ExportPurchasesExcel_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "reports", "purchases", "excel"}, ""))
-	pattern_DocumentService_ExportStockValuationExcel_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "reports", "stock-valuation", "excel"}, ""))
-	pattern_DocumentService_GetPrintSettings_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "print-settings"}, ""))
-	pattern_DocumentService_UpdatePrintSetting_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "print-settings", "document_type"}, ""))
-	pattern_DocumentService_PrintQuotePdf_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "quotes", "quote_id", "pdf"}, "print"))
-	pattern_DocumentService_PrintRepairOrderPdf_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "repair-orders", "repair_order_id", "pdf"}, "print"))
-	pattern_DocumentService_PrintSettlementReceiptPdf_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "settlements", "settlement_id", "receipt-pdf"}, "print"))
-	pattern_DocumentService_PrintPaymentVoucherPdf_0     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7, 2, 8}, []string{"api", "v1", "garages", "garage_id", "settlements", "settlement_id", "payments", "payment_id", "voucher-pdf"}, "print"))
-	pattern_DocumentService_PrintGoodsReceiptPdf_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id", "pdf"}, "print"))
-	pattern_DocumentService_PrintStockIssuePdf_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 2, 7}, []string{"api", "v1", "garages", "garage_id", "repair-orders", "repair_order_id", "stock-issue", "pdf"}, "print"))
+	pattern_DocumentService_ExportQuotePdf_0                      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "quotes", "quote_id", "pdf"}, ""))
+	pattern_DocumentService_ExportRepairOrderPdf_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "repair-orders", "repair_order_id", "pdf"}, ""))
+	pattern_DocumentService_ExportSettlementReceiptPdf_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "settlements", "settlement_id", "receipt-pdf"}, ""))
+	pattern_DocumentService_ExportPaymentVoucherPdf_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7, 2, 8}, []string{"api", "v1", "garages", "garage_id", "settlements", "settlement_id", "payments", "payment_id", "voucher-pdf"}, ""))
+	pattern_DocumentService_ExportStockMovementsExcel_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "reports", "stock-movements", "excel"}, ""))
+	pattern_DocumentService_ExportRevenueExcel_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "reports", "revenue", "excel"}, ""))
+	pattern_DocumentService_ExportGoodsReceiptPdf_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id", "pdf"}, ""))
+	pattern_DocumentService_ExportStockIssuePdf_0                 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 2, 7}, []string{"api", "v1", "garages", "garage_id", "repair-orders", "repair_order_id", "stock-issue", "pdf"}, ""))
+	pattern_DocumentService_ExportStockCountExcel_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "stock-counts", "stock_count_id", "excel"}, ""))
+	pattern_DocumentService_ExportPurchasesExcel_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "reports", "purchases", "excel"}, ""))
+	pattern_DocumentService_ExportStockValuationExcel_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "reports", "stock-valuation", "excel"}, ""))
+	pattern_DocumentService_GetPrintSettings_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "print-settings"}, ""))
+	pattern_DocumentService_UpdatePrintSetting_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "print-settings", "document_type"}, ""))
+	pattern_DocumentService_PrintQuotePdf_0                       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "quotes", "quote_id", "pdf"}, "print"))
+	pattern_DocumentService_PrintRepairOrderPdf_0                 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "repair-orders", "repair_order_id", "pdf"}, "print"))
+	pattern_DocumentService_PrintSettlementReceiptPdf_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "settlements", "settlement_id", "receipt-pdf"}, "print"))
+	pattern_DocumentService_PrintPaymentVoucherPdf_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7, 2, 8}, []string{"api", "v1", "garages", "garage_id", "settlements", "settlement_id", "payments", "payment_id", "voucher-pdf"}, "print"))
+	pattern_DocumentService_PrintGoodsReceiptPdf_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "goods-receipts", "goods_receipt_id", "pdf"}, "print"))
+	pattern_DocumentService_PrintStockIssuePdf_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 2, 7}, []string{"api", "v1", "garages", "garage_id", "repair-orders", "repair_order_id", "stock-issue", "pdf"}, "print"))
+	pattern_DocumentService_ExportPaymentOutVoucherPdf_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "payment-out-vouchers", "voucher_id", "pdf"}, ""))
+	pattern_DocumentService_PrintPaymentOutVoucherPdf_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "payment-out-vouchers", "voucher_id", "pdf"}, "print"))
+	pattern_DocumentService_ExportPurchaseOrderPdf_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "purchase-orders", "purchase_order_id", "pdf"}, ""))
+	pattern_DocumentService_PrintPurchaseOrderPdf_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "purchase-orders", "purchase_order_id", "pdf"}, "print"))
+	pattern_DocumentService_ExportReceivablesExcel_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "reports", "receivables", "excel"}, ""))
+	pattern_DocumentService_ExportReceivableReconciliationExcel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "reports", "receivable-reconciliation", "excel"}, ""))
+	pattern_DocumentService_ExportSupplierPayablesExcel_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 2, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "reports", "supplier-payables", "excel"}, ""))
 )
 
 var (
-	forward_DocumentService_ExportQuotePdf_0             = runtime.ForwardResponseMessage
-	forward_DocumentService_ExportRepairOrderPdf_0       = runtime.ForwardResponseMessage
-	forward_DocumentService_ExportSettlementReceiptPdf_0 = runtime.ForwardResponseMessage
-	forward_DocumentService_ExportPaymentVoucherPdf_0    = runtime.ForwardResponseMessage
-	forward_DocumentService_ExportStockMovementsExcel_0  = runtime.ForwardResponseMessage
-	forward_DocumentService_ExportRevenueExcel_0         = runtime.ForwardResponseMessage
-	forward_DocumentService_ExportGoodsReceiptPdf_0      = runtime.ForwardResponseMessage
-	forward_DocumentService_ExportStockIssuePdf_0        = runtime.ForwardResponseMessage
-	forward_DocumentService_ExportStockCountExcel_0      = runtime.ForwardResponseMessage
-	forward_DocumentService_ExportPurchasesExcel_0       = runtime.ForwardResponseMessage
-	forward_DocumentService_ExportStockValuationExcel_0  = runtime.ForwardResponseMessage
-	forward_DocumentService_GetPrintSettings_0           = runtime.ForwardResponseMessage
-	forward_DocumentService_UpdatePrintSetting_0         = runtime.ForwardResponseMessage
-	forward_DocumentService_PrintQuotePdf_0              = runtime.ForwardResponseMessage
-	forward_DocumentService_PrintRepairOrderPdf_0        = runtime.ForwardResponseMessage
-	forward_DocumentService_PrintSettlementReceiptPdf_0  = runtime.ForwardResponseMessage
-	forward_DocumentService_PrintPaymentVoucherPdf_0     = runtime.ForwardResponseMessage
-	forward_DocumentService_PrintGoodsReceiptPdf_0       = runtime.ForwardResponseMessage
-	forward_DocumentService_PrintStockIssuePdf_0         = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportQuotePdf_0                      = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportRepairOrderPdf_0                = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportSettlementReceiptPdf_0          = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportPaymentVoucherPdf_0             = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportStockMovementsExcel_0           = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportRevenueExcel_0                  = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportGoodsReceiptPdf_0               = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportStockIssuePdf_0                 = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportStockCountExcel_0               = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportPurchasesExcel_0                = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportStockValuationExcel_0           = runtime.ForwardResponseMessage
+	forward_DocumentService_GetPrintSettings_0                    = runtime.ForwardResponseMessage
+	forward_DocumentService_UpdatePrintSetting_0                  = runtime.ForwardResponseMessage
+	forward_DocumentService_PrintQuotePdf_0                       = runtime.ForwardResponseMessage
+	forward_DocumentService_PrintRepairOrderPdf_0                 = runtime.ForwardResponseMessage
+	forward_DocumentService_PrintSettlementReceiptPdf_0           = runtime.ForwardResponseMessage
+	forward_DocumentService_PrintPaymentVoucherPdf_0              = runtime.ForwardResponseMessage
+	forward_DocumentService_PrintGoodsReceiptPdf_0                = runtime.ForwardResponseMessage
+	forward_DocumentService_PrintStockIssuePdf_0                  = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportPaymentOutVoucherPdf_0          = runtime.ForwardResponseMessage
+	forward_DocumentService_PrintPaymentOutVoucherPdf_0           = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportPurchaseOrderPdf_0              = runtime.ForwardResponseMessage
+	forward_DocumentService_PrintPurchaseOrderPdf_0               = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportReceivablesExcel_0              = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportReceivableReconciliationExcel_0 = runtime.ForwardResponseMessage
+	forward_DocumentService_ExportSupplierPayablesExcel_0         = runtime.ForwardResponseMessage
 )
