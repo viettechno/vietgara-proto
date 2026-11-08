@@ -489,7 +489,7 @@
     },
     "/api/v1/admin/plan-payment-requests/{requestId}:approve": {
       "post": {
-        "summary": "Approves the payment: the plan applies at once and a new period starts;\nthe limits are validated again (PLAN_LIMIT_REACHED).\nREQUEST_NOT_OPEN unless SUBMITTED.",
+        "summary": "Approves the payment: the plan applies at once and a new period starts;\nthe limits are validated again (PLAN_LIMIT_REACHED) and so is the credit:\nCREDIT_EXPIRED when credit applied in the quote has lapsed since.\nREQUEST_NOT_OPEN unless SUBMITTED.",
         "operationId": "LicenseAdminService_ApprovePlanPayment",
         "responses": {
           "200": {
@@ -619,6 +619,7 @@
     },
     "/api/v1/admin/plans/{planId}": {
       "patch": {
+        "summary": "Edits a plan. The billing cycle can only change while no subscription\nuses the plan (PLAN_HAS_SUBSCRIBERS); a changed price applies to the\nnext payment only.",
         "operationId": "LicenseAdminService_UpdatePlan",
         "responses": {
           "200": {
@@ -12224,7 +12225,11 @@
         },
         "evidence": {
           "$ref": "#/definitions/v1PaymentEvidence",
-          "description": "Required unless the amount due is 0."
+          "description": "Required unless the amount due is 0 or the payment is in cash."
+        },
+        "paymentMethod": {
+          "$ref": "#/definitions/vietgaraLicenseV1PaymentMethod",
+          "description": "Defaults to a bank transfer. Cash needs no payer bank, account,\ntransaction reference or evidence."
         }
       },
       "required": [
@@ -12381,7 +12386,7 @@
           "format": "int64"
         },
         "method": {
-          "$ref": "#/definitions/v1PaymentMethod"
+          "$ref": "#/definitions/vietgaraBillingV1PaymentMethod"
         },
         "note": {
           "type": "string"
@@ -13172,9 +13177,10 @@
       "enum": [
         "CREDIT_ENTRY_KIND_EARNED",
         "CREDIT_ENTRY_KIND_APPLIED",
-        "CREDIT_ENTRY_KIND_ADJUSTMENT"
+        "CREDIT_ENTRY_KIND_ADJUSTMENT",
+        "CREDIT_ENTRY_KIND_EXPIRED"
       ],
-      "description": "CreditEntryKind is why the account credit changed (FR-LIC-09).\n\n - CREDIT_ENTRY_KIND_EARNED: A downgrade's surplus.\n - CREDIT_ENTRY_KIND_APPLIED: Credit used by a payment.\n - CREDIT_ENTRY_KIND_ADJUSTMENT: A correction by a platform admin."
+      "description": "CreditEntryKind is why the account credit changed (FR-LIC-09).\n\n - CREDIT_ENTRY_KIND_EARNED: A downgrade's surplus.\n - CREDIT_ENTRY_KIND_APPLIED: Credit used by a payment.\n - CREDIT_ENTRY_KIND_ADJUSTMENT: A correction by a platform admin.\n - CREDIT_ENTRY_KIND_EXPIRED: Credit that lapsed unused one year after it was earned."
     },
     "v1CreditLedgerEntry": {
       "type": "object",
@@ -13200,6 +13206,16 @@
         "createdAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Credit added by this entry lapses at expires_at (one year after it was\nearned); unset on entries that use or remove credit."
+        },
+        "remaining": {
+          "type": "string",
+          "format": "int64",
+          "description": "The part of an added amount not used or lapsed yet."
         }
       },
       "description": "CreditLedgerEntry is one change of the owner's account credit."
@@ -16373,18 +16389,19 @@
           "type": "string",
           "description": "The QR code image, a signed URL valid for 5 minutes; empty when none.",
           "readOnly": true
+        },
+        "supportPhone": {
+          "type": "string",
+          "description": "How owners reach the platform about needs beyond the plans or questions\n(shown next to the plans); each is empty when not set."
+        },
+        "supportEmail": {
+          "type": "string"
+        },
+        "supportZalo": {
+          "type": "string"
         }
       },
       "description": "PaymentInstructions are the platform's payment details shown with a\npayment request (FR-LIC-10)."
-    },
-    "v1PaymentMethod": {
-      "type": "string",
-      "enum": [
-        "PAYMENT_METHOD_CASH",
-        "PAYMENT_METHOD_BANK_TRANSFER",
-        "PAYMENT_METHOD_ONLINE"
-      ],
-      "description": "PaymentMethod: how a payment was actually collected (FR-BIL-03). ONLINE\nis recorded manually in Release 1.4 (staff sees a bank app or gateway\ndashboard confirmation and records it); automatic confirmation via a\npayment gateway webhook is Release 2.0 (FR-PAY-02)."
     },
     "v1PaymentOutAllocation": {
       "type": "object",
@@ -16444,7 +16461,7 @@
           "description": "Integer VND, positive and at least the sum of the allocations. An\nallocation goes only to an OPEN payable of the voucher's supplier, once\nper payable and for at most its remaining amount, checked under a lock so\nthat two vouchers cannot take the same remainder (INVALID_ALLOCATION).\nVoiding takes the allocations off the payables that still exist; one\nwhose goods receipt was cancelled in the meantime stays cancelled."
         },
         "method": {
-          "$ref": "#/definitions/v1PaymentMethod"
+          "$ref": "#/definitions/vietgaraBillingV1PaymentMethod"
         },
         "reason": {
           "type": "string",
@@ -16601,6 +16618,18 @@
           "type": "string",
           "format": "date-time",
           "readOnly": true
+        },
+        "trialDays": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Length of the free trial in days. Only the \"trial\" plan has it (required\nthere, rejected on other plans); it applies to trials started afterwards."
+        },
+        "countedTransactionKinds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1TransactionKind"
+          },
+          "description": "The document kinds that count against limits.max_transactions_per_day;\nother kinds are neither counted nor limited. Defaults to repair orders."
         }
       },
       "description": "Plan is a subscription offer (FR-LIC-05).",
@@ -16625,7 +16654,7 @@
         "maxTransactionsPerDay": {
           "type": "integer",
           "format": "int32",
-          "description": "Business documents (quotes, repair orders, settlements) created per\ncalendar day (Asia/Ho_Chi_Minh)."
+          "description": "Business documents of the plan's counted_transaction_kinds created per\ncalendar day (Asia/Ho_Chi_Minh)."
         }
       },
       "description": "PlanLimits caps usage across all garages of the subscribing owner."
@@ -16737,6 +16766,10 @@
         "createdAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "paymentMethod": {
+          "$ref": "#/definitions/vietgaraLicenseV1PaymentMethod",
+          "description": "How the owner paid; unset until submitted."
         }
       },
       "description": "PlanPaymentRequest is an owner's request to switch to a plan, or to renew\nthe current one, paid by a manual bank transfer (FR-LIC-07). The amounts\nare fixed when it is quoted and honoured at approval."
@@ -16895,6 +16928,16 @@
           "type": "string",
           "format": "date-time",
           "readOnly": true
+        },
+        "supportPhone": {
+          "type": "string",
+          "description": "Contact details shown to owners next to the plans."
+        },
+        "supportEmail": {
+          "type": "string"
+        },
+        "supportZalo": {
+          "type": "string"
         }
       },
       "description": "PlatformPaymentSettings are the details owners transfer to (FR-LIC-10)."
@@ -17733,7 +17776,7 @@
           "readOnly": true
         },
         "method": {
-          "$ref": "#/definitions/v1PaymentMethod",
+          "$ref": "#/definitions/vietgaraBillingV1PaymentMethod",
           "description": "How the money was paid, for a payment or void; unspecified for a charge.",
           "readOnly": true
         },
@@ -17871,7 +17914,7 @@
           "readOnly": true
         },
         "method": {
-          "$ref": "#/definitions/v1PaymentMethod",
+          "$ref": "#/definitions/vietgaraBillingV1PaymentMethod",
           "readOnly": true
         }
       },
@@ -17881,7 +17924,7 @@
       "type": "object",
       "properties": {
         "method": {
-          "$ref": "#/definitions/v1PaymentMethod",
+          "$ref": "#/definitions/vietgaraBillingV1PaymentMethod",
           "readOnly": true
         },
         "amount": {
@@ -18726,7 +18769,7 @@
           "readOnly": true
         },
         "method": {
-          "$ref": "#/definitions/v1PaymentMethod",
+          "$ref": "#/definitions/vietgaraBillingV1PaymentMethod",
           "readOnly": true
         },
         "note": {
@@ -19632,6 +19675,11 @@
         "openRequest": {
           "$ref": "#/definitions/v1PlanPaymentRequest",
           "description": "The request awaiting payment or review, unset when none."
+        },
+        "nextCreditExpiry": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the earliest unused part of the credit lapses; unset when no credit."
         }
       },
       "description": "Subscription belongs to an owner user and covers all their garages\n(FR-LIC-01..04)."
@@ -20198,6 +20246,15 @@
         }
       },
       "description": "TechnicianPerformance is one technician's work in a period (FR-RPT-02)."
+    },
+    "v1TransactionKind": {
+      "type": "string",
+      "enum": [
+        "TRANSACTION_KIND_REPAIR_ORDER",
+        "TRANSACTION_KIND_QUOTE",
+        "TRANSACTION_KIND_SETTLEMENT"
+      ],
+      "description": "TransactionKind is a kind of business document a plan may count against\nits daily transaction limit."
     },
     "v1UnassignedPart": {
       "type": "object",
@@ -20996,6 +21053,23 @@
         "WRITE_OFF_REASON_WARRANTY_REPLACEMENT"
       ],
       "description": "WriteOffReason is why stock is written off (FR-INV-09)."
+    },
+    "vietgaraBillingV1PaymentMethod": {
+      "type": "string",
+      "enum": [
+        "PAYMENT_METHOD_CASH",
+        "PAYMENT_METHOD_BANK_TRANSFER",
+        "PAYMENT_METHOD_ONLINE"
+      ],
+      "description": "PaymentMethod: how a payment was actually collected (FR-BIL-03). ONLINE\nis recorded manually in Release 1.4 (staff sees a bank app or gateway\ndashboard confirmation and records it); automatic confirmation via a\npayment gateway webhook is Release 2.0 (FR-PAY-02)."
+    },
+    "vietgaraLicenseV1PaymentMethod": {
+      "type": "string",
+      "enum": [
+        "PAYMENT_METHOD_BANK_TRANSFER",
+        "PAYMENT_METHOD_CASH"
+      ],
+      "description": "PaymentMethod is how the owner paid the amount due (FR-LIC-07).\n\n - PAYMENT_METHOD_CASH: Handed to the platform in cash; the admin confirms it on approval."
     }
   },
   "securityDefinitions": {

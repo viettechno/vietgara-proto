@@ -199,6 +199,60 @@ func (Feature) EnumDescriptor() ([]byte, []int) {
 	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{2}
 }
 
+// TransactionKind is a kind of business document a plan may count against
+// its daily transaction limit.
+type TransactionKind int32
+
+const (
+	TransactionKind_TRANSACTION_KIND_UNSPECIFIED  TransactionKind = 0
+	TransactionKind_TRANSACTION_KIND_REPAIR_ORDER TransactionKind = 1
+	TransactionKind_TRANSACTION_KIND_QUOTE        TransactionKind = 2
+	TransactionKind_TRANSACTION_KIND_SETTLEMENT   TransactionKind = 3
+)
+
+// Enum value maps for TransactionKind.
+var (
+	TransactionKind_name = map[int32]string{
+		0: "TRANSACTION_KIND_UNSPECIFIED",
+		1: "TRANSACTION_KIND_REPAIR_ORDER",
+		2: "TRANSACTION_KIND_QUOTE",
+		3: "TRANSACTION_KIND_SETTLEMENT",
+	}
+	TransactionKind_value = map[string]int32{
+		"TRANSACTION_KIND_UNSPECIFIED":  0,
+		"TRANSACTION_KIND_REPAIR_ORDER": 1,
+		"TRANSACTION_KIND_QUOTE":        2,
+		"TRANSACTION_KIND_SETTLEMENT":   3,
+	}
+)
+
+func (x TransactionKind) Enum() *TransactionKind {
+	p := new(TransactionKind)
+	*p = x
+	return p
+}
+
+func (x TransactionKind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TransactionKind) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_license_v1_license_proto_enumTypes[3].Descriptor()
+}
+
+func (TransactionKind) Type() protoreflect.EnumType {
+	return &file_vietgara_license_v1_license_proto_enumTypes[3]
+}
+
+func (x TransactionKind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TransactionKind.Descriptor instead.
+func (TransactionKind) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{3}
+}
+
 // PlanPaymentKind says what a payment request pays for (FR-LIC-07).
 type PlanPaymentKind int32
 
@@ -235,11 +289,11 @@ func (x PlanPaymentKind) String() string {
 }
 
 func (PlanPaymentKind) Descriptor() protoreflect.EnumDescriptor {
-	return file_vietgara_license_v1_license_proto_enumTypes[3].Descriptor()
+	return file_vietgara_license_v1_license_proto_enumTypes[4].Descriptor()
 }
 
 func (PlanPaymentKind) Type() protoreflect.EnumType {
-	return &file_vietgara_license_v1_license_proto_enumTypes[3]
+	return &file_vietgara_license_v1_license_proto_enumTypes[4]
 }
 
 func (x PlanPaymentKind) Number() protoreflect.EnumNumber {
@@ -248,7 +302,7 @@ func (x PlanPaymentKind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PlanPaymentKind.Descriptor instead.
 func (PlanPaymentKind) EnumDescriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{3}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{4}
 }
 
 // PlanPaymentStatus is the state of a payment request (LLD 3.3).
@@ -298,11 +352,11 @@ func (x PlanPaymentStatus) String() string {
 }
 
 func (PlanPaymentStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_vietgara_license_v1_license_proto_enumTypes[4].Descriptor()
+	return file_vietgara_license_v1_license_proto_enumTypes[5].Descriptor()
 }
 
 func (PlanPaymentStatus) Type() protoreflect.EnumType {
-	return &file_vietgara_license_v1_license_proto_enumTypes[4]
+	return &file_vietgara_license_v1_license_proto_enumTypes[5]
 }
 
 func (x PlanPaymentStatus) Number() protoreflect.EnumNumber {
@@ -311,7 +365,7 @@ func (x PlanPaymentStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PlanPaymentStatus.Descriptor instead.
 func (PlanPaymentStatus) EnumDescriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{4}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{5}
 }
 
 // CreditEntryKind is why the account credit changed (FR-LIC-09).
@@ -325,6 +379,8 @@ const (
 	CreditEntryKind_CREDIT_ENTRY_KIND_APPLIED CreditEntryKind = 2
 	// A correction by a platform admin.
 	CreditEntryKind_CREDIT_ENTRY_KIND_ADJUSTMENT CreditEntryKind = 3
+	// Credit that lapsed unused one year after it was earned.
+	CreditEntryKind_CREDIT_ENTRY_KIND_EXPIRED CreditEntryKind = 4
 )
 
 // Enum value maps for CreditEntryKind.
@@ -334,12 +390,14 @@ var (
 		1: "CREDIT_ENTRY_KIND_EARNED",
 		2: "CREDIT_ENTRY_KIND_APPLIED",
 		3: "CREDIT_ENTRY_KIND_ADJUSTMENT",
+		4: "CREDIT_ENTRY_KIND_EXPIRED",
 	}
 	CreditEntryKind_value = map[string]int32{
 		"CREDIT_ENTRY_KIND_UNSPECIFIED": 0,
 		"CREDIT_ENTRY_KIND_EARNED":      1,
 		"CREDIT_ENTRY_KIND_APPLIED":     2,
 		"CREDIT_ENTRY_KIND_ADJUSTMENT":  3,
+		"CREDIT_ENTRY_KIND_EXPIRED":     4,
 	}
 )
 
@@ -354,11 +412,11 @@ func (x CreditEntryKind) String() string {
 }
 
 func (CreditEntryKind) Descriptor() protoreflect.EnumDescriptor {
-	return file_vietgara_license_v1_license_proto_enumTypes[5].Descriptor()
+	return file_vietgara_license_v1_license_proto_enumTypes[6].Descriptor()
 }
 
 func (CreditEntryKind) Type() protoreflect.EnumType {
-	return &file_vietgara_license_v1_license_proto_enumTypes[5]
+	return &file_vietgara_license_v1_license_proto_enumTypes[6]
 }
 
 func (x CreditEntryKind) Number() protoreflect.EnumNumber {
@@ -367,7 +425,58 @@ func (x CreditEntryKind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use CreditEntryKind.Descriptor instead.
 func (CreditEntryKind) EnumDescriptor() ([]byte, []int) {
-	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{5}
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{6}
+}
+
+// PaymentMethod is how the owner paid the amount due (FR-LIC-07).
+type PaymentMethod int32
+
+const (
+	PaymentMethod_PAYMENT_METHOD_UNSPECIFIED   PaymentMethod = 0
+	PaymentMethod_PAYMENT_METHOD_BANK_TRANSFER PaymentMethod = 1
+	// Handed to the platform in cash; the admin confirms it on approval.
+	PaymentMethod_PAYMENT_METHOD_CASH PaymentMethod = 2
+)
+
+// Enum value maps for PaymentMethod.
+var (
+	PaymentMethod_name = map[int32]string{
+		0: "PAYMENT_METHOD_UNSPECIFIED",
+		1: "PAYMENT_METHOD_BANK_TRANSFER",
+		2: "PAYMENT_METHOD_CASH",
+	}
+	PaymentMethod_value = map[string]int32{
+		"PAYMENT_METHOD_UNSPECIFIED":   0,
+		"PAYMENT_METHOD_BANK_TRANSFER": 1,
+		"PAYMENT_METHOD_CASH":          2,
+	}
+)
+
+func (x PaymentMethod) Enum() *PaymentMethod {
+	p := new(PaymentMethod)
+	*p = x
+	return p
+}
+
+func (x PaymentMethod) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PaymentMethod) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_license_v1_license_proto_enumTypes[7].Descriptor()
+}
+
+func (PaymentMethod) Type() protoreflect.EnumType {
+	return &file_vietgara_license_v1_license_proto_enumTypes[7]
+}
+
+func (x PaymentMethod) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PaymentMethod.Descriptor instead.
+func (PaymentMethod) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_license_v1_license_proto_rawDescGZIP(), []int{7}
 }
 
 // PlanLimits caps usage across all garages of the subscribing owner.
@@ -377,7 +486,7 @@ type PlanLimits struct {
 	// Staff members across all garages, excluding the owner and counting
 	// pending invitations.
 	MaxStaff int32 `protobuf:"varint,2,opt,name=max_staff,json=maxStaff,proto3" json:"max_staff,omitempty"`
-	// Business documents (quotes, repair orders, settlements) created per
+	// Business documents of the plan's counted_transaction_kinds created per
 	// calendar day (Asia/Ho_Chi_Minh).
 	MaxTransactionsPerDay int32 `protobuf:"varint,3,opt,name=max_transactions_per_day,json=maxTransactionsPerDay,proto3" json:"max_transactions_per_day,omitempty"`
 	unknownFields         protoimpl.UnknownFields
@@ -452,12 +561,18 @@ type Plan struct {
 	// Shown to garage owners.
 	IsPublic bool `protobuf:"varint,10,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
 	// Inactive plans cannot be chosen; existing subscribers keep them.
-	IsActive      bool                   `protobuf:"varint,11,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
-	SortOrder     int32                  `protobuf:"varint,12,opt,name=sort_order,json=sortOrder,proto3" json:"sort_order,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	IsActive  bool                   `protobuf:"varint,11,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	SortOrder int32                  `protobuf:"varint,12,opt,name=sort_order,json=sortOrder,proto3" json:"sort_order,omitempty"`
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	// Length of the free trial in days. Only the "trial" plan has it (required
+	// there, rejected on other plans); it applies to trials started afterwards.
+	TrialDays int32 `protobuf:"varint,15,opt,name=trial_days,json=trialDays,proto3" json:"trial_days,omitempty"`
+	// The document kinds that count against limits.max_transactions_per_day;
+	// other kinds are neither counted nor limited. Defaults to repair orders.
+	CountedTransactionKinds []TransactionKind `protobuf:"varint,16,rep,packed,name=counted_transaction_kinds,json=countedTransactionKinds,proto3,enum=vietgara.license.v1.TransactionKind" json:"counted_transaction_kinds,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
 }
 
 func (x *Plan) Reset() {
@@ -588,6 +703,20 @@ func (x *Plan) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Plan) GetTrialDays() int32 {
+	if x != nil {
+		return x.TrialDays
+	}
+	return 0
+}
+
+func (x *Plan) GetCountedTransactionKinds() []TransactionKind {
+	if x != nil {
+		return x.CountedTransactionKinds
+	}
+	return nil
+}
+
 // PaymentInstructions are the platform's payment details shown with a
 // payment request (FR-LIC-10).
 type PaymentInstructions struct {
@@ -598,7 +727,12 @@ type PaymentInstructions struct {
 	Branch               string                 `protobuf:"bytes,4,opt,name=branch,proto3" json:"branch,omitempty"`
 	TransferInstructions string                 `protobuf:"bytes,5,opt,name=transfer_instructions,json=transferInstructions,proto3" json:"transfer_instructions,omitempty"`
 	// The QR code image, a signed URL valid for 5 minutes; empty when none.
-	QrUrl         string `protobuf:"bytes,6,opt,name=qr_url,json=qrUrl,proto3" json:"qr_url,omitempty"`
+	QrUrl string `protobuf:"bytes,6,opt,name=qr_url,json=qrUrl,proto3" json:"qr_url,omitempty"`
+	// How owners reach the platform about needs beyond the plans or questions
+	// (shown next to the plans); each is empty when not set.
+	SupportPhone  string `protobuf:"bytes,7,opt,name=support_phone,json=supportPhone,proto3" json:"support_phone,omitempty"`
+	SupportEmail  string `protobuf:"bytes,8,opt,name=support_email,json=supportEmail,proto3" json:"support_email,omitempty"`
+	SupportZalo   string `protobuf:"bytes,9,opt,name=support_zalo,json=supportZalo,proto3" json:"support_zalo,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -675,6 +809,27 @@ func (x *PaymentInstructions) GetQrUrl() string {
 	return ""
 }
 
+func (x *PaymentInstructions) GetSupportPhone() string {
+	if x != nil {
+		return x.SupportPhone
+	}
+	return ""
+}
+
+func (x *PaymentInstructions) GetSupportEmail() string {
+	if x != nil {
+		return x.SupportEmail
+	}
+	return ""
+}
+
+func (x *PaymentInstructions) GetSupportZalo() string {
+	if x != nil {
+		return x.SupportZalo
+	}
+	return ""
+}
+
 // PlanPaymentRequest is an owner's request to switch to a plan, or to renew
 // the current one, paid by a manual bank transfer (FR-LIC-07). The amounts
 // are fixed when it is quoted and honoured at approval.
@@ -715,8 +870,10 @@ type PlanPaymentRequest struct {
 	SubmittedAt     *timestamppb.Timestamp `protobuf:"bytes,23,opt,name=submitted_at,json=submittedAt,proto3" json:"submitted_at,omitempty"`
 	ReviewedAt      *timestamppb.Timestamp `protobuf:"bytes,24,opt,name=reviewed_at,json=reviewedAt,proto3" json:"reviewed_at,omitempty"`
 	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,25,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// How the owner paid; unset until submitted.
+	PaymentMethod PaymentMethod `protobuf:"varint,26,opt,name=payment_method,json=paymentMethod,proto3,enum=vietgara.license.v1.PaymentMethod" json:"payment_method,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *PlanPaymentRequest) Reset() {
@@ -924,6 +1081,13 @@ func (x *PlanPaymentRequest) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *PlanPaymentRequest) GetPaymentMethod() PaymentMethod {
+	if x != nil {
+		return x.PaymentMethod
+	}
+	return PaymentMethod_PAYMENT_METHOD_UNSPECIFIED
+}
+
 // CreditLedgerEntry is one change of the owner's account credit.
 type CreditLedgerEntry struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -934,8 +1098,13 @@ type CreditLedgerEntry struct {
 	PlanPaymentRequestId string                 `protobuf:"bytes,4,opt,name=plan_payment_request_id,json=planPaymentRequestId,proto3" json:"plan_payment_request_id,omitempty"`
 	Note                 string                 `protobuf:"bytes,5,opt,name=note,proto3" json:"note,omitempty"`
 	CreatedAt            *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields        protoimpl.UnknownFields
-	sizeCache            protoimpl.SizeCache
+	// Credit added by this entry lapses at expires_at (one year after it was
+	// earned); unset on entries that use or remove credit.
+	ExpiresAt *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	// The part of an added amount not used or lapsed yet.
+	Remaining     int64 `protobuf:"varint,8,opt,name=remaining,proto3" json:"remaining,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreditLedgerEntry) Reset() {
@@ -1008,6 +1177,20 @@ func (x *CreditLedgerEntry) GetCreatedAt() *timestamppb.Timestamp {
 		return x.CreatedAt
 	}
 	return nil
+}
+
+func (x *CreditLedgerEntry) GetExpiresAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return nil
+}
+
+func (x *CreditLedgerEntry) GetRemaining() int64 {
+	if x != nil {
+		return x.Remaining
+	}
+	return 0
 }
 
 // Usage is the owner's current consumption of the plan limits.
@@ -1093,9 +1276,11 @@ type Subscription struct {
 	// credit when the plan is changed.
 	PeriodPaidAmount int64 `protobuf:"varint,14,opt,name=period_paid_amount,json=periodPaidAmount,proto3" json:"period_paid_amount,omitempty"`
 	// The request awaiting payment or review, unset when none.
-	OpenRequest   *PlanPaymentRequest `protobuf:"bytes,15,opt,name=open_request,json=openRequest,proto3" json:"open_request,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	OpenRequest *PlanPaymentRequest `protobuf:"bytes,15,opt,name=open_request,json=openRequest,proto3" json:"open_request,omitempty"`
+	// When the earliest unused part of the credit lapses; unset when no credit.
+	NextCreditExpiry *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=next_credit_expiry,json=nextCreditExpiry,proto3" json:"next_credit_expiry,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *Subscription) Reset() {
@@ -1229,6 +1414,13 @@ func (x *Subscription) GetPeriodPaidAmount() int64 {
 func (x *Subscription) GetOpenRequest() *PlanPaymentRequest {
 	if x != nil {
 		return x.OpenRequest
+	}
+	return nil
+}
+
+func (x *Subscription) GetNextCreditExpiry() *timestamppb.Timestamp {
+	if x != nil {
+		return x.NextCreditExpiry
 	}
 	return nil
 }
@@ -1824,8 +2016,11 @@ type SubmitPlanPaymentRequest struct {
 	TransferredAmount  int64                  `protobuf:"varint,5,opt,name=transferred_amount,json=transferredAmount,proto3" json:"transferred_amount,omitempty"`
 	BankTransactionRef string                 `protobuf:"bytes,6,opt,name=bank_transaction_ref,json=bankTransactionRef,proto3" json:"bank_transaction_ref,omitempty"`
 	PaidAt             *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=paid_at,json=paidAt,proto3" json:"paid_at,omitempty"`
-	// Required unless the amount due is 0.
-	Evidence      *PaymentEvidence `protobuf:"bytes,8,opt,name=evidence,proto3" json:"evidence,omitempty"`
+	// Required unless the amount due is 0 or the payment is in cash.
+	Evidence *PaymentEvidence `protobuf:"bytes,8,opt,name=evidence,proto3" json:"evidence,omitempty"`
+	// Defaults to a bank transfer. Cash needs no payer bank, account,
+	// transaction reference or evidence.
+	PaymentMethod PaymentMethod `protobuf:"varint,9,opt,name=payment_method,json=paymentMethod,proto3,enum=vietgara.license.v1.PaymentMethod" json:"payment_method,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1914,6 +2109,13 @@ func (x *SubmitPlanPaymentRequest) GetEvidence() *PaymentEvidence {
 		return x.Evidence
 	}
 	return nil
+}
+
+func (x *SubmitPlanPaymentRequest) GetPaymentMethod() PaymentMethod {
+	if x != nil {
+		return x.PaymentMethod
+	}
+	return PaymentMethod_PAYMENT_METHOD_UNSPECIFIED
 }
 
 type SubmitPlanPaymentResponse struct {
@@ -3454,8 +3656,12 @@ type PlatformPaymentSettings struct {
 	Branch               string                 `protobuf:"bytes,4,opt,name=branch,proto3" json:"branch,omitempty"`
 	TransferInstructions string                 `protobuf:"bytes,5,opt,name=transfer_instructions,json=transferInstructions,proto3" json:"transfer_instructions,omitempty"`
 	// The QR code, a signed URL valid for 5 minutes; empty when none.
-	QrUrl         string                 `protobuf:"bytes,6,opt,name=qr_url,json=qrUrl,proto3" json:"qr_url,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	QrUrl     string                 `protobuf:"bytes,6,opt,name=qr_url,json=qrUrl,proto3" json:"qr_url,omitempty"`
+	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	// Contact details shown to owners next to the plans.
+	SupportPhone  string `protobuf:"bytes,8,opt,name=support_phone,json=supportPhone,proto3" json:"support_phone,omitempty"`
+	SupportEmail  string `protobuf:"bytes,9,opt,name=support_email,json=supportEmail,proto3" json:"support_email,omitempty"`
+	SupportZalo   string `protobuf:"bytes,10,opt,name=support_zalo,json=supportZalo,proto3" json:"support_zalo,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3537,6 +3743,27 @@ func (x *PlatformPaymentSettings) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *PlatformPaymentSettings) GetSupportPhone() string {
+	if x != nil {
+		return x.SupportPhone
+	}
+	return ""
+}
+
+func (x *PlatformPaymentSettings) GetSupportEmail() string {
+	if x != nil {
+		return x.SupportEmail
+	}
+	return ""
+}
+
+func (x *PlatformPaymentSettings) GetSupportZalo() string {
+	if x != nil {
+		return x.SupportZalo
+	}
+	return ""
 }
 
 type GetPlatformPaymentSettingsRequest struct {
@@ -3823,7 +4050,7 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\vmax_garages\x18\x01 \x01(\x05R\n" +
 	"maxGarages\x12\x1b\n" +
 	"\tmax_staff\x18\x02 \x01(\x05R\bmaxStaff\x127\n" +
-	"\x18max_transactions_per_day\x18\x03 \x01(\x05R\x15maxTransactionsPerDay\"\xba\x04\n" +
+	"\x18max_transactions_per_day\x18\x03 \x01(\x05R\x15maxTransactionsPerDay\"\xbb\x05\n" +
 	"\x04Plan\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x17\n" +
 	"\x04code\x18\x02 \x01(\tB\x03\xe0A\x02R\x04code\x12\x17\n" +
@@ -3842,14 +4069,20 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\"\xe9\x01\n" +
+	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12\x1d\n" +
+	"\n" +
+	"trial_days\x18\x0f \x01(\x05R\ttrialDays\x12`\n" +
+	"\x19counted_transaction_kinds\x18\x10 \x03(\x0e2$.vietgara.license.v1.TransactionKindR\x17countedTransactionKinds\"\xd6\x02\n" +
 	"\x13PaymentInstructions\x12\x1b\n" +
 	"\tbank_name\x18\x01 \x01(\tR\bbankName\x12%\n" +
 	"\x0eaccount_number\x18\x02 \x01(\tR\raccountNumber\x12%\n" +
 	"\x0eaccount_holder\x18\x03 \x01(\tR\raccountHolder\x12\x16\n" +
 	"\x06branch\x18\x04 \x01(\tR\x06branch\x123\n" +
 	"\x15transfer_instructions\x18\x05 \x01(\tR\x14transferInstructions\x12\x1a\n" +
-	"\x06qr_url\x18\x06 \x01(\tB\x03\xe0A\x03R\x05qrUrl\"\xdf\b\n" +
+	"\x06qr_url\x18\x06 \x01(\tB\x03\xe0A\x03R\x05qrUrl\x12#\n" +
+	"\rsupport_phone\x18\a \x01(\tR\fsupportPhone\x12#\n" +
+	"\rsupport_email\x18\b \x01(\tR\fsupportEmail\x12!\n" +
+	"\fsupport_zalo\x18\t \x01(\tR\vsupportZalo\"\xaa\t\n" +
 	"\x12PlanPaymentRequest\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x128\n" +
 	"\x04kind\x18\x02 \x01(\x0e2$.vietgara.license.v1.PlanPaymentKindR\x04kind\x12-\n" +
@@ -3884,7 +4117,8 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\vreviewed_at\x18\x18 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"reviewedAt\x129\n" +
 	"\n" +
-	"created_at\x18\x19 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x90\x02\n" +
+	"created_at\x18\x19 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12I\n" +
+	"\x0epayment_method\x18\x1a \x01(\x0e2\".vietgara.license.v1.PaymentMethodR\rpaymentMethod\"\xe9\x02\n" +
 	"\x11CreditLedgerEntry\x128\n" +
 	"\x04kind\x18\x01 \x01(\x0e2$.vietgara.license.v1.CreditEntryKindR\x04kind\x12\x16\n" +
 	"\x06amount\x18\x02 \x01(\x03R\x06amount\x12#\n" +
@@ -3892,11 +4126,14 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\x17plan_payment_request_id\x18\x04 \x01(\tR\x14planPaymentRequestId\x12\x12\n" +
 	"\x04note\x18\x05 \x01(\tR\x04note\x129\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"f\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"\n" +
+	"expires_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12\x1c\n" +
+	"\tremaining\x18\b \x01(\x03R\tremaining\"f\n" +
 	"\x05Usage\x12\x18\n" +
 	"\agarages\x18\x01 \x01(\x05R\agarages\x12\x14\n" +
 	"\x05staff\x18\x02 \x01(\x05R\x05staff\x12-\n" +
-	"\x12transactions_today\x18\x03 \x01(\x05R\x11transactionsToday\"\xab\x06\n" +
+	"\x12transactions_today\x18\x03 \x01(\x05R\x11transactionsToday\"\xf5\x06\n" +
 	"\fSubscription\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12?\n" +
@@ -3917,7 +4154,8 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12%\n" +
 	"\x0ecredit_balance\x18\r \x01(\x03R\rcreditBalance\x12,\n" +
 	"\x12period_paid_amount\x18\x0e \x01(\x03R\x10periodPaidAmount\x12J\n" +
-	"\fopen_request\x18\x0f \x01(\v2'.vietgara.license.v1.PlanPaymentRequestR\vopenRequest\"\xe3\x02\n" +
+	"\fopen_request\x18\x0f \x01(\v2'.vietgara.license.v1.PlanPaymentRequestR\vopenRequest\x12H\n" +
+	"\x12next_credit_expiry\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\x10nextCreditExpiry\"\xe3\x02\n" +
 	"\fEntitlements\x12\x1b\n" +
 	"\tgarage_id\x18\x01 \x01(\tR\bgarageId\x12?\n" +
 	"\x06status\x18\x02 \x01(\x0e2'.vietgara.license.v1.SubscriptionStatusR\x06status\x12\x1b\n" +
@@ -3948,7 +4186,7 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\arequest\x18\x01 \x01(\v2'.vietgara.license.v1.PlanPaymentRequestR\arequest\"X\n" +
 	"\x0fPaymentEvidence\x12\x1d\n" +
 	"\acontent\x18\x01 \x01(\fB\x03\xe0A\x02R\acontent\x12&\n" +
-	"\fcontent_type\x18\x02 \x01(\tB\x03\xe0A\x02R\vcontentType\"\x83\x03\n" +
+	"\fcontent_type\x18\x02 \x01(\tB\x03\xe0A\x02R\vcontentType\"\xce\x03\n" +
 	"\x18SubmitPlanPaymentRequest\x12\"\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tB\x03\xe0A\x02R\trequestId\x12\"\n" +
@@ -3960,7 +4198,8 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\x12transferred_amount\x18\x05 \x01(\x03B\x03\xe0A\x02R\x11transferredAmount\x120\n" +
 	"\x14bank_transaction_ref\x18\x06 \x01(\tR\x12bankTransactionRef\x123\n" +
 	"\apaid_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\x06paidAt\x12@\n" +
-	"\bevidence\x18\b \x01(\v2$.vietgara.license.v1.PaymentEvidenceR\bevidence\"^\n" +
+	"\bevidence\x18\b \x01(\v2$.vietgara.license.v1.PaymentEvidenceR\bevidence\x12I\n" +
+	"\x0epayment_method\x18\t \x01(\x0e2\".vietgara.license.v1.PaymentMethodR\rpaymentMethod\"^\n" +
 	"\x19SubmitPlanPaymentResponse\x12A\n" +
 	"\arequest\x18\x01 \x01(\v2'.vietgara.license.v1.PlanPaymentRequestR\arequest\">\n" +
 	"\x18CancelPlanPaymentRequest\x12\"\n" +
@@ -4052,7 +4291,7 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\x06amount\x18\x02 \x01(\x03B\x03\xe0A\x02R\x06amount\x12\x17\n" +
 	"\x04note\x18\x03 \x01(\tB\x03\xe0A\x02R\x04note\"T\n" +
 	"\x14AdjustCreditResponse\x12<\n" +
-	"\x05entry\x18\x01 \x01(\v2&.vietgara.license.v1.CreditLedgerEntryR\x05entry\"\xad\x02\n" +
+	"\x05entry\x18\x01 \x01(\v2&.vietgara.license.v1.CreditLedgerEntryR\x05entry\"\x9a\x03\n" +
 	"\x17PlatformPaymentSettings\x12\x1b\n" +
 	"\tbank_name\x18\x01 \x01(\tR\bbankName\x12%\n" +
 	"\x0eaccount_number\x18\x02 \x01(\tR\raccountNumber\x12%\n" +
@@ -4061,7 +4300,11 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\x15transfer_instructions\x18\x05 \x01(\tR\x14transferInstructions\x12\x1a\n" +
 	"\x06qr_url\x18\x06 \x01(\tB\x03\xe0A\x03R\x05qrUrl\x12>\n" +
 	"\n" +
-	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\"#\n" +
+	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12#\n" +
+	"\rsupport_phone\x18\b \x01(\tR\fsupportPhone\x12#\n" +
+	"\rsupport_email\x18\t \x01(\tR\fsupportEmail\x12!\n" +
+	"\fsupport_zalo\x18\n" +
+	" \x01(\tR\vsupportZalo\"#\n" +
 	"!GetPlatformPaymentSettingsRequest\"n\n" +
 	"\"GetPlatformPaymentSettingsResponse\x12H\n" +
 	"\bsettings\x18\x01 \x01(\v2,.vietgara.license.v1.PlatformPaymentSettingsR\bsettings\"\xb2\x01\n" +
@@ -4095,7 +4338,12 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\x11FEATURE_INVENTORY\x10\x04\x12\x13\n" +
 	"\x0fFEATURE_BILLING\x10\x05\x12\x15\n" +
 	"\x11FEATURE_DOCUMENTS\x10\x06\x12\x13\n" +
-	"\x0fFEATURE_REPORTS\x10\a*o\n" +
+	"\x0fFEATURE_REPORTS\x10\a*\x93\x01\n" +
+	"\x0fTransactionKind\x12 \n" +
+	"\x1cTRANSACTION_KIND_UNSPECIFIED\x10\x00\x12!\n" +
+	"\x1dTRANSACTION_KIND_REPAIR_ORDER\x10\x01\x12\x1a\n" +
+	"\x16TRANSACTION_KIND_QUOTE\x10\x02\x12\x1f\n" +
+	"\x1bTRANSACTION_KIND_SETTLEMENT\x10\x03*o\n" +
 	"\x0fPlanPaymentKind\x12!\n" +
 	"\x1dPLAN_PAYMENT_KIND_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18PLAN_PAYMENT_KIND_CHANGE\x10\x01\x12\x1b\n" +
@@ -4106,12 +4354,17 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\x1dPLAN_PAYMENT_STATUS_SUBMITTED\x10\x02\x12 \n" +
 	"\x1cPLAN_PAYMENT_STATUS_APPROVED\x10\x03\x12 \n" +
 	"\x1cPLAN_PAYMENT_STATUS_REJECTED\x10\x04\x12!\n" +
-	"\x1dPLAN_PAYMENT_STATUS_CANCELLED\x10\x05*\x93\x01\n" +
+	"\x1dPLAN_PAYMENT_STATUS_CANCELLED\x10\x05*\xb2\x01\n" +
 	"\x0fCreditEntryKind\x12!\n" +
 	"\x1dCREDIT_ENTRY_KIND_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18CREDIT_ENTRY_KIND_EARNED\x10\x01\x12\x1d\n" +
 	"\x19CREDIT_ENTRY_KIND_APPLIED\x10\x02\x12 \n" +
-	"\x1cCREDIT_ENTRY_KIND_ADJUSTMENT\x10\x032\xa7\x0e\n" +
+	"\x1cCREDIT_ENTRY_KIND_ADJUSTMENT\x10\x03\x12\x1d\n" +
+	"\x19CREDIT_ENTRY_KIND_EXPIRED\x10\x04*j\n" +
+	"\rPaymentMethod\x12\x1e\n" +
+	"\x1aPAYMENT_METHOD_UNSPECIFIED\x10\x00\x12 \n" +
+	"\x1cPAYMENT_METHOD_BANK_TRANSFER\x10\x01\x12\x17\n" +
+	"\x13PAYMENT_METHOD_CASH\x10\x022\xa7\x0e\n" +
 	"\x0eLicenseService\x12q\n" +
 	"\tListPlans\x12%.vietgara.license.v1.ListPlansRequest\x1a&.vietgara.license.v1.ListPlansResponse\"\x15\x82\xd3\xe4\x93\x02\x0f\x12\r/api/v1/plans\x12\xa1\x01\n" +
 	"\x11GetMySubscription\x12-.vietgara.license.v1.GetMySubscriptionRequest\x1a..vietgara.license.v1.GetMySubscriptionResponse\"-\x82\xd3\xe4\x93\x02'b\fsubscription\x12\x17/api/v1/me/subscription\x12\xc5\x01\n" +
@@ -4152,199 +4405,206 @@ func file_vietgara_license_v1_license_proto_rawDescGZIP() []byte {
 	return file_vietgara_license_v1_license_proto_rawDescData
 }
 
-var file_vietgara_license_v1_license_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
+var file_vietgara_license_v1_license_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
 var file_vietgara_license_v1_license_proto_msgTypes = make([]protoimpl.MessageInfo, 58)
 var file_vietgara_license_v1_license_proto_goTypes = []any{
 	(BillingCycle)(0),                             // 0: vietgara.license.v1.BillingCycle
 	(SubscriptionStatus)(0),                       // 1: vietgara.license.v1.SubscriptionStatus
 	(Feature)(0),                                  // 2: vietgara.license.v1.Feature
-	(PlanPaymentKind)(0),                          // 3: vietgara.license.v1.PlanPaymentKind
-	(PlanPaymentStatus)(0),                        // 4: vietgara.license.v1.PlanPaymentStatus
-	(CreditEntryKind)(0),                          // 5: vietgara.license.v1.CreditEntryKind
-	(*PlanLimits)(nil),                            // 6: vietgara.license.v1.PlanLimits
-	(*Plan)(nil),                                  // 7: vietgara.license.v1.Plan
-	(*PaymentInstructions)(nil),                   // 8: vietgara.license.v1.PaymentInstructions
-	(*PlanPaymentRequest)(nil),                    // 9: vietgara.license.v1.PlanPaymentRequest
-	(*CreditLedgerEntry)(nil),                     // 10: vietgara.license.v1.CreditLedgerEntry
-	(*Usage)(nil),                                 // 11: vietgara.license.v1.Usage
-	(*Subscription)(nil),                          // 12: vietgara.license.v1.Subscription
-	(*Entitlements)(nil),                          // 13: vietgara.license.v1.Entitlements
-	(*ListPlansRequest)(nil),                      // 14: vietgara.license.v1.ListPlansRequest
-	(*ListPlansResponse)(nil),                     // 15: vietgara.license.v1.ListPlansResponse
-	(*GetMySubscriptionRequest)(nil),              // 16: vietgara.license.v1.GetMySubscriptionRequest
-	(*GetMySubscriptionResponse)(nil),             // 17: vietgara.license.v1.GetMySubscriptionResponse
-	(*CreatePlanPaymentRequestRequest)(nil),       // 18: vietgara.license.v1.CreatePlanPaymentRequestRequest
-	(*CreatePlanPaymentRequestResponse)(nil),      // 19: vietgara.license.v1.CreatePlanPaymentRequestResponse
-	(*ListMyPlanPaymentRequestsRequest)(nil),      // 20: vietgara.license.v1.ListMyPlanPaymentRequestsRequest
-	(*ListMyPlanPaymentRequestsResponse)(nil),     // 21: vietgara.license.v1.ListMyPlanPaymentRequestsResponse
-	(*GetMyPlanPaymentRequestRequest)(nil),        // 22: vietgara.license.v1.GetMyPlanPaymentRequestRequest
-	(*GetMyPlanPaymentRequestResponse)(nil),       // 23: vietgara.license.v1.GetMyPlanPaymentRequestResponse
-	(*PaymentEvidence)(nil),                       // 24: vietgara.license.v1.PaymentEvidence
-	(*SubmitPlanPaymentRequest)(nil),              // 25: vietgara.license.v1.SubmitPlanPaymentRequest
-	(*SubmitPlanPaymentResponse)(nil),             // 26: vietgara.license.v1.SubmitPlanPaymentResponse
-	(*CancelPlanPaymentRequest)(nil),              // 27: vietgara.license.v1.CancelPlanPaymentRequest
-	(*CancelPlanPaymentResponse)(nil),             // 28: vietgara.license.v1.CancelPlanPaymentResponse
-	(*ListMyCreditLedgerRequest)(nil),             // 29: vietgara.license.v1.ListMyCreditLedgerRequest
-	(*ListMyCreditLedgerResponse)(nil),            // 30: vietgara.license.v1.ListMyCreditLedgerResponse
-	(*GetPaymentInstructionsRequest)(nil),         // 31: vietgara.license.v1.GetPaymentInstructionsRequest
-	(*GetPaymentInstructionsResponse)(nil),        // 32: vietgara.license.v1.GetPaymentInstructionsResponse
-	(*GetGarageEntitlementsRequest)(nil),          // 33: vietgara.license.v1.GetGarageEntitlementsRequest
-	(*GetGarageEntitlementsResponse)(nil),         // 34: vietgara.license.v1.GetGarageEntitlementsResponse
-	(*SubscriptionSummary)(nil),                   // 35: vietgara.license.v1.SubscriptionSummary
-	(*ListAllPlansRequest)(nil),                   // 36: vietgara.license.v1.ListAllPlansRequest
-	(*ListAllPlansResponse)(nil),                  // 37: vietgara.license.v1.ListAllPlansResponse
-	(*CreatePlanRequest)(nil),                     // 38: vietgara.license.v1.CreatePlanRequest
-	(*CreatePlanResponse)(nil),                    // 39: vietgara.license.v1.CreatePlanResponse
-	(*UpdatePlanRequest)(nil),                     // 40: vietgara.license.v1.UpdatePlanRequest
-	(*UpdatePlanResponse)(nil),                    // 41: vietgara.license.v1.UpdatePlanResponse
-	(*ListSubscriptionsRequest)(nil),              // 42: vietgara.license.v1.ListSubscriptionsRequest
-	(*ListSubscriptionsResponse)(nil),             // 43: vietgara.license.v1.ListSubscriptionsResponse
-	(*ExtendSubscriptionRequest)(nil),             // 44: vietgara.license.v1.ExtendSubscriptionRequest
-	(*ExtendSubscriptionResponse)(nil),            // 45: vietgara.license.v1.ExtendSubscriptionResponse
-	(*AdminPlanPaymentRequest)(nil),               // 46: vietgara.license.v1.AdminPlanPaymentRequest
-	(*ListPlanPaymentRequestsRequest)(nil),        // 47: vietgara.license.v1.ListPlanPaymentRequestsRequest
-	(*ListPlanPaymentRequestsResponse)(nil),       // 48: vietgara.license.v1.ListPlanPaymentRequestsResponse
-	(*GetPlanPaymentRequestRequest)(nil),          // 49: vietgara.license.v1.GetPlanPaymentRequestRequest
-	(*GetPlanPaymentRequestResponse)(nil),         // 50: vietgara.license.v1.GetPlanPaymentRequestResponse
-	(*ApprovePlanPaymentRequest)(nil),             // 51: vietgara.license.v1.ApprovePlanPaymentRequest
-	(*ApprovePlanPaymentResponse)(nil),            // 52: vietgara.license.v1.ApprovePlanPaymentResponse
-	(*RejectPlanPaymentRequest)(nil),              // 53: vietgara.license.v1.RejectPlanPaymentRequest
-	(*RejectPlanPaymentResponse)(nil),             // 54: vietgara.license.v1.RejectPlanPaymentResponse
-	(*AdjustCreditRequest)(nil),                   // 55: vietgara.license.v1.AdjustCreditRequest
-	(*AdjustCreditResponse)(nil),                  // 56: vietgara.license.v1.AdjustCreditResponse
-	(*PlatformPaymentSettings)(nil),               // 57: vietgara.license.v1.PlatformPaymentSettings
-	(*GetPlatformPaymentSettingsRequest)(nil),     // 58: vietgara.license.v1.GetPlatformPaymentSettingsRequest
-	(*GetPlatformPaymentSettingsResponse)(nil),    // 59: vietgara.license.v1.GetPlatformPaymentSettingsResponse
-	(*UpdatePlatformPaymentSettingsRequest)(nil),  // 60: vietgara.license.v1.UpdatePlatformPaymentSettingsRequest
-	(*UpdatePlatformPaymentSettingsResponse)(nil), // 61: vietgara.license.v1.UpdatePlatformPaymentSettingsResponse
-	(*UploadPaymentQrRequest)(nil),                // 62: vietgara.license.v1.UploadPaymentQrRequest
-	(*UploadPaymentQrResponse)(nil),               // 63: vietgara.license.v1.UploadPaymentQrResponse
-	(*timestamppb.Timestamp)(nil),                 // 64: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),                 // 65: google.protobuf.FieldMask
-	(*v1.Pagination)(nil),                         // 66: vietgara.common.v1.Pagination
+	(TransactionKind)(0),                          // 3: vietgara.license.v1.TransactionKind
+	(PlanPaymentKind)(0),                          // 4: vietgara.license.v1.PlanPaymentKind
+	(PlanPaymentStatus)(0),                        // 5: vietgara.license.v1.PlanPaymentStatus
+	(CreditEntryKind)(0),                          // 6: vietgara.license.v1.CreditEntryKind
+	(PaymentMethod)(0),                            // 7: vietgara.license.v1.PaymentMethod
+	(*PlanLimits)(nil),                            // 8: vietgara.license.v1.PlanLimits
+	(*Plan)(nil),                                  // 9: vietgara.license.v1.Plan
+	(*PaymentInstructions)(nil),                   // 10: vietgara.license.v1.PaymentInstructions
+	(*PlanPaymentRequest)(nil),                    // 11: vietgara.license.v1.PlanPaymentRequest
+	(*CreditLedgerEntry)(nil),                     // 12: vietgara.license.v1.CreditLedgerEntry
+	(*Usage)(nil),                                 // 13: vietgara.license.v1.Usage
+	(*Subscription)(nil),                          // 14: vietgara.license.v1.Subscription
+	(*Entitlements)(nil),                          // 15: vietgara.license.v1.Entitlements
+	(*ListPlansRequest)(nil),                      // 16: vietgara.license.v1.ListPlansRequest
+	(*ListPlansResponse)(nil),                     // 17: vietgara.license.v1.ListPlansResponse
+	(*GetMySubscriptionRequest)(nil),              // 18: vietgara.license.v1.GetMySubscriptionRequest
+	(*GetMySubscriptionResponse)(nil),             // 19: vietgara.license.v1.GetMySubscriptionResponse
+	(*CreatePlanPaymentRequestRequest)(nil),       // 20: vietgara.license.v1.CreatePlanPaymentRequestRequest
+	(*CreatePlanPaymentRequestResponse)(nil),      // 21: vietgara.license.v1.CreatePlanPaymentRequestResponse
+	(*ListMyPlanPaymentRequestsRequest)(nil),      // 22: vietgara.license.v1.ListMyPlanPaymentRequestsRequest
+	(*ListMyPlanPaymentRequestsResponse)(nil),     // 23: vietgara.license.v1.ListMyPlanPaymentRequestsResponse
+	(*GetMyPlanPaymentRequestRequest)(nil),        // 24: vietgara.license.v1.GetMyPlanPaymentRequestRequest
+	(*GetMyPlanPaymentRequestResponse)(nil),       // 25: vietgara.license.v1.GetMyPlanPaymentRequestResponse
+	(*PaymentEvidence)(nil),                       // 26: vietgara.license.v1.PaymentEvidence
+	(*SubmitPlanPaymentRequest)(nil),              // 27: vietgara.license.v1.SubmitPlanPaymentRequest
+	(*SubmitPlanPaymentResponse)(nil),             // 28: vietgara.license.v1.SubmitPlanPaymentResponse
+	(*CancelPlanPaymentRequest)(nil),              // 29: vietgara.license.v1.CancelPlanPaymentRequest
+	(*CancelPlanPaymentResponse)(nil),             // 30: vietgara.license.v1.CancelPlanPaymentResponse
+	(*ListMyCreditLedgerRequest)(nil),             // 31: vietgara.license.v1.ListMyCreditLedgerRequest
+	(*ListMyCreditLedgerResponse)(nil),            // 32: vietgara.license.v1.ListMyCreditLedgerResponse
+	(*GetPaymentInstructionsRequest)(nil),         // 33: vietgara.license.v1.GetPaymentInstructionsRequest
+	(*GetPaymentInstructionsResponse)(nil),        // 34: vietgara.license.v1.GetPaymentInstructionsResponse
+	(*GetGarageEntitlementsRequest)(nil),          // 35: vietgara.license.v1.GetGarageEntitlementsRequest
+	(*GetGarageEntitlementsResponse)(nil),         // 36: vietgara.license.v1.GetGarageEntitlementsResponse
+	(*SubscriptionSummary)(nil),                   // 37: vietgara.license.v1.SubscriptionSummary
+	(*ListAllPlansRequest)(nil),                   // 38: vietgara.license.v1.ListAllPlansRequest
+	(*ListAllPlansResponse)(nil),                  // 39: vietgara.license.v1.ListAllPlansResponse
+	(*CreatePlanRequest)(nil),                     // 40: vietgara.license.v1.CreatePlanRequest
+	(*CreatePlanResponse)(nil),                    // 41: vietgara.license.v1.CreatePlanResponse
+	(*UpdatePlanRequest)(nil),                     // 42: vietgara.license.v1.UpdatePlanRequest
+	(*UpdatePlanResponse)(nil),                    // 43: vietgara.license.v1.UpdatePlanResponse
+	(*ListSubscriptionsRequest)(nil),              // 44: vietgara.license.v1.ListSubscriptionsRequest
+	(*ListSubscriptionsResponse)(nil),             // 45: vietgara.license.v1.ListSubscriptionsResponse
+	(*ExtendSubscriptionRequest)(nil),             // 46: vietgara.license.v1.ExtendSubscriptionRequest
+	(*ExtendSubscriptionResponse)(nil),            // 47: vietgara.license.v1.ExtendSubscriptionResponse
+	(*AdminPlanPaymentRequest)(nil),               // 48: vietgara.license.v1.AdminPlanPaymentRequest
+	(*ListPlanPaymentRequestsRequest)(nil),        // 49: vietgara.license.v1.ListPlanPaymentRequestsRequest
+	(*ListPlanPaymentRequestsResponse)(nil),       // 50: vietgara.license.v1.ListPlanPaymentRequestsResponse
+	(*GetPlanPaymentRequestRequest)(nil),          // 51: vietgara.license.v1.GetPlanPaymentRequestRequest
+	(*GetPlanPaymentRequestResponse)(nil),         // 52: vietgara.license.v1.GetPlanPaymentRequestResponse
+	(*ApprovePlanPaymentRequest)(nil),             // 53: vietgara.license.v1.ApprovePlanPaymentRequest
+	(*ApprovePlanPaymentResponse)(nil),            // 54: vietgara.license.v1.ApprovePlanPaymentResponse
+	(*RejectPlanPaymentRequest)(nil),              // 55: vietgara.license.v1.RejectPlanPaymentRequest
+	(*RejectPlanPaymentResponse)(nil),             // 56: vietgara.license.v1.RejectPlanPaymentResponse
+	(*AdjustCreditRequest)(nil),                   // 57: vietgara.license.v1.AdjustCreditRequest
+	(*AdjustCreditResponse)(nil),                  // 58: vietgara.license.v1.AdjustCreditResponse
+	(*PlatformPaymentSettings)(nil),               // 59: vietgara.license.v1.PlatformPaymentSettings
+	(*GetPlatformPaymentSettingsRequest)(nil),     // 60: vietgara.license.v1.GetPlatformPaymentSettingsRequest
+	(*GetPlatformPaymentSettingsResponse)(nil),    // 61: vietgara.license.v1.GetPlatformPaymentSettingsResponse
+	(*UpdatePlatformPaymentSettingsRequest)(nil),  // 62: vietgara.license.v1.UpdatePlatformPaymentSettingsRequest
+	(*UpdatePlatformPaymentSettingsResponse)(nil), // 63: vietgara.license.v1.UpdatePlatformPaymentSettingsResponse
+	(*UploadPaymentQrRequest)(nil),                // 64: vietgara.license.v1.UploadPaymentQrRequest
+	(*UploadPaymentQrResponse)(nil),               // 65: vietgara.license.v1.UploadPaymentQrResponse
+	(*timestamppb.Timestamp)(nil),                 // 66: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),                 // 67: google.protobuf.FieldMask
+	(*v1.Pagination)(nil),                         // 68: vietgara.common.v1.Pagination
 }
 var file_vietgara_license_v1_license_proto_depIdxs = []int32{
 	0,  // 0: vietgara.license.v1.Plan.billing_cycle:type_name -> vietgara.license.v1.BillingCycle
-	6,  // 1: vietgara.license.v1.Plan.limits:type_name -> vietgara.license.v1.PlanLimits
+	8,  // 1: vietgara.license.v1.Plan.limits:type_name -> vietgara.license.v1.PlanLimits
 	2,  // 2: vietgara.license.v1.Plan.features:type_name -> vietgara.license.v1.Feature
-	64, // 3: vietgara.license.v1.Plan.created_at:type_name -> google.protobuf.Timestamp
-	64, // 4: vietgara.license.v1.Plan.updated_at:type_name -> google.protobuf.Timestamp
-	3,  // 5: vietgara.license.v1.PlanPaymentRequest.kind:type_name -> vietgara.license.v1.PlanPaymentKind
-	7,  // 6: vietgara.license.v1.PlanPaymentRequest.plan:type_name -> vietgara.license.v1.Plan
-	4,  // 7: vietgara.license.v1.PlanPaymentRequest.status:type_name -> vietgara.license.v1.PlanPaymentStatus
-	8,  // 8: vietgara.license.v1.PlanPaymentRequest.instructions:type_name -> vietgara.license.v1.PaymentInstructions
-	64, // 9: vietgara.license.v1.PlanPaymentRequest.paid_at:type_name -> google.protobuf.Timestamp
-	64, // 10: vietgara.license.v1.PlanPaymentRequest.submitted_at:type_name -> google.protobuf.Timestamp
-	64, // 11: vietgara.license.v1.PlanPaymentRequest.reviewed_at:type_name -> google.protobuf.Timestamp
-	64, // 12: vietgara.license.v1.PlanPaymentRequest.created_at:type_name -> google.protobuf.Timestamp
-	5,  // 13: vietgara.license.v1.CreditLedgerEntry.kind:type_name -> vietgara.license.v1.CreditEntryKind
-	64, // 14: vietgara.license.v1.CreditLedgerEntry.created_at:type_name -> google.protobuf.Timestamp
-	1,  // 15: vietgara.license.v1.Subscription.status:type_name -> vietgara.license.v1.SubscriptionStatus
-	7,  // 16: vietgara.license.v1.Subscription.plan:type_name -> vietgara.license.v1.Plan
-	64, // 17: vietgara.license.v1.Subscription.trial_end_at:type_name -> google.protobuf.Timestamp
-	64, // 18: vietgara.license.v1.Subscription.current_period_start:type_name -> google.protobuf.Timestamp
-	64, // 19: vietgara.license.v1.Subscription.current_period_end:type_name -> google.protobuf.Timestamp
-	64, // 20: vietgara.license.v1.Subscription.grace_period_end:type_name -> google.protobuf.Timestamp
-	11, // 21: vietgara.license.v1.Subscription.usage:type_name -> vietgara.license.v1.Usage
-	64, // 22: vietgara.license.v1.Subscription.created_at:type_name -> google.protobuf.Timestamp
-	64, // 23: vietgara.license.v1.Subscription.updated_at:type_name -> google.protobuf.Timestamp
-	9,  // 24: vietgara.license.v1.Subscription.open_request:type_name -> vietgara.license.v1.PlanPaymentRequest
-	1,  // 25: vietgara.license.v1.Entitlements.status:type_name -> vietgara.license.v1.SubscriptionStatus
-	2,  // 26: vietgara.license.v1.Entitlements.features:type_name -> vietgara.license.v1.Feature
-	6,  // 27: vietgara.license.v1.Entitlements.limits:type_name -> vietgara.license.v1.PlanLimits
-	64, // 28: vietgara.license.v1.Entitlements.current_period_end:type_name -> google.protobuf.Timestamp
-	7,  // 29: vietgara.license.v1.ListPlansResponse.data:type_name -> vietgara.license.v1.Plan
-	12, // 30: vietgara.license.v1.GetMySubscriptionResponse.subscription:type_name -> vietgara.license.v1.Subscription
-	3,  // 31: vietgara.license.v1.CreatePlanPaymentRequestRequest.kind:type_name -> vietgara.license.v1.PlanPaymentKind
-	9,  // 32: vietgara.license.v1.CreatePlanPaymentRequestResponse.request:type_name -> vietgara.license.v1.PlanPaymentRequest
-	4,  // 33: vietgara.license.v1.ListMyPlanPaymentRequestsRequest.status:type_name -> vietgara.license.v1.PlanPaymentStatus
-	9,  // 34: vietgara.license.v1.ListMyPlanPaymentRequestsResponse.data:type_name -> vietgara.license.v1.PlanPaymentRequest
-	9,  // 35: vietgara.license.v1.GetMyPlanPaymentRequestResponse.request:type_name -> vietgara.license.v1.PlanPaymentRequest
-	64, // 36: vietgara.license.v1.SubmitPlanPaymentRequest.paid_at:type_name -> google.protobuf.Timestamp
-	24, // 37: vietgara.license.v1.SubmitPlanPaymentRequest.evidence:type_name -> vietgara.license.v1.PaymentEvidence
-	9,  // 38: vietgara.license.v1.SubmitPlanPaymentResponse.request:type_name -> vietgara.license.v1.PlanPaymentRequest
-	9,  // 39: vietgara.license.v1.CancelPlanPaymentResponse.request:type_name -> vietgara.license.v1.PlanPaymentRequest
-	10, // 40: vietgara.license.v1.ListMyCreditLedgerResponse.data:type_name -> vietgara.license.v1.CreditLedgerEntry
-	8,  // 41: vietgara.license.v1.GetPaymentInstructionsResponse.instructions:type_name -> vietgara.license.v1.PaymentInstructions
-	13, // 42: vietgara.license.v1.GetGarageEntitlementsResponse.entitlements:type_name -> vietgara.license.v1.Entitlements
-	12, // 43: vietgara.license.v1.SubscriptionSummary.subscription:type_name -> vietgara.license.v1.Subscription
-	7,  // 44: vietgara.license.v1.ListAllPlansResponse.data:type_name -> vietgara.license.v1.Plan
-	7,  // 45: vietgara.license.v1.CreatePlanRequest.plan:type_name -> vietgara.license.v1.Plan
-	7,  // 46: vietgara.license.v1.CreatePlanResponse.plan:type_name -> vietgara.license.v1.Plan
-	7,  // 47: vietgara.license.v1.UpdatePlanRequest.plan:type_name -> vietgara.license.v1.Plan
-	65, // 48: vietgara.license.v1.UpdatePlanRequest.update_mask:type_name -> google.protobuf.FieldMask
-	7,  // 49: vietgara.license.v1.UpdatePlanResponse.plan:type_name -> vietgara.license.v1.Plan
-	1,  // 50: vietgara.license.v1.ListSubscriptionsRequest.status:type_name -> vietgara.license.v1.SubscriptionStatus
-	35, // 51: vietgara.license.v1.ListSubscriptionsResponse.data:type_name -> vietgara.license.v1.SubscriptionSummary
-	66, // 52: vietgara.license.v1.ListSubscriptionsResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	12, // 53: vietgara.license.v1.ExtendSubscriptionResponse.subscription:type_name -> vietgara.license.v1.Subscription
-	9,  // 54: vietgara.license.v1.AdminPlanPaymentRequest.request:type_name -> vietgara.license.v1.PlanPaymentRequest
-	7,  // 55: vietgara.license.v1.AdminPlanPaymentRequest.current_plan:type_name -> vietgara.license.v1.Plan
-	11, // 56: vietgara.license.v1.AdminPlanPaymentRequest.usage:type_name -> vietgara.license.v1.Usage
-	4,  // 57: vietgara.license.v1.ListPlanPaymentRequestsRequest.status:type_name -> vietgara.license.v1.PlanPaymentStatus
-	46, // 58: vietgara.license.v1.ListPlanPaymentRequestsResponse.data:type_name -> vietgara.license.v1.AdminPlanPaymentRequest
-	66, // 59: vietgara.license.v1.ListPlanPaymentRequestsResponse.pagination:type_name -> vietgara.common.v1.Pagination
-	46, // 60: vietgara.license.v1.GetPlanPaymentRequestResponse.request:type_name -> vietgara.license.v1.AdminPlanPaymentRequest
-	12, // 61: vietgara.license.v1.ApprovePlanPaymentResponse.subscription:type_name -> vietgara.license.v1.Subscription
-	9,  // 62: vietgara.license.v1.RejectPlanPaymentResponse.request:type_name -> vietgara.license.v1.PlanPaymentRequest
-	10, // 63: vietgara.license.v1.AdjustCreditResponse.entry:type_name -> vietgara.license.v1.CreditLedgerEntry
-	64, // 64: vietgara.license.v1.PlatformPaymentSettings.updated_at:type_name -> google.protobuf.Timestamp
-	57, // 65: vietgara.license.v1.GetPlatformPaymentSettingsResponse.settings:type_name -> vietgara.license.v1.PlatformPaymentSettings
-	57, // 66: vietgara.license.v1.UpdatePlatformPaymentSettingsRequest.settings:type_name -> vietgara.license.v1.PlatformPaymentSettings
-	65, // 67: vietgara.license.v1.UpdatePlatformPaymentSettingsRequest.update_mask:type_name -> google.protobuf.FieldMask
-	57, // 68: vietgara.license.v1.UpdatePlatformPaymentSettingsResponse.settings:type_name -> vietgara.license.v1.PlatformPaymentSettings
-	57, // 69: vietgara.license.v1.UploadPaymentQrResponse.settings:type_name -> vietgara.license.v1.PlatformPaymentSettings
-	14, // 70: vietgara.license.v1.LicenseService.ListPlans:input_type -> vietgara.license.v1.ListPlansRequest
-	16, // 71: vietgara.license.v1.LicenseService.GetMySubscription:input_type -> vietgara.license.v1.GetMySubscriptionRequest
-	18, // 72: vietgara.license.v1.LicenseService.CreatePlanPaymentRequest:input_type -> vietgara.license.v1.CreatePlanPaymentRequestRequest
-	20, // 73: vietgara.license.v1.LicenseService.ListMyPlanPaymentRequests:input_type -> vietgara.license.v1.ListMyPlanPaymentRequestsRequest
-	22, // 74: vietgara.license.v1.LicenseService.GetMyPlanPaymentRequest:input_type -> vietgara.license.v1.GetMyPlanPaymentRequestRequest
-	25, // 75: vietgara.license.v1.LicenseService.SubmitPlanPayment:input_type -> vietgara.license.v1.SubmitPlanPaymentRequest
-	27, // 76: vietgara.license.v1.LicenseService.CancelPlanPayment:input_type -> vietgara.license.v1.CancelPlanPaymentRequest
-	29, // 77: vietgara.license.v1.LicenseService.ListMyCreditLedger:input_type -> vietgara.license.v1.ListMyCreditLedgerRequest
-	31, // 78: vietgara.license.v1.LicenseService.GetPaymentInstructions:input_type -> vietgara.license.v1.GetPaymentInstructionsRequest
-	33, // 79: vietgara.license.v1.LicenseService.GetGarageEntitlements:input_type -> vietgara.license.v1.GetGarageEntitlementsRequest
-	36, // 80: vietgara.license.v1.LicenseAdminService.ListAllPlans:input_type -> vietgara.license.v1.ListAllPlansRequest
-	38, // 81: vietgara.license.v1.LicenseAdminService.CreatePlan:input_type -> vietgara.license.v1.CreatePlanRequest
-	40, // 82: vietgara.license.v1.LicenseAdminService.UpdatePlan:input_type -> vietgara.license.v1.UpdatePlanRequest
-	42, // 83: vietgara.license.v1.LicenseAdminService.ListSubscriptions:input_type -> vietgara.license.v1.ListSubscriptionsRequest
-	44, // 84: vietgara.license.v1.LicenseAdminService.ExtendSubscription:input_type -> vietgara.license.v1.ExtendSubscriptionRequest
-	47, // 85: vietgara.license.v1.LicenseAdminService.ListPlanPaymentRequests:input_type -> vietgara.license.v1.ListPlanPaymentRequestsRequest
-	49, // 86: vietgara.license.v1.LicenseAdminService.GetPlanPaymentRequest:input_type -> vietgara.license.v1.GetPlanPaymentRequestRequest
-	51, // 87: vietgara.license.v1.LicenseAdminService.ApprovePlanPayment:input_type -> vietgara.license.v1.ApprovePlanPaymentRequest
-	53, // 88: vietgara.license.v1.LicenseAdminService.RejectPlanPayment:input_type -> vietgara.license.v1.RejectPlanPaymentRequest
-	55, // 89: vietgara.license.v1.LicenseAdminService.AdjustCredit:input_type -> vietgara.license.v1.AdjustCreditRequest
-	58, // 90: vietgara.license.v1.LicenseAdminService.GetPlatformPaymentSettings:input_type -> vietgara.license.v1.GetPlatformPaymentSettingsRequest
-	60, // 91: vietgara.license.v1.LicenseAdminService.UpdatePlatformPaymentSettings:input_type -> vietgara.license.v1.UpdatePlatformPaymentSettingsRequest
-	62, // 92: vietgara.license.v1.LicenseAdminService.UploadPaymentQr:input_type -> vietgara.license.v1.UploadPaymentQrRequest
-	15, // 93: vietgara.license.v1.LicenseService.ListPlans:output_type -> vietgara.license.v1.ListPlansResponse
-	17, // 94: vietgara.license.v1.LicenseService.GetMySubscription:output_type -> vietgara.license.v1.GetMySubscriptionResponse
-	19, // 95: vietgara.license.v1.LicenseService.CreatePlanPaymentRequest:output_type -> vietgara.license.v1.CreatePlanPaymentRequestResponse
-	21, // 96: vietgara.license.v1.LicenseService.ListMyPlanPaymentRequests:output_type -> vietgara.license.v1.ListMyPlanPaymentRequestsResponse
-	23, // 97: vietgara.license.v1.LicenseService.GetMyPlanPaymentRequest:output_type -> vietgara.license.v1.GetMyPlanPaymentRequestResponse
-	26, // 98: vietgara.license.v1.LicenseService.SubmitPlanPayment:output_type -> vietgara.license.v1.SubmitPlanPaymentResponse
-	28, // 99: vietgara.license.v1.LicenseService.CancelPlanPayment:output_type -> vietgara.license.v1.CancelPlanPaymentResponse
-	30, // 100: vietgara.license.v1.LicenseService.ListMyCreditLedger:output_type -> vietgara.license.v1.ListMyCreditLedgerResponse
-	32, // 101: vietgara.license.v1.LicenseService.GetPaymentInstructions:output_type -> vietgara.license.v1.GetPaymentInstructionsResponse
-	34, // 102: vietgara.license.v1.LicenseService.GetGarageEntitlements:output_type -> vietgara.license.v1.GetGarageEntitlementsResponse
-	37, // 103: vietgara.license.v1.LicenseAdminService.ListAllPlans:output_type -> vietgara.license.v1.ListAllPlansResponse
-	39, // 104: vietgara.license.v1.LicenseAdminService.CreatePlan:output_type -> vietgara.license.v1.CreatePlanResponse
-	41, // 105: vietgara.license.v1.LicenseAdminService.UpdatePlan:output_type -> vietgara.license.v1.UpdatePlanResponse
-	43, // 106: vietgara.license.v1.LicenseAdminService.ListSubscriptions:output_type -> vietgara.license.v1.ListSubscriptionsResponse
-	45, // 107: vietgara.license.v1.LicenseAdminService.ExtendSubscription:output_type -> vietgara.license.v1.ExtendSubscriptionResponse
-	48, // 108: vietgara.license.v1.LicenseAdminService.ListPlanPaymentRequests:output_type -> vietgara.license.v1.ListPlanPaymentRequestsResponse
-	50, // 109: vietgara.license.v1.LicenseAdminService.GetPlanPaymentRequest:output_type -> vietgara.license.v1.GetPlanPaymentRequestResponse
-	52, // 110: vietgara.license.v1.LicenseAdminService.ApprovePlanPayment:output_type -> vietgara.license.v1.ApprovePlanPaymentResponse
-	54, // 111: vietgara.license.v1.LicenseAdminService.RejectPlanPayment:output_type -> vietgara.license.v1.RejectPlanPaymentResponse
-	56, // 112: vietgara.license.v1.LicenseAdminService.AdjustCredit:output_type -> vietgara.license.v1.AdjustCreditResponse
-	59, // 113: vietgara.license.v1.LicenseAdminService.GetPlatformPaymentSettings:output_type -> vietgara.license.v1.GetPlatformPaymentSettingsResponse
-	61, // 114: vietgara.license.v1.LicenseAdminService.UpdatePlatformPaymentSettings:output_type -> vietgara.license.v1.UpdatePlatformPaymentSettingsResponse
-	63, // 115: vietgara.license.v1.LicenseAdminService.UploadPaymentQr:output_type -> vietgara.license.v1.UploadPaymentQrResponse
-	93, // [93:116] is the sub-list for method output_type
-	70, // [70:93] is the sub-list for method input_type
-	70, // [70:70] is the sub-list for extension type_name
-	70, // [70:70] is the sub-list for extension extendee
-	0,  // [0:70] is the sub-list for field type_name
+	66, // 3: vietgara.license.v1.Plan.created_at:type_name -> google.protobuf.Timestamp
+	66, // 4: vietgara.license.v1.Plan.updated_at:type_name -> google.protobuf.Timestamp
+	3,  // 5: vietgara.license.v1.Plan.counted_transaction_kinds:type_name -> vietgara.license.v1.TransactionKind
+	4,  // 6: vietgara.license.v1.PlanPaymentRequest.kind:type_name -> vietgara.license.v1.PlanPaymentKind
+	9,  // 7: vietgara.license.v1.PlanPaymentRequest.plan:type_name -> vietgara.license.v1.Plan
+	5,  // 8: vietgara.license.v1.PlanPaymentRequest.status:type_name -> vietgara.license.v1.PlanPaymentStatus
+	10, // 9: vietgara.license.v1.PlanPaymentRequest.instructions:type_name -> vietgara.license.v1.PaymentInstructions
+	66, // 10: vietgara.license.v1.PlanPaymentRequest.paid_at:type_name -> google.protobuf.Timestamp
+	66, // 11: vietgara.license.v1.PlanPaymentRequest.submitted_at:type_name -> google.protobuf.Timestamp
+	66, // 12: vietgara.license.v1.PlanPaymentRequest.reviewed_at:type_name -> google.protobuf.Timestamp
+	66, // 13: vietgara.license.v1.PlanPaymentRequest.created_at:type_name -> google.protobuf.Timestamp
+	7,  // 14: vietgara.license.v1.PlanPaymentRequest.payment_method:type_name -> vietgara.license.v1.PaymentMethod
+	6,  // 15: vietgara.license.v1.CreditLedgerEntry.kind:type_name -> vietgara.license.v1.CreditEntryKind
+	66, // 16: vietgara.license.v1.CreditLedgerEntry.created_at:type_name -> google.protobuf.Timestamp
+	66, // 17: vietgara.license.v1.CreditLedgerEntry.expires_at:type_name -> google.protobuf.Timestamp
+	1,  // 18: vietgara.license.v1.Subscription.status:type_name -> vietgara.license.v1.SubscriptionStatus
+	9,  // 19: vietgara.license.v1.Subscription.plan:type_name -> vietgara.license.v1.Plan
+	66, // 20: vietgara.license.v1.Subscription.trial_end_at:type_name -> google.protobuf.Timestamp
+	66, // 21: vietgara.license.v1.Subscription.current_period_start:type_name -> google.protobuf.Timestamp
+	66, // 22: vietgara.license.v1.Subscription.current_period_end:type_name -> google.protobuf.Timestamp
+	66, // 23: vietgara.license.v1.Subscription.grace_period_end:type_name -> google.protobuf.Timestamp
+	13, // 24: vietgara.license.v1.Subscription.usage:type_name -> vietgara.license.v1.Usage
+	66, // 25: vietgara.license.v1.Subscription.created_at:type_name -> google.protobuf.Timestamp
+	66, // 26: vietgara.license.v1.Subscription.updated_at:type_name -> google.protobuf.Timestamp
+	11, // 27: vietgara.license.v1.Subscription.open_request:type_name -> vietgara.license.v1.PlanPaymentRequest
+	66, // 28: vietgara.license.v1.Subscription.next_credit_expiry:type_name -> google.protobuf.Timestamp
+	1,  // 29: vietgara.license.v1.Entitlements.status:type_name -> vietgara.license.v1.SubscriptionStatus
+	2,  // 30: vietgara.license.v1.Entitlements.features:type_name -> vietgara.license.v1.Feature
+	8,  // 31: vietgara.license.v1.Entitlements.limits:type_name -> vietgara.license.v1.PlanLimits
+	66, // 32: vietgara.license.v1.Entitlements.current_period_end:type_name -> google.protobuf.Timestamp
+	9,  // 33: vietgara.license.v1.ListPlansResponse.data:type_name -> vietgara.license.v1.Plan
+	14, // 34: vietgara.license.v1.GetMySubscriptionResponse.subscription:type_name -> vietgara.license.v1.Subscription
+	4,  // 35: vietgara.license.v1.CreatePlanPaymentRequestRequest.kind:type_name -> vietgara.license.v1.PlanPaymentKind
+	11, // 36: vietgara.license.v1.CreatePlanPaymentRequestResponse.request:type_name -> vietgara.license.v1.PlanPaymentRequest
+	5,  // 37: vietgara.license.v1.ListMyPlanPaymentRequestsRequest.status:type_name -> vietgara.license.v1.PlanPaymentStatus
+	11, // 38: vietgara.license.v1.ListMyPlanPaymentRequestsResponse.data:type_name -> vietgara.license.v1.PlanPaymentRequest
+	11, // 39: vietgara.license.v1.GetMyPlanPaymentRequestResponse.request:type_name -> vietgara.license.v1.PlanPaymentRequest
+	66, // 40: vietgara.license.v1.SubmitPlanPaymentRequest.paid_at:type_name -> google.protobuf.Timestamp
+	26, // 41: vietgara.license.v1.SubmitPlanPaymentRequest.evidence:type_name -> vietgara.license.v1.PaymentEvidence
+	7,  // 42: vietgara.license.v1.SubmitPlanPaymentRequest.payment_method:type_name -> vietgara.license.v1.PaymentMethod
+	11, // 43: vietgara.license.v1.SubmitPlanPaymentResponse.request:type_name -> vietgara.license.v1.PlanPaymentRequest
+	11, // 44: vietgara.license.v1.CancelPlanPaymentResponse.request:type_name -> vietgara.license.v1.PlanPaymentRequest
+	12, // 45: vietgara.license.v1.ListMyCreditLedgerResponse.data:type_name -> vietgara.license.v1.CreditLedgerEntry
+	10, // 46: vietgara.license.v1.GetPaymentInstructionsResponse.instructions:type_name -> vietgara.license.v1.PaymentInstructions
+	15, // 47: vietgara.license.v1.GetGarageEntitlementsResponse.entitlements:type_name -> vietgara.license.v1.Entitlements
+	14, // 48: vietgara.license.v1.SubscriptionSummary.subscription:type_name -> vietgara.license.v1.Subscription
+	9,  // 49: vietgara.license.v1.ListAllPlansResponse.data:type_name -> vietgara.license.v1.Plan
+	9,  // 50: vietgara.license.v1.CreatePlanRequest.plan:type_name -> vietgara.license.v1.Plan
+	9,  // 51: vietgara.license.v1.CreatePlanResponse.plan:type_name -> vietgara.license.v1.Plan
+	9,  // 52: vietgara.license.v1.UpdatePlanRequest.plan:type_name -> vietgara.license.v1.Plan
+	67, // 53: vietgara.license.v1.UpdatePlanRequest.update_mask:type_name -> google.protobuf.FieldMask
+	9,  // 54: vietgara.license.v1.UpdatePlanResponse.plan:type_name -> vietgara.license.v1.Plan
+	1,  // 55: vietgara.license.v1.ListSubscriptionsRequest.status:type_name -> vietgara.license.v1.SubscriptionStatus
+	37, // 56: vietgara.license.v1.ListSubscriptionsResponse.data:type_name -> vietgara.license.v1.SubscriptionSummary
+	68, // 57: vietgara.license.v1.ListSubscriptionsResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	14, // 58: vietgara.license.v1.ExtendSubscriptionResponse.subscription:type_name -> vietgara.license.v1.Subscription
+	11, // 59: vietgara.license.v1.AdminPlanPaymentRequest.request:type_name -> vietgara.license.v1.PlanPaymentRequest
+	9,  // 60: vietgara.license.v1.AdminPlanPaymentRequest.current_plan:type_name -> vietgara.license.v1.Plan
+	13, // 61: vietgara.license.v1.AdminPlanPaymentRequest.usage:type_name -> vietgara.license.v1.Usage
+	5,  // 62: vietgara.license.v1.ListPlanPaymentRequestsRequest.status:type_name -> vietgara.license.v1.PlanPaymentStatus
+	48, // 63: vietgara.license.v1.ListPlanPaymentRequestsResponse.data:type_name -> vietgara.license.v1.AdminPlanPaymentRequest
+	68, // 64: vietgara.license.v1.ListPlanPaymentRequestsResponse.pagination:type_name -> vietgara.common.v1.Pagination
+	48, // 65: vietgara.license.v1.GetPlanPaymentRequestResponse.request:type_name -> vietgara.license.v1.AdminPlanPaymentRequest
+	14, // 66: vietgara.license.v1.ApprovePlanPaymentResponse.subscription:type_name -> vietgara.license.v1.Subscription
+	11, // 67: vietgara.license.v1.RejectPlanPaymentResponse.request:type_name -> vietgara.license.v1.PlanPaymentRequest
+	12, // 68: vietgara.license.v1.AdjustCreditResponse.entry:type_name -> vietgara.license.v1.CreditLedgerEntry
+	66, // 69: vietgara.license.v1.PlatformPaymentSettings.updated_at:type_name -> google.protobuf.Timestamp
+	59, // 70: vietgara.license.v1.GetPlatformPaymentSettingsResponse.settings:type_name -> vietgara.license.v1.PlatformPaymentSettings
+	59, // 71: vietgara.license.v1.UpdatePlatformPaymentSettingsRequest.settings:type_name -> vietgara.license.v1.PlatformPaymentSettings
+	67, // 72: vietgara.license.v1.UpdatePlatformPaymentSettingsRequest.update_mask:type_name -> google.protobuf.FieldMask
+	59, // 73: vietgara.license.v1.UpdatePlatformPaymentSettingsResponse.settings:type_name -> vietgara.license.v1.PlatformPaymentSettings
+	59, // 74: vietgara.license.v1.UploadPaymentQrResponse.settings:type_name -> vietgara.license.v1.PlatformPaymentSettings
+	16, // 75: vietgara.license.v1.LicenseService.ListPlans:input_type -> vietgara.license.v1.ListPlansRequest
+	18, // 76: vietgara.license.v1.LicenseService.GetMySubscription:input_type -> vietgara.license.v1.GetMySubscriptionRequest
+	20, // 77: vietgara.license.v1.LicenseService.CreatePlanPaymentRequest:input_type -> vietgara.license.v1.CreatePlanPaymentRequestRequest
+	22, // 78: vietgara.license.v1.LicenseService.ListMyPlanPaymentRequests:input_type -> vietgara.license.v1.ListMyPlanPaymentRequestsRequest
+	24, // 79: vietgara.license.v1.LicenseService.GetMyPlanPaymentRequest:input_type -> vietgara.license.v1.GetMyPlanPaymentRequestRequest
+	27, // 80: vietgara.license.v1.LicenseService.SubmitPlanPayment:input_type -> vietgara.license.v1.SubmitPlanPaymentRequest
+	29, // 81: vietgara.license.v1.LicenseService.CancelPlanPayment:input_type -> vietgara.license.v1.CancelPlanPaymentRequest
+	31, // 82: vietgara.license.v1.LicenseService.ListMyCreditLedger:input_type -> vietgara.license.v1.ListMyCreditLedgerRequest
+	33, // 83: vietgara.license.v1.LicenseService.GetPaymentInstructions:input_type -> vietgara.license.v1.GetPaymentInstructionsRequest
+	35, // 84: vietgara.license.v1.LicenseService.GetGarageEntitlements:input_type -> vietgara.license.v1.GetGarageEntitlementsRequest
+	38, // 85: vietgara.license.v1.LicenseAdminService.ListAllPlans:input_type -> vietgara.license.v1.ListAllPlansRequest
+	40, // 86: vietgara.license.v1.LicenseAdminService.CreatePlan:input_type -> vietgara.license.v1.CreatePlanRequest
+	42, // 87: vietgara.license.v1.LicenseAdminService.UpdatePlan:input_type -> vietgara.license.v1.UpdatePlanRequest
+	44, // 88: vietgara.license.v1.LicenseAdminService.ListSubscriptions:input_type -> vietgara.license.v1.ListSubscriptionsRequest
+	46, // 89: vietgara.license.v1.LicenseAdminService.ExtendSubscription:input_type -> vietgara.license.v1.ExtendSubscriptionRequest
+	49, // 90: vietgara.license.v1.LicenseAdminService.ListPlanPaymentRequests:input_type -> vietgara.license.v1.ListPlanPaymentRequestsRequest
+	51, // 91: vietgara.license.v1.LicenseAdminService.GetPlanPaymentRequest:input_type -> vietgara.license.v1.GetPlanPaymentRequestRequest
+	53, // 92: vietgara.license.v1.LicenseAdminService.ApprovePlanPayment:input_type -> vietgara.license.v1.ApprovePlanPaymentRequest
+	55, // 93: vietgara.license.v1.LicenseAdminService.RejectPlanPayment:input_type -> vietgara.license.v1.RejectPlanPaymentRequest
+	57, // 94: vietgara.license.v1.LicenseAdminService.AdjustCredit:input_type -> vietgara.license.v1.AdjustCreditRequest
+	60, // 95: vietgara.license.v1.LicenseAdminService.GetPlatformPaymentSettings:input_type -> vietgara.license.v1.GetPlatformPaymentSettingsRequest
+	62, // 96: vietgara.license.v1.LicenseAdminService.UpdatePlatformPaymentSettings:input_type -> vietgara.license.v1.UpdatePlatformPaymentSettingsRequest
+	64, // 97: vietgara.license.v1.LicenseAdminService.UploadPaymentQr:input_type -> vietgara.license.v1.UploadPaymentQrRequest
+	17, // 98: vietgara.license.v1.LicenseService.ListPlans:output_type -> vietgara.license.v1.ListPlansResponse
+	19, // 99: vietgara.license.v1.LicenseService.GetMySubscription:output_type -> vietgara.license.v1.GetMySubscriptionResponse
+	21, // 100: vietgara.license.v1.LicenseService.CreatePlanPaymentRequest:output_type -> vietgara.license.v1.CreatePlanPaymentRequestResponse
+	23, // 101: vietgara.license.v1.LicenseService.ListMyPlanPaymentRequests:output_type -> vietgara.license.v1.ListMyPlanPaymentRequestsResponse
+	25, // 102: vietgara.license.v1.LicenseService.GetMyPlanPaymentRequest:output_type -> vietgara.license.v1.GetMyPlanPaymentRequestResponse
+	28, // 103: vietgara.license.v1.LicenseService.SubmitPlanPayment:output_type -> vietgara.license.v1.SubmitPlanPaymentResponse
+	30, // 104: vietgara.license.v1.LicenseService.CancelPlanPayment:output_type -> vietgara.license.v1.CancelPlanPaymentResponse
+	32, // 105: vietgara.license.v1.LicenseService.ListMyCreditLedger:output_type -> vietgara.license.v1.ListMyCreditLedgerResponse
+	34, // 106: vietgara.license.v1.LicenseService.GetPaymentInstructions:output_type -> vietgara.license.v1.GetPaymentInstructionsResponse
+	36, // 107: vietgara.license.v1.LicenseService.GetGarageEntitlements:output_type -> vietgara.license.v1.GetGarageEntitlementsResponse
+	39, // 108: vietgara.license.v1.LicenseAdminService.ListAllPlans:output_type -> vietgara.license.v1.ListAllPlansResponse
+	41, // 109: vietgara.license.v1.LicenseAdminService.CreatePlan:output_type -> vietgara.license.v1.CreatePlanResponse
+	43, // 110: vietgara.license.v1.LicenseAdminService.UpdatePlan:output_type -> vietgara.license.v1.UpdatePlanResponse
+	45, // 111: vietgara.license.v1.LicenseAdminService.ListSubscriptions:output_type -> vietgara.license.v1.ListSubscriptionsResponse
+	47, // 112: vietgara.license.v1.LicenseAdminService.ExtendSubscription:output_type -> vietgara.license.v1.ExtendSubscriptionResponse
+	50, // 113: vietgara.license.v1.LicenseAdminService.ListPlanPaymentRequests:output_type -> vietgara.license.v1.ListPlanPaymentRequestsResponse
+	52, // 114: vietgara.license.v1.LicenseAdminService.GetPlanPaymentRequest:output_type -> vietgara.license.v1.GetPlanPaymentRequestResponse
+	54, // 115: vietgara.license.v1.LicenseAdminService.ApprovePlanPayment:output_type -> vietgara.license.v1.ApprovePlanPaymentResponse
+	56, // 116: vietgara.license.v1.LicenseAdminService.RejectPlanPayment:output_type -> vietgara.license.v1.RejectPlanPaymentResponse
+	58, // 117: vietgara.license.v1.LicenseAdminService.AdjustCredit:output_type -> vietgara.license.v1.AdjustCreditResponse
+	61, // 118: vietgara.license.v1.LicenseAdminService.GetPlatformPaymentSettings:output_type -> vietgara.license.v1.GetPlatformPaymentSettingsResponse
+	63, // 119: vietgara.license.v1.LicenseAdminService.UpdatePlatformPaymentSettings:output_type -> vietgara.license.v1.UpdatePlatformPaymentSettingsResponse
+	65, // 120: vietgara.license.v1.LicenseAdminService.UploadPaymentQr:output_type -> vietgara.license.v1.UploadPaymentQrResponse
+	98, // [98:121] is the sub-list for method output_type
+	75, // [75:98] is the sub-list for method input_type
+	75, // [75:75] is the sub-list for extension type_name
+	75, // [75:75] is the sub-list for extension extendee
+	0,  // [0:75] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_license_v1_license_proto_init() }
@@ -4357,7 +4617,7 @@ func file_vietgara_license_v1_license_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_license_v1_license_proto_rawDesc), len(file_vietgara_license_v1_license_proto_rawDesc)),
-			NumEnums:      6,
+			NumEnums:      8,
 			NumMessages:   58,
 			NumExtensions: 0,
 			NumServices:   2,

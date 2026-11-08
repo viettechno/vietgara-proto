@@ -39,13 +39,22 @@ enum Feature {
   FEATURE_REPORTS = 7;
 }
 
+// TransactionKind is a kind of business document a plan may count against
+// its daily transaction limit.
+enum TransactionKind {
+  TRANSACTION_KIND_UNSPECIFIED = 0;
+  TRANSACTION_KIND_REPAIR_ORDER = 1;
+  TRANSACTION_KIND_QUOTE = 2;
+  TRANSACTION_KIND_SETTLEMENT = 3;
+}
+
 // PlanLimits caps usage across all garages of the subscribing owner.
 message PlanLimits {
   int32 max_garages = 1;
   // Staff members across all garages, excluding the owner and counting
   // pending invitations.
   int32 max_staff = 2;
-  // Business documents (quotes, repair orders, settlements) created per
+  // Business documents of the plan's counted_transaction_kinds created per
   // calendar day (Asia/Ho_Chi_Minh).
   int32 max_transactions_per_day = 3;
 }
@@ -70,6 +79,12 @@ message Plan {
   int32 sort_order = 12;
   google.protobuf.Timestamp created_at = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp updated_at = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Length of the free trial in days. Only the "trial" plan has it (required
+  // there, rejected on other plans); it applies to trials started afterwards.
+  int32 trial_days = 15;
+  // The document kinds that count against limits.max_transactions_per_day;
+  // other kinds are neither counted nor limited. Defaults to repair orders.
+  repeated TransactionKind counted_transaction_kinds = 16;
 }
 
 // PlanPaymentKind says what a payment request pays for (FR-LIC-07).
@@ -104,6 +119,16 @@ enum CreditEntryKind {
   CREDIT_ENTRY_KIND_APPLIED = 2;
   // A correction by a platform admin.
   CREDIT_ENTRY_KIND_ADJUSTMENT = 3;
+  // Credit that lapsed unused one year after it was earned.
+  CREDIT_ENTRY_KIND_EXPIRED = 4;
+}
+
+// PaymentMethod is how the owner paid the amount due (FR-LIC-07).
+enum PaymentMethod {
+  PAYMENT_METHOD_UNSPECIFIED = 0;
+  PAYMENT_METHOD_BANK_TRANSFER = 1;
+  // Handed to the platform in cash; the admin confirms it on approval.
+  PAYMENT_METHOD_CASH = 2;
 }
 
 // PaymentInstructions are the platform's payment details shown with a
@@ -116,6 +141,11 @@ message PaymentInstructions {
   string transfer_instructions = 5;
   // The QR code image, a signed URL valid for 5 minutes; empty when none.
   string qr_url = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // How owners reach the platform about needs beyond the plans or questions
+  // (shown next to the plans); each is empty when not set.
+  string support_phone = 7;
+  string support_email = 8;
+  string support_zalo = 9;
 }
 
 // PlanPaymentRequest is an owner's request to switch to a plan, or to renew
@@ -157,6 +187,8 @@ message PlanPaymentRequest {
   google.protobuf.Timestamp submitted_at = 23;
   google.protobuf.Timestamp reviewed_at = 24;
   google.protobuf.Timestamp created_at = 25;
+  // How the owner paid; unset until submitted.
+  PaymentMethod payment_method = 26;
 }
 
 // CreditLedgerEntry is one change of the owner's account credit.
@@ -168,6 +200,11 @@ message CreditLedgerEntry {
   string plan_payment_request_id = 4;
   string note = 5;
   google.protobuf.Timestamp created_at = 6;
+  // Credit added by this entry lapses at expires_at (one year after it was
+  // earned); unset on entries that use or remove credit.
+  google.protobuf.Timestamp expires_at = 7;
+  // The part of an added amount not used or lapsed yet.
+  int64 remaining = 8;
 }
 
 // Usage is the owner's current consumption of the plan limits.
@@ -199,6 +236,8 @@ message Subscription {
   int64 period_paid_amount = 14;
   // The request awaiting payment or review, unset when none.
   PlanPaymentRequest open_request = 15;
+  // When the earliest unused part of the credit lapses; unset when no credit.
+  google.protobuf.Timestamp next_credit_expiry = 16;
 }
 
 // Entitlements is what a garage may currently use, derived from its
@@ -267,8 +306,11 @@ message SubmitPlanPaymentRequest {
   int64 transferred_amount = 5 [(google.api.field_behavior) = REQUIRED];
   string bank_transaction_ref = 6;
   google.protobuf.Timestamp paid_at = 7;
-  // Required unless the amount due is 0.
+  // Required unless the amount due is 0 or the payment is in cash.
   PaymentEvidence evidence = 8;
+  // Defaults to a bank transfer. Cash needs no payer bank, account,
+  // transaction reference or evidence.
+  PaymentMethod payment_method = 9;
 }
 
 message SubmitPlanPaymentResponse {
@@ -515,6 +557,10 @@ message PlatformPaymentSettings {
   // The QR code, a signed URL valid for 5 minutes; empty when none.
   string qr_url = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp updated_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Contact details shown to owners next to the plans.
+  string support_phone = 8;
+  string support_email = 9;
+  string support_zalo = 10;
 }
 
 message GetPlatformPaymentSettingsRequest {}
@@ -558,6 +604,9 @@ service LicenseAdminService {
     };
   }
 
+  // Edits a plan. The billing cycle can only change while no subscription
+  // uses the plan (PLAN_HAS_SUBSCRIBERS); a changed price applies to the
+  // next payment only.
   rpc UpdatePlan(UpdatePlanRequest) returns (UpdatePlanResponse) {
     option (google.api.http) = {
       patch: "/api/v1/admin/plans/{plan_id}"
@@ -592,7 +641,8 @@ service LicenseAdminService {
   }
 
   // Approves the payment: the plan applies at once and a new period starts;
-  // the limits are validated again (PLAN_LIMIT_REACHED).
+  // the limits are validated again (PLAN_LIMIT_REACHED) and so is the credit:
+  // CREDIT_EXPIRED when credit applied in the quote has lapsed since.
   // REQUEST_NOT_OPEN unless SUBMITTED.
   rpc ApprovePlanPayment(ApprovePlanPaymentRequest) returns (ApprovePlanPaymentResponse) {
     option (google.api.http) = {

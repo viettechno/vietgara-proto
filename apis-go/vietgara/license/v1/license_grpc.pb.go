@@ -519,6 +519,9 @@ type LicenseAdminServiceClient interface {
 	// Every plan, including hidden and inactive ones.
 	ListAllPlans(ctx context.Context, in *ListAllPlansRequest, opts ...grpc.CallOption) (*ListAllPlansResponse, error)
 	CreatePlan(ctx context.Context, in *CreatePlanRequest, opts ...grpc.CallOption) (*CreatePlanResponse, error)
+	// Edits a plan. The billing cycle can only change while no subscription
+	// uses the plan (PLAN_HAS_SUBSCRIBERS); a changed price applies to the
+	// next payment only.
 	UpdatePlan(ctx context.Context, in *UpdatePlanRequest, opts ...grpc.CallOption) (*UpdatePlanResponse, error)
 	ListSubscriptions(ctx context.Context, in *ListSubscriptionsRequest, opts ...grpc.CallOption) (*ListSubscriptionsResponse, error)
 	// A correction: renewals and plan changes go through payment requests.
@@ -527,7 +530,8 @@ type LicenseAdminServiceClient interface {
 	ListPlanPaymentRequests(ctx context.Context, in *ListPlanPaymentRequestsRequest, opts ...grpc.CallOption) (*ListPlanPaymentRequestsResponse, error)
 	GetPlanPaymentRequest(ctx context.Context, in *GetPlanPaymentRequestRequest, opts ...grpc.CallOption) (*GetPlanPaymentRequestResponse, error)
 	// Approves the payment: the plan applies at once and a new period starts;
-	// the limits are validated again (PLAN_LIMIT_REACHED).
+	// the limits are validated again (PLAN_LIMIT_REACHED) and so is the credit:
+	// CREDIT_EXPIRED when credit applied in the quote has lapsed since.
 	// REQUEST_NOT_OPEN unless SUBMITTED.
 	ApprovePlanPayment(ctx context.Context, in *ApprovePlanPaymentRequest, opts ...grpc.CallOption) (*ApprovePlanPaymentResponse, error)
 	RejectPlanPayment(ctx context.Context, in *RejectPlanPaymentRequest, opts ...grpc.CallOption) (*RejectPlanPaymentResponse, error)
@@ -685,6 +689,9 @@ type LicenseAdminServiceServer interface {
 	// Every plan, including hidden and inactive ones.
 	ListAllPlans(context.Context, *ListAllPlansRequest) (*ListAllPlansResponse, error)
 	CreatePlan(context.Context, *CreatePlanRequest) (*CreatePlanResponse, error)
+	// Edits a plan. The billing cycle can only change while no subscription
+	// uses the plan (PLAN_HAS_SUBSCRIBERS); a changed price applies to the
+	// next payment only.
 	UpdatePlan(context.Context, *UpdatePlanRequest) (*UpdatePlanResponse, error)
 	ListSubscriptions(context.Context, *ListSubscriptionsRequest) (*ListSubscriptionsResponse, error)
 	// A correction: renewals and plan changes go through payment requests.
@@ -693,7 +700,8 @@ type LicenseAdminServiceServer interface {
 	ListPlanPaymentRequests(context.Context, *ListPlanPaymentRequestsRequest) (*ListPlanPaymentRequestsResponse, error)
 	GetPlanPaymentRequest(context.Context, *GetPlanPaymentRequestRequest) (*GetPlanPaymentRequestResponse, error)
 	// Approves the payment: the plan applies at once and a new period starts;
-	// the limits are validated again (PLAN_LIMIT_REACHED).
+	// the limits are validated again (PLAN_LIMIT_REACHED) and so is the credit:
+	// CREDIT_EXPIRED when credit applied in the quote has lapsed since.
 	// REQUEST_NOT_OPEN unless SUBMITTED.
 	ApprovePlanPayment(context.Context, *ApprovePlanPaymentRequest) (*ApprovePlanPaymentResponse, error)
 	RejectPlanPayment(context.Context, *RejectPlanPaymentRequest) (*RejectPlanPaymentResponse, error)
