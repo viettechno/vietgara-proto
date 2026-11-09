@@ -149,8 +149,8 @@ message PaymentInstructions {
 }
 
 // PlanPaymentRequest is an owner's request to switch to a plan, or to renew
-// the current one, paid by a manual bank transfer (FR-LIC-07). The amounts
-// are fixed when it is quoted and honoured at approval.
+// the current one, paid by bank transfer or cash (FR-LIC-07). The amounts are
+// fixed when it is quoted and honoured at approval.
 message PlanPaymentRequest {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   PlanPaymentKind kind = 2;
@@ -189,6 +189,8 @@ message PlanPaymentRequest {
   google.protobuf.Timestamp created_at = 25;
   // How the owner paid; unset until submitted.
   PaymentMethod payment_method = 26;
+  // The owner's note for a cash payment; empty when not provided.
+  string cash_note = 27;
 }
 
 // CreditLedgerEntry is one change of the owner's account credit.
@@ -311,6 +313,8 @@ message SubmitPlanPaymentRequest {
   // Defaults to a bank transfer. Cash needs no payer bank, account,
   // transaction reference or evidence.
   PaymentMethod payment_method = 9;
+  // Optional note for a cash payment, at most 2,000 Unicode code points.
+  string cash_note = 10;
 }
 
 message SubmitPlanPaymentResponse {

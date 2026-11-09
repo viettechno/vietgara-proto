@@ -12230,6 +12230,10 @@
         "paymentMethod": {
           "$ref": "#/definitions/vietgaraLicenseV1PaymentMethod",
           "description": "Defaults to a bank transfer. Cash needs no payer bank, account,\ntransaction reference or evidence."
+        },
+        "cashNote": {
+          "type": "string",
+          "description": "Optional note for a cash payment, at most 2,000 Unicode code points."
         }
       },
       "required": [
@@ -16770,9 +16774,13 @@
         "paymentMethod": {
           "$ref": "#/definitions/vietgaraLicenseV1PaymentMethod",
           "description": "How the owner paid; unset until submitted."
+        },
+        "cashNote": {
+          "type": "string",
+          "description": "The owner's note for a cash payment; empty when not provided."
         }
       },
-      "description": "PlanPaymentRequest is an owner's request to switch to a plan, or to renew\nthe current one, paid by a manual bank transfer (FR-LIC-07). The amounts\nare fixed when it is quoted and honoured at approval."
+      "description": "PlanPaymentRequest is an owner's request to switch to a plan, or to renew\nthe current one, paid by bank transfer or cash (FR-LIC-07). The amounts are\nfixed when it is quoted and honoured at approval."
     },
     "v1PlanPaymentStatus": {
       "type": "string",

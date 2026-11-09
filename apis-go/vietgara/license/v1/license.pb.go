@@ -831,8 +831,8 @@ func (x *PaymentInstructions) GetSupportZalo() string {
 }
 
 // PlanPaymentRequest is an owner's request to switch to a plan, or to renew
-// the current one, paid by a manual bank transfer (FR-LIC-07). The amounts
-// are fixed when it is quoted and honoured at approval.
+// the current one, paid by bank transfer or cash (FR-LIC-07). The amounts are
+// fixed when it is quoted and honoured at approval.
 type PlanPaymentRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -872,6 +872,8 @@ type PlanPaymentRequest struct {
 	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,25,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	// How the owner paid; unset until submitted.
 	PaymentMethod PaymentMethod `protobuf:"varint,26,opt,name=payment_method,json=paymentMethod,proto3,enum=vietgara.license.v1.PaymentMethod" json:"payment_method,omitempty"`
+	// The owner's note for a cash payment; empty when not provided.
+	CashNote      string `protobuf:"bytes,27,opt,name=cash_note,json=cashNote,proto3" json:"cash_note,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1086,6 +1088,13 @@ func (x *PlanPaymentRequest) GetPaymentMethod() PaymentMethod {
 		return x.PaymentMethod
 	}
 	return PaymentMethod_PAYMENT_METHOD_UNSPECIFIED
+}
+
+func (x *PlanPaymentRequest) GetCashNote() string {
+	if x != nil {
+		return x.CashNote
+	}
+	return ""
 }
 
 // CreditLedgerEntry is one change of the owner's account credit.
@@ -2021,6 +2030,8 @@ type SubmitPlanPaymentRequest struct {
 	// Defaults to a bank transfer. Cash needs no payer bank, account,
 	// transaction reference or evidence.
 	PaymentMethod PaymentMethod `protobuf:"varint,9,opt,name=payment_method,json=paymentMethod,proto3,enum=vietgara.license.v1.PaymentMethod" json:"payment_method,omitempty"`
+	// Optional note for a cash payment, at most 2,000 Unicode code points.
+	CashNote      string `protobuf:"bytes,10,opt,name=cash_note,json=cashNote,proto3" json:"cash_note,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2116,6 +2127,13 @@ func (x *SubmitPlanPaymentRequest) GetPaymentMethod() PaymentMethod {
 		return x.PaymentMethod
 	}
 	return PaymentMethod_PAYMENT_METHOD_UNSPECIFIED
+}
+
+func (x *SubmitPlanPaymentRequest) GetCashNote() string {
+	if x != nil {
+		return x.CashNote
+	}
+	return ""
 }
 
 type SubmitPlanPaymentResponse struct {
@@ -4082,7 +4100,7 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\x06qr_url\x18\x06 \x01(\tB\x03\xe0A\x03R\x05qrUrl\x12#\n" +
 	"\rsupport_phone\x18\a \x01(\tR\fsupportPhone\x12#\n" +
 	"\rsupport_email\x18\b \x01(\tR\fsupportEmail\x12!\n" +
-	"\fsupport_zalo\x18\t \x01(\tR\vsupportZalo\"\xaa\t\n" +
+	"\fsupport_zalo\x18\t \x01(\tR\vsupportZalo\"\xc7\t\n" +
 	"\x12PlanPaymentRequest\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x128\n" +
 	"\x04kind\x18\x02 \x01(\x0e2$.vietgara.license.v1.PlanPaymentKindR\x04kind\x12-\n" +
@@ -4118,7 +4136,8 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"reviewedAt\x129\n" +
 	"\n" +
 	"created_at\x18\x19 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12I\n" +
-	"\x0epayment_method\x18\x1a \x01(\x0e2\".vietgara.license.v1.PaymentMethodR\rpaymentMethod\"\xe9\x02\n" +
+	"\x0epayment_method\x18\x1a \x01(\x0e2\".vietgara.license.v1.PaymentMethodR\rpaymentMethod\x12\x1b\n" +
+	"\tcash_note\x18\x1b \x01(\tR\bcashNote\"\xe9\x02\n" +
 	"\x11CreditLedgerEntry\x128\n" +
 	"\x04kind\x18\x01 \x01(\x0e2$.vietgara.license.v1.CreditEntryKindR\x04kind\x12\x16\n" +
 	"\x06amount\x18\x02 \x01(\x03R\x06amount\x12#\n" +
@@ -4186,7 +4205,7 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\arequest\x18\x01 \x01(\v2'.vietgara.license.v1.PlanPaymentRequestR\arequest\"X\n" +
 	"\x0fPaymentEvidence\x12\x1d\n" +
 	"\acontent\x18\x01 \x01(\fB\x03\xe0A\x02R\acontent\x12&\n" +
-	"\fcontent_type\x18\x02 \x01(\tB\x03\xe0A\x02R\vcontentType\"\xce\x03\n" +
+	"\fcontent_type\x18\x02 \x01(\tB\x03\xe0A\x02R\vcontentType\"\xeb\x03\n" +
 	"\x18SubmitPlanPaymentRequest\x12\"\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tB\x03\xe0A\x02R\trequestId\x12\"\n" +
@@ -4199,7 +4218,9 @@ const file_vietgara_license_v1_license_proto_rawDesc = "" +
 	"\x14bank_transaction_ref\x18\x06 \x01(\tR\x12bankTransactionRef\x123\n" +
 	"\apaid_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\x06paidAt\x12@\n" +
 	"\bevidence\x18\b \x01(\v2$.vietgara.license.v1.PaymentEvidenceR\bevidence\x12I\n" +
-	"\x0epayment_method\x18\t \x01(\x0e2\".vietgara.license.v1.PaymentMethodR\rpaymentMethod\"^\n" +
+	"\x0epayment_method\x18\t \x01(\x0e2\".vietgara.license.v1.PaymentMethodR\rpaymentMethod\x12\x1b\n" +
+	"\tcash_note\x18\n" +
+	" \x01(\tR\bcashNote\"^\n" +
 	"\x19SubmitPlanPaymentResponse\x12A\n" +
 	"\arequest\x18\x01 \x01(\v2'.vietgara.license.v1.PlanPaymentRequestR\arequest\">\n" +
 	"\x18CancelPlanPaymentRequest\x12\"\n" +
