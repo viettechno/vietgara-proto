@@ -619,7 +619,7 @@
     },
     "/api/v1/admin/plans/{planId}": {
       "patch": {
-        "summary": "Edits a plan. The billing cycle can only change while no subscription\nuses the plan (PLAN_HAS_SUBSCRIBERS); a changed price applies to the\nnext payment only.",
+        "summary": "Edits a plan. While a subscription uses the plan its commercial terms are\nlocked: price, currency, billing cycle, limits, counted transaction kinds\nand features cannot change (PLAN_HAS_SUBSCRIBERS); a change of terms is a\nnew plan. The name, description, visibility, availability and order stay\neditable, and so does everything on the \"trial\" plan, which every owner\nstarts on. Sending a term back unchanged is not a change.",
         "operationId": "LicenseAdminService_UpdatePlan",
         "responses": {
           "200": {
