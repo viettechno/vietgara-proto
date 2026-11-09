@@ -519,9 +519,12 @@ type LicenseAdminServiceClient interface {
 	// Every plan, including hidden and inactive ones.
 	ListAllPlans(ctx context.Context, in *ListAllPlansRequest, opts ...grpc.CallOption) (*ListAllPlansResponse, error)
 	CreatePlan(ctx context.Context, in *CreatePlanRequest, opts ...grpc.CallOption) (*CreatePlanResponse, error)
-	// Edits a plan. The billing cycle can only change while no subscription
-	// uses the plan (PLAN_HAS_SUBSCRIBERS); a changed price applies to the
-	// next payment only.
+	// Edits a plan. While a subscription uses the plan its commercial terms are
+	// locked: price, currency, billing cycle, limits, counted transaction kinds
+	// and features cannot change (PLAN_HAS_SUBSCRIBERS); a change of terms is a
+	// new plan. The name, description, visibility, availability and order stay
+	// editable, and so does everything on the "trial" plan, which every owner
+	// starts on. Sending a term back unchanged is not a change.
 	UpdatePlan(ctx context.Context, in *UpdatePlanRequest, opts ...grpc.CallOption) (*UpdatePlanResponse, error)
 	ListSubscriptions(ctx context.Context, in *ListSubscriptionsRequest, opts ...grpc.CallOption) (*ListSubscriptionsResponse, error)
 	// A correction: renewals and plan changes go through payment requests.
@@ -689,9 +692,12 @@ type LicenseAdminServiceServer interface {
 	// Every plan, including hidden and inactive ones.
 	ListAllPlans(context.Context, *ListAllPlansRequest) (*ListAllPlansResponse, error)
 	CreatePlan(context.Context, *CreatePlanRequest) (*CreatePlanResponse, error)
-	// Edits a plan. The billing cycle can only change while no subscription
-	// uses the plan (PLAN_HAS_SUBSCRIBERS); a changed price applies to the
-	// next payment only.
+	// Edits a plan. While a subscription uses the plan its commercial terms are
+	// locked: price, currency, billing cycle, limits, counted transaction kinds
+	// and features cannot change (PLAN_HAS_SUBSCRIBERS); a change of terms is a
+	// new plan. The name, description, visibility, availability and order stay
+	// editable, and so does everything on the "trial" plan, which every owner
+	// starts on. Sending a term back unchanged is not a change.
 	UpdatePlan(context.Context, *UpdatePlanRequest) (*UpdatePlanResponse, error)
 	ListSubscriptions(context.Context, *ListSubscriptionsRequest) (*ListSubscriptionsResponse, error)
 	// A correction: renewals and plan changes go through payment requests.
