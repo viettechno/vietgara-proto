@@ -30,6 +30,7 @@ const (
 	AuthService_CompleteGoogleLink_FullMethodName       = "/vietgara.identity.v1.AuthService/CompleteGoogleLink"
 	AuthService_LinkGoogle_FullMethodName               = "/vietgara.identity.v1.AuthService/LinkGoogle"
 	AuthService_UnlinkGoogle_FullMethodName             = "/vietgara.identity.v1.AuthService/UnlinkGoogle"
+	AuthService_ChangePassword_FullMethodName           = "/vietgara.identity.v1.AuthService/ChangePassword"
 	AuthService_RequestPasswordReset_FullMethodName     = "/vietgara.identity.v1.AuthService/RequestPasswordReset"
 	AuthService_VerifyPasswordResetOtp_FullMethodName   = "/vietgara.identity.v1.AuthService/VerifyPasswordResetOtp"
 	AuthService_ResetPassword_FullMethodName            = "/vietgara.identity.v1.AuthService/ResetPassword"
@@ -90,6 +91,13 @@ type AuthServiceClient interface {
 	// user with no Google account answers GOOGLE_NOT_LINKED (412). Every other
 	// session of the user is revoked, and the call answers a new one.
 	UnlinkGoogle(ctx context.Context, in *UnlinkGoogleRequest, opts ...grpc.CallOption) (*UnlinkGoogleResponse, error)
+	// FR-IAM-13 (Release 10.4): changes the signed-in user's password, after
+	// the current one. The new password follows the sign-up rule (8 to 72
+	// bytes). Every other session of the user is revoked, and the call answers a
+	// new one; a turned-on MFA is not asked again. Errors: PASSWORD_INCORRECT
+	// (403), NO_PASSWORD (412, the user signs in with Google only) and
+	// VALIDATION on new_password.
+	ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error)
 	// Starts a password reset (FR-IAM-04): e-mails an OTP valid for 2
 	// minutes. Always succeeds so user existence is not revealed.
 	RequestPasswordReset(ctx context.Context, in *RequestPasswordResetRequest, opts ...grpc.CallOption) (*RequestPasswordResetResponse, error)
@@ -217,6 +225,16 @@ func (c *authServiceClient) UnlinkGoogle(ctx context.Context, in *UnlinkGoogleRe
 	return out, nil
 }
 
+func (c *authServiceClient) ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ChangePasswordResponse)
+	err := c.cc.Invoke(ctx, AuthService_ChangePassword_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *authServiceClient) RequestPasswordReset(ctx context.Context, in *RequestPasswordResetRequest, opts ...grpc.CallOption) (*RequestPasswordResetResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RequestPasswordResetResponse)
@@ -302,6 +320,13 @@ type AuthServiceServer interface {
 	// user with no Google account answers GOOGLE_NOT_LINKED (412). Every other
 	// session of the user is revoked, and the call answers a new one.
 	UnlinkGoogle(context.Context, *UnlinkGoogleRequest) (*UnlinkGoogleResponse, error)
+	// FR-IAM-13 (Release 10.4): changes the signed-in user's password, after
+	// the current one. The new password follows the sign-up rule (8 to 72
+	// bytes). Every other session of the user is revoked, and the call answers a
+	// new one; a turned-on MFA is not asked again. Errors: PASSWORD_INCORRECT
+	// (403), NO_PASSWORD (412, the user signs in with Google only) and
+	// VALIDATION on new_password.
+	ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error)
 	// Starts a password reset (FR-IAM-04): e-mails an OTP valid for 2
 	// minutes. Always succeeds so user existence is not revealed.
 	RequestPasswordReset(context.Context, *RequestPasswordResetRequest) (*RequestPasswordResetResponse, error)
@@ -351,6 +376,9 @@ func (UnimplementedAuthServiceServer) LinkGoogle(context.Context, *LinkGoogleReq
 }
 func (UnimplementedAuthServiceServer) UnlinkGoogle(context.Context, *UnlinkGoogleRequest) (*UnlinkGoogleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UnlinkGoogle not implemented")
+}
+func (UnimplementedAuthServiceServer) ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ChangePassword not implemented")
 }
 func (UnimplementedAuthServiceServer) RequestPasswordReset(context.Context, *RequestPasswordResetRequest) (*RequestPasswordResetResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RequestPasswordReset not implemented")
@@ -580,6 +608,24 @@ func _AuthService_UnlinkGoogle_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_ChangePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangePasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).ChangePassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_ChangePassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).ChangePassword(ctx, req.(*ChangePasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthService_RequestPasswordReset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RequestPasswordResetRequest)
 	if err := dec(in); err != nil {
@@ -684,6 +730,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UnlinkGoogle",
 			Handler:    _AuthService_UnlinkGoogle_Handler,
+		},
+		{
+			MethodName: "ChangePassword",
+			Handler:    _AuthService_ChangePassword_Handler,
 		},
 		{
 			MethodName: "RequestPasswordReset",

@@ -332,6 +332,33 @@ func local_request_AuthService_UnlinkGoogle_0(ctx context.Context, marshaler run
 	return msg, metadata, err
 }
 
+func request_AuthService_ChangePassword_0(ctx context.Context, marshaler runtime.Marshaler, client AuthServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ChangePasswordRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ChangePassword(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_AuthService_ChangePassword_0(ctx context.Context, marshaler runtime.Marshaler, server AuthServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ChangePasswordRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.ChangePassword(ctx, &protoReq)
+	return msg, metadata, err
+}
+
 func request_AuthService_RequestPasswordReset_0(ctx context.Context, marshaler runtime.Marshaler, client AuthServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq RequestPasswordResetRequest
@@ -639,6 +666,26 @@ func RegisterAuthServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux
 		}
 		forward_AuthService_UnlinkGoogle_0(annotatedContext, mux, outboundMarshaler, w, req, response_AuthService_UnlinkGoogle_0{resp.(*UnlinkGoogleResponse)}, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodPost, pattern_AuthService_ChangePassword_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.identity.v1.AuthService/ChangePassword", runtime.WithHTTPPathPattern("/api/v1/me/password:change"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_AuthService_ChangePassword_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_AuthService_ChangePassword_0(annotatedContext, mux, outboundMarshaler, w, req, response_AuthService_ChangePassword_0{resp.(*ChangePasswordResponse)}, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodPost, pattern_AuthService_RequestPasswordReset_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -926,6 +973,23 @@ func RegisterAuthServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux
 		}
 		forward_AuthService_UnlinkGoogle_0(annotatedContext, mux, outboundMarshaler, w, req, response_AuthService_UnlinkGoogle_0{resp.(*UnlinkGoogleResponse)}, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodPost, pattern_AuthService_ChangePassword_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.identity.v1.AuthService/ChangePassword", runtime.WithHTTPPathPattern("/api/v1/me/password:change"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_AuthService_ChangePassword_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_AuthService_ChangePassword_0(annotatedContext, mux, outboundMarshaler, w, req, response_AuthService_ChangePassword_0{resp.(*ChangePasswordResponse)}, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodPost, pattern_AuthService_RequestPasswordReset_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1070,6 +1134,15 @@ func (m response_AuthService_UnlinkGoogle_0) XXX_ResponseBody() interface{} {
 	return response.Session
 }
 
+type response_AuthService_ChangePassword_0 struct {
+	*ChangePasswordResponse
+}
+
+func (m response_AuthService_ChangePassword_0) XXX_ResponseBody() interface{} {
+	response := m.ChangePasswordResponse
+	return response.Session
+}
+
 type response_AuthService_RequestPasswordReset_0 struct {
 	*RequestPasswordResetResponse
 }
@@ -1091,6 +1164,7 @@ var (
 	pattern_AuthService_CompleteGoogleLink_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "me", "google-link"}, "complete"))
 	pattern_AuthService_LinkGoogle_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "me", "google-link"}, ""))
 	pattern_AuthService_UnlinkGoogle_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "me", "google-link"}, "unlink"))
+	pattern_AuthService_ChangePassword_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "me", "password"}, "change"))
 	pattern_AuthService_RequestPasswordReset_0     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "auth", "password-reset", "otp"}, ""))
 	pattern_AuthService_VerifyPasswordResetOtp_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5}, []string{"api", "v1", "auth", "password-reset", "otp", "verification"}, ""))
 	pattern_AuthService_ResetPassword_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "auth", "password-reset"}, ""))
@@ -1108,6 +1182,7 @@ var (
 	forward_AuthService_CompleteGoogleLink_0       = runtime.ForwardResponseMessage
 	forward_AuthService_LinkGoogle_0               = runtime.ForwardResponseMessage
 	forward_AuthService_UnlinkGoogle_0             = runtime.ForwardResponseMessage
+	forward_AuthService_ChangePassword_0           = runtime.ForwardResponseMessage
 	forward_AuthService_RequestPasswordReset_0     = runtime.ForwardResponseMessage
 	forward_AuthService_VerifyPasswordResetOtp_0   = runtime.ForwardResponseMessage
 	forward_AuthService_ResetPassword_0            = runtime.ForwardResponseMessage
