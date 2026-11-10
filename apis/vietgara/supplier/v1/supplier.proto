@@ -21,7 +21,7 @@ message SupplierContact {
 
 // Supplier is a business that sells parts to the garage, kept in the
 // garage's directory (FR-SUP-01). It is not a customer; insurers are not
-// suppliers either and come back in their own record in Phase 17.
+// suppliers either and come back in their own record in Phase 18.
 message Supplier {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   string garage_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];

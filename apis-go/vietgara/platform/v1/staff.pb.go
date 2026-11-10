@@ -42,7 +42,7 @@ const (
 	// Subscriptions, payment requests and credit.
 	PlatformPermission_PLATFORM_PERMISSION_SUBSCRIPTION_READ  PlatformPermission = 3
 	PlatformPermission_PLATFORM_PERMISSION_SUBSCRIPTION_WRITE PlatformPermission = 4
-	// Platform dashboards (Phase 12).
+	// Platform dashboards (Phase 14).
 	PlatformPermission_PLATFORM_PERMISSION_STATS_READ PlatformPermission = 5
 	// Names and owners of garages, no business data.
 	PlatformPermission_PLATFORM_PERMISSION_GARAGE_DIRECTORY_READ PlatformPermission = 6

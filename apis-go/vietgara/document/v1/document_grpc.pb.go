@@ -58,7 +58,7 @@ const (
 // works (HLD Section 2: a module never queries another module's tables
 // directly), with a built-in template per document type, paper size and
 // version (Release 10.0; a garage designing its own templates is FR-DOC-03,
-// Phase 14). Each RPC needs the same
+// Phase 13). Each RPC needs the same
 // permission as the data it renders (quote.read, billing.read,
 // inventory.read), not a permission of its own.
 type DocumentServiceClient interface {
@@ -116,19 +116,19 @@ type DocumentServiceClient interface {
 	PrintPaymentVoucherPdf(ctx context.Context, in *PrintPaymentVoucherPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	PrintGoodsReceiptPdf(ctx context.Context, in *PrintGoodsReceiptPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	PrintStockIssuePdf(ctx context.Context, in *PrintStockIssuePdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
-	// FR-BIL-07 (Release 13.0): a payment-out voucher (phiếu chi) as a PDF.
+	// FR-BIL-07 (Release 11.0): a payment-out voucher (phiếu chi) as a PDF.
 	ExportPaymentOutVoucherPdf(ctx context.Context, in *ExportPaymentOutVoucherPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	PrintPaymentOutVoucherPdf(ctx context.Context, in *PrintPaymentOutVoucherPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
-	// FR-INV-16 (Release 13.0): a purchase order as a PDF.
+	// FR-INV-16 (Release 11.0): a purchase order as a PDF.
 	ExportPurchaseOrderPdf(ctx context.Context, in *ExportPurchaseOrderPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	PrintPurchaseOrderPdf(ctx context.Context, in *PrintPurchaseOrderPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
-	// FR-DOC-02 (Release 13.0): the receivables list
+	// FR-DOC-02 (Release 11.0): the receivables list
 	// (ReceivableService.ListReceivables) as an Excel workbook.
 	ExportReceivablesExcel(ctx context.Context, in *ExportReceivablesExcelRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
-	// FR-REC-04 (Release 13.0): the reconciliation of a period
+	// FR-REC-04 (Release 11.0): the reconciliation of a period
 	// (ReceivableService.GetReconciliationReport) as an Excel workbook.
 	ExportReceivableReconciliationExcel(ctx context.Context, in *ExportReceivableReconciliationExcelRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
-	// FR-INV-17 (Release 13.0): the supplier payables as an Excel workbook.
+	// FR-INV-17 (Release 11.0): the supplier payables as an Excel workbook.
 	ExportSupplierPayablesExcel(ctx context.Context, in *ExportSupplierPayablesExcelRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 }
 
@@ -410,7 +410,7 @@ func (c *documentServiceClient) ExportSupplierPayablesExcel(ctx context.Context,
 // works (HLD Section 2: a module never queries another module's tables
 // directly), with a built-in template per document type, paper size and
 // version (Release 10.0; a garage designing its own templates is FR-DOC-03,
-// Phase 14). Each RPC needs the same
+// Phase 13). Each RPC needs the same
 // permission as the data it renders (quote.read, billing.read,
 // inventory.read), not a permission of its own.
 type DocumentServiceServer interface {
@@ -468,19 +468,19 @@ type DocumentServiceServer interface {
 	PrintPaymentVoucherPdf(context.Context, *PrintPaymentVoucherPdfRequest) (*httpbody.HttpBody, error)
 	PrintGoodsReceiptPdf(context.Context, *PrintGoodsReceiptPdfRequest) (*httpbody.HttpBody, error)
 	PrintStockIssuePdf(context.Context, *PrintStockIssuePdfRequest) (*httpbody.HttpBody, error)
-	// FR-BIL-07 (Release 13.0): a payment-out voucher (phiếu chi) as a PDF.
+	// FR-BIL-07 (Release 11.0): a payment-out voucher (phiếu chi) as a PDF.
 	ExportPaymentOutVoucherPdf(context.Context, *ExportPaymentOutVoucherPdfRequest) (*httpbody.HttpBody, error)
 	PrintPaymentOutVoucherPdf(context.Context, *PrintPaymentOutVoucherPdfRequest) (*httpbody.HttpBody, error)
-	// FR-INV-16 (Release 13.0): a purchase order as a PDF.
+	// FR-INV-16 (Release 11.0): a purchase order as a PDF.
 	ExportPurchaseOrderPdf(context.Context, *ExportPurchaseOrderPdfRequest) (*httpbody.HttpBody, error)
 	PrintPurchaseOrderPdf(context.Context, *PrintPurchaseOrderPdfRequest) (*httpbody.HttpBody, error)
-	// FR-DOC-02 (Release 13.0): the receivables list
+	// FR-DOC-02 (Release 11.0): the receivables list
 	// (ReceivableService.ListReceivables) as an Excel workbook.
 	ExportReceivablesExcel(context.Context, *ExportReceivablesExcelRequest) (*httpbody.HttpBody, error)
-	// FR-REC-04 (Release 13.0): the reconciliation of a period
+	// FR-REC-04 (Release 11.0): the reconciliation of a period
 	// (ReceivableService.GetReconciliationReport) as an Excel workbook.
 	ExportReceivableReconciliationExcel(context.Context, *ExportReceivableReconciliationExcelRequest) (*httpbody.HttpBody, error)
-	// FR-INV-17 (Release 13.0): the supplier payables as an Excel workbook.
+	// FR-INV-17 (Release 11.0): the supplier payables as an Excel workbook.
 	ExportSupplierPayablesExcel(context.Context, *ExportSupplierPayablesExcelRequest) (*httpbody.HttpBody, error)
 	mustEmbedUnimplementedDocumentServiceServer()
 }

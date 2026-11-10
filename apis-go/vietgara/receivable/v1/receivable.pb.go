@@ -284,7 +284,7 @@ type ReceivableReminder struct {
 	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Days after the due date this reminder was scheduled for.
 	OffsetDays int32 `protobuf:"varint,2,opt,name=offset_days,json=offsetDays,proto3" json:"offset_days,omitempty"`
-	// "email" today; push joins with Release 11.0.
+	// "email" today; push joins with Release 16.0.
 	Channel string          `protobuf:"bytes,3,opt,name=channel,proto3" json:"channel,omitempty"`
 	Outcome ReminderOutcome `protobuf:"varint,4,opt,name=outcome,proto3,enum=vietgara.receivable.v1.ReminderOutcome" json:"outcome,omitempty"`
 	// For a skip: DISABLED, OPTED_OUT, SUPPRESSED, NO_EMAIL or SUPERSEDED.

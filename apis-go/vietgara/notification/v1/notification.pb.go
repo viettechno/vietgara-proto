@@ -44,9 +44,9 @@ const (
 	NotificationType_NOTIFICATION_TYPE_SETTLEMENT_PAID NotificationType = 6
 	// Staff: a part fell to or under its reorder threshold.
 	NotificationType_NOTIFICATION_TYPE_LOW_STOCK NotificationType = 7
-	// Release 13.0 (FR-REC-03): a reminder that a settlement is overdue.
+	// Release 11.0 (FR-REC-03): a reminder that a settlement is overdue.
 	NotificationType_NOTIFICATION_TYPE_PAYMENT_REMINDER NotificationType = 8
-	// Release 13.0 (FR-INV-16): a purchase order e-mailed to a supplier. Not
+	// Release 11.0 (FR-INV-16): a purchase order e-mailed to a supplier. Not
 	// switchable: it appears in the log only, never in the settings.
 	NotificationType_NOTIFICATION_TYPE_PURCHASE_ORDER NotificationType = 9
 )
