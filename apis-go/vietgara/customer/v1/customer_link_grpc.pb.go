@@ -30,7 +30,7 @@ const (
 //
 // CustomerLinkService links a garage's customer profile with a VietGara
 // user, with the user's consent (FR-CUS-06). Suppliers use their own link
-// in Phase 17. Needs PERMISSION_CUSTOMER_WRITE.
+// in Phase 18. Needs PERMISSION_CUSTOMER_WRITE.
 type CustomerLinkServiceClient interface {
 	// Asks the user that owns the profile's verified phone or e-mail to
 	// confirm; sends them a one-time code and a request in the app. Fails
@@ -86,7 +86,7 @@ func (c *customerLinkServiceClient) UnlinkCustomerUser(ctx context.Context, in *
 //
 // CustomerLinkService links a garage's customer profile with a VietGara
 // user, with the user's consent (FR-CUS-06). Suppliers use their own link
-// in Phase 17. Needs PERMISSION_CUSTOMER_WRITE.
+// in Phase 18. Needs PERMISSION_CUSTOMER_WRITE.
 type CustomerLinkServiceServer interface {
 	// Asks the user that owns the profile's verified phone or e-mail to
 	// confirm; sends them a one-time code and a request in the app. Fails

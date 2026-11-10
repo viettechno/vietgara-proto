@@ -60,7 +60,7 @@ message ReceivableReminder {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Days after the due date this reminder was scheduled for.
   int32 offset_days = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // "email" today; push joins with Release 11.0.
+  // "email" today; push joins with Release 16.0.
   string channel = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
   ReminderOutcome outcome = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
   // For a skip: DISABLED, OPTED_OUT, SUPPRESSED, NO_EMAIL or SUPERSEDED.

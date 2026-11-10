@@ -25,7 +25,7 @@ enum PlatformPermission {
   // Subscriptions, payment requests and credit.
   PLATFORM_PERMISSION_SUBSCRIPTION_READ = 3;
   PLATFORM_PERMISSION_SUBSCRIPTION_WRITE = 4;
-  // Platform dashboards (Phase 12).
+  // Platform dashboards (Phase 14).
   PLATFORM_PERMISSION_STATS_READ = 5;
   // Names and owners of garages, no business data.
   PLATFORM_PERMISSION_GARAGE_DIRECTORY_READ = 6;

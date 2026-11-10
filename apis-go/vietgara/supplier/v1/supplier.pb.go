@@ -95,7 +95,7 @@ func (x *SupplierContact) GetAddress() string {
 
 // Supplier is a business that sells parts to the garage, kept in the
 // garage's directory (FR-SUP-01). It is not a customer; insurers are not
-// suppliers either and come back in their own record in Phase 17.
+// suppliers either and come back in their own record in Phase 18.
 type Supplier struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	Id       string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`

@@ -24,7 +24,7 @@
     },
     {
       "name": "CustomerLinkService",
-      "description": "CustomerLinkService links a garage's customer profile with a VietGara\nuser, with the user's consent (FR-CUS-06). Suppliers use their own link\nin Phase 17. Needs PERMISSION_CUSTOMER_WRITE."
+      "description": "CustomerLinkService links a garage's customer profile with a VietGara\nuser, with the user's consent (FR-CUS-06). Suppliers use their own link\nin Phase 18. Needs PERMISSION_CUSTOMER_WRITE."
     },
     {
       "name": "DataRequestService",
@@ -52,7 +52,7 @@
     },
     {
       "name": "DocumentService",
-      "description": "DocumentService renders PDFs and Excel reports on request (FRD 3.13).\nEvery document is generated fresh from the owning module's own data, read\nthrough a narrow interface the same way every other cross-module read\nworks (HLD Section 2: a module never queries another module's tables\ndirectly), with a built-in template per document type, paper size and\nversion (Release 10.0; a garage designing its own templates is FR-DOC-03,\nPhase 14). Each RPC needs the same\npermission as the data it renders (quote.read, billing.read,\ninventory.read), not a permission of its own."
+      "description": "DocumentService renders PDFs and Excel reports on request (FRD 3.13).\nEvery document is generated fresh from the owning module's own data, read\nthrough a narrow interface the same way every other cross-module read\nworks (HLD Section 2: a module never queries another module's tables\ndirectly), with a built-in template per document type, paper size and\nversion (Release 10.0; a garage designing its own templates is FR-DOC-03,\nPhase 13). Each RPC needs the same\npermission as the data it renders (quote.read, billing.read,\ninventory.read), not a permission of its own."
     },
     {
       "name": "FileService",
@@ -4087,7 +4087,7 @@
           },
           {
             "name": "type",
-            "description": "Filters; unspecified means all.\n\n - NOTIFICATION_TYPE_QUOTE_READY: Customer: the quote with the link to approve it. Essential.\n - NOTIFICATION_TYPE_QUOTE_DECIDED: Staff: a quote was approved or rejected.\n - NOTIFICATION_TYPE_VEHICLE_READY: Customer: the vehicle is ready for pick-up.\n - NOTIFICATION_TYPE_PAYMENT_RECEIVED: Customer: a payment was recorded and a balance is left.\n - NOTIFICATION_TYPE_SETTLEMENT_RECEIPT: Customer: the settlement is paid; the receipt is attached. Essential.\n - NOTIFICATION_TYPE_SETTLEMENT_PAID: Staff: a settlement is fully paid.\n - NOTIFICATION_TYPE_LOW_STOCK: Staff: a part fell to or under its reorder threshold.\n - NOTIFICATION_TYPE_PAYMENT_REMINDER: Release 13.0 (FR-REC-03): a reminder that a settlement is overdue.\n - NOTIFICATION_TYPE_PURCHASE_ORDER: Release 13.0 (FR-INV-16): a purchase order e-mailed to a supplier. Not\nswitchable: it appears in the log only, never in the settings.",
+            "description": "Filters; unspecified means all.\n\n - NOTIFICATION_TYPE_QUOTE_READY: Customer: the quote with the link to approve it. Essential.\n - NOTIFICATION_TYPE_QUOTE_DECIDED: Staff: a quote was approved or rejected.\n - NOTIFICATION_TYPE_VEHICLE_READY: Customer: the vehicle is ready for pick-up.\n - NOTIFICATION_TYPE_PAYMENT_RECEIVED: Customer: a payment was recorded and a balance is left.\n - NOTIFICATION_TYPE_SETTLEMENT_RECEIPT: Customer: the settlement is paid; the receipt is attached. Essential.\n - NOTIFICATION_TYPE_SETTLEMENT_PAID: Staff: a settlement is fully paid.\n - NOTIFICATION_TYPE_LOW_STOCK: Staff: a part fell to or under its reorder threshold.\n - NOTIFICATION_TYPE_PAYMENT_REMINDER: Release 11.0 (FR-REC-03): a reminder that a settlement is overdue.\n - NOTIFICATION_TYPE_PURCHASE_ORDER: Release 11.0 (FR-INV-16): a purchase order e-mailed to a supplier. Not\nswitchable: it appears in the log only, never in the settings.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -5017,7 +5017,7 @@
     },
     "/api/v1/garages/{garageId}/payment-out-vouchers/{voucherId}/pdf": {
       "get": {
-        "summary": "FR-BIL-07 (Release 13.0): a payment-out voucher (phiếu chi) as a PDF.",
+        "summary": "FR-BIL-07 (Release 11.0): a payment-out voucher (phiếu chi) as a PDF.",
         "operationId": "DocumentService_ExportPaymentOutVoucherPdf",
         "responses": {
           "200": {
@@ -5406,7 +5406,7 @@
     },
     "/api/v1/garages/{garageId}/purchase-orders/{purchaseOrderId}/pdf": {
       "get": {
-        "summary": "FR-INV-16 (Release 13.0): a purchase order as a PDF.",
+        "summary": "FR-INV-16 (Release 11.0): a purchase order as a PDF.",
         "operationId": "DocumentService_ExportPurchaseOrderPdf",
         "responses": {
           "200": {
@@ -7185,7 +7185,7 @@
     },
     "/api/v1/garages/{garageId}/reports/receivable-reconciliation/excel": {
       "get": {
-        "summary": "FR-REC-04 (Release 13.0): the reconciliation of a period\n(ReceivableService.GetReconciliationReport) as an Excel workbook.",
+        "summary": "FR-REC-04 (Release 11.0): the reconciliation of a period\n(ReceivableService.GetReconciliationReport) as an Excel workbook.",
         "operationId": "DocumentService_ExportReceivableReconciliationExcel",
         "responses": {
           "200": {
@@ -7230,7 +7230,7 @@
     },
     "/api/v1/garages/{garageId}/reports/receivables/excel": {
       "get": {
-        "summary": "FR-DOC-02 (Release 13.0): the receivables list\n(ReceivableService.ListReceivables) as an Excel workbook.",
+        "summary": "FR-DOC-02 (Release 11.0): the receivables list\n(ReceivableService.ListReceivables) as an Excel workbook.",
         "operationId": "DocumentService_ExportReceivablesExcel",
         "responses": {
           "200": {
@@ -7591,7 +7591,7 @@
     },
     "/api/v1/garages/{garageId}/reports/supplier-payables/excel": {
       "get": {
-        "summary": "FR-INV-17 (Release 13.0): the supplier payables as an Excel workbook.",
+        "summary": "FR-INV-17 (Release 11.0): the supplier payables as an Excel workbook.",
         "operationId": "DocumentService_ExportSupplierPayablesExcel",
         "responses": {
           "200": {
@@ -13702,7 +13702,7 @@
         "DOCUMENT_TYPE_PAYMENT_OUT_VOUCHER",
         "DOCUMENT_TYPE_PURCHASE_ORDER"
       ],
-      "description": "DocumentType is a document a garage can print (FR-DOC-04).\n\n - DOCUMENT_TYPE_PAYMENT_OUT_VOUCHER: Release 13.0 (FR-BIL-07): the payment-out voucher (phiếu chi).\n - DOCUMENT_TYPE_PURCHASE_ORDER: Release 13.0 (FR-INV-16): the purchase order."
+      "description": "DocumentType is a document a garage can print (FR-DOC-04).\n\n - DOCUMENT_TYPE_PAYMENT_OUT_VOUCHER: Release 11.0 (FR-BIL-07): the payment-out voucher (phiếu chi).\n - DOCUMENT_TYPE_PURCHASE_ORDER: Release 11.0 (FR-INV-16): the purchase order."
     },
     "v1EndSupportGrantResponse": {
       "type": "object",
@@ -16005,7 +16005,7 @@
         "NOTIFICATION_TYPE_PAYMENT_REMINDER",
         "NOTIFICATION_TYPE_PURCHASE_ORDER"
       ],
-      "description": "NotificationType is one e-mail a garage can switch off (FR-NOT-05,\nFR-INV-04).\n\n - NOTIFICATION_TYPE_QUOTE_READY: Customer: the quote with the link to approve it. Essential.\n - NOTIFICATION_TYPE_QUOTE_DECIDED: Staff: a quote was approved or rejected.\n - NOTIFICATION_TYPE_VEHICLE_READY: Customer: the vehicle is ready for pick-up.\n - NOTIFICATION_TYPE_PAYMENT_RECEIVED: Customer: a payment was recorded and a balance is left.\n - NOTIFICATION_TYPE_SETTLEMENT_RECEIPT: Customer: the settlement is paid; the receipt is attached. Essential.\n - NOTIFICATION_TYPE_SETTLEMENT_PAID: Staff: a settlement is fully paid.\n - NOTIFICATION_TYPE_LOW_STOCK: Staff: a part fell to or under its reorder threshold.\n - NOTIFICATION_TYPE_PAYMENT_REMINDER: Release 13.0 (FR-REC-03): a reminder that a settlement is overdue.\n - NOTIFICATION_TYPE_PURCHASE_ORDER: Release 13.0 (FR-INV-16): a purchase order e-mailed to a supplier. Not\nswitchable: it appears in the log only, never in the settings."
+      "description": "NotificationType is one e-mail a garage can switch off (FR-NOT-05,\nFR-INV-04).\n\n - NOTIFICATION_TYPE_QUOTE_READY: Customer: the quote with the link to approve it. Essential.\n - NOTIFICATION_TYPE_QUOTE_DECIDED: Staff: a quote was approved or rejected.\n - NOTIFICATION_TYPE_VEHICLE_READY: Customer: the vehicle is ready for pick-up.\n - NOTIFICATION_TYPE_PAYMENT_RECEIVED: Customer: a payment was recorded and a balance is left.\n - NOTIFICATION_TYPE_SETTLEMENT_RECEIPT: Customer: the settlement is paid; the receipt is attached. Essential.\n - NOTIFICATION_TYPE_SETTLEMENT_PAID: Staff: a settlement is fully paid.\n - NOTIFICATION_TYPE_LOW_STOCK: Staff: a part fell to or under its reorder threshold.\n - NOTIFICATION_TYPE_PAYMENT_REMINDER: Release 11.0 (FR-REC-03): a reminder that a settlement is overdue.\n - NOTIFICATION_TYPE_PURCHASE_ORDER: Release 11.0 (FR-INV-16): a purchase order e-mailed to a supplier. Not\nswitchable: it appears in the log only, never in the settings."
     },
     "v1NotificationTypeSetting": {
       "type": "object",
@@ -16966,7 +16966,7 @@
         "PLATFORM_PERMISSION_SUPPORT_WRITE",
         "PLATFORM_PERMISSION_AUDIT_READ"
       ],
-      "description": "PlatformPermission is one action a platform user may perform (FR-IAM-10).\nThe catalogue is fixed and grouped by module, like the garage catalogue,\nbut it is a separate scope: it has no garage. A write permission includes\nthe read permission of its module. A Platform Admin (configured in the\ndeployment) holds every permission; admin staff hold the union of the\nroles of their platform staff groups. Permissions are evaluated on every\nrequest from the database, so a removal applies at once.\n\n - PLATFORM_PERMISSION_PLAN_READ: Plans, and the platform payment details.\n - PLATFORM_PERMISSION_SUBSCRIPTION_READ: Subscriptions, payment requests and credit.\n - PLATFORM_PERMISSION_STATS_READ: Platform dashboards (Phase 12).\n - PLATFORM_PERMISSION_GARAGE_DIRECTORY_READ: Names and owners of garages, no business data.\n - PLATFORM_PERMISSION_USER_READ: Look up a user; never password or token data.\n - PLATFORM_PERMISSION_PLATFORM_STAFF_READ: Platform roles, groups, staff and invitations.\n - PLATFORM_PERMISSION_SUPPORT_READ: Open and use support grants (Release 8.2).\n - PLATFORM_PERMISSION_AUDIT_READ: Read the platform audit log."
+      "description": "PlatformPermission is one action a platform user may perform (FR-IAM-10).\nThe catalogue is fixed and grouped by module, like the garage catalogue,\nbut it is a separate scope: it has no garage. A write permission includes\nthe read permission of its module. A Platform Admin (configured in the\ndeployment) holds every permission; admin staff hold the union of the\nroles of their platform staff groups. Permissions are evaluated on every\nrequest from the database, so a removal applies at once.\n\n - PLATFORM_PERMISSION_PLAN_READ: Plans, and the platform payment details.\n - PLATFORM_PERMISSION_SUBSCRIPTION_READ: Subscriptions, payment requests and credit.\n - PLATFORM_PERMISSION_STATS_READ: Platform dashboards (Phase 14).\n - PLATFORM_PERMISSION_GARAGE_DIRECTORY_READ: Names and owners of garages, no business data.\n - PLATFORM_PERMISSION_USER_READ: Look up a user; never password or token data.\n - PLATFORM_PERMISSION_PLATFORM_STAFF_READ: Platform roles, groups, staff and invitations.\n - PLATFORM_PERMISSION_SUPPORT_READ: Open and use support grants (Release 8.2).\n - PLATFORM_PERMISSION_AUDIT_READ: Read the platform audit log."
     },
     "v1PlatformPermissionInfo": {
       "type": "object",
@@ -17820,7 +17820,7 @@
         },
         "channel": {
           "type": "string",
-          "description": "\"email\" today; push joins with Release 11.0.",
+          "description": "\"email\" today; push joins with Release 16.0.",
           "readOnly": true
         },
         "outcome": {
@@ -19761,7 +19761,7 @@
           "readOnly": true
         }
       },
-      "description": "Supplier is a business that sells parts to the garage, kept in the\ngarage's directory (FR-SUP-01). It is not a customer; insurers are not\nsuppliers either and come back in their own record in Phase 17.",
+      "description": "Supplier is a business that sells parts to the garage, kept in the\ngarage's directory (FR-SUP-01). It is not a customer; insurers are not\nsuppliers either and come back in their own record in Phase 18.",
       "required": [
         "name"
       ]

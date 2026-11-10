@@ -35,9 +35,9 @@ const (
 	DocumentType_DOCUMENT_TYPE_PAYMENT_VOUCHER DocumentType = 4
 	DocumentType_DOCUMENT_TYPE_GOODS_RECEIPT   DocumentType = 5
 	DocumentType_DOCUMENT_TYPE_STOCK_ISSUE     DocumentType = 6
-	// Release 13.0 (FR-BIL-07): the payment-out voucher (phiếu chi).
+	// Release 11.0 (FR-BIL-07): the payment-out voucher (phiếu chi).
 	DocumentType_DOCUMENT_TYPE_PAYMENT_OUT_VOUCHER DocumentType = 7
-	// Release 13.0 (FR-INV-16): the purchase order.
+	// Release 11.0 (FR-INV-16): the purchase order.
 	DocumentType_DOCUMENT_TYPE_PURCHASE_ORDER DocumentType = 8
 )
 

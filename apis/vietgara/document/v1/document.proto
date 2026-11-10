@@ -129,9 +129,9 @@ enum DocumentType {
   DOCUMENT_TYPE_PAYMENT_VOUCHER = 4;
   DOCUMENT_TYPE_GOODS_RECEIPT = 5;
   DOCUMENT_TYPE_STOCK_ISSUE = 6;
-  // Release 13.0 (FR-BIL-07): the payment-out voucher (phiếu chi).
+  // Release 11.0 (FR-BIL-07): the payment-out voucher (phiếu chi).
   DOCUMENT_TYPE_PAYMENT_OUT_VOUCHER = 7;
-  // Release 13.0 (FR-INV-16): the purchase order.
+  // Release 11.0 (FR-INV-16): the purchase order.
   DOCUMENT_TYPE_PURCHASE_ORDER = 8;
 }
 
@@ -208,7 +208,7 @@ message PrintStockIssuePdfRequest {
 // works (HLD Section 2: a module never queries another module's tables
 // directly), with a built-in template per document type, paper size and
 // version (Release 10.0; a garage designing its own templates is FR-DOC-03,
-// Phase 14). Each RPC needs the same
+// Phase 13). Each RPC needs the same
 // permission as the data it renders (quote.read, billing.read,
 // inventory.read), not a permission of its own.
 service DocumentService {
@@ -326,7 +326,7 @@ service DocumentService {
     option (google.api.http) = {post: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue/pdf:print"};
   }
 
-  // FR-BIL-07 (Release 13.0): a payment-out voucher (phiếu chi) as a PDF.
+  // FR-BIL-07 (Release 11.0): a payment-out voucher (phiếu chi) as a PDF.
   rpc ExportPaymentOutVoucherPdf(ExportPaymentOutVoucherPdfRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}/pdf"};
   }
@@ -335,7 +335,7 @@ service DocumentService {
     option (google.api.http) = {post: "/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}/pdf:print"};
   }
 
-  // FR-INV-16 (Release 13.0): a purchase order as a PDF.
+  // FR-INV-16 (Release 11.0): a purchase order as a PDF.
   rpc ExportPurchaseOrderPdf(ExportPurchaseOrderPdfRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}/pdf"};
   }
@@ -344,19 +344,19 @@ service DocumentService {
     option (google.api.http) = {post: "/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}/pdf:print"};
   }
 
-  // FR-DOC-02 (Release 13.0): the receivables list
+  // FR-DOC-02 (Release 11.0): the receivables list
   // (ReceivableService.ListReceivables) as an Excel workbook.
   rpc ExportReceivablesExcel(ExportReceivablesExcelRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/receivables/excel"};
   }
 
-  // FR-REC-04 (Release 13.0): the reconciliation of a period
+  // FR-REC-04 (Release 11.0): the reconciliation of a period
   // (ReceivableService.GetReconciliationReport) as an Excel workbook.
   rpc ExportReceivableReconciliationExcel(ExportReceivableReconciliationExcelRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/receivable-reconciliation/excel"};
   }
 
-  // FR-INV-17 (Release 13.0): the supplier payables as an Excel workbook.
+  // FR-INV-17 (Release 11.0): the supplier payables as an Excel workbook.
   rpc ExportSupplierPayablesExcel(ExportSupplierPayablesExcelRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/supplier-payables/excel"};
   }
