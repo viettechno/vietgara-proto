@@ -11111,6 +11111,39 @@
         ]
       }
     },
+    "/api/v1/me/password:change": {
+      "post": {
+        "summary": "FR-IAM-13 (Release 10.4): changes the signed-in user's password, after\nthe current one. The new password follows the sign-up rule (8 to 72\nbytes). Every other session of the user is revoked, and the call answers a\nnew one; a turned-on MFA is not asked again. Errors: PASSWORD_INCORRECT\n(403), NO_PASSWORD (412, the user signs in with Google only) and\nVALIDATION on new_password.",
+        "operationId": "AuthService_ChangePassword",
+        "responses": {
+          "200": {
+            "description": "A new session: every other one of the user was revoked.",
+            "schema": {
+              "$ref": "#/definitions/v1Session"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ChangePasswordRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
     "/api/v1/me/platform-invitations": {
       "get": {
         "operationId": "PlatformAccessService_ListMyPlatformInvitations",
@@ -12793,6 +12826,32 @@
         "CANDIDATE_MEMBERSHIP_INVITED"
       ],
       "description": "CandidateMembership is where a looked-up user stands with the garage."
+    },
+    "v1ChangePasswordRequest": {
+      "type": "object",
+      "properties": {
+        "currentPassword": {
+          "type": "string",
+          "description": "The signed-in user's current password."
+        },
+        "newPassword": {
+          "type": "string",
+          "description": "The new password: 8 to 72 bytes."
+        }
+      },
+      "required": [
+        "currentPassword",
+        "newPassword"
+      ]
+    },
+    "v1ChangePasswordResponse": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/definitions/v1Session",
+          "description": "A new session: every other one of the user was revoked."
+        }
+      }
     },
     "v1ChangeVehicleOwnerResponse": {
       "type": "object",

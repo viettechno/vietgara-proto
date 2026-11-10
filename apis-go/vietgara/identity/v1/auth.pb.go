@@ -690,6 +690,105 @@ func (x *UnlinkGoogleResponse) GetSession() *Session {
 	return nil
 }
 
+type ChangePasswordRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The signed-in user's current password.
+	CurrentPassword string `protobuf:"bytes,1,opt,name=current_password,json=currentPassword,proto3" json:"current_password,omitempty"`
+	// The new password: 8 to 72 bytes.
+	NewPassword   string `protobuf:"bytes,2,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChangePasswordRequest) Reset() {
+	*x = ChangePasswordRequest{}
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangePasswordRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangePasswordRequest) ProtoMessage() {}
+
+func (x *ChangePasswordRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangePasswordRequest.ProtoReflect.Descriptor instead.
+func (*ChangePasswordRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ChangePasswordRequest) GetCurrentPassword() string {
+	if x != nil {
+		return x.CurrentPassword
+	}
+	return ""
+}
+
+func (x *ChangePasswordRequest) GetNewPassword() string {
+	if x != nil {
+		return x.NewPassword
+	}
+	return ""
+}
+
+type ChangePasswordResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// A new session: every other one of the user was revoked.
+	Session       *Session `protobuf:"bytes,1,opt,name=session,proto3" json:"session,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChangePasswordResponse) Reset() {
+	*x = ChangePasswordResponse{}
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangePasswordResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangePasswordResponse) ProtoMessage() {}
+
+func (x *ChangePasswordResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangePasswordResponse.ProtoReflect.Descriptor instead.
+func (*ChangePasswordResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ChangePasswordResponse) GetSession() *Session {
+	if x != nil {
+		return x.Session
+	}
+	return nil
+}
+
 type SignInWithGoogleIdTokenRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The ID token (a JWT) returned by Google Sign-In on the device.
@@ -702,7 +801,7 @@ type SignInWithGoogleIdTokenRequest struct {
 
 func (x *SignInWithGoogleIdTokenRequest) Reset() {
 	*x = SignInWithGoogleIdTokenRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[12]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -714,7 +813,7 @@ func (x *SignInWithGoogleIdTokenRequest) String() string {
 func (*SignInWithGoogleIdTokenRequest) ProtoMessage() {}
 
 func (x *SignInWithGoogleIdTokenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[12]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -727,7 +826,7 @@ func (x *SignInWithGoogleIdTokenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SignInWithGoogleIdTokenRequest.ProtoReflect.Descriptor instead.
 func (*SignInWithGoogleIdTokenRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{12}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *SignInWithGoogleIdTokenRequest) GetIdToken() string {
@@ -753,7 +852,7 @@ type SignInWithGoogleIdTokenResponse struct {
 
 func (x *SignInWithGoogleIdTokenResponse) Reset() {
 	*x = SignInWithGoogleIdTokenResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[13]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -765,7 +864,7 @@ func (x *SignInWithGoogleIdTokenResponse) String() string {
 func (*SignInWithGoogleIdTokenResponse) ProtoMessage() {}
 
 func (x *SignInWithGoogleIdTokenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[13]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -778,7 +877,7 @@ func (x *SignInWithGoogleIdTokenResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SignInWithGoogleIdTokenResponse.ProtoReflect.Descriptor instead.
 func (*SignInWithGoogleIdTokenResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{13}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *SignInWithGoogleIdTokenResponse) GetSession() *Session {
@@ -799,7 +898,7 @@ type VerifyMfaChallengeRequest struct {
 
 func (x *VerifyMfaChallengeRequest) Reset() {
 	*x = VerifyMfaChallengeRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[14]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -811,7 +910,7 @@ func (x *VerifyMfaChallengeRequest) String() string {
 func (*VerifyMfaChallengeRequest) ProtoMessage() {}
 
 func (x *VerifyMfaChallengeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[14]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -824,7 +923,7 @@ func (x *VerifyMfaChallengeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VerifyMfaChallengeRequest.ProtoReflect.Descriptor instead.
 func (*VerifyMfaChallengeRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{14}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *VerifyMfaChallengeRequest) GetChallengeToken() string {
@@ -850,7 +949,7 @@ type VerifyMfaChallengeResponse struct {
 
 func (x *VerifyMfaChallengeResponse) Reset() {
 	*x = VerifyMfaChallengeResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[15]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -862,7 +961,7 @@ func (x *VerifyMfaChallengeResponse) String() string {
 func (*VerifyMfaChallengeResponse) ProtoMessage() {}
 
 func (x *VerifyMfaChallengeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[15]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -875,7 +974,7 @@ func (x *VerifyMfaChallengeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VerifyMfaChallengeResponse.ProtoReflect.Descriptor instead.
 func (*VerifyMfaChallengeResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{15}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *VerifyMfaChallengeResponse) GetSession() *Session {
@@ -894,7 +993,7 @@ type RefreshTokenRequest struct {
 
 func (x *RefreshTokenRequest) Reset() {
 	*x = RefreshTokenRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[16]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -906,7 +1005,7 @@ func (x *RefreshTokenRequest) String() string {
 func (*RefreshTokenRequest) ProtoMessage() {}
 
 func (x *RefreshTokenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[16]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -919,7 +1018,7 @@ func (x *RefreshTokenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RefreshTokenRequest.ProtoReflect.Descriptor instead.
 func (*RefreshTokenRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{16}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *RefreshTokenRequest) GetRefreshToken() string {
@@ -938,7 +1037,7 @@ type RefreshTokenResponse struct {
 
 func (x *RefreshTokenResponse) Reset() {
 	*x = RefreshTokenResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[17]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -950,7 +1049,7 @@ func (x *RefreshTokenResponse) String() string {
 func (*RefreshTokenResponse) ProtoMessage() {}
 
 func (x *RefreshTokenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[17]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -963,7 +1062,7 @@ func (x *RefreshTokenResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RefreshTokenResponse.ProtoReflect.Descriptor instead.
 func (*RefreshTokenResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{17}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *RefreshTokenResponse) GetSession() *Session {
@@ -982,7 +1081,7 @@ type LogoutRequest struct {
 
 func (x *LogoutRequest) Reset() {
 	*x = LogoutRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[18]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -994,7 +1093,7 @@ func (x *LogoutRequest) String() string {
 func (*LogoutRequest) ProtoMessage() {}
 
 func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[18]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1007,7 +1106,7 @@ func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutRequest.ProtoReflect.Descriptor instead.
 func (*LogoutRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{18}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *LogoutRequest) GetRefreshToken() string {
@@ -1025,7 +1124,7 @@ type LogoutResponse struct {
 
 func (x *LogoutResponse) Reset() {
 	*x = LogoutResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[19]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1037,7 +1136,7 @@ func (x *LogoutResponse) String() string {
 func (*LogoutResponse) ProtoMessage() {}
 
 func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[19]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1050,7 +1149,7 @@ func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutResponse.ProtoReflect.Descriptor instead.
 func (*LogoutResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{19}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{21}
 }
 
 type SendEmailVerificationOtpRequest struct {
@@ -1061,7 +1160,7 @@ type SendEmailVerificationOtpRequest struct {
 
 func (x *SendEmailVerificationOtpRequest) Reset() {
 	*x = SendEmailVerificationOtpRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[20]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1073,7 +1172,7 @@ func (x *SendEmailVerificationOtpRequest) String() string {
 func (*SendEmailVerificationOtpRequest) ProtoMessage() {}
 
 func (x *SendEmailVerificationOtpRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[20]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1086,7 +1185,7 @@ func (x *SendEmailVerificationOtpRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendEmailVerificationOtpRequest.ProtoReflect.Descriptor instead.
 func (*SendEmailVerificationOtpRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{20}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{22}
 }
 
 type SendEmailVerificationOtpResponse struct {
@@ -1098,7 +1197,7 @@ type SendEmailVerificationOtpResponse struct {
 
 func (x *SendEmailVerificationOtpResponse) Reset() {
 	*x = SendEmailVerificationOtpResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[21]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1110,7 +1209,7 @@ func (x *SendEmailVerificationOtpResponse) String() string {
 func (*SendEmailVerificationOtpResponse) ProtoMessage() {}
 
 func (x *SendEmailVerificationOtpResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[21]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1123,7 +1222,7 @@ func (x *SendEmailVerificationOtpResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendEmailVerificationOtpResponse.ProtoReflect.Descriptor instead.
 func (*SendEmailVerificationOtpResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{21}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *SendEmailVerificationOtpResponse) GetChallenge() *OtpChallenge {
@@ -1145,7 +1244,7 @@ type VerifyEmailRequest struct {
 
 func (x *VerifyEmailRequest) Reset() {
 	*x = VerifyEmailRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[22]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1157,7 +1256,7 @@ func (x *VerifyEmailRequest) String() string {
 func (*VerifyEmailRequest) ProtoMessage() {}
 
 func (x *VerifyEmailRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[22]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1170,7 +1269,7 @@ func (x *VerifyEmailRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VerifyEmailRequest.ProtoReflect.Descriptor instead.
 func (*VerifyEmailRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{22}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *VerifyEmailRequest) GetOtpCode() string {
@@ -1196,7 +1295,7 @@ type VerifyEmailResponse struct {
 
 func (x *VerifyEmailResponse) Reset() {
 	*x = VerifyEmailResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[23]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1208,7 +1307,7 @@ func (x *VerifyEmailResponse) String() string {
 func (*VerifyEmailResponse) ProtoMessage() {}
 
 func (x *VerifyEmailResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[23]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1221,7 +1320,7 @@ func (x *VerifyEmailResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VerifyEmailResponse.ProtoReflect.Descriptor instead.
 func (*VerifyEmailResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{23}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *VerifyEmailResponse) GetSession() *Session {
@@ -1240,7 +1339,7 @@ type RequestPasswordResetRequest struct {
 
 func (x *RequestPasswordResetRequest) Reset() {
 	*x = RequestPasswordResetRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[24]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1252,7 +1351,7 @@ func (x *RequestPasswordResetRequest) String() string {
 func (*RequestPasswordResetRequest) ProtoMessage() {}
 
 func (x *RequestPasswordResetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[24]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1265,7 +1364,7 @@ func (x *RequestPasswordResetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestPasswordResetRequest.ProtoReflect.Descriptor instead.
 func (*RequestPasswordResetRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{24}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *RequestPasswordResetRequest) GetEmail() string {
@@ -1284,7 +1383,7 @@ type RequestPasswordResetResponse struct {
 
 func (x *RequestPasswordResetResponse) Reset() {
 	*x = RequestPasswordResetResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[25]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1296,7 +1395,7 @@ func (x *RequestPasswordResetResponse) String() string {
 func (*RequestPasswordResetResponse) ProtoMessage() {}
 
 func (x *RequestPasswordResetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[25]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1309,7 +1408,7 @@ func (x *RequestPasswordResetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestPasswordResetResponse.ProtoReflect.Descriptor instead.
 func (*RequestPasswordResetResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{25}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *RequestPasswordResetResponse) GetChallenge() *OtpChallenge {
@@ -1329,7 +1428,7 @@ type VerifyPasswordResetOtpRequest struct {
 
 func (x *VerifyPasswordResetOtpRequest) Reset() {
 	*x = VerifyPasswordResetOtpRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[26]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1341,7 +1440,7 @@ func (x *VerifyPasswordResetOtpRequest) String() string {
 func (*VerifyPasswordResetOtpRequest) ProtoMessage() {}
 
 func (x *VerifyPasswordResetOtpRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[26]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1354,7 +1453,7 @@ func (x *VerifyPasswordResetOtpRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VerifyPasswordResetOtpRequest.ProtoReflect.Descriptor instead.
 func (*VerifyPasswordResetOtpRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{26}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *VerifyPasswordResetOtpRequest) GetEmail() string {
@@ -1382,7 +1481,7 @@ type VerifyPasswordResetOtpResponse struct {
 
 func (x *VerifyPasswordResetOtpResponse) Reset() {
 	*x = VerifyPasswordResetOtpResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[27]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1394,7 +1493,7 @@ func (x *VerifyPasswordResetOtpResponse) String() string {
 func (*VerifyPasswordResetOtpResponse) ProtoMessage() {}
 
 func (x *VerifyPasswordResetOtpResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[27]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1407,7 +1506,7 @@ func (x *VerifyPasswordResetOtpResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VerifyPasswordResetOtpResponse.ProtoReflect.Descriptor instead.
 func (*VerifyPasswordResetOtpResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{27}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *VerifyPasswordResetOtpResponse) GetResetToken() string {
@@ -1435,7 +1534,7 @@ type ResetPasswordRequest struct {
 
 func (x *ResetPasswordRequest) Reset() {
 	*x = ResetPasswordRequest{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[28]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1447,7 +1546,7 @@ func (x *ResetPasswordRequest) String() string {
 func (*ResetPasswordRequest) ProtoMessage() {}
 
 func (x *ResetPasswordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[28]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1460,7 +1559,7 @@ func (x *ResetPasswordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResetPasswordRequest.ProtoReflect.Descriptor instead.
 func (*ResetPasswordRequest) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{28}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *ResetPasswordRequest) GetResetToken() string {
@@ -1485,7 +1584,7 @@ type ResetPasswordResponse struct {
 
 func (x *ResetPasswordResponse) Reset() {
 	*x = ResetPasswordResponse{}
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[29]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1497,7 +1596,7 @@ func (x *ResetPasswordResponse) String() string {
 func (*ResetPasswordResponse) ProtoMessage() {}
 
 func (x *ResetPasswordResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[29]
+	mi := &file_vietgara_identity_v1_auth_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1510,7 +1609,7 @@ func (x *ResetPasswordResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResetPasswordResponse.ProtoReflect.Descriptor instead.
 func (*ResetPasswordResponse) Descriptor() ([]byte, []int) {
-	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{29}
+	return file_vietgara_identity_v1_auth_proto_rawDescGZIP(), []int{31}
 }
 
 var File_vietgara_identity_v1_auth_proto protoreflect.FileDescriptor
@@ -1561,6 +1660,11 @@ const file_vietgara_identity_v1_auth_proto_rawDesc = "" +
 	"\x13UnlinkGoogleRequest\x12\x1f\n" +
 	"\bpassword\x18\x01 \x01(\tB\x03\xe0A\x02R\bpassword\"O\n" +
 	"\x14UnlinkGoogleResponse\x127\n" +
+	"\asession\x18\x01 \x01(\v2\x1d.vietgara.identity.v1.SessionR\asession\"o\n" +
+	"\x15ChangePasswordRequest\x12.\n" +
+	"\x10current_password\x18\x01 \x01(\tB\x03\xe0A\x02R\x0fcurrentPassword\x12&\n" +
+	"\fnew_password\x18\x02 \x01(\tB\x03\xe0A\x02R\vnewPassword\"Q\n" +
+	"\x16ChangePasswordResponse\x127\n" +
 	"\asession\x18\x01 \x01(\v2\x1d.vietgara.identity.v1.SessionR\asession\"v\n" +
 	"\x1eSignInWithGoogleIdTokenRequest\x12\x1e\n" +
 	"\bid_token\x18\x01 \x01(\tB\x03\xe0A\x02R\aidToken\x124\n" +
@@ -1603,7 +1707,7 @@ const file_vietgara_identity_v1_auth_proto_rawDesc = "" +
 	"\vreset_token\x18\x01 \x01(\tB\x03\xe0A\x02R\n" +
 	"resetToken\x12&\n" +
 	"\fnew_password\x18\x02 \x01(\tB\x03\xe0A\x02R\vnewPassword\"\x17\n" +
-	"\x15ResetPasswordResponse2\xb6\x11\n" +
+	"\x15ResetPasswordResponse2\xd4\x12\n" +
 	"\vAuthService\x12\x84\x01\n" +
 	"\bRegister\x12%.vietgara.identity.v1.RegisterRequest\x1a&.vietgara.identity.v1.RegisterResponse\")\x82\xd3\xe4\x93\x02#:\x01*b\asession\"\x15/api/v1/auth/register\x12x\n" +
 	"\x05Login\x12\".vietgara.identity.v1.LoginRequest\x1a#.vietgara.identity.v1.LoginResponse\"&\x82\xd3\xe4\x93\x02 :\x01*b\asession\"\x12/api/v1/auth/login\x12\xb8\x01\n" +
@@ -1616,7 +1720,8 @@ const file_vietgara_identity_v1_auth_proto_rawDesc = "" +
 	"\x12CompleteGoogleLink\x12/.vietgara.identity.v1.CompleteGoogleLinkRequest\x1a0.vietgara.identity.v1.CompleteGoogleLinkResponse\"0\x82\xd3\xe4\x93\x02*:\x01*b\x04user\"\x1f/api/v1/me/google-link:complete\x12\x88\x01\n" +
 	"\n" +
 	"LinkGoogle\x12'.vietgara.identity.v1.LinkGoogleRequest\x1a(.vietgara.identity.v1.LinkGoogleResponse\"'\x82\xd3\xe4\x93\x02!:\x01*b\x04user\"\x16/api/v1/me/google-link\x12\x98\x01\n" +
-	"\fUnlinkGoogle\x12).vietgara.identity.v1.UnlinkGoogleRequest\x1a*.vietgara.identity.v1.UnlinkGoogleResponse\"1\x82\xd3\xe4\x93\x02+:\x01*b\asession\"\x1d/api/v1/me/google-link:unlink\x12\xb4\x01\n" +
+	"\fUnlinkGoogle\x12).vietgara.identity.v1.UnlinkGoogleRequest\x1a*.vietgara.identity.v1.UnlinkGoogleResponse\"1\x82\xd3\xe4\x93\x02+:\x01*b\asession\"\x1d/api/v1/me/google-link:unlink\x12\x9b\x01\n" +
+	"\x0eChangePassword\x12+.vietgara.identity.v1.ChangePasswordRequest\x1a,.vietgara.identity.v1.ChangePasswordResponse\".\x82\xd3\xe4\x93\x02(:\x01*b\asession\"\x1a/api/v1/me/password:change\x12\xb4\x01\n" +
 	"\x14RequestPasswordReset\x121.vietgara.identity.v1.RequestPasswordResetRequest\x1a2.vietgara.identity.v1.RequestPasswordResetResponse\"5\x82\xd3\xe4\x93\x02/:\x01*b\tchallenge\"\x1f/api/v1/auth/password-reset/otp\x12\xbc\x01\n" +
 	"\x16VerifyPasswordResetOtp\x123.vietgara.identity.v1.VerifyPasswordResetOtpRequest\x1a4.vietgara.identity.v1.VerifyPasswordResetOtpResponse\"7\x82\xd3\xe4\x93\x021:\x01*\",/api/v1/auth/password-reset/otp/verification\x12\x90\x01\n" +
 	"\rResetPassword\x12*.vietgara.identity.v1.ResetPasswordRequest\x1a+.vietgara.identity.v1.ResetPasswordResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/api/v1/auth/password-resetBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/identity/v1;identityv1b\x06proto3"
@@ -1633,7 +1738,7 @@ func file_vietgara_identity_v1_auth_proto_rawDescGZIP() []byte {
 	return file_vietgara_identity_v1_auth_proto_rawDescData
 }
 
-var file_vietgara_identity_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
+var file_vietgara_identity_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
 var file_vietgara_identity_v1_auth_proto_goTypes = []any{
 	(*Session)(nil),                          // 0: vietgara.identity.v1.Session
 	(*OtpChallenge)(nil),                     // 1: vietgara.identity.v1.OtpChallenge
@@ -1647,80 +1752,85 @@ var file_vietgara_identity_v1_auth_proto_goTypes = []any{
 	(*LinkGoogleResponse)(nil),               // 9: vietgara.identity.v1.LinkGoogleResponse
 	(*UnlinkGoogleRequest)(nil),              // 10: vietgara.identity.v1.UnlinkGoogleRequest
 	(*UnlinkGoogleResponse)(nil),             // 11: vietgara.identity.v1.UnlinkGoogleResponse
-	(*SignInWithGoogleIdTokenRequest)(nil),   // 12: vietgara.identity.v1.SignInWithGoogleIdTokenRequest
-	(*SignInWithGoogleIdTokenResponse)(nil),  // 13: vietgara.identity.v1.SignInWithGoogleIdTokenResponse
-	(*VerifyMfaChallengeRequest)(nil),        // 14: vietgara.identity.v1.VerifyMfaChallengeRequest
-	(*VerifyMfaChallengeResponse)(nil),       // 15: vietgara.identity.v1.VerifyMfaChallengeResponse
-	(*RefreshTokenRequest)(nil),              // 16: vietgara.identity.v1.RefreshTokenRequest
-	(*RefreshTokenResponse)(nil),             // 17: vietgara.identity.v1.RefreshTokenResponse
-	(*LogoutRequest)(nil),                    // 18: vietgara.identity.v1.LogoutRequest
-	(*LogoutResponse)(nil),                   // 19: vietgara.identity.v1.LogoutResponse
-	(*SendEmailVerificationOtpRequest)(nil),  // 20: vietgara.identity.v1.SendEmailVerificationOtpRequest
-	(*SendEmailVerificationOtpResponse)(nil), // 21: vietgara.identity.v1.SendEmailVerificationOtpResponse
-	(*VerifyEmailRequest)(nil),               // 22: vietgara.identity.v1.VerifyEmailRequest
-	(*VerifyEmailResponse)(nil),              // 23: vietgara.identity.v1.VerifyEmailResponse
-	(*RequestPasswordResetRequest)(nil),      // 24: vietgara.identity.v1.RequestPasswordResetRequest
-	(*RequestPasswordResetResponse)(nil),     // 25: vietgara.identity.v1.RequestPasswordResetResponse
-	(*VerifyPasswordResetOtpRequest)(nil),    // 26: vietgara.identity.v1.VerifyPasswordResetOtpRequest
-	(*VerifyPasswordResetOtpResponse)(nil),   // 27: vietgara.identity.v1.VerifyPasswordResetOtpResponse
-	(*ResetPasswordRequest)(nil),             // 28: vietgara.identity.v1.ResetPasswordRequest
-	(*ResetPasswordResponse)(nil),            // 29: vietgara.identity.v1.ResetPasswordResponse
-	(*User)(nil),                             // 30: vietgara.identity.v1.User
-	(*timestamppb.Timestamp)(nil),            // 31: google.protobuf.Timestamp
-	(Locale)(0),                              // 32: vietgara.identity.v1.Locale
+	(*ChangePasswordRequest)(nil),            // 12: vietgara.identity.v1.ChangePasswordRequest
+	(*ChangePasswordResponse)(nil),           // 13: vietgara.identity.v1.ChangePasswordResponse
+	(*SignInWithGoogleIdTokenRequest)(nil),   // 14: vietgara.identity.v1.SignInWithGoogleIdTokenRequest
+	(*SignInWithGoogleIdTokenResponse)(nil),  // 15: vietgara.identity.v1.SignInWithGoogleIdTokenResponse
+	(*VerifyMfaChallengeRequest)(nil),        // 16: vietgara.identity.v1.VerifyMfaChallengeRequest
+	(*VerifyMfaChallengeResponse)(nil),       // 17: vietgara.identity.v1.VerifyMfaChallengeResponse
+	(*RefreshTokenRequest)(nil),              // 18: vietgara.identity.v1.RefreshTokenRequest
+	(*RefreshTokenResponse)(nil),             // 19: vietgara.identity.v1.RefreshTokenResponse
+	(*LogoutRequest)(nil),                    // 20: vietgara.identity.v1.LogoutRequest
+	(*LogoutResponse)(nil),                   // 21: vietgara.identity.v1.LogoutResponse
+	(*SendEmailVerificationOtpRequest)(nil),  // 22: vietgara.identity.v1.SendEmailVerificationOtpRequest
+	(*SendEmailVerificationOtpResponse)(nil), // 23: vietgara.identity.v1.SendEmailVerificationOtpResponse
+	(*VerifyEmailRequest)(nil),               // 24: vietgara.identity.v1.VerifyEmailRequest
+	(*VerifyEmailResponse)(nil),              // 25: vietgara.identity.v1.VerifyEmailResponse
+	(*RequestPasswordResetRequest)(nil),      // 26: vietgara.identity.v1.RequestPasswordResetRequest
+	(*RequestPasswordResetResponse)(nil),     // 27: vietgara.identity.v1.RequestPasswordResetResponse
+	(*VerifyPasswordResetOtpRequest)(nil),    // 28: vietgara.identity.v1.VerifyPasswordResetOtpRequest
+	(*VerifyPasswordResetOtpResponse)(nil),   // 29: vietgara.identity.v1.VerifyPasswordResetOtpResponse
+	(*ResetPasswordRequest)(nil),             // 30: vietgara.identity.v1.ResetPasswordRequest
+	(*ResetPasswordResponse)(nil),            // 31: vietgara.identity.v1.ResetPasswordResponse
+	(*User)(nil),                             // 32: vietgara.identity.v1.User
+	(*timestamppb.Timestamp)(nil),            // 33: google.protobuf.Timestamp
+	(Locale)(0),                              // 34: vietgara.identity.v1.Locale
 }
 var file_vietgara_identity_v1_auth_proto_depIdxs = []int32{
-	30, // 0: vietgara.identity.v1.Session.user:type_name -> vietgara.identity.v1.User
-	31, // 1: vietgara.identity.v1.Session.challenge_expires_at:type_name -> google.protobuf.Timestamp
-	31, // 2: vietgara.identity.v1.OtpChallenge.expires_at:type_name -> google.protobuf.Timestamp
-	31, // 3: vietgara.identity.v1.OtpChallenge.resend_available_at:type_name -> google.protobuf.Timestamp
-	32, // 4: vietgara.identity.v1.RegisterRequest.locale:type_name -> vietgara.identity.v1.Locale
+	32, // 0: vietgara.identity.v1.Session.user:type_name -> vietgara.identity.v1.User
+	33, // 1: vietgara.identity.v1.Session.challenge_expires_at:type_name -> google.protobuf.Timestamp
+	33, // 2: vietgara.identity.v1.OtpChallenge.expires_at:type_name -> google.protobuf.Timestamp
+	33, // 3: vietgara.identity.v1.OtpChallenge.resend_available_at:type_name -> google.protobuf.Timestamp
+	34, // 4: vietgara.identity.v1.RegisterRequest.locale:type_name -> vietgara.identity.v1.Locale
 	0,  // 5: vietgara.identity.v1.RegisterResponse.session:type_name -> vietgara.identity.v1.Session
 	0,  // 6: vietgara.identity.v1.LoginResponse.session:type_name -> vietgara.identity.v1.Session
-	30, // 7: vietgara.identity.v1.CompleteGoogleLinkResponse.user:type_name -> vietgara.identity.v1.User
-	30, // 8: vietgara.identity.v1.LinkGoogleResponse.user:type_name -> vietgara.identity.v1.User
+	32, // 7: vietgara.identity.v1.CompleteGoogleLinkResponse.user:type_name -> vietgara.identity.v1.User
+	32, // 8: vietgara.identity.v1.LinkGoogleResponse.user:type_name -> vietgara.identity.v1.User
 	0,  // 9: vietgara.identity.v1.UnlinkGoogleResponse.session:type_name -> vietgara.identity.v1.Session
-	32, // 10: vietgara.identity.v1.SignInWithGoogleIdTokenRequest.locale:type_name -> vietgara.identity.v1.Locale
-	0,  // 11: vietgara.identity.v1.SignInWithGoogleIdTokenResponse.session:type_name -> vietgara.identity.v1.Session
-	0,  // 12: vietgara.identity.v1.VerifyMfaChallengeResponse.session:type_name -> vietgara.identity.v1.Session
-	0,  // 13: vietgara.identity.v1.RefreshTokenResponse.session:type_name -> vietgara.identity.v1.Session
-	1,  // 14: vietgara.identity.v1.SendEmailVerificationOtpResponse.challenge:type_name -> vietgara.identity.v1.OtpChallenge
-	0,  // 15: vietgara.identity.v1.VerifyEmailResponse.session:type_name -> vietgara.identity.v1.Session
-	1,  // 16: vietgara.identity.v1.RequestPasswordResetResponse.challenge:type_name -> vietgara.identity.v1.OtpChallenge
-	31, // 17: vietgara.identity.v1.VerifyPasswordResetOtpResponse.expires_at:type_name -> google.protobuf.Timestamp
-	2,  // 18: vietgara.identity.v1.AuthService.Register:input_type -> vietgara.identity.v1.RegisterRequest
-	4,  // 19: vietgara.identity.v1.AuthService.Login:input_type -> vietgara.identity.v1.LoginRequest
-	12, // 20: vietgara.identity.v1.AuthService.SignInWithGoogleIdToken:input_type -> vietgara.identity.v1.SignInWithGoogleIdTokenRequest
-	14, // 21: vietgara.identity.v1.AuthService.VerifyMfaChallenge:input_type -> vietgara.identity.v1.VerifyMfaChallengeRequest
-	16, // 22: vietgara.identity.v1.AuthService.RefreshToken:input_type -> vietgara.identity.v1.RefreshTokenRequest
-	18, // 23: vietgara.identity.v1.AuthService.Logout:input_type -> vietgara.identity.v1.LogoutRequest
-	20, // 24: vietgara.identity.v1.AuthService.SendEmailVerificationOtp:input_type -> vietgara.identity.v1.SendEmailVerificationOtpRequest
-	22, // 25: vietgara.identity.v1.AuthService.VerifyEmail:input_type -> vietgara.identity.v1.VerifyEmailRequest
-	6,  // 26: vietgara.identity.v1.AuthService.CompleteGoogleLink:input_type -> vietgara.identity.v1.CompleteGoogleLinkRequest
-	8,  // 27: vietgara.identity.v1.AuthService.LinkGoogle:input_type -> vietgara.identity.v1.LinkGoogleRequest
-	10, // 28: vietgara.identity.v1.AuthService.UnlinkGoogle:input_type -> vietgara.identity.v1.UnlinkGoogleRequest
-	24, // 29: vietgara.identity.v1.AuthService.RequestPasswordReset:input_type -> vietgara.identity.v1.RequestPasswordResetRequest
-	26, // 30: vietgara.identity.v1.AuthService.VerifyPasswordResetOtp:input_type -> vietgara.identity.v1.VerifyPasswordResetOtpRequest
-	28, // 31: vietgara.identity.v1.AuthService.ResetPassword:input_type -> vietgara.identity.v1.ResetPasswordRequest
-	3,  // 32: vietgara.identity.v1.AuthService.Register:output_type -> vietgara.identity.v1.RegisterResponse
-	5,  // 33: vietgara.identity.v1.AuthService.Login:output_type -> vietgara.identity.v1.LoginResponse
-	13, // 34: vietgara.identity.v1.AuthService.SignInWithGoogleIdToken:output_type -> vietgara.identity.v1.SignInWithGoogleIdTokenResponse
-	15, // 35: vietgara.identity.v1.AuthService.VerifyMfaChallenge:output_type -> vietgara.identity.v1.VerifyMfaChallengeResponse
-	17, // 36: vietgara.identity.v1.AuthService.RefreshToken:output_type -> vietgara.identity.v1.RefreshTokenResponse
-	19, // 37: vietgara.identity.v1.AuthService.Logout:output_type -> vietgara.identity.v1.LogoutResponse
-	21, // 38: vietgara.identity.v1.AuthService.SendEmailVerificationOtp:output_type -> vietgara.identity.v1.SendEmailVerificationOtpResponse
-	23, // 39: vietgara.identity.v1.AuthService.VerifyEmail:output_type -> vietgara.identity.v1.VerifyEmailResponse
-	7,  // 40: vietgara.identity.v1.AuthService.CompleteGoogleLink:output_type -> vietgara.identity.v1.CompleteGoogleLinkResponse
-	9,  // 41: vietgara.identity.v1.AuthService.LinkGoogle:output_type -> vietgara.identity.v1.LinkGoogleResponse
-	11, // 42: vietgara.identity.v1.AuthService.UnlinkGoogle:output_type -> vietgara.identity.v1.UnlinkGoogleResponse
-	25, // 43: vietgara.identity.v1.AuthService.RequestPasswordReset:output_type -> vietgara.identity.v1.RequestPasswordResetResponse
-	27, // 44: vietgara.identity.v1.AuthService.VerifyPasswordResetOtp:output_type -> vietgara.identity.v1.VerifyPasswordResetOtpResponse
-	29, // 45: vietgara.identity.v1.AuthService.ResetPassword:output_type -> vietgara.identity.v1.ResetPasswordResponse
-	32, // [32:46] is the sub-list for method output_type
-	18, // [18:32] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	0,  // 10: vietgara.identity.v1.ChangePasswordResponse.session:type_name -> vietgara.identity.v1.Session
+	34, // 11: vietgara.identity.v1.SignInWithGoogleIdTokenRequest.locale:type_name -> vietgara.identity.v1.Locale
+	0,  // 12: vietgara.identity.v1.SignInWithGoogleIdTokenResponse.session:type_name -> vietgara.identity.v1.Session
+	0,  // 13: vietgara.identity.v1.VerifyMfaChallengeResponse.session:type_name -> vietgara.identity.v1.Session
+	0,  // 14: vietgara.identity.v1.RefreshTokenResponse.session:type_name -> vietgara.identity.v1.Session
+	1,  // 15: vietgara.identity.v1.SendEmailVerificationOtpResponse.challenge:type_name -> vietgara.identity.v1.OtpChallenge
+	0,  // 16: vietgara.identity.v1.VerifyEmailResponse.session:type_name -> vietgara.identity.v1.Session
+	1,  // 17: vietgara.identity.v1.RequestPasswordResetResponse.challenge:type_name -> vietgara.identity.v1.OtpChallenge
+	33, // 18: vietgara.identity.v1.VerifyPasswordResetOtpResponse.expires_at:type_name -> google.protobuf.Timestamp
+	2,  // 19: vietgara.identity.v1.AuthService.Register:input_type -> vietgara.identity.v1.RegisterRequest
+	4,  // 20: vietgara.identity.v1.AuthService.Login:input_type -> vietgara.identity.v1.LoginRequest
+	14, // 21: vietgara.identity.v1.AuthService.SignInWithGoogleIdToken:input_type -> vietgara.identity.v1.SignInWithGoogleIdTokenRequest
+	16, // 22: vietgara.identity.v1.AuthService.VerifyMfaChallenge:input_type -> vietgara.identity.v1.VerifyMfaChallengeRequest
+	18, // 23: vietgara.identity.v1.AuthService.RefreshToken:input_type -> vietgara.identity.v1.RefreshTokenRequest
+	20, // 24: vietgara.identity.v1.AuthService.Logout:input_type -> vietgara.identity.v1.LogoutRequest
+	22, // 25: vietgara.identity.v1.AuthService.SendEmailVerificationOtp:input_type -> vietgara.identity.v1.SendEmailVerificationOtpRequest
+	24, // 26: vietgara.identity.v1.AuthService.VerifyEmail:input_type -> vietgara.identity.v1.VerifyEmailRequest
+	6,  // 27: vietgara.identity.v1.AuthService.CompleteGoogleLink:input_type -> vietgara.identity.v1.CompleteGoogleLinkRequest
+	8,  // 28: vietgara.identity.v1.AuthService.LinkGoogle:input_type -> vietgara.identity.v1.LinkGoogleRequest
+	10, // 29: vietgara.identity.v1.AuthService.UnlinkGoogle:input_type -> vietgara.identity.v1.UnlinkGoogleRequest
+	12, // 30: vietgara.identity.v1.AuthService.ChangePassword:input_type -> vietgara.identity.v1.ChangePasswordRequest
+	26, // 31: vietgara.identity.v1.AuthService.RequestPasswordReset:input_type -> vietgara.identity.v1.RequestPasswordResetRequest
+	28, // 32: vietgara.identity.v1.AuthService.VerifyPasswordResetOtp:input_type -> vietgara.identity.v1.VerifyPasswordResetOtpRequest
+	30, // 33: vietgara.identity.v1.AuthService.ResetPassword:input_type -> vietgara.identity.v1.ResetPasswordRequest
+	3,  // 34: vietgara.identity.v1.AuthService.Register:output_type -> vietgara.identity.v1.RegisterResponse
+	5,  // 35: vietgara.identity.v1.AuthService.Login:output_type -> vietgara.identity.v1.LoginResponse
+	15, // 36: vietgara.identity.v1.AuthService.SignInWithGoogleIdToken:output_type -> vietgara.identity.v1.SignInWithGoogleIdTokenResponse
+	17, // 37: vietgara.identity.v1.AuthService.VerifyMfaChallenge:output_type -> vietgara.identity.v1.VerifyMfaChallengeResponse
+	19, // 38: vietgara.identity.v1.AuthService.RefreshToken:output_type -> vietgara.identity.v1.RefreshTokenResponse
+	21, // 39: vietgara.identity.v1.AuthService.Logout:output_type -> vietgara.identity.v1.LogoutResponse
+	23, // 40: vietgara.identity.v1.AuthService.SendEmailVerificationOtp:output_type -> vietgara.identity.v1.SendEmailVerificationOtpResponse
+	25, // 41: vietgara.identity.v1.AuthService.VerifyEmail:output_type -> vietgara.identity.v1.VerifyEmailResponse
+	7,  // 42: vietgara.identity.v1.AuthService.CompleteGoogleLink:output_type -> vietgara.identity.v1.CompleteGoogleLinkResponse
+	9,  // 43: vietgara.identity.v1.AuthService.LinkGoogle:output_type -> vietgara.identity.v1.LinkGoogleResponse
+	11, // 44: vietgara.identity.v1.AuthService.UnlinkGoogle:output_type -> vietgara.identity.v1.UnlinkGoogleResponse
+	13, // 45: vietgara.identity.v1.AuthService.ChangePassword:output_type -> vietgara.identity.v1.ChangePasswordResponse
+	27, // 46: vietgara.identity.v1.AuthService.RequestPasswordReset:output_type -> vietgara.identity.v1.RequestPasswordResetResponse
+	29, // 47: vietgara.identity.v1.AuthService.VerifyPasswordResetOtp:output_type -> vietgara.identity.v1.VerifyPasswordResetOtpResponse
+	31, // 48: vietgara.identity.v1.AuthService.ResetPassword:output_type -> vietgara.identity.v1.ResetPasswordResponse
+	34, // [34:49] is the sub-list for method output_type
+	19, // [19:34] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_identity_v1_auth_proto_init() }
@@ -1736,7 +1846,7 @@ func file_vietgara_identity_v1_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_identity_v1_auth_proto_rawDesc), len(file_vietgara_identity_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   30,
+			NumMessages:   32,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

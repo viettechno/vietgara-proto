@@ -136,6 +136,20 @@ service AuthService {
     };
   }
 
+  // FR-IAM-13 (Release 10.4): changes the signed-in user's password, after
+  // the current one. The new password follows the sign-up rule (8 to 72
+  // bytes). Every other session of the user is revoked, and the call answers a
+  // new one; a turned-on MFA is not asked again. Errors: PASSWORD_INCORRECT
+  // (403), NO_PASSWORD (412, the user signs in with Google only) and
+  // VALIDATION on new_password.
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/me/password:change"
+      body: "*"
+      response_body: "session"
+    };
+  }
+
   // Starts a password reset (FR-IAM-04): e-mails an OTP valid for 2
   // minutes. Always succeeds so user existence is not revealed.
   rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse) {
@@ -241,6 +255,18 @@ message UnlinkGoogleRequest {
 }
 
 message UnlinkGoogleResponse {
+  // A new session: every other one of the user was revoked.
+  Session session = 1;
+}
+
+message ChangePasswordRequest {
+  // The signed-in user's current password.
+  string current_password = 1 [(google.api.field_behavior) = REQUIRED];
+  // The new password: 8 to 72 bytes.
+  string new_password = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ChangePasswordResponse {
   // A new session: every other one of the user was revoked.
   Session session = 1;
 }
