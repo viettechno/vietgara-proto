@@ -169,8 +169,10 @@ type DocumentServiceClient interface {
 	// the rules of PrintQuoteEscPos (version per roll, copy mark, print log).
 	// Needs billing.read.
 	PrintPaymentVoucherEscPos(ctx context.Context, in *PrintPaymentVoucherEscPosRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
-	// FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and the
-	// base unit's first barcode, or the SKU as the barcode when it has none)
+	// FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and a Code
+	// 128 barcode of the base unit's first barcode, or of the SKU when it has
+	// none; a code that is not ASCII or too long for a readable barcode on the
+	// label is refused, INVALID_ARGUMENT)
 	// as ESC/POS for a raw label printer. Needs the permission that reads
 	// parts; nothing is logged. Another paper, copies outside 1 to 100, a part
 	// listed twice, more than 50 parts or 300 labels are refused
@@ -639,8 +641,10 @@ type DocumentServiceServer interface {
 	// the rules of PrintQuoteEscPos (version per roll, copy mark, print log).
 	// Needs billing.read.
 	PrintPaymentVoucherEscPos(context.Context, *PrintPaymentVoucherEscPosRequest) (*httpbody.HttpBody, error)
-	// FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and the
-	// base unit's first barcode, or the SKU as the barcode when it has none)
+	// FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and a Code
+	// 128 barcode of the base unit's first barcode, or of the SKU when it has
+	// none; a code that is not ASCII or too long for a readable barcode on the
+	// label is refused, INVALID_ARGUMENT)
 	// as ESC/POS for a raw label printer. Needs the permission that reads
 	// parts; nothing is logged. Another paper, copies outside 1 to 100, a part
 	// listed twice, more than 50 parts or 300 labels are refused

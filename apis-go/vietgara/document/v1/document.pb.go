@@ -1808,8 +1808,9 @@ type Printer struct {
 	Host string `protobuf:"bytes,4,opt,name=host,proto3" json:"host,omitempty"`
 	// 1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP).
 	Port int32 `protobuf:"varint,5,opt,name=port,proto3" json:"port,omitempty"`
-	// IPP only: the printer's resource path, "ipp/print" when empty. Letters,
-	// digits and - . _ ~ /, at most 200 characters. A raw printer with a path
+	// IPP only: the printer's resource path, "ipp/print" when empty; a
+	// leading "/" is removed. Letters, digits and - . _ ~ /, at most 200
+	// characters. A raw printer with a path
 	// is refused (INVALID_ARGUMENT).
 	Path string `protobuf:"bytes,6,opt,name=path,proto3" json:"path,omitempty"`
 	// Raw only, and required there: K80, K57 or LABEL_50X30. Must be
@@ -1818,7 +1819,9 @@ type Printer struct {
 	PaperSize PaperSize `protobuf:"varint,7,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
 	// The documents the apps send to this printer first. A K80 or K57 printer
 	// takes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP
-	// printer any document but PART_LABEL. Several printers may take the same
+	// printer any document but PART_LABEL. UNSPECIFIED is refused
+	// (INVALID_ARGUMENT) and a repeated type is kept once, in the order of the
+	// enum. Several printers may take the same
 	// document: the apps offer them all, those that take it first on top, by
 	// name.
 	DocumentTypes []DocumentType         `protobuf:"varint,8,rep,packed,name=document_types,json=documentTypes,proto3,enum=vietgara.document.v1.DocumentType" json:"document_types,omitempty"`

@@ -4361,7 +4361,7 @@
     },
     "/api/v1/garages/{garageId}/part-labels:print": {
       "post": {
-        "summary": "FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and the\nbase unit's first barcode, or the SKU as the barcode when it has none)\nas ESC/POS for a raw label printer. Needs the permission that reads\nparts; nothing is logged. Another paper, copies outside 1 to 100, a part\nlisted twice, more than 50 parts or 300 labels are refused\n(INVALID_ARGUMENT); a part the garage does not have is NOT_FOUND.",
+        "summary": "FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and a Code\n128 barcode of the base unit's first barcode, or of the SKU when it has\nnone; a code that is not ASCII or too long for a readable barcode on the\nlabel is refused, INVALID_ARGUMENT)\nas ESC/POS for a raw label printer. Needs the permission that reads\nparts; nothing is logged. Another paper, copies outside 1 to 100, a part\nlisted twice, more than 50 parts or 300 labels are refused\n(INVALID_ARGUMENT); a part the garage does not have is NOT_FOUND.",
         "operationId": "DocumentService_PrintPartLabels",
         "responses": {
           "200": {
@@ -17623,7 +17623,7 @@
         },
         "path": {
           "type": "string",
-          "description": "IPP only: the printer's resource path, \"ipp/print\" when empty. Letters,\ndigits and - . _ ~ /, at most 200 characters. A raw printer with a path\nis refused (INVALID_ARGUMENT)."
+          "description": "IPP only: the printer's resource path, \"ipp/print\" when empty; a\nleading \"/\" is removed. Letters, digits and - . _ ~ /, at most 200\ncharacters. A raw printer with a path\nis refused (INVALID_ARGUMENT)."
         },
         "paperSize": {
           "$ref": "#/definitions/v1PaperSize",
@@ -17634,7 +17634,7 @@
           "items": {
             "$ref": "#/definitions/v1DocumentType"
           },
-          "description": "The documents the apps send to this printer first. A K80 or K57 printer\ntakes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP\nprinter any document but PART_LABEL. Several printers may take the same\ndocument: the apps offer them all, those that take it first on top, by\nname."
+          "description": "The documents the apps send to this printer first. A K80 or K57 printer\ntakes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP\nprinter any document but PART_LABEL. UNSPECIFIED is refused\n(INVALID_ARGUMENT) and a repeated type is kept once, in the order of the\nenum. Several printers may take the same\ndocument: the apps offer them all, those that take it first on top, by\nname."
         },
         "createdAt": {
           "type": "string",

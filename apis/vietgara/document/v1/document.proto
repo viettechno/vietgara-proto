@@ -236,8 +236,9 @@ message Printer {
   string host = 4 [(google.api.field_behavior) = REQUIRED];
   // 1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP).
   int32 port = 5;
-  // IPP only: the printer's resource path, "ipp/print" when empty. Letters,
-  // digits and - . _ ~ /, at most 200 characters. A raw printer with a path
+  // IPP only: the printer's resource path, "ipp/print" when empty; a
+  // leading "/" is removed. Letters, digits and - . _ ~ /, at most 200
+  // characters. A raw printer with a path
   // is refused (INVALID_ARGUMENT).
   string path = 6;
   // Raw only, and required there: K80, K57 or LABEL_50X30. Must be
@@ -246,7 +247,9 @@ message Printer {
   PaperSize paper_size = 7;
   // The documents the apps send to this printer first. A K80 or K57 printer
   // takes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP
-  // printer any document but PART_LABEL. Several printers may take the same
+  // printer any document but PART_LABEL. UNSPECIFIED is refused
+  // (INVALID_ARGUMENT) and a repeated type is kept once, in the order of the
+  // enum. Several printers may take the same
   // document: the apps offer them all, those that take it first on top, by
   // name.
   repeated DocumentType document_types = 8;
@@ -541,8 +544,10 @@ service DocumentService {
     };
   }
 
-  // FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and the
-  // base unit's first barcode, or the SKU as the barcode when it has none)
+  // FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and a Code
+  // 128 barcode of the base unit's first barcode, or of the SKU when it has
+  // none; a code that is not ASCII or too long for a readable barcode on the
+  // label is refused, INVALID_ARGUMENT)
   // as ESC/POS for a raw label printer. Needs the permission that reads
   // parts; nothing is logged. Another paper, copies outside 1 to 100, a part
   // listed twice, more than 50 parts or 300 labels are refused
