@@ -1,6 +1,6 @@
 # Tool versions (pinned). The backend pins its runtime deps the same way --
 # see vietgara-backend/make/install.mk.
-BUF_VERSION                := 1.72.0
+BUF_VERSION                := 1.75.0
 PROTOC_GEN_GO_VERSION      := v1.36.11
 PROTOC_GEN_GO_GRPC_VERSION := v1.6.2
 # protoc-gen-grpc-gateway and protoc-gen-openapiv2 match the grpc-gateway runtime in go.mod.

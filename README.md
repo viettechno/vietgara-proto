@@ -137,7 +137,7 @@ make clean                  # remove apis-go/
 make help                   # list all targets
 ```
 
-Tool versions are pinned in `make/tools.mk` (buf `1.72.0`, protoc-gen-go
+Tool versions are pinned in `make/tools.mk` (buf `1.75.0`, protoc-gen-go
 `v1.36.11`, protoc-gen-go-grpc `v1.6.2`, grpc-gateway plugins `v2.30.0`,
 grpcui `v1.5.3`, grpcurl `v1.8.7`).
 
