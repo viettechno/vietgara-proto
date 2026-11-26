@@ -4361,7 +4361,7 @@
     },
     "/api/v1/garages/{garageId}/part-labels:print": {
       "post": {
-        "summary": "FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and the\nbase unit's first barcode, or the SKU as the barcode when it has none)\nas ESC/POS for a raw label printer. Needs the permission that reads\nparts; nothing is logged.",
+        "summary": "FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and the\nbase unit's first barcode, or the SKU as the barcode when it has none)\nas ESC/POS for a raw label printer. Needs the permission that reads\nparts; nothing is logged. Another paper, copies outside 1 to 100, a part\nlisted twice, more than 50 parts or 300 labels are refused\n(INVALID_ARGUMENT); a part the garage does not have is NOT_FOUND.",
         "operationId": "DocumentService_PrintPartLabels",
         "responses": {
           "200": {
@@ -5205,7 +5205,7 @@
     },
     "/api/v1/garages/{garageId}/print-settings/{documentType}": {
       "put": {
-        "summary": "FR-DOC-04 (Release 10.0): replaces the paper size and the copy mark of\none document type; an omitted copy_mark means false, and the type is the\none in the path. An unspecified document type or paper size, and a size\nthe type has no template for, are refused (INVALID_ARGUMENT).",
+        "summary": "FR-DOC-04 (Release 10.0): replaces the paper size and the copy mark of\none document type; an omitted copy_mark means false, and the type is the\none in the path. An unspecified document type, PART_LABEL, an\nunspecified paper size, a roll or a label, and a size the type has no\ntemplate for are refused (INVALID_ARGUMENT).",
         "operationId": "DocumentService_UpdatePrintSetting",
         "responses": {
           "200": {
@@ -6191,7 +6191,7 @@
     },
     "/api/v1/garages/{garageId}/quotes/{quoteId}/escpos:print": {
       "post": {
-        "summary": "FR-DOC-06 (Release 13.0): the quote on a K80 or K57 roll, as ESC/POS\n(application/octet-stream) for the client to send to a raw printer.\nSame version, copy mark and print log rules as PrintQuotePdf, with the\nroll as the paper size. Needs quote.read.",
+        "summary": "FR-DOC-06 (Release 13.0): the quote on a K80 or K57 roll, as ESC/POS\n(application/octet-stream) for the client to send to a raw printer.\nSame rules as PrintQuotePdf with the roll as the paper size: the\ntemplate version is the one of the document's first print on that roll\n(a version is pinned per paper size), the copy mark goes on a reprint\nafter a print on any paper, and the print is logged. A page size or a\nlabel is refused (INVALID_ARGUMENT). Needs quote.read.",
         "operationId": "DocumentService_PrintQuoteEscPos",
         "responses": {
           "200": {
@@ -8178,7 +8178,7 @@
     },
     "/api/v1/garages/{garageId}/settlements/{settlementId}/payments/{paymentId}/voucher-escpos:print": {
       "post": {
-        "summary": "FR-DOC-06: the payment voucher on a K80 or K57 roll, as ESC/POS. Needs\nbilling.read.",
+        "summary": "FR-DOC-06: the payment voucher on a K80 or K57 roll, as ESC/POS, with\nthe rules of PrintQuoteEscPos (version per roll, copy mark, print log).\nNeeds billing.read.",
         "operationId": "DocumentService_PrintPaymentVoucherEscPos",
         "responses": {
           "200": {
@@ -14708,7 +14708,7 @@
             "type": "object",
             "$ref": "#/definitions/v1PrintSetting"
           },
-          "description": "One entry for each document type, defaults filled in."
+          "description": "One entry for each document type but PART_LABEL, defaults filled in."
         }
       }
     },
@@ -17590,11 +17590,11 @@
           "items": {
             "$ref": "#/definitions/v1PaperSize"
           },
-          "description": "The sizes the document type has a template for.",
+          "description": "The page sizes (A4, A5) the document type has a PDF template for; never\na roll or a label.",
           "readOnly": true
         }
       },
-      "description": "PrintSetting is a garage's printing choice for one document type\n(FR-DOC-04). A garage that never changed it prints on A4 without the\ncopy mark."
+      "description": "PrintSetting is a garage's printing choice for one document type\n(FR-DOC-04). A garage that never changed it prints on A4 without the\ncopy mark. Its paper is A4 or A5 only: a roll or a label is chosen at print\ntime by the printer (Release 13.0)."
     },
     "v1Printer": {
       "type": "object",
@@ -17621,18 +17621,18 @@
         },
         "path": {
           "type": "string",
-          "description": "IPP only: the printer's resource path, \"ipp/print\" when empty. Letters,\ndigits and - . _ ~ /, at most 200 characters."
+          "description": "IPP only: the printer's resource path, \"ipp/print\" when empty. Letters,\ndigits and - . _ ~ /, at most 200 characters. A raw printer with a path\nis refused (INVALID_ARGUMENT)."
         },
         "paperSize": {
           "$ref": "#/definitions/v1PaperSize",
-          "description": "Raw only, and required there: K80, K57 or LABEL_50X30. Unspecified for\nIPP: an IPP printer prints the PDF on the garage's paper setting."
+          "description": "Raw only, and required there: K80, K57 or LABEL_50X30. Must be\nunspecified for IPP (INVALID_ARGUMENT otherwise): an IPP printer prints\nthe PDF on the garage's paper setting."
         },
         "documentTypes": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1DocumentType"
           },
-          "description": "The documents the apps send to this printer first. A K80 or K57 printer\ntakes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP\nprinter any document but PART_LABEL."
+          "description": "The documents the apps send to this printer first. A K80 or K57 printer\ntakes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP\nprinter any document but PART_LABEL. Several printers may take the same\ndocument: the apps offer them all, those that take it first on top, by\nname."
         },
         "createTime": {
           "type": "string",

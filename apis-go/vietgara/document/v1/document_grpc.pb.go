@@ -111,8 +111,9 @@ type DocumentServiceClient interface {
 	GetPrintSettings(ctx context.Context, in *GetPrintSettingsRequest, opts ...grpc.CallOption) (*GetPrintSettingsResponse, error)
 	// FR-DOC-04 (Release 10.0): replaces the paper size and the copy mark of
 	// one document type; an omitted copy_mark means false, and the type is the
-	// one in the path. An unspecified document type or paper size, and a size
-	// the type has no template for, are refused (INVALID_ARGUMENT).
+	// one in the path. An unspecified document type, PART_LABEL, an
+	// unspecified paper size, a roll or a label, and a size the type has no
+	// template for are refused (INVALID_ARGUMENT).
 	UpdatePrintSetting(ctx context.Context, in *UpdatePrintSettingRequest, opts ...grpc.CallOption) (*PrintSetting, error)
 	// FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
 	// Export*Pdf RPC (the garage's paper size, the template version of the
@@ -157,16 +158,22 @@ type DocumentServiceClient interface {
 	PrintPrinterTestPage(ctx context.Context, in *PrintPrinterTestPageRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	// FR-DOC-06 (Release 13.0): the quote on a K80 or K57 roll, as ESC/POS
 	// (application/octet-stream) for the client to send to a raw printer.
-	// Same version, copy mark and print log rules as PrintQuotePdf, with the
-	// roll as the paper size. Needs quote.read.
+	// Same rules as PrintQuotePdf with the roll as the paper size: the
+	// template version is the one of the document's first print on that roll
+	// (a version is pinned per paper size), the copy mark goes on a reprint
+	// after a print on any paper, and the print is logged. A page size or a
+	// label is refused (INVALID_ARGUMENT). Needs quote.read.
 	PrintQuoteEscPos(ctx context.Context, in *PrintQuoteEscPosRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
-	// FR-DOC-06: the payment voucher on a K80 or K57 roll, as ESC/POS. Needs
-	// billing.read.
+	// FR-DOC-06: the payment voucher on a K80 or K57 roll, as ESC/POS, with
+	// the rules of PrintQuoteEscPos (version per roll, copy mark, print log).
+	// Needs billing.read.
 	PrintPaymentVoucherEscPos(ctx context.Context, in *PrintPaymentVoucherEscPosRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	// FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and the
 	// base unit's first barcode, or the SKU as the barcode when it has none)
 	// as ESC/POS for a raw label printer. Needs the permission that reads
-	// parts; nothing is logged.
+	// parts; nothing is logged. Another paper, copies outside 1 to 100, a part
+	// listed twice, more than 50 parts or 300 labels are refused
+	// (INVALID_ARGUMENT); a part the garage does not have is NOT_FOUND.
 	PrintPartLabels(ctx context.Context, in *PrintPartLabelsRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 }
 
@@ -572,8 +579,9 @@ type DocumentServiceServer interface {
 	GetPrintSettings(context.Context, *GetPrintSettingsRequest) (*GetPrintSettingsResponse, error)
 	// FR-DOC-04 (Release 10.0): replaces the paper size and the copy mark of
 	// one document type; an omitted copy_mark means false, and the type is the
-	// one in the path. An unspecified document type or paper size, and a size
-	// the type has no template for, are refused (INVALID_ARGUMENT).
+	// one in the path. An unspecified document type, PART_LABEL, an
+	// unspecified paper size, a roll or a label, and a size the type has no
+	// template for are refused (INVALID_ARGUMENT).
 	UpdatePrintSetting(context.Context, *UpdatePrintSettingRequest) (*PrintSetting, error)
 	// FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
 	// Export*Pdf RPC (the garage's paper size, the template version of the
@@ -618,16 +626,22 @@ type DocumentServiceServer interface {
 	PrintPrinterTestPage(context.Context, *PrintPrinterTestPageRequest) (*httpbody.HttpBody, error)
 	// FR-DOC-06 (Release 13.0): the quote on a K80 or K57 roll, as ESC/POS
 	// (application/octet-stream) for the client to send to a raw printer.
-	// Same version, copy mark and print log rules as PrintQuotePdf, with the
-	// roll as the paper size. Needs quote.read.
+	// Same rules as PrintQuotePdf with the roll as the paper size: the
+	// template version is the one of the document's first print on that roll
+	// (a version is pinned per paper size), the copy mark goes on a reprint
+	// after a print on any paper, and the print is logged. A page size or a
+	// label is refused (INVALID_ARGUMENT). Needs quote.read.
 	PrintQuoteEscPos(context.Context, *PrintQuoteEscPosRequest) (*httpbody.HttpBody, error)
-	// FR-DOC-06: the payment voucher on a K80 or K57 roll, as ESC/POS. Needs
-	// billing.read.
+	// FR-DOC-06: the payment voucher on a K80 or K57 roll, as ESC/POS, with
+	// the rules of PrintQuoteEscPos (version per roll, copy mark, print log).
+	// Needs billing.read.
 	PrintPaymentVoucherEscPos(context.Context, *PrintPaymentVoucherEscPosRequest) (*httpbody.HttpBody, error)
 	// FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and the
 	// base unit's first barcode, or the SKU as the barcode when it has none)
 	// as ESC/POS for a raw label printer. Needs the permission that reads
-	// parts; nothing is logged.
+	// parts; nothing is logged. Another paper, copies outside 1 to 100, a part
+	// listed twice, more than 50 parts or 300 labels are refused
+	// (INVALID_ARGUMENT); a part the garage does not have is NOT_FOUND.
 	PrintPartLabels(context.Context, *PrintPartLabelsRequest) (*httpbody.HttpBody, error)
 	mustEmbedUnimplementedDocumentServiceServer()
 }

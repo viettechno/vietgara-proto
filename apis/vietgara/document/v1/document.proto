@@ -155,13 +155,15 @@ enum PaperSize {
 
 // PrintSetting is a garage's printing choice for one document type
 // (FR-DOC-04). A garage that never changed it prints on A4 without the
-// copy mark.
+// copy mark. Its paper is A4 or A5 only: a roll or a label is chosen at print
+// time by the printer (Release 13.0).
 message PrintSetting {
   DocumentType document_type = 1;
   PaperSize paper_size = 2;
   // Whether a reprint carries a "copy" mark.
   bool copy_mark = 3;
-  // The sizes the document type has a template for.
+  // The page sizes (A4, A5) the document type has a PDF template for; never
+  // a roll or a label.
   repeated PaperSize available_paper_sizes = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
@@ -170,7 +172,7 @@ message GetPrintSettingsRequest {
 }
 
 message GetPrintSettingsResponse {
-  // One entry for each document type, defaults filled in.
+  // One entry for each document type but PART_LABEL, defaults filled in.
   repeated PrintSetting settings = 1;
 }
 
@@ -235,14 +237,18 @@ message Printer {
   // 1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP).
   int32 port = 5;
   // IPP only: the printer's resource path, "ipp/print" when empty. Letters,
-  // digits and - . _ ~ /, at most 200 characters.
+  // digits and - . _ ~ /, at most 200 characters. A raw printer with a path
+  // is refused (INVALID_ARGUMENT).
   string path = 6;
-  // Raw only, and required there: K80, K57 or LABEL_50X30. Unspecified for
-  // IPP: an IPP printer prints the PDF on the garage's paper setting.
+  // Raw only, and required there: K80, K57 or LABEL_50X30. Must be
+  // unspecified for IPP (INVALID_ARGUMENT otherwise): an IPP printer prints
+  // the PDF on the garage's paper setting.
   PaperSize paper_size = 7;
   // The documents the apps send to this printer first. A K80 or K57 printer
   // takes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP
-  // printer any document but PART_LABEL.
+  // printer any document but PART_LABEL. Several printers may take the same
+  // document: the apps offer them all, those that take it first on top, by
+  // name.
   repeated DocumentType document_types = 8;
   google.protobuf.Timestamp create_time = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp update_time = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -396,8 +402,9 @@ service DocumentService {
 
   // FR-DOC-04 (Release 10.0): replaces the paper size and the copy mark of
   // one document type; an omitted copy_mark means false, and the type is the
-  // one in the path. An unspecified document type or paper size, and a size
-  // the type has no template for, are refused (INVALID_ARGUMENT).
+  // one in the path. An unspecified document type, PART_LABEL, an
+  // unspecified paper size, a roll or a label, and a size the type has no
+  // template for are refused (INVALID_ARGUMENT).
   rpc UpdatePrintSetting(UpdatePrintSettingRequest) returns (PrintSetting) {
     option (google.api.http) = {
       put: "/api/v1/garages/{garage_id}/print-settings/{document_type}"
@@ -508,8 +515,11 @@ service DocumentService {
 
   // FR-DOC-06 (Release 13.0): the quote on a K80 or K57 roll, as ESC/POS
   // (application/octet-stream) for the client to send to a raw printer.
-  // Same version, copy mark and print log rules as PrintQuotePdf, with the
-  // roll as the paper size. Needs quote.read.
+  // Same rules as PrintQuotePdf with the roll as the paper size: the
+  // template version is the one of the document's first print on that roll
+  // (a version is pinned per paper size), the copy mark goes on a reprint
+  // after a print on any paper, and the print is logged. A page size or a
+  // label is refused (INVALID_ARGUMENT). Needs quote.read.
   rpc PrintQuoteEscPos(PrintQuoteEscPosRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/quotes/{quote_id}/escpos:print"
@@ -517,8 +527,9 @@ service DocumentService {
     };
   }
 
-  // FR-DOC-06: the payment voucher on a K80 or K57 roll, as ESC/POS. Needs
-  // billing.read.
+  // FR-DOC-06: the payment voucher on a K80 or K57 roll, as ESC/POS, with
+  // the rules of PrintQuoteEscPos (version per roll, copy mark, print log).
+  // Needs billing.read.
   rpc PrintPaymentVoucherEscPos(PrintPaymentVoucherEscPosRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/settlements/{settlement_id}/payments/{payment_id}/voucher-escpos:print"
@@ -529,7 +540,9 @@ service DocumentService {
   // FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and the
   // base unit's first barcode, or the SKU as the barcode when it has none)
   // as ESC/POS for a raw label printer. Needs the permission that reads
-  // parts; nothing is logged.
+  // parts; nothing is logged. Another paper, copies outside 1 to 100, a part
+  // listed twice, more than 50 parts or 300 labels are refused
+  // (INVALID_ARGUMENT); a part the garage does not have is NOT_FOUND.
   rpc PrintPartLabels(PrintPartLabelsRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/part-labels:print"

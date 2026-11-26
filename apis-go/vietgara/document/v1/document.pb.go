@@ -1246,14 +1246,16 @@ func (x *ExportSupplierPayablesExcelRequest) GetIncludePaid() bool {
 
 // PrintSetting is a garage's printing choice for one document type
 // (FR-DOC-04). A garage that never changed it prints on A4 without the
-// copy mark.
+// copy mark. Its paper is A4 or A5 only: a roll or a label is chosen at print
+// time by the printer (Release 13.0).
 type PrintSetting struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
 	DocumentType DocumentType           `protobuf:"varint,1,opt,name=document_type,json=documentType,proto3,enum=vietgara.document.v1.DocumentType" json:"document_type,omitempty"`
 	PaperSize    PaperSize              `protobuf:"varint,2,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
 	// Whether a reprint carries a "copy" mark.
 	CopyMark bool `protobuf:"varint,3,opt,name=copy_mark,json=copyMark,proto3" json:"copy_mark,omitempty"`
-	// The sizes the document type has a template for.
+	// The page sizes (A4, A5) the document type has a PDF template for; never
+	// a roll or a label.
 	AvailablePaperSizes []PaperSize `protobuf:"varint,4,rep,packed,name=available_paper_sizes,json=availablePaperSizes,proto3,enum=vietgara.document.v1.PaperSize" json:"available_paper_sizes,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
@@ -1363,7 +1365,7 @@ func (x *GetPrintSettingsRequest) GetGarageId() string {
 
 type GetPrintSettingsResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// One entry for each document type, defaults filled in.
+	// One entry for each document type but PART_LABEL, defaults filled in.
 	Settings      []*PrintSetting `protobuf:"bytes,1,rep,name=settings,proto3" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1807,14 +1809,18 @@ type Printer struct {
 	// 1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP).
 	Port int32 `protobuf:"varint,5,opt,name=port,proto3" json:"port,omitempty"`
 	// IPP only: the printer's resource path, "ipp/print" when empty. Letters,
-	// digits and - . _ ~ /, at most 200 characters.
+	// digits and - . _ ~ /, at most 200 characters. A raw printer with a path
+	// is refused (INVALID_ARGUMENT).
 	Path string `protobuf:"bytes,6,opt,name=path,proto3" json:"path,omitempty"`
-	// Raw only, and required there: K80, K57 or LABEL_50X30. Unspecified for
-	// IPP: an IPP printer prints the PDF on the garage's paper setting.
+	// Raw only, and required there: K80, K57 or LABEL_50X30. Must be
+	// unspecified for IPP (INVALID_ARGUMENT otherwise): an IPP printer prints
+	// the PDF on the garage's paper setting.
 	PaperSize PaperSize `protobuf:"varint,7,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
 	// The documents the apps send to this printer first. A K80 or K57 printer
 	// takes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP
-	// printer any document but PART_LABEL.
+	// printer any document but PART_LABEL. Several printers may take the same
+	// document: the apps offer them all, those that take it first on top, by
+	// name.
 	DocumentTypes []DocumentType         `protobuf:"varint,8,rep,packed,name=document_types,json=documentTypes,proto3,enum=vietgara.document.v1.DocumentType" json:"document_types,omitempty"`
 	CreateTime    *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
 	UpdateTime    *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=update_time,json=updateTime,proto3" json:"update_time,omitempty"`
