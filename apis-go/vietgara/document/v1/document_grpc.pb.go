@@ -12,6 +12,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -46,6 +47,14 @@ const (
 	DocumentService_ExportReceivablesExcel_FullMethodName              = "/vietgara.document.v1.DocumentService/ExportReceivablesExcel"
 	DocumentService_ExportReceivableReconciliationExcel_FullMethodName = "/vietgara.document.v1.DocumentService/ExportReceivableReconciliationExcel"
 	DocumentService_ExportSupplierPayablesExcel_FullMethodName         = "/vietgara.document.v1.DocumentService/ExportSupplierPayablesExcel"
+	DocumentService_ListPrinters_FullMethodName                        = "/vietgara.document.v1.DocumentService/ListPrinters"
+	DocumentService_CreatePrinter_FullMethodName                       = "/vietgara.document.v1.DocumentService/CreatePrinter"
+	DocumentService_UpdatePrinter_FullMethodName                       = "/vietgara.document.v1.DocumentService/UpdatePrinter"
+	DocumentService_DeletePrinter_FullMethodName                       = "/vietgara.document.v1.DocumentService/DeletePrinter"
+	DocumentService_PrintPrinterTestPage_FullMethodName                = "/vietgara.document.v1.DocumentService/PrintPrinterTestPage"
+	DocumentService_PrintQuoteEscPos_FullMethodName                    = "/vietgara.document.v1.DocumentService/PrintQuoteEscPos"
+	DocumentService_PrintPaymentVoucherEscPos_FullMethodName           = "/vietgara.document.v1.DocumentService/PrintPaymentVoucherEscPos"
+	DocumentService_PrintPartLabels_FullMethodName                     = "/vietgara.document.v1.DocumentService/PrintPartLabels"
 )
 
 // DocumentServiceClient is the client API for DocumentService service.
@@ -130,6 +139,35 @@ type DocumentServiceClient interface {
 	ExportReceivableReconciliationExcel(ctx context.Context, in *ExportReceivableReconciliationExcelRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	// FR-INV-17 (Release 11.0): the supplier payables as an Excel workbook.
 	ExportSupplierPayablesExcel(ctx context.Context, in *ExportSupplierPayablesExcelRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	// FR-DOC-07 (Release 13.0): the garage's network printers, by name. Needs
+	// membership of the garage.
+	ListPrinters(ctx context.Context, in *ListPrintersRequest, opts ...grpc.CallOption) (*ListPrintersResponse, error)
+	// FR-DOC-07: saves a printer. Needs the permission that edits the garage
+	// profile. An invalid field, a duplicate name, a document type the
+	// printer cannot take, and a 21st printer are refused (INVALID_ARGUMENT).
+	CreatePrinter(ctx context.Context, in *CreatePrinterRequest, opts ...grpc.CallOption) (*Printer, error)
+	// FR-DOC-07: replaces a printer, with the rules of CreatePrinter.
+	UpdatePrinter(ctx context.Context, in *UpdatePrinterRequest, opts ...grpc.CallOption) (*Printer, error)
+	// FR-DOC-07: removes a printer.
+	DeletePrinter(ctx context.Context, in *DeletePrinterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// FR-DOC-07: a test page for the printer, in its language: ESC/POS on its
+	// roll or label for a raw printer, an A4 PDF for an IPP printer. The client
+	// sends it to the printer from the device it tests. Needs membership of
+	// the garage; nothing is logged.
+	PrintPrinterTestPage(ctx context.Context, in *PrintPrinterTestPageRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	// FR-DOC-06 (Release 13.0): the quote on a K80 or K57 roll, as ESC/POS
+	// (application/octet-stream) for the client to send to a raw printer.
+	// Same version, copy mark and print log rules as PrintQuotePdf, with the
+	// roll as the paper size. Needs quote.read.
+	PrintQuoteEscPos(ctx context.Context, in *PrintQuoteEscPosRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	// FR-DOC-06: the payment voucher on a K80 or K57 roll, as ESC/POS. Needs
+	// billing.read.
+	PrintPaymentVoucherEscPos(ctx context.Context, in *PrintPaymentVoucherEscPosRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	// FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and the
+	// base unit's first barcode, or the SKU as the barcode when it has none)
+	// as ESC/POS for a raw label printer. Needs the permission that reads
+	// parts; nothing is logged.
+	PrintPartLabels(ctx context.Context, in *PrintPartLabelsRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 }
 
 type documentServiceClient struct {
@@ -400,6 +438,86 @@ func (c *documentServiceClient) ExportSupplierPayablesExcel(ctx context.Context,
 	return out, nil
 }
 
+func (c *documentServiceClient) ListPrinters(ctx context.Context, in *ListPrintersRequest, opts ...grpc.CallOption) (*ListPrintersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPrintersResponse)
+	err := c.cc.Invoke(ctx, DocumentService_ListPrinters_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) CreatePrinter(ctx context.Context, in *CreatePrinterRequest, opts ...grpc.CallOption) (*Printer, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Printer)
+	err := c.cc.Invoke(ctx, DocumentService_CreatePrinter_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) UpdatePrinter(ctx context.Context, in *UpdatePrinterRequest, opts ...grpc.CallOption) (*Printer, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Printer)
+	err := c.cc.Invoke(ctx, DocumentService_UpdatePrinter_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) DeletePrinter(ctx context.Context, in *DeletePrinterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, DocumentService_DeletePrinter_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) PrintPrinterTestPage(ctx context.Context, in *PrintPrinterTestPageRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_PrintPrinterTestPage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) PrintQuoteEscPos(ctx context.Context, in *PrintQuoteEscPosRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_PrintQuoteEscPos_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) PrintPaymentVoucherEscPos(ctx context.Context, in *PrintPaymentVoucherEscPosRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_PrintPaymentVoucherEscPos_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) PrintPartLabels(ctx context.Context, in *PrintPartLabelsRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, DocumentService_PrintPartLabels_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DocumentServiceServer is the server API for DocumentService service.
 // All implementations must embed UnimplementedDocumentServiceServer
 // for forward compatibility.
@@ -482,6 +600,35 @@ type DocumentServiceServer interface {
 	ExportReceivableReconciliationExcel(context.Context, *ExportReceivableReconciliationExcelRequest) (*httpbody.HttpBody, error)
 	// FR-INV-17 (Release 11.0): the supplier payables as an Excel workbook.
 	ExportSupplierPayablesExcel(context.Context, *ExportSupplierPayablesExcelRequest) (*httpbody.HttpBody, error)
+	// FR-DOC-07 (Release 13.0): the garage's network printers, by name. Needs
+	// membership of the garage.
+	ListPrinters(context.Context, *ListPrintersRequest) (*ListPrintersResponse, error)
+	// FR-DOC-07: saves a printer. Needs the permission that edits the garage
+	// profile. An invalid field, a duplicate name, a document type the
+	// printer cannot take, and a 21st printer are refused (INVALID_ARGUMENT).
+	CreatePrinter(context.Context, *CreatePrinterRequest) (*Printer, error)
+	// FR-DOC-07: replaces a printer, with the rules of CreatePrinter.
+	UpdatePrinter(context.Context, *UpdatePrinterRequest) (*Printer, error)
+	// FR-DOC-07: removes a printer.
+	DeletePrinter(context.Context, *DeletePrinterRequest) (*emptypb.Empty, error)
+	// FR-DOC-07: a test page for the printer, in its language: ESC/POS on its
+	// roll or label for a raw printer, an A4 PDF for an IPP printer. The client
+	// sends it to the printer from the device it tests. Needs membership of
+	// the garage; nothing is logged.
+	PrintPrinterTestPage(context.Context, *PrintPrinterTestPageRequest) (*httpbody.HttpBody, error)
+	// FR-DOC-06 (Release 13.0): the quote on a K80 or K57 roll, as ESC/POS
+	// (application/octet-stream) for the client to send to a raw printer.
+	// Same version, copy mark and print log rules as PrintQuotePdf, with the
+	// roll as the paper size. Needs quote.read.
+	PrintQuoteEscPos(context.Context, *PrintQuoteEscPosRequest) (*httpbody.HttpBody, error)
+	// FR-DOC-06: the payment voucher on a K80 or K57 roll, as ESC/POS. Needs
+	// billing.read.
+	PrintPaymentVoucherEscPos(context.Context, *PrintPaymentVoucherEscPosRequest) (*httpbody.HttpBody, error)
+	// FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and the
+	// base unit's first barcode, or the SKU as the barcode when it has none)
+	// as ESC/POS for a raw label printer. Needs the permission that reads
+	// parts; nothing is logged.
+	PrintPartLabels(context.Context, *PrintPartLabelsRequest) (*httpbody.HttpBody, error)
 	mustEmbedUnimplementedDocumentServiceServer()
 }
 
@@ -569,6 +716,30 @@ func (UnimplementedDocumentServiceServer) ExportReceivableReconciliationExcel(co
 }
 func (UnimplementedDocumentServiceServer) ExportSupplierPayablesExcel(context.Context, *ExportSupplierPayablesExcelRequest) (*httpbody.HttpBody, error) {
 	return nil, status.Error(codes.Unimplemented, "method ExportSupplierPayablesExcel not implemented")
+}
+func (UnimplementedDocumentServiceServer) ListPrinters(context.Context, *ListPrintersRequest) (*ListPrintersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListPrinters not implemented")
+}
+func (UnimplementedDocumentServiceServer) CreatePrinter(context.Context, *CreatePrinterRequest) (*Printer, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreatePrinter not implemented")
+}
+func (UnimplementedDocumentServiceServer) UpdatePrinter(context.Context, *UpdatePrinterRequest) (*Printer, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdatePrinter not implemented")
+}
+func (UnimplementedDocumentServiceServer) DeletePrinter(context.Context, *DeletePrinterRequest) (*emptypb.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeletePrinter not implemented")
+}
+func (UnimplementedDocumentServiceServer) PrintPrinterTestPage(context.Context, *PrintPrinterTestPageRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method PrintPrinterTestPage not implemented")
+}
+func (UnimplementedDocumentServiceServer) PrintQuoteEscPos(context.Context, *PrintQuoteEscPosRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method PrintQuoteEscPos not implemented")
+}
+func (UnimplementedDocumentServiceServer) PrintPaymentVoucherEscPos(context.Context, *PrintPaymentVoucherEscPosRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method PrintPaymentVoucherEscPos not implemented")
+}
+func (UnimplementedDocumentServiceServer) PrintPartLabels(context.Context, *PrintPartLabelsRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method PrintPartLabels not implemented")
 }
 func (UnimplementedDocumentServiceServer) mustEmbedUnimplementedDocumentServiceServer() {}
 func (UnimplementedDocumentServiceServer) testEmbeddedByValue()                         {}
@@ -1059,6 +1230,150 @@ func _DocumentService_ExportSupplierPayablesExcel_Handler(srv interface{}, ctx c
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DocumentService_ListPrinters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPrintersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).ListPrinters(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_ListPrinters_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).ListPrinters(ctx, req.(*ListPrintersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_CreatePrinter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePrinterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).CreatePrinter(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_CreatePrinter_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).CreatePrinter(ctx, req.(*CreatePrinterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_UpdatePrinter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePrinterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).UpdatePrinter(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_UpdatePrinter_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).UpdatePrinter(ctx, req.(*UpdatePrinterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_DeletePrinter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePrinterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).DeletePrinter(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_DeletePrinter_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).DeletePrinter(ctx, req.(*DeletePrinterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_PrintPrinterTestPage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrintPrinterTestPageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).PrintPrinterTestPage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_PrintPrinterTestPage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).PrintPrinterTestPage(ctx, req.(*PrintPrinterTestPageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_PrintQuoteEscPos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrintQuoteEscPosRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).PrintQuoteEscPos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_PrintQuoteEscPos_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).PrintQuoteEscPos(ctx, req.(*PrintQuoteEscPosRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_PrintPaymentVoucherEscPos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrintPaymentVoucherEscPosRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).PrintPaymentVoucherEscPos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_PrintPaymentVoucherEscPos_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).PrintPaymentVoucherEscPos(ctx, req.(*PrintPaymentVoucherEscPosRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_PrintPartLabels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrintPartLabelsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).PrintPartLabels(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_PrintPartLabels_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).PrintPartLabels(ctx, req.(*PrintPartLabelsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DocumentService_ServiceDesc is the grpc.ServiceDesc for DocumentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1169,6 +1484,38 @@ var DocumentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ExportSupplierPayablesExcel",
 			Handler:    _DocumentService_ExportSupplierPayablesExcel_Handler,
+		},
+		{
+			MethodName: "ListPrinters",
+			Handler:    _DocumentService_ListPrinters_Handler,
+		},
+		{
+			MethodName: "CreatePrinter",
+			Handler:    _DocumentService_CreatePrinter_Handler,
+		},
+		{
+			MethodName: "UpdatePrinter",
+			Handler:    _DocumentService_UpdatePrinter_Handler,
+		},
+		{
+			MethodName: "DeletePrinter",
+			Handler:    _DocumentService_DeletePrinter_Handler,
+		},
+		{
+			MethodName: "PrintPrinterTestPage",
+			Handler:    _DocumentService_PrintPrinterTestPage_Handler,
+		},
+		{
+			MethodName: "PrintQuoteEscPos",
+			Handler:    _DocumentService_PrintQuoteEscPos_Handler,
+		},
+		{
+			MethodName: "PrintPaymentVoucherEscPos",
+			Handler:    _DocumentService_PrintPaymentVoucherEscPos_Handler,
+		},
+		{
+			MethodName: "PrintPartLabels",
+			Handler:    _DocumentService_PrintPartLabels_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

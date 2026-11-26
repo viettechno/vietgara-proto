@@ -4359,6 +4359,45 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/part-labels:print": {
+      "post": {
+        "summary": "FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and the\nbase unit's first barcode, or the SKU as the barcode when it has none)\nas ESC/POS for a raw label printer. Needs the permission that reads\nparts; nothing is logged.",
+        "operationId": "DocumentService_PrintPartLabels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintPartLabelsBody"
+            }
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/parts": {
       "get": {
         "operationId": "CatalogueService_ListParts",
@@ -5202,7 +5241,8 @@
               "DOCUMENT_TYPE_GOODS_RECEIPT",
               "DOCUMENT_TYPE_STOCK_ISSUE",
               "DOCUMENT_TYPE_PAYMENT_OUT_VOUCHER",
-              "DOCUMENT_TYPE_PURCHASE_ORDER"
+              "DOCUMENT_TYPE_PURCHASE_ORDER",
+              "DOCUMENT_TYPE_PART_LABEL"
             ]
           },
           {
@@ -5212,6 +5252,193 @@
             "schema": {
               "$ref": "#/definitions/DocumentServiceUpdatePrintSettingBody"
             }
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/printers": {
+      "get": {
+        "summary": "FR-DOC-07 (Release 13.0): the garage's network printers, by name. Needs\nmembership of the garage.",
+        "operationId": "DocumentService_ListPrinters",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPrintersResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      },
+      "post": {
+        "summary": "FR-DOC-07: saves a printer. Needs the permission that edits the garage\nprofile. An invalid field, a duplicate name, a document type the\nprinter cannot take, and a 21st printer are refused (INVALID_ARGUMENT).",
+        "operationId": "DocumentService_CreatePrinter",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Printer"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "printer",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Printer"
+            }
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/printers/{printerId}": {
+      "delete": {
+        "summary": "FR-DOC-07: removes a printer.",
+        "operationId": "DocumentService_DeletePrinter",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "printerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      },
+      "put": {
+        "summary": "FR-DOC-07: replaces a printer, with the rules of CreatePrinter.",
+        "operationId": "DocumentService_UpdatePrinter",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Printer"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "printerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "printer",
+            "description": "Replaces every field but the id and the times.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Printer"
+            }
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/printers/{printerId}/test-page:print": {
+      "post": {
+        "summary": "FR-DOC-07: a test page for the printer, in its language: ESC/POS on its\nroll or label for a raw printer, an A4 PDF for an IPP printer. The client\nsends it to the printer from the device it tests. Needs membership of\nthe garage; nothing is logged.",
+        "operationId": "DocumentService_PrintPrinterTestPage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "printerId",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "tags": [
@@ -5959,6 +6186,51 @@
         ],
         "tags": [
           "QuoteService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/quotes/{quoteId}/escpos:print": {
+      "post": {
+        "summary": "FR-DOC-06 (Release 13.0): the quote on a K80 or K57 roll, as ESC/POS\n(application/octet-stream) for the client to send to a raw printer.\nSame version, copy mark and print log rules as PrintQuotePdf, with the\nroll as the paper size. Needs quote.read.",
+        "operationId": "DocumentService_PrintQuoteEscPos",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintQuoteEscPosBody"
+            }
+          }
+        ],
+        "tags": [
+          "DocumentService"
         ]
       }
     },
@@ -7901,6 +8173,57 @@
         ],
         "tags": [
           "SettlementService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/settlements/{settlementId}/payments/{paymentId}/voucher-escpos:print": {
+      "post": {
+        "summary": "FR-DOC-06: the payment voucher on a K80 or K57 roll, as ESC/POS. Needs\nbilling.read.",
+        "operationId": "DocumentService_PrintPaymentVoucherEscPos",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiHttpBody"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintPaymentVoucherEscPosBody"
+            }
+          }
+        ],
+        "tags": [
+          "DocumentService"
         ]
       }
     },
@@ -11977,6 +12300,51 @@
         "type"
       ]
     },
+    "DocumentServicePrintPartLabelsBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "LABEL_50X30, the only label size of Release 13.0."
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PartLabelCopies"
+          },
+          "description": "1 to 50 parts, each at most once, at most 300 labels in all. A client\nprinting the labels of a goods receipt fills them from its lines."
+        }
+      },
+      "required": [
+        "paperSize",
+        "parts"
+      ]
+    },
+    "DocumentServicePrintPaymentVoucherEscPosBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "K80 or K57: the roll of the printer the client sends to."
+        }
+      },
+      "required": [
+        "paperSize"
+      ]
+    },
+    "DocumentServicePrintQuoteEscPosBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "K80 or K57: the roll of the printer the client sends to."
+        }
+      },
+      "required": [
+        "paperSize"
+      ]
+    },
     "DocumentServiceUpdatePrintSettingBody": {
       "type": "object",
       "properties": {
@@ -13759,9 +14127,10 @@
         "DOCUMENT_TYPE_GOODS_RECEIPT",
         "DOCUMENT_TYPE_STOCK_ISSUE",
         "DOCUMENT_TYPE_PAYMENT_OUT_VOUCHER",
-        "DOCUMENT_TYPE_PURCHASE_ORDER"
+        "DOCUMENT_TYPE_PURCHASE_ORDER",
+        "DOCUMENT_TYPE_PART_LABEL"
       ],
-      "description": "DocumentType is a document a garage can print (FR-DOC-04).\n\n - DOCUMENT_TYPE_PAYMENT_OUT_VOUCHER: Release 11.0 (FR-BIL-07): the payment-out voucher (phiếu chi).\n - DOCUMENT_TYPE_PURCHASE_ORDER: Release 11.0 (FR-INV-16): the purchase order."
+      "description": "DocumentType is a document a garage can print (FR-DOC-04).\n\n - DOCUMENT_TYPE_PAYMENT_OUT_VOUCHER: Release 11.0 (FR-BIL-07): the payment-out voucher (phiếu chi).\n - DOCUMENT_TYPE_PURCHASE_ORDER: Release 11.0 (FR-INV-16): the purchase order.\n - DOCUMENT_TYPE_PART_LABEL: Release 13.0 (FR-INV-13): a part's barcode label. It has no print\nsetting and no print log; it is only a printer's default document type."
     },
     "v1EndSupportGrantResponse": {
       "type": "object",
@@ -15483,6 +15852,19 @@
         }
       }
     },
+    "v1ListPrintersResponse": {
+      "type": "object",
+      "properties": {
+        "printers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Printer"
+          },
+          "description": "Every printer of the garage, by name; at most 20."
+        }
+      }
+    },
     "v1ListPurchaseOrdersResponse": {
       "type": "object",
       "properties": {
@@ -16201,9 +16583,12 @@
       "type": "string",
       "enum": [
         "PAPER_SIZE_A4",
-        "PAPER_SIZE_A5"
+        "PAPER_SIZE_A5",
+        "PAPER_SIZE_K80",
+        "PAPER_SIZE_K57",
+        "PAPER_SIZE_LABEL_50X30"
       ],
-      "description": "PaperSize is the paper a document prints on: A4 (210 x 297 mm) or A5\n(148 x 210 mm)."
+      "description": "PaperSize is the paper a document prints on: A4 (210 x 297 mm) or A5\n(148 x 210 mm) for a PDF; since Release 13.0 also the thermal rolls K80\n(80 mm, 72 mm printed) and K57 (57 mm, 48 mm printed) and the 50 x 30 mm\nlabel. A print setting takes A4 or A5 only."
     },
     "v1Part": {
       "type": "object",
@@ -16373,6 +16758,24 @@
         }
       },
       "description": "PartImage is one image of a part (FR-CAT-04), a file of kind part_image."
+    },
+    "v1PartLabelCopies": {
+      "type": "object",
+      "properties": {
+        "partId": {
+          "type": "string"
+        },
+        "copies": {
+          "type": "integer",
+          "format": "int32",
+          "description": "1 to 100."
+        }
+      },
+      "description": "PartLabelCopies is how many labels of one part to print.",
+      "required": [
+        "partId",
+        "copies"
+      ]
     },
     "v1PartSupplier": {
       "type": "object",
@@ -17192,6 +17595,70 @@
         }
       },
       "description": "PrintSetting is a garage's printing choice for one document type\n(FR-DOC-04). A garage that never changed it prints on A4 without the\ncopy mark."
+    },
+    "v1Printer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "description": "1 to 60 characters, unique in the garage without regard to case."
+        },
+        "protocol": {
+          "$ref": "#/definitions/v1PrinterProtocol"
+        },
+        "host": {
+          "type": "string",
+          "description": "An IPv4 or IPv6 address or a host name, without a scheme or a port."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int32",
+          "description": "1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP)."
+        },
+        "path": {
+          "type": "string",
+          "description": "IPP only: the printer's resource path, \"ipp/print\" when empty. Letters,\ndigits and - . _ ~ /, at most 200 characters."
+        },
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Raw only, and required there: K80, K57 or LABEL_50X30. Unspecified for\nIPP: an IPP printer prints the PDF on the garage's paper setting."
+        },
+        "documentTypes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1DocumentType"
+          },
+          "description": "The documents the apps send to this printer first. A K80 or K57 printer\ntakes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP\nprinter any document but PART_LABEL."
+        },
+        "createTime": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updateTime": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "Printer is a network printer a garage saved (FR-DOC-07, Release 13.0). The\nserver never connects to it: the apps on the garage's network do.",
+      "required": [
+        "name",
+        "protocol",
+        "host"
+      ]
+    },
+    "v1PrinterProtocol": {
+      "type": "string",
+      "enum": [
+        "PRINTER_PROTOCOL_RAW",
+        "PRINTER_PROTOCOL_IPP"
+      ],
+      "description": "PrinterProtocol is how a client sends a job to a network printer\n(FR-DOC-07).\n\n - PRINTER_PROTOCOL_RAW: ESC/POS bytes over a raw TCP connection, port 9100 by default: thermal\nreceipt and label printers.\n - PRINTER_PROTOCOL_IPP: A PDF over IPP (HTTP), port 631 by default: A4 and A5 printers."
     },
     "v1ProfitGroupBy": {
       "type": "string",
