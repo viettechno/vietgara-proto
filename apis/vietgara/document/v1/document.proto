@@ -5,6 +5,7 @@ package vietgara.document.v1;
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/api/httpbody.proto";
+import "google/protobuf/timestamp.proto";
 import "vietgara/reporting/v1/reporting.proto";
 
 option go_package = "github.com/viettechno/vietgara-proto/apis-go/vietgara/document/v1;documentv1";
@@ -133,25 +134,35 @@ enum DocumentType {
   DOCUMENT_TYPE_PAYMENT_OUT_VOUCHER = 7;
   // Release 11.0 (FR-INV-16): the purchase order.
   DOCUMENT_TYPE_PURCHASE_ORDER = 8;
+  // Release 13.0 (FR-INV-13): a part's barcode label. It has no print
+  // setting and no print log; it is only a printer's default document type.
+  DOCUMENT_TYPE_PART_LABEL = 9;
 }
 
 // PaperSize is the paper a document prints on: A4 (210 x 297 mm) or A5
-// (148 x 210 mm).
+// (148 x 210 mm) for a PDF; since Release 13.0 also the thermal rolls K80
+// (80 mm, 72 mm printed) and K57 (57 mm, 48 mm printed) and the 50 x 30 mm
+// label. A print setting takes A4 or A5 only.
 enum PaperSize {
   PAPER_SIZE_UNSPECIFIED = 0;
   PAPER_SIZE_A4 = 1;
   PAPER_SIZE_A5 = 2;
+  PAPER_SIZE_K80 = 3;
+  PAPER_SIZE_K57 = 4;
+  PAPER_SIZE_LABEL_50X30 = 5;
 }
 
 // PrintSetting is a garage's printing choice for one document type
 // (FR-DOC-04). A garage that never changed it prints on A4 without the
-// copy mark.
+// copy mark. Its paper is A4 or A5 only: a roll or a label is chosen at print
+// time by the printer (Release 13.0).
 message PrintSetting {
   DocumentType document_type = 1;
   PaperSize paper_size = 2;
   // Whether a reprint carries a "copy" mark.
   bool copy_mark = 3;
-  // The sizes the document type has a template for.
+  // The page sizes (A4, A5) the document type has a PDF template for; never
+  // a roll or a label.
   repeated PaperSize available_paper_sizes = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
@@ -160,7 +171,7 @@ message GetPrintSettingsRequest {
 }
 
 message GetPrintSettingsResponse {
-  // One entry for each document type, defaults filled in.
+  // One entry for each document type but PART_LABEL, defaults filled in.
   repeated PrintSetting settings = 1;
 }
 
@@ -200,6 +211,114 @@ message PrintGoodsReceiptPdfRequest {
 message PrintStockIssuePdfRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// PrinterProtocol is how a client sends a job to a network printer
+// (FR-DOC-07).
+enum PrinterProtocol {
+  PRINTER_PROTOCOL_UNSPECIFIED = 0;
+  // ESC/POS bytes over a raw TCP connection, port 9100 by default: thermal
+  // receipt and label printers.
+  PRINTER_PROTOCOL_RAW = 1;
+  // A PDF over IPP (HTTP), port 631 by default: A4 and A5 printers.
+  PRINTER_PROTOCOL_IPP = 2;
+}
+
+// Printer is a network printer a garage saved (FR-DOC-07, Release 13.0). The
+// server never connects to it: the apps on the garage's network do.
+message Printer {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // 1 to 60 characters, unique in the garage without regard to case.
+  string name = 2 [(google.api.field_behavior) = REQUIRED];
+  PrinterProtocol protocol = 3 [(google.api.field_behavior) = REQUIRED];
+  // An IPv4 address, an IPv6 address without brackets (clients add them
+  // when building a URL), or a host name; no scheme or port.
+  string host = 4 [(google.api.field_behavior) = REQUIRED];
+  // 1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP).
+  int32 port = 5;
+  // IPP only: the printer's resource path, "ipp/print" when empty; a
+  // leading "/" is removed. Letters, digits and - . _ ~ /, at most 200
+  // characters. A raw printer with a path
+  // is refused (INVALID_ARGUMENT).
+  string path = 6;
+  // Raw only, and required there: K80, K57 or LABEL_50X30. Must be
+  // unspecified for IPP (INVALID_ARGUMENT otherwise): an IPP printer prints
+  // the PDF on the garage's paper setting.
+  PaperSize paper_size = 7;
+  // The documents the apps send to this printer first. A K80 or K57 printer
+  // takes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP
+  // printer any document but PART_LABEL. UNSPECIFIED is refused
+  // (INVALID_ARGUMENT) and a repeated type is kept once, in the order of the
+  // enum. Several printers may take the same
+  // document: the apps offer them all, those that take it first on top, by
+  // name.
+  repeated DocumentType document_types = 8;
+  google.protobuf.Timestamp created_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListPrintersRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ListPrintersResponse {
+  // Every printer of the garage, by name; at most 20.
+  repeated Printer printers = 1;
+}
+
+message CreatePrinterRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  Printer printer = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message UpdatePrinterRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string printer_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // Replaces every field but the id and the times.
+  Printer printer = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeletePrinterRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string printer_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeletePrinterResponse {}
+
+message PrintPrinterTestPageRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string printer_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PrintQuoteEscPosRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string quote_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // K80 or K57: the roll of the printer the client sends to.
+  PaperSize paper_size = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PrintPaymentVoucherEscPosRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
+  string payment_id = 3 [(google.api.field_behavior) = REQUIRED];
+  // K80 or K57: the roll of the printer the client sends to.
+  PaperSize paper_size = 4 [(google.api.field_behavior) = REQUIRED];
+}
+
+// PartLabelCopies is how many labels of one part to print.
+message PartLabelCopies {
+  string part_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // 1 to 100.
+  int32 copies = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PrintPartLabelsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // LABEL_50X30, the only label size of Release 13.0.
+  PaperSize paper_size = 2 [(google.api.field_behavior) = REQUIRED];
+  // 1 to 50 parts, each at most once, at most 300 labels in all. A client
+  // printing the labels of a goods receipt fills them from its lines.
+  repeated PartLabelCopies parts = 3 [(google.api.field_behavior) = REQUIRED];
 }
 
 // DocumentService renders PDFs and Excel reports on request (FRD 3.13).
@@ -288,8 +407,9 @@ service DocumentService {
 
   // FR-DOC-04 (Release 10.0): replaces the paper size and the copy mark of
   // one document type; an omitted copy_mark means false, and the type is the
-  // one in the path. An unspecified document type or paper size, and a size
-  // the type has no template for, are refused (INVALID_ARGUMENT).
+  // one in the path. An unspecified document type, PART_LABEL, an
+  // unspecified paper size, a roll or a label, and a size the type has no
+  // template for are refused (INVALID_ARGUMENT).
   rpc UpdatePrintSetting(UpdatePrintSettingRequest) returns (PrintSetting) {
     option (google.api.http) = {
       put: "/api/v1/garages/{garage_id}/print-settings/{document_type}"
@@ -299,8 +419,9 @@ service DocumentService {
 
   // FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
   // Export*Pdf RPC (the garage's paper size, the template version of the
-  // document's first print), add the copy mark of a reprint when the garage
-  // turned it on, and write the print log. Each needs the permission of the
+  // document's first print on that paper size), add the copy mark of a
+  // reprint (after a print on any paper) when the garage turned it on, and
+  // write the print log. Each needs the permission of the
   // data it renders.
   rpc PrintQuotePdf(PrintQuotePdfRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {post: "/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf:print"};
@@ -359,5 +480,82 @@ service DocumentService {
   // FR-INV-17 (Release 11.0): the supplier payables as an Excel workbook.
   rpc ExportSupplierPayablesExcel(ExportSupplierPayablesExcelRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/reports/supplier-payables/excel"};
+  }
+
+  // FR-DOC-07 (Release 13.0): the garage's network printers, by name. Needs
+  // membership of the garage.
+  rpc ListPrinters(ListPrintersRequest) returns (ListPrintersResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/printers"};
+  }
+
+  // FR-DOC-07: saves a printer. Needs the permission that edits the garage
+  // profile. An invalid field, a duplicate name, a document type the
+  // printer cannot take, and a 21st printer are refused (INVALID_ARGUMENT).
+  rpc CreatePrinter(CreatePrinterRequest) returns (Printer) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/printers"
+      body: "printer"
+    };
+  }
+
+  // FR-DOC-07: replaces a printer, with the rules of CreatePrinter.
+  rpc UpdatePrinter(UpdatePrinterRequest) returns (Printer) {
+    option (google.api.http) = {
+      put: "/api/v1/garages/{garage_id}/printers/{printer_id}"
+      body: "printer"
+    };
+  }
+
+  // FR-DOC-07: removes a printer.
+  rpc DeletePrinter(DeletePrinterRequest) returns (DeletePrinterResponse) {
+    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/printers/{printer_id}"};
+  }
+
+  // FR-DOC-07: a test page for the printer, in its language: ESC/POS on its
+  // roll or label for a raw printer, an A4 PDF for an IPP printer. The client
+  // sends it to the printer from the device it tests. Needs membership of
+  // the garage; nothing is logged.
+  rpc PrintPrinterTestPage(PrintPrinterTestPageRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/printers/{printer_id}/test-page:print"};
+  }
+
+  // FR-DOC-06 (Release 13.0): the quote on a K80 or K57 roll, as ESC/POS
+  // (application/octet-stream) for the client to send to a raw printer.
+  // Same rules as PrintQuotePdf with the roll as the paper size: the
+  // template version is the one of the document's first print on that roll
+  // (a version is pinned per paper size), the copy mark goes on a reprint
+  // after a print on any paper when the copy_mark of the document type's
+  // PrintSetting is on, and the print is logged. A page size or a
+  // label is refused (INVALID_ARGUMENT). Needs quote.read.
+  rpc PrintQuoteEscPos(PrintQuoteEscPosRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/quotes/{quote_id}/escpos:print"
+      body: "*"
+    };
+  }
+
+  // FR-DOC-06: the payment voucher on a K80 or K57 roll, as ESC/POS, with
+  // the rules of PrintQuoteEscPos (version per roll, copy mark, print log).
+  // Needs billing.read.
+  rpc PrintPaymentVoucherEscPos(PrintPaymentVoucherEscPosRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/settlements/{settlement_id}/payments/{payment_id}/voucher-escpos:print"
+      body: "*"
+    };
+  }
+
+  // FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and a Code
+  // 128 barcode of the base unit's first barcode, or of the SKU when it has
+  // none; a code that is not ASCII or too long for a readable barcode on the
+  // label is refused, INVALID_ARGUMENT)
+  // as ESC/POS for a raw label printer. Needs the permission that reads
+  // parts; nothing is logged. Another paper, copies outside 1 to 100, a part
+  // listed twice, more than 50 parts or 300 labels are refused
+  // (INVALID_ARGUMENT); a part the garage does not have is NOT_FOUND.
+  rpc PrintPartLabels(PrintPartLabelsRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/part-labels:print"
+      body: "*"
+    };
   }
 }
