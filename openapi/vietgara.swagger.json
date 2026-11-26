@@ -5335,8 +5335,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "type": "object",
-              "properties": {}
+              "$ref": "#/definitions/v1DeletePrinterResponse"
             }
           },
           "default": {
@@ -6191,7 +6190,7 @@
     },
     "/api/v1/garages/{garageId}/quotes/{quoteId}/escpos:print": {
       "post": {
-        "summary": "FR-DOC-06 (Release 13.0): the quote on a K80 or K57 roll, as ESC/POS\n(application/octet-stream) for the client to send to a raw printer.\nSame rules as PrintQuotePdf with the roll as the paper size: the\ntemplate version is the one of the document's first print on that roll\n(a version is pinned per paper size), the copy mark goes on a reprint\nafter a print on any paper, and the print is logged. A page size or a\nlabel is refused (INVALID_ARGUMENT). Needs quote.read.",
+        "summary": "FR-DOC-06 (Release 13.0): the quote on a K80 or K57 roll, as ESC/POS\n(application/octet-stream) for the client to send to a raw printer.\nSame rules as PrintQuotePdf with the roll as the paper size: the\ntemplate version is the one of the document's first print on that roll\n(a version is pinned per paper size), the copy mark goes on a reprint\nafter a print on any paper when the copy_mark of the document type's\nPrintSetting is on, and the print is logged. A page size or a\nlabel is refused (INVALID_ARGUMENT). Needs quote.read.",
         "operationId": "DocumentService_PrintQuoteEscPos",
         "responses": {
           "200": {
@@ -6318,7 +6317,7 @@
     },
     "/api/v1/garages/{garageId}/quotes/{quoteId}/pdf:print": {
       "post": {
-        "summary": "FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching\nExport*Pdf RPC (the garage's paper size, the template version of the\ndocument's first print), add the copy mark of a reprint when the garage\nturned it on, and write the print log. Each needs the permission of the\ndata it renders.",
+        "summary": "FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching\nExport*Pdf RPC (the garage's paper size, the template version of the\ndocument's first print on that paper size), add the copy mark of a\nreprint (after a print on any paper) when the garage turned it on, and\nwrite the print log. Each needs the permission of the\ndata it renders.",
         "operationId": "DocumentService_PrintQuotePdf",
         "responses": {
           "200": {
@@ -14050,6 +14049,9 @@
     "v1DeletePlatformRoleResponse": {
       "type": "object"
     },
+    "v1DeletePrinterResponse": {
+      "type": "object"
+    },
     "v1DeleteQuoteResponse": {
       "type": "object"
     },
@@ -17612,7 +17614,7 @@
         },
         "host": {
           "type": "string",
-          "description": "An IPv4 or IPv6 address or a host name, without a scheme or a port."
+          "description": "An IPv4 address, an IPv6 address without brackets (clients add them\nwhen building a URL), or a host name; no scheme or port."
         },
         "port": {
           "type": "integer",
@@ -17634,12 +17636,12 @@
           },
           "description": "The documents the apps send to this printer first. A K80 or K57 printer\ntakes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP\nprinter any document but PART_LABEL. Several printers may take the same\ndocument: the apps offer them all, those that take it first on top, by\nname."
         },
-        "createTime": {
+        "createdAt": {
           "type": "string",
           "format": "date-time",
           "readOnly": true
         },
-        "updateTime": {
+        "updatedAt": {
           "type": "string",
           "format": "date-time",
           "readOnly": true

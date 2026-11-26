@@ -12,7 +12,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -117,8 +116,9 @@ type DocumentServiceClient interface {
 	UpdatePrintSetting(ctx context.Context, in *UpdatePrintSettingRequest, opts ...grpc.CallOption) (*PrintSetting, error)
 	// FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
 	// Export*Pdf RPC (the garage's paper size, the template version of the
-	// document's first print), add the copy mark of a reprint when the garage
-	// turned it on, and write the print log. Each needs the permission of the
+	// document's first print on that paper size), add the copy mark of a
+	// reprint (after a print on any paper) when the garage turned it on, and
+	// write the print log. Each needs the permission of the
 	// data it renders.
 	PrintQuotePdf(ctx context.Context, in *PrintQuotePdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	PrintRepairOrderPdf(ctx context.Context, in *PrintRepairOrderPdfRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
@@ -150,7 +150,7 @@ type DocumentServiceClient interface {
 	// FR-DOC-07: replaces a printer, with the rules of CreatePrinter.
 	UpdatePrinter(ctx context.Context, in *UpdatePrinterRequest, opts ...grpc.CallOption) (*Printer, error)
 	// FR-DOC-07: removes a printer.
-	DeletePrinter(ctx context.Context, in *DeletePrinterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeletePrinter(ctx context.Context, in *DeletePrinterRequest, opts ...grpc.CallOption) (*DeletePrinterResponse, error)
 	// FR-DOC-07: a test page for the printer, in its language: ESC/POS on its
 	// roll or label for a raw printer, an A4 PDF for an IPP printer. The client
 	// sends it to the printer from the device it tests. Needs membership of
@@ -161,7 +161,8 @@ type DocumentServiceClient interface {
 	// Same rules as PrintQuotePdf with the roll as the paper size: the
 	// template version is the one of the document's first print on that roll
 	// (a version is pinned per paper size), the copy mark goes on a reprint
-	// after a print on any paper, and the print is logged. A page size or a
+	// after a print on any paper when the copy_mark of the document type's
+	// PrintSetting is on, and the print is logged. A page size or a
 	// label is refused (INVALID_ARGUMENT). Needs quote.read.
 	PrintQuoteEscPos(ctx context.Context, in *PrintQuoteEscPosRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	// FR-DOC-06: the payment voucher on a K80 or K57 roll, as ESC/POS, with
@@ -475,9 +476,9 @@ func (c *documentServiceClient) UpdatePrinter(ctx context.Context, in *UpdatePri
 	return out, nil
 }
 
-func (c *documentServiceClient) DeletePrinter(ctx context.Context, in *DeletePrinterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *documentServiceClient) DeletePrinter(ctx context.Context, in *DeletePrinterRequest, opts ...grpc.CallOption) (*DeletePrinterResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(emptypb.Empty)
+	out := new(DeletePrinterResponse)
 	err := c.cc.Invoke(ctx, DocumentService_DeletePrinter_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -585,8 +586,9 @@ type DocumentServiceServer interface {
 	UpdatePrintSetting(context.Context, *UpdatePrintSettingRequest) (*PrintSetting, error)
 	// FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
 	// Export*Pdf RPC (the garage's paper size, the template version of the
-	// document's first print), add the copy mark of a reprint when the garage
-	// turned it on, and write the print log. Each needs the permission of the
+	// document's first print on that paper size), add the copy mark of a
+	// reprint (after a print on any paper) when the garage turned it on, and
+	// write the print log. Each needs the permission of the
 	// data it renders.
 	PrintQuotePdf(context.Context, *PrintQuotePdfRequest) (*httpbody.HttpBody, error)
 	PrintRepairOrderPdf(context.Context, *PrintRepairOrderPdfRequest) (*httpbody.HttpBody, error)
@@ -618,7 +620,7 @@ type DocumentServiceServer interface {
 	// FR-DOC-07: replaces a printer, with the rules of CreatePrinter.
 	UpdatePrinter(context.Context, *UpdatePrinterRequest) (*Printer, error)
 	// FR-DOC-07: removes a printer.
-	DeletePrinter(context.Context, *DeletePrinterRequest) (*emptypb.Empty, error)
+	DeletePrinter(context.Context, *DeletePrinterRequest) (*DeletePrinterResponse, error)
 	// FR-DOC-07: a test page for the printer, in its language: ESC/POS on its
 	// roll or label for a raw printer, an A4 PDF for an IPP printer. The client
 	// sends it to the printer from the device it tests. Needs membership of
@@ -629,7 +631,8 @@ type DocumentServiceServer interface {
 	// Same rules as PrintQuotePdf with the roll as the paper size: the
 	// template version is the one of the document's first print on that roll
 	// (a version is pinned per paper size), the copy mark goes on a reprint
-	// after a print on any paper, and the print is logged. A page size or a
+	// after a print on any paper when the copy_mark of the document type's
+	// PrintSetting is on, and the print is logged. A page size or a
 	// label is refused (INVALID_ARGUMENT). Needs quote.read.
 	PrintQuoteEscPos(context.Context, *PrintQuoteEscPosRequest) (*httpbody.HttpBody, error)
 	// FR-DOC-06: the payment voucher on a K80 or K57 roll, as ESC/POS, with
@@ -740,7 +743,7 @@ func (UnimplementedDocumentServiceServer) CreatePrinter(context.Context, *Create
 func (UnimplementedDocumentServiceServer) UpdatePrinter(context.Context, *UpdatePrinterRequest) (*Printer, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdatePrinter not implemented")
 }
-func (UnimplementedDocumentServiceServer) DeletePrinter(context.Context, *DeletePrinterRequest) (*emptypb.Empty, error) {
+func (UnimplementedDocumentServiceServer) DeletePrinter(context.Context, *DeletePrinterRequest) (*DeletePrinterResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeletePrinter not implemented")
 }
 func (UnimplementedDocumentServiceServer) PrintPrinterTestPage(context.Context, *PrintPrinterTestPageRequest) (*httpbody.HttpBody, error) {

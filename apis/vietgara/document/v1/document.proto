@@ -5,7 +5,6 @@ package vietgara.document.v1;
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/api/httpbody.proto";
-import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "vietgara/reporting/v1/reporting.proto";
 
@@ -232,7 +231,8 @@ message Printer {
   // 1 to 60 characters, unique in the garage without regard to case.
   string name = 2 [(google.api.field_behavior) = REQUIRED];
   PrinterProtocol protocol = 3 [(google.api.field_behavior) = REQUIRED];
-  // An IPv4 or IPv6 address or a host name, without a scheme or a port.
+  // An IPv4 address, an IPv6 address without brackets (clients add them
+  // when building a URL), or a host name; no scheme or port.
   string host = 4 [(google.api.field_behavior) = REQUIRED];
   // 1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP).
   int32 port = 5;
@@ -250,8 +250,8 @@ message Printer {
   // document: the apps offer them all, those that take it first on top, by
   // name.
   repeated DocumentType document_types = 8;
-  google.protobuf.Timestamp create_time = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
-  google.protobuf.Timestamp update_time = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 message ListPrintersRequest {
@@ -279,6 +279,8 @@ message DeletePrinterRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string printer_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
+
+message DeletePrinterResponse {}
 
 message PrintPrinterTestPageRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
@@ -414,8 +416,9 @@ service DocumentService {
 
   // FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
   // Export*Pdf RPC (the garage's paper size, the template version of the
-  // document's first print), add the copy mark of a reprint when the garage
-  // turned it on, and write the print log. Each needs the permission of the
+  // document's first print on that paper size), add the copy mark of a
+  // reprint (after a print on any paper) when the garage turned it on, and
+  // write the print log. Each needs the permission of the
   // data it renders.
   rpc PrintQuotePdf(PrintQuotePdfRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {post: "/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf:print"};
@@ -501,7 +504,7 @@ service DocumentService {
   }
 
   // FR-DOC-07: removes a printer.
-  rpc DeletePrinter(DeletePrinterRequest) returns (google.protobuf.Empty) {
+  rpc DeletePrinter(DeletePrinterRequest) returns (DeletePrinterResponse) {
     option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/printers/{printer_id}"};
   }
 
@@ -518,7 +521,8 @@ service DocumentService {
   // Same rules as PrintQuotePdf with the roll as the paper size: the
   // template version is the one of the document's first print on that roll
   // (a version is pinned per paper size), the copy mark goes on a reprint
-  // after a print on any paper, and the print is logged. A page size or a
+  // after a print on any paper when the copy_mark of the document type's
+  // PrintSetting is on, and the print is logged. A page size or a
   // label is refused (INVALID_ARGUMENT). Needs quote.read.
   rpc PrintQuoteEscPos(PrintQuoteEscPosRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {
