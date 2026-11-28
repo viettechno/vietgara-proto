@@ -154,7 +154,8 @@ type DocumentServiceClient interface {
 	// FR-DOC-07: removes a printer.
 	DeletePrinter(ctx context.Context, in *DeletePrinterRequest, opts ...grpc.CallOption) (*DeletePrinterResponse, error)
 	// FR-DOC-07: a test page for the printer, in its language: ESC/POS on its
-	// roll or label for a raw printer, an A4 PDF for an IPP printer. The client
+	// roll or label for a raw printer, a PDF on its page size (A4 when it has
+	// none) for an IPP printer. The client
 	// sends it to the printer from the device it tests. Needs membership of
 	// the garage; nothing is logged.
 	PrintPrinterTestPage(ctx context.Context, in *PrintPrinterTestPageRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
@@ -628,7 +629,8 @@ type DocumentServiceServer interface {
 	// FR-DOC-07: removes a printer.
 	DeletePrinter(context.Context, *DeletePrinterRequest) (*DeletePrinterResponse, error)
 	// FR-DOC-07: a test page for the printer, in its language: ESC/POS on its
-	// roll or label for a raw printer, an A4 PDF for an IPP printer. The client
+	// roll or label for a raw printer, a PDF on its page size (A4 when it has
+	// none) for an IPP printer. The client
 	// sends it to the printer from the device it tests. Needs membership of
 	// the garage; nothing is logged.
 	PrintPrinterTestPage(context.Context, *PrintPrinterTestPageRequest) (*httpbody.HttpBody, error)

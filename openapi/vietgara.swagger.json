@@ -5426,7 +5426,7 @@
     },
     "/api/v1/garages/{garageId}/printers/{printerId}/test-page:print": {
       "post": {
-        "summary": "FR-DOC-07: a test page for the printer, in its language: ESC/POS on its\nroll or label for a raw printer, an A4 PDF for an IPP printer. The client\nsends it to the printer from the device it tests. Needs membership of\nthe garage; nothing is logged.",
+        "summary": "FR-DOC-07: a test page for the printer, in its language: ESC/POS on its\nroll or label for a raw printer, a PDF on its page size (A4 when it has\nnone) for an IPP printer. The client\nsends it to the printer from the device it tests. Needs membership of\nthe garage; nothing is logged.",
         "operationId": "DocumentService_PrintPrinterTestPage",
         "responses": {
           "200": {
