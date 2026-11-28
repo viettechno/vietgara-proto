@@ -4369,7 +4369,7 @@
     },
     "/api/v1/garages/{garageId}/part-labels:print": {
       "post": {
-        "summary": "FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and a Code\n128 barcode of the base unit's first barcode, or of the SKU when it has\nnone; a code that is not ASCII or too long for a readable barcode on the\nlabel is refused, INVALID_ARGUMENT)\nas ESC/POS for a raw label printer. Needs the permission that reads\nparts; nothing is logged. Another paper, copies outside 1 to 100, a part\nlisted twice, more than 50 parts or 300 labels are refused\n(INVALID_ARGUMENT); a part the garage does not have is NOT_FOUND.",
+        "summary": "FR-INV-13 (Release 13.0): barcode labels of parts as ESC/POS for a raw\nlabel printer: name, SKU and a Code 128 barcode of the entry's unit (see\nPartLabelCopies.unit_id; a packaging unit's name is printed too). Needs\nthe permission that reads parts; nothing is logged. Another paper,\ncopies outside 1 to 100, the same part and unit twice, more than 50\nentries or 300 labels, a unit that is not the part's or has no barcode,\nand a code that is not ASCII or too long for a readable barcode are\nrefused (INVALID_ARGUMENT); a part the garage does not have is\nNOT_FOUND.",
         "operationId": "DocumentService_PrintPartLabels",
         "responses": {
           "200": {
@@ -12385,7 +12385,7 @@
             "type": "object",
             "$ref": "#/definitions/v1PartLabelCopies"
           },
-          "description": "1 to 50 parts, each at most once, at most 300 labels in all. A client\nprinting the labels of a goods receipt fills them from its lines."
+          "description": "1 to 50 entries, each (part, unit) pair at most once (unset, empty and\nthe base unit's id are one unit), at most 300 labels in all. A client printing the labels of a\ngoods receipt fills them from its lines."
         }
       },
       "required": [
@@ -16907,9 +16907,13 @@
           "type": "integer",
           "format": "int32",
           "description": "1 to 100."
+        },
+        "unitId": {
+          "type": "string",
+          "description": "A packaging unit of the part (a case): the label carries that unit's\nfirst barcode (in the order of Part.barcodes) and its name, so a scan\ncounts a case. Unset, empty or the part's base unit is the base unit,\nwhose label carries the first of Part.barcodes with no unit_id, or the\nSKU when there is none. A packaging unit that is not the part's (or no\nlonger is), or that has no barcode, is refused\n(INVALID_ARGUMENT): the base unit's code on a case would count one."
         }
       },
-      "description": "PartLabelCopies is how many labels of one part to print.",
+      "description": "PartLabelCopies is how many labels of one part, in one unit, to print.",
       "required": [
         "partId",
         "copies"

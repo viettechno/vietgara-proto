@@ -2514,12 +2514,20 @@ func (x *PrintPaymentVoucherEscPosRequest) GetPaperSize() PaperSize {
 	return PaperSize_PAPER_SIZE_UNSPECIFIED
 }
 
-// PartLabelCopies is how many labels of one part to print.
+// PartLabelCopies is how many labels of one part, in one unit, to print.
 type PartLabelCopies struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
 	PartId string                 `protobuf:"bytes,1,opt,name=part_id,json=partId,proto3" json:"part_id,omitempty"`
 	// 1 to 100.
-	Copies        int32 `protobuf:"varint,2,opt,name=copies,proto3" json:"copies,omitempty"`
+	Copies int32 `protobuf:"varint,2,opt,name=copies,proto3" json:"copies,omitempty"`
+	// A packaging unit of the part (a case): the label carries that unit's
+	// first barcode (in the order of Part.barcodes) and its name, so a scan
+	// counts a case. Unset, empty or the part's base unit is the base unit,
+	// whose label carries the first of Part.barcodes with no unit_id, or the
+	// SKU when there is none. A packaging unit that is not the part's (or no
+	// longer is), or that has no barcode, is refused
+	// (INVALID_ARGUMENT): the base unit's code on a case would count one.
+	UnitId        *string `protobuf:"bytes,3,opt,name=unit_id,json=unitId,proto3,oneof" json:"unit_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2568,13 +2576,21 @@ func (x *PartLabelCopies) GetCopies() int32 {
 	return 0
 }
 
+func (x *PartLabelCopies) GetUnitId() string {
+	if x != nil && x.UnitId != nil {
+		return *x.UnitId
+	}
+	return ""
+}
+
 type PrintPartLabelsRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	// LABEL_50X30, the only label size of Release 13.0.
 	PaperSize PaperSize `protobuf:"varint,2,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
-	// 1 to 50 parts, each at most once, at most 300 labels in all. A client
-	// printing the labels of a goods receipt fills them from its lines.
+	// 1 to 50 entries, each (part, unit) pair at most once (unset, empty and
+	// the base unit's id are one unit), at most 300 labels in all. A client printing the labels of a
+	// goods receipt fills them from its lines.
 	Parts         []*PartLabelCopies `protobuf:"bytes,3,rep,name=parts,proto3" json:"parts,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2805,10 +2821,13 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\n" +
 	"payment_id\x18\x03 \x01(\tB\x03\xe0A\x02R\tpaymentId\x12C\n" +
 	"\n" +
-	"paper_size\x18\x04 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeB\x03\xe0A\x02R\tpaperSize\"L\n" +
+	"paper_size\x18\x04 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeB\x03\xe0A\x02R\tpaperSize\"v\n" +
 	"\x0fPartLabelCopies\x12\x1c\n" +
 	"\apart_id\x18\x01 \x01(\tB\x03\xe0A\x02R\x06partId\x12\x1b\n" +
-	"\x06copies\x18\x02 \x01(\x05B\x03\xe0A\x02R\x06copies\"\xc1\x01\n" +
+	"\x06copies\x18\x02 \x01(\x05B\x03\xe0A\x02R\x06copies\x12\x1c\n" +
+	"\aunit_id\x18\x03 \x01(\tH\x00R\x06unitId\x88\x01\x01B\n" +
+	"\n" +
+	"\b_unit_id\"\xc1\x01\n" +
 	"\x16PrintPartLabelsRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12C\n" +
 	"\n" +
@@ -3042,6 +3061,7 @@ func file_vietgara_document_v1_document_proto_init() {
 	if File_vietgara_document_v1_document_proto != nil {
 		return
 	}
+	file_vietgara_document_v1_document_proto_msgTypes[38].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

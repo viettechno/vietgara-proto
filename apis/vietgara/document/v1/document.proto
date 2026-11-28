@@ -360,19 +360,28 @@ message PrintPaymentVoucherEscPosRequest {
   PaperSize paper_size = 4 [(google.api.field_behavior) = REQUIRED];
 }
 
-// PartLabelCopies is how many labels of one part to print.
+// PartLabelCopies is how many labels of one part, in one unit, to print.
 message PartLabelCopies {
   string part_id = 1 [(google.api.field_behavior) = REQUIRED];
   // 1 to 100.
   int32 copies = 2 [(google.api.field_behavior) = REQUIRED];
+  // A packaging unit of the part (a case): the label carries that unit's
+  // first barcode (in the order of Part.barcodes) and its name, so a scan
+  // counts a case. Unset, empty or the part's base unit is the base unit,
+  // whose label carries the first of Part.barcodes with no unit_id, or the
+  // SKU when there is none. A packaging unit that is not the part's (or no
+  // longer is), or that has no barcode, is refused
+  // (INVALID_ARGUMENT): the base unit's code on a case would count one.
+  optional string unit_id = 3;
 }
 
 message PrintPartLabelsRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   // LABEL_50X30, the only label size of Release 13.0.
   PaperSize paper_size = 2 [(google.api.field_behavior) = REQUIRED];
-  // 1 to 50 parts, each at most once, at most 300 labels in all. A client
-  // printing the labels of a goods receipt fills them from its lines.
+  // 1 to 50 entries, each (part, unit) pair at most once (unset, empty and
+  // the base unit's id are one unit), at most 300 labels in all. A client printing the labels of a
+  // goods receipt fills them from its lines.
   repeated PartLabelCopies parts = 3 [(google.api.field_behavior) = REQUIRED];
 }
 
@@ -626,14 +635,15 @@ service DocumentService {
     };
   }
 
-  // FR-INV-13 (Release 13.0): barcode labels of parts (name, SKU and a Code
-  // 128 barcode of the base unit's first barcode, or of the SKU when it has
-  // none; a code that is not ASCII or too long for a readable barcode on the
-  // label is refused, INVALID_ARGUMENT)
-  // as ESC/POS for a raw label printer. Needs the permission that reads
-  // parts; nothing is logged. Another paper, copies outside 1 to 100, a part
-  // listed twice, more than 50 parts or 300 labels are refused
-  // (INVALID_ARGUMENT); a part the garage does not have is NOT_FOUND.
+  // FR-INV-13 (Release 13.0): barcode labels of parts as ESC/POS for a raw
+  // label printer: name, SKU and a Code 128 barcode of the entry's unit (see
+  // PartLabelCopies.unit_id; a packaging unit's name is printed too). Needs
+  // the permission that reads parts; nothing is logged. Another paper,
+  // copies outside 1 to 100, the same part and unit twice, more than 50
+  // entries or 300 labels, a unit that is not the part's or has no barcode,
+  // and a code that is not ASCII or too long for a readable barcode are
+  // refused (INVALID_ARGUMENT); a part the garage does not have is
+  // NOT_FOUND.
   rpc PrintPartLabels(PrintPartLabelsRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/part-labels:print"
