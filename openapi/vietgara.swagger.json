@@ -56,7 +56,7 @@
     },
     {
       "name": "PrintAgentService",
-      "description": "PrintAgentService is the print agent's own API (FR-DOC-08, Release 13.1).\nPairing is public: the pairing code is the credential.\n\nOnce paired, the agent connects with a WebSocket to\n/api/v1/print-agent/connect, sending \"Authorization: Bearer \u003cagent_key\u003e\",\nand exchanges JSON text messages (see the API Specification, Section\n10.4): the server sends \"hello\" and then each \"job\" of the agent's\nprinters; the agent sends its \"printers\" and the \"result\" of each job. A\nrevoked or unknown key is refused (HTTP 401) and an open connection is\nclosed (WebSocket close code 4001)."
+      "description": "PrintAgentService is the print agent's own API (FR-DOC-08, Release 13.1).\nPairing is public: the pairing code is the credential.\n\nOnce paired, the agent connects with a WebSocket to\n/api/v1/print-agents/connect, sending \"Authorization: Bearer \u003cagent_key\u003e\",\nand exchanges JSON text messages (see the API Specification, Section\n10.4): the server sends \"hello\" and then each \"job\" of the agent's\nprinters; the agent sends its \"printers\" and the \"result\" of each job. A\nrevoked or unknown key is refused (HTTP 401) and an open connection is\nclosed (WebSocket close code 4001)."
     },
     {
       "name": "FileService",
@@ -5336,7 +5336,7 @@
     },
     "/api/v1/garages/{garageId}/print-jobs": {
       "post": {
-        "summary": "FR-DOC-08: prints a document on an AGENT printer without a dialog. The\nserver renders it for the printer's paper (ESC/POS on a roll or label, a\nPDF on its page size or the garage's setting) with the rules of the print\nendpoints (template version, copy mark, print log; labels are not\nlogged), and queues it for the agent, which prints it when it is\nconnected. Needs the permission of the document (that of its print\nendpoint; a test page: membership). A printer of another protocol, a\ndocument the printer's paper has no template for, and a missing\ndocument field are refused (INVALID_ARGUMENT).",
+        "summary": "FR-DOC-08: prints a document on an AGENT printer without a dialog. The\nserver renders it for the printer's paper (ESC/POS on a roll or label, a\nPDF on its page size or the garage's setting) with the rules of the print\nendpoints (template version, copy mark, print log; labels are not\nlogged), and queues it for the agent, which prints it when it is\nconnected. Needs the permission of the document (that of its print\nendpoint; a test page: membership) and an Idempotency-Key header: a\nretry with the same key answers the same job instead of printing twice.\nThe job keeps the printer's PC printer and paper as they were: deleting\nor changing the printer later does not stop a queued job. A printer of\nanother protocol, a document the printer's paper has no template for,\nand a missing document field are refused (INVALID_ARGUMENT).",
         "operationId": "DocumentService_CreatePrintJob",
         "responses": {
           "200": {
@@ -5648,7 +5648,7 @@
     },
     "/api/v1/garages/{garageId}/printers/{printerId}/test-page:print": {
       "post": {
-        "summary": "FR-DOC-07: a test page for the printer, in its language: ESC/POS on its\nroll or label for a raw printer, a PDF on its page size (A4 when it has\nnone) for an IPP printer. The client\nsends it to the printer from the device it tests. Needs membership of\nthe garage; nothing is logged.",
+        "summary": "FR-DOC-07: a test page for the printer, in its language: ESC/POS on its\nroll or label for a raw printer, a PDF on its page size (A4 when it has\nnone) for an IPP printer. For an AGENT printer it answers the bytes for\nits paper the same way; the clients print one through CreatePrintJob\nwith test_page. The client\nsends it to the printer from the device it tests. Needs membership of\nthe garage; nothing is logged.",
         "operationId": "DocumentService_PrintPrinterTestPage",
         "responses": {
           "200": {
@@ -18095,7 +18095,7 @@
         },
         "paired": {
           "type": "boolean",
-          "description": "Whether the agent was paired: it has a key and has connected at least\nonce.",
+          "description": "Whether the agent was paired: PairPrintAgent gave it its key (the\npairing code is used up).",
           "readOnly": true
         },
         "pairingExpiresAt": {
@@ -18251,7 +18251,7 @@
         "PRINT_JOB_STATUS_FAILED",
         "PRINT_JOB_STATUS_EXPIRED"
       ],
-      "description": "PrintJobStatus is where a print job is.\n\n - PRINT_JOB_STATUS_QUEUED: Waiting for the agent: it is not connected, or has not been sent the job\nyet.\n - PRINT_JOB_STATUS_SENT: Sent to the agent, which has not answered yet. A job sent on a\nconnection that drops before the agent answers is sent again when the\nagent connects next; the agent prints a job id once and answers\n\"printed\" for one it printed already.\n - PRINT_JOB_STATUS_PRINTED: The PC's printer took the job.\n - PRINT_JOB_STATUS_FAILED: The agent could not print it; PrintJob.error says why.\n - PRINT_JOB_STATUS_EXPIRED: Not printed within an hour, so never printed: a voucher should not come\nout of the printer long after it was asked for."
+      "description": "PrintJobStatus is where a print job is.\n\n - PRINT_JOB_STATUS_QUEUED: Waiting for the agent: it is not connected, or has not been sent the job\nyet.\n - PRINT_JOB_STATUS_SENT: Sent to the agent, which has not answered yet. A job sent on a\nconnection that drops before the agent answers is sent again when the\nagent connects next; the agent prints a job id once and answers\n\"printed\" for one it printed already.\n - PRINT_JOB_STATUS_PRINTED: The PC's printer took the job.\n - PRINT_JOB_STATUS_FAILED: The agent could not print it; PrintJob.error says why.\n - PRINT_JOB_STATUS_EXPIRED: Not confirmed within an hour, and never sent again: a voucher should not\ncome out of the printer long after it was asked for. A job never sent\nwas not printed; one sent and not answered may have been, so a client\ntells the person to check the printer before printing it again."
     },
     "v1PrintJobTestPage": {
       "type": "object",
@@ -18302,7 +18302,7 @@
         "port": {
           "type": "integer",
           "format": "int32",
-          "description": "1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP). An\nAGENT printer has none (0)."
+          "description": "1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP). An\nAGENT printer has none: a port or a path is refused (INVALID_ARGUMENT)."
         },
         "path": {
           "type": "string",

@@ -244,8 +244,10 @@ const (
 	PrintJobStatus_PRINT_JOB_STATUS_PRINTED PrintJobStatus = 3
 	// The agent could not print it; PrintJob.error says why.
 	PrintJobStatus_PRINT_JOB_STATUS_FAILED PrintJobStatus = 4
-	// Not printed within an hour, so never printed: a voucher should not come
-	// out of the printer long after it was asked for.
+	// Not confirmed within an hour, and never sent again: a voucher should not
+	// come out of the printer long after it was asked for. A job never sent
+	// was not printed; one sent and not answered may have been, so a client
+	// tells the person to check the printer before printing it again.
 	PrintJobStatus_PRINT_JOB_STATUS_EXPIRED PrintJobStatus = 5
 )
 
@@ -1994,7 +1996,7 @@ type Printer struct {
 	// RAW and IPP; an AGENT printer has none (a host is refused).
 	Host string `protobuf:"bytes,4,opt,name=host,proto3" json:"host,omitempty"`
 	// 1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP). An
-	// AGENT printer has none (0).
+	// AGENT printer has none: a port or a path is refused (INVALID_ARGUMENT).
 	Port int32 `protobuf:"varint,5,opt,name=port,proto3" json:"port,omitempty"`
 	// IPP only: the printer's resource path, "ipp/print" when empty; a
 	// leading "/" is removed. Letters, digits and - . _ ~ /, at most 200
@@ -2766,8 +2768,8 @@ type PrintAgent struct {
 	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// 1 to 60 characters, unique in the garage without regard to case.
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	// Whether the agent was paired: it has a key and has connected at least
-	// once.
+	// Whether the agent was paired: PairPrintAgent gave it its key (the
+	// pairing code is used up).
 	Paired bool `protobuf:"varint,3,opt,name=paired,proto3" json:"paired,omitempty"`
 	// While not paired: when the pairing code stops working.
 	PairingExpiresAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=pairing_expires_at,json=pairingExpiresAt,proto3" json:"pairing_expires_at,omitempty"`

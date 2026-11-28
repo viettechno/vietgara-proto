@@ -161,7 +161,9 @@ type DocumentServiceClient interface {
 	DeletePrinter(ctx context.Context, in *DeletePrinterRequest, opts ...grpc.CallOption) (*DeletePrinterResponse, error)
 	// FR-DOC-07: a test page for the printer, in its language: ESC/POS on its
 	// roll or label for a raw printer, a PDF on its page size (A4 when it has
-	// none) for an IPP printer. The client
+	// none) for an IPP printer. For an AGENT printer it answers the bytes for
+	// its paper the same way; the clients print one through CreatePrintJob
+	// with test_page. The client
 	// sends it to the printer from the device it tests. Needs membership of
 	// the garage; nothing is logged.
 	PrintPrinterTestPage(ctx context.Context, in *PrintPrinterTestPageRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
@@ -211,9 +213,12 @@ type DocumentServiceClient interface {
 	// endpoints (template version, copy mark, print log; labels are not
 	// logged), and queues it for the agent, which prints it when it is
 	// connected. Needs the permission of the document (that of its print
-	// endpoint; a test page: membership). A printer of another protocol, a
-	// document the printer's paper has no template for, and a missing
-	// document field are refused (INVALID_ARGUMENT).
+	// endpoint; a test page: membership) and an Idempotency-Key header: a
+	// retry with the same key answers the same job instead of printing twice.
+	// The job keeps the printer's PC printer and paper as they were: deleting
+	// or changing the printer later does not stop a queued job. A printer of
+	// another protocol, a document the printer's paper has no template for,
+	// and a missing document field are refused (INVALID_ARGUMENT).
 	CreatePrintJob(ctx context.Context, in *CreatePrintJobRequest, opts ...grpc.CallOption) (*PrintJob, error)
 	// FR-DOC-08: a print job, to follow it until it is printed, failed or
 	// expired. Needs membership of the garage.
@@ -727,7 +732,9 @@ type DocumentServiceServer interface {
 	DeletePrinter(context.Context, *DeletePrinterRequest) (*DeletePrinterResponse, error)
 	// FR-DOC-07: a test page for the printer, in its language: ESC/POS on its
 	// roll or label for a raw printer, a PDF on its page size (A4 when it has
-	// none) for an IPP printer. The client
+	// none) for an IPP printer. For an AGENT printer it answers the bytes for
+	// its paper the same way; the clients print one through CreatePrintJob
+	// with test_page. The client
 	// sends it to the printer from the device it tests. Needs membership of
 	// the garage; nothing is logged.
 	PrintPrinterTestPage(context.Context, *PrintPrinterTestPageRequest) (*httpbody.HttpBody, error)
@@ -777,9 +784,12 @@ type DocumentServiceServer interface {
 	// endpoints (template version, copy mark, print log; labels are not
 	// logged), and queues it for the agent, which prints it when it is
 	// connected. Needs the permission of the document (that of its print
-	// endpoint; a test page: membership). A printer of another protocol, a
-	// document the printer's paper has no template for, and a missing
-	// document field are refused (INVALID_ARGUMENT).
+	// endpoint; a test page: membership) and an Idempotency-Key header: a
+	// retry with the same key answers the same job instead of printing twice.
+	// The job keeps the printer's PC printer and paper as they were: deleting
+	// or changing the printer later does not stop a queued job. A printer of
+	// another protocol, a document the printer's paper has no template for,
+	// and a missing document field are refused (INVALID_ARGUMENT).
 	CreatePrintJob(context.Context, *CreatePrintJobRequest) (*PrintJob, error)
 	// FR-DOC-08: a print job, to follow it until it is printed, failed or
 	// expired. Needs membership of the garage.
@@ -1839,7 +1849,7 @@ const (
 // Pairing is public: the pairing code is the credential.
 //
 // Once paired, the agent connects with a WebSocket to
-// /api/v1/print-agent/connect, sending "Authorization: Bearer <agent_key>",
+// /api/v1/print-agents/connect, sending "Authorization: Bearer <agent_key>",
 // and exchanges JSON text messages (see the API Specification, Section
 // 10.4): the server sends "hello" and then each "job" of the agent's
 // printers; the agent sends its "printers" and the "result" of each job. A
@@ -1877,7 +1887,7 @@ func (c *printAgentServiceClient) PairPrintAgent(ctx context.Context, in *PairPr
 // Pairing is public: the pairing code is the credential.
 //
 // Once paired, the agent connects with a WebSocket to
-// /api/v1/print-agent/connect, sending "Authorization: Bearer <agent_key>",
+// /api/v1/print-agents/connect, sending "Authorization: Bearer <agent_key>",
 // and exchanges JSON text messages (see the API Specification, Section
 // 10.4): the server sends "hello" and then each "job" of the agent's
 // printers; the agent sends its "printers" and the "result" of each job. A

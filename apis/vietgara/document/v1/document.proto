@@ -295,7 +295,7 @@ message Printer {
   // RAW and IPP; an AGENT printer has none (a host is refused).
   string host = 4;
   // 1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP). An
-  // AGENT printer has none (0).
+  // AGENT printer has none: a port or a path is refused (INVALID_ARGUMENT).
   int32 port = 5;
   // IPP only: the printer's resource path, "ipp/print" when empty; a
   // leading "/" is removed. Letters, digits and - . _ ~ /, at most 200
@@ -418,8 +418,8 @@ message PrintAgent {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // 1 to 60 characters, unique in the garage without regard to case.
   string name = 2 [(google.api.field_behavior) = REQUIRED];
-  // Whether the agent was paired: it has a key and has connected at least
-  // once.
+  // Whether the agent was paired: PairPrintAgent gave it its key (the
+  // pairing code is used up).
   bool paired = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
   // While not paired: when the pairing code stops working.
   google.protobuf.Timestamp pairing_expires_at = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -495,8 +495,10 @@ enum PrintJobStatus {
   PRINT_JOB_STATUS_PRINTED = 3;
   // The agent could not print it; PrintJob.error says why.
   PRINT_JOB_STATUS_FAILED = 4;
-  // Not printed within an hour, so never printed: a voucher should not come
-  // out of the printer long after it was asked for.
+  // Not confirmed within an hour, and never sent again: a voucher should not
+  // come out of the printer long after it was asked for. A job never sent
+  // was not printed; one sent and not answered may have been, so a client
+  // tells the person to check the printer before printing it again.
   PRINT_JOB_STATUS_EXPIRED = 5;
 }
 
@@ -795,7 +797,9 @@ service DocumentService {
 
   // FR-DOC-07: a test page for the printer, in its language: ESC/POS on its
   // roll or label for a raw printer, a PDF on its page size (A4 when it has
-  // none) for an IPP printer. The client
+  // none) for an IPP printer. For an AGENT printer it answers the bytes for
+  // its paper the same way; the clients print one through CreatePrintJob
+  // with test_page. The client
   // sends it to the printer from the device it tests. Needs membership of
   // the garage; nothing is logged.
   rpc PrintPrinterTestPage(PrintPrinterTestPageRequest) returns (google.api.HttpBody) {
@@ -881,9 +885,12 @@ service DocumentService {
   // endpoints (template version, copy mark, print log; labels are not
   // logged), and queues it for the agent, which prints it when it is
   // connected. Needs the permission of the document (that of its print
-  // endpoint; a test page: membership). A printer of another protocol, a
-  // document the printer's paper has no template for, and a missing
-  // document field are refused (INVALID_ARGUMENT).
+  // endpoint; a test page: membership) and an Idempotency-Key header: a
+  // retry with the same key answers the same job instead of printing twice.
+  // The job keeps the printer's PC printer and paper as they were: deleting
+  // or changing the printer later does not stop a queued job. A printer of
+  // another protocol, a document the printer's paper has no template for,
+  // and a missing document field are refused (INVALID_ARGUMENT).
   rpc CreatePrintJob(CreatePrintJobRequest) returns (PrintJob) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/print-jobs"
@@ -902,7 +909,7 @@ service DocumentService {
 // Pairing is public: the pairing code is the credential.
 //
 // Once paired, the agent connects with a WebSocket to
-// /api/v1/print-agent/connect, sending "Authorization: Bearer <agent_key>",
+// /api/v1/print-agents/connect, sending "Authorization: Bearer <agent_key>",
 // and exchanges JSON text messages (see the API Specification, Section
 // 10.4): the server sends "hello" and then each "job" of the agent's
 // printers; the agent sends its "printers" and the "result" of each job. A
