@@ -12385,7 +12385,7 @@
             "type": "object",
             "$ref": "#/definitions/v1PartLabelCopies"
           },
-          "description": "1 to 50 parts, each at most once, at most 300 labels in all. A client\nprinting the labels of a goods receipt fills them from its lines."
+          "description": "1 to 50 entries, each part and unit at most once, at most 300 labels in\nall. A client\nprinting the labels of a goods receipt fills them from its lines."
         }
       },
       "required": [
@@ -16907,9 +16907,13 @@
           "type": "integer",
           "format": "int32",
           "description": "1 to 100."
+        },
+        "unitId": {
+          "type": "string",
+          "description": "A packaging unit of the part (a case): the label carries that unit's\nfirst barcode and its name, so a scan counts a case. Unset is the base\nunit. A unit that is not the part's, or that has no barcode, is refused\n(INVALID_ARGUMENT): the base unit's code on a case would count one."
         }
       },
-      "description": "PartLabelCopies is how many labels of one part to print.",
+      "description": "PartLabelCopies is how many labels of one part, in one unit, to print.",
       "required": [
         "partId",
         "copies"
