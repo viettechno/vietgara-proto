@@ -115,8 +115,10 @@ type DocumentServiceClient interface {
 	// template for are refused (INVALID_ARGUMENT).
 	UpdatePrintSetting(ctx context.Context, in *UpdatePrintSettingRequest, opts ...grpc.CallOption) (*PrintSetting, error)
 	// FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
-	// Export*Pdf RPC (the garage's paper size, the template version of the
-	// document's first print on that paper size), add the copy mark of a
+	// Export*Pdf RPC (the paper size of the request's paper_size, the page
+	// size of the printer, else the garage's setting; the template version of
+	// the document's first print on that paper size, the newest version for a
+	// size it was never printed on), add the copy mark of a
 	// reprint (after a print on any paper) when the garage turned it on, and
 	// write the print log. Each needs the permission of the
 	// data it renders.
@@ -587,8 +589,10 @@ type DocumentServiceServer interface {
 	// template for are refused (INVALID_ARGUMENT).
 	UpdatePrintSetting(context.Context, *UpdatePrintSettingRequest) (*PrintSetting, error)
 	// FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
-	// Export*Pdf RPC (the garage's paper size, the template version of the
-	// document's first print on that paper size), add the copy mark of a
+	// Export*Pdf RPC (the paper size of the request's paper_size, the page
+	// size of the printer, else the garage's setting; the template version of
+	// the document's first print on that paper size, the newest version for a
+	// size it was never printed on), add the copy mark of a
 	// reprint (after a print on any paper) when the garage turned it on, and
 	// write the print log. Each needs the permission of the
 	// data it renders.

@@ -1919,7 +1919,10 @@ type Printer struct {
 	// The documents the apps send to this printer first. A K80 or K57 printer
 	// takes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP
 	// printer any document but PART_LABEL that has a template for its page
-	// size (an A5 printer: those with an A5 template). UNSPECIFIED is refused
+	// size (an A5 printer: those with an A5 template; one without a size: any,
+	// printed on the garage's setting). The types are checked again when the
+	// printer is updated: changing its size to one a listed type has no
+	// template for is refused (INVALID_ARGUMENT). UNSPECIFIED is refused
 	// (INVALID_ARGUMENT) and a repeated type is kept once, in the order of the
 	// enum. Several printers may take the same
 	// document: the apps offer them all, those that take it first on top, by

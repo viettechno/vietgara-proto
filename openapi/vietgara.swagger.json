@@ -6359,7 +6359,7 @@
     },
     "/api/v1/garages/{garageId}/quotes/{quoteId}/pdf:print": {
       "post": {
-        "summary": "FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching\nExport*Pdf RPC (the garage's paper size, the template version of the\ndocument's first print on that paper size), add the copy mark of a\nreprint (after a print on any paper) when the garage turned it on, and\nwrite the print log. Each needs the permission of the\ndata it renders.",
+        "summary": "FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching\nExport*Pdf RPC (the paper size of the request's paper_size, the page\nsize of the printer, else the garage's setting; the template version of\nthe document's first print on that paper size, the newest version for a\nsize it was never printed on), add the copy mark of a\nreprint (after a print on any paper) when the garage turned it on, and\nwrite the print log. Each needs the permission of the\ndata it renders.",
         "operationId": "DocumentService_PrintQuotePdf",
         "responses": {
           "200": {
@@ -17746,7 +17746,7 @@
           "items": {
             "$ref": "#/definitions/v1DocumentType"
           },
-          "description": "The documents the apps send to this printer first. A K80 or K57 printer\ntakes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP\nprinter any document but PART_LABEL that has a template for its page\nsize (an A5 printer: those with an A5 template). UNSPECIFIED is refused\n(INVALID_ARGUMENT) and a repeated type is kept once, in the order of the\nenum. Several printers may take the same\ndocument: the apps offer them all, those that take it first on top, by\nname."
+          "description": "The documents the apps send to this printer first. A K80 or K57 printer\ntakes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP\nprinter any document but PART_LABEL that has a template for its page\nsize (an A5 printer: those with an A5 template; one without a size: any,\nprinted on the garage's setting). The types are checked again when the\nprinter is updated: changing its size to one a listed type has no\ntemplate for is refused (INVALID_ARGUMENT). UNSPECIFIED is refused\n(INVALID_ARGUMENT) and a repeated type is kept once, in the order of the\nenum. Several printers may take the same\ndocument: the apps offer them all, those that take it first on top, by\nname."
         },
         "createdAt": {
           "type": "string",
