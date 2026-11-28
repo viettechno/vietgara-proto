@@ -3365,6 +3365,14 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintGoodsReceiptPdfBody"
+            }
           }
         ],
         "tags": [
@@ -5120,6 +5128,14 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintPaymentOutVoucherPdfBody"
+            }
           }
         ],
         "tags": [
@@ -5410,7 +5426,7 @@
     },
     "/api/v1/garages/{garageId}/printers/{printerId}/test-page:print": {
       "post": {
-        "summary": "FR-DOC-07: a test page for the printer, in its language: ESC/POS on its\nroll or label for a raw printer, an A4 PDF for an IPP printer. The client\nsends it to the printer from the device it tests. Needs membership of\nthe garage; nothing is logged.",
+        "summary": "FR-DOC-07: a test page for the printer, in its language: ESC/POS on its\nroll or label for a raw printer, a PDF on its page size (A4 when it has\nnone) for an IPP printer. The client\nsends it to the printer from the device it tests. Needs membership of\nthe garage; nothing is logged.",
         "operationId": "DocumentService_PrintPrinterTestPage",
         "responses": {
           "200": {
@@ -5696,6 +5712,14 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintPurchaseOrderPdfBody"
+            }
           }
         ],
         "tags": [
@@ -6317,7 +6341,7 @@
     },
     "/api/v1/garages/{garageId}/quotes/{quoteId}/pdf:print": {
       "post": {
-        "summary": "FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching\nExport*Pdf RPC (the garage's paper size, the template version of the\ndocument's first print on that paper size), add the copy mark of a\nreprint (after a print on any paper) when the garage turned it on, and\nwrite the print log. Each needs the permission of the\ndata it renders.",
+        "summary": "FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching\nExport*Pdf RPC (the request's paper_size, the page size of the client's\nprinter, else the garage's print setting; the template version of\nthe document's first print on that paper size, the newest version for a\nsize it was never printed on), add the copy mark of a\nreprint (after a print on any paper) when the garage turned it on, and\nwrite the print log. Each needs the permission of the\ndata it renders.",
         "operationId": "DocumentService_PrintQuotePdf",
         "responses": {
           "200": {
@@ -6345,6 +6369,14 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintQuotePdfBody"
+            }
           }
         ],
         "tags": [
@@ -7095,6 +7127,14 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintRepairOrderPdfBody"
+            }
           }
         ],
         "tags": [
@@ -7242,6 +7282,14 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintStockIssuePdfBody"
+            }
           }
         ],
         "tags": [
@@ -8304,6 +8352,14 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintPaymentVoucherPdfBody"
+            }
           }
         ],
         "tags": [
@@ -8428,6 +8484,14 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintSettlementReceiptPdfBody"
+            }
           }
         ],
         "tags": [
@@ -12299,6 +12363,15 @@
         "type"
       ]
     },
+    "DocumentServicePrintGoodsReceiptPdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
     "DocumentServicePrintPartLabelsBody": {
       "type": "object",
       "properties": {
@@ -12320,6 +12393,15 @@
         "parts"
       ]
     },
+    "DocumentServicePrintPaymentOutVoucherPdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
     "DocumentServicePrintPaymentVoucherEscPosBody": {
       "type": "object",
       "properties": {
@@ -12332,6 +12414,24 @@
         "paperSize"
       ]
     },
+    "DocumentServicePrintPaymentVoucherPdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
+    "DocumentServicePrintPurchaseOrderPdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
     "DocumentServicePrintQuoteEscPosBody": {
       "type": "object",
       "properties": {
@@ -12343,6 +12443,42 @@
       "required": [
         "paperSize"
       ]
+    },
+    "DocumentServicePrintQuotePdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
+    "DocumentServicePrintRepairOrderPdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
+    "DocumentServicePrintSettlementReceiptPdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
+    "DocumentServicePrintStockIssuePdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
     },
     "DocumentServiceUpdatePrintSettingBody": {
       "type": "object",
@@ -16590,7 +16726,7 @@
         "PAPER_SIZE_K57",
         "PAPER_SIZE_LABEL_50X30"
       ],
-      "description": "PaperSize is the paper a document prints on: A4 (210 x 297 mm) or A5\n(148 x 210 mm) for a PDF; since Release 13.0 also the thermal rolls K80\n(80 mm, 72 mm printed) and K57 (57 mm, 48 mm printed) and the 50 x 30 mm\nlabel. A print setting takes A4 or A5 only."
+      "description": "PaperSize is the paper a document prints on: A4 (210 x 297 mm) or A5\n(148 x 210 mm) for a PDF; since Release 13.0 also the thermal rolls K80\n(80 mm, 72 mm printed) and K57 (57 mm, 48 mm printed) and the 50 x 30 mm\nlabel. A print setting takes A4 or A5 only.\nEvery size has its own templates: a document is never scaled from one\nsize to another."
     },
     "v1Part": {
       "type": "object",
@@ -17627,14 +17763,14 @@
         },
         "paperSize": {
           "$ref": "#/definitions/v1PaperSize",
-          "description": "Raw only, and required there: K80, K57 or LABEL_50X30. Must be\nunspecified for IPP (INVALID_ARGUMENT otherwise): an IPP printer prints\nthe PDF on the garage's paper setting."
+          "description": "The paper loaded in the printer. Raw, and required there: K80, K57 or\nLABEL_50X30. IPP: A4 or A5, and the PDF prints with that size's\ntemplate; unspecified prints on the garage's paper setting. Another\nsize is refused (INVALID_ARGUMENT)."
         },
         "documentTypes": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1DocumentType"
           },
-          "description": "The documents the apps send to this printer first. A K80 or K57 printer\ntakes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP\nprinter any document but PART_LABEL. UNSPECIFIED is refused\n(INVALID_ARGUMENT) and a repeated type is kept once, in the order of the\nenum. Several printers may take the same\ndocument: the apps offer them all, those that take it first on top, by\nname."
+          "description": "The documents the apps send to this printer first. A K80 or K57 printer\ntakes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP\nprinter any document but PART_LABEL that has a template for its page\nsize (an A5 printer: those with an A5 template; one without a size: any,\nprinted on the garage's setting). The types are checked again when the\nprinter is updated: changing its size to one a listed type has no\ntemplate for is refused (INVALID_ARGUMENT). UNSPECIFIED is refused\n(INVALID_ARGUMENT) and a repeated type is kept once, in the order of the\nenum. Several printers may take the same\ndocument: the apps offer them all, those that take it first on top, by\nname."
         },
         "createdAt": {
           "type": "string",

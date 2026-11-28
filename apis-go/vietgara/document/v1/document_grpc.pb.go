@@ -115,8 +115,10 @@ type DocumentServiceClient interface {
 	// template for are refused (INVALID_ARGUMENT).
 	UpdatePrintSetting(ctx context.Context, in *UpdatePrintSettingRequest, opts ...grpc.CallOption) (*PrintSetting, error)
 	// FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
-	// Export*Pdf RPC (the garage's paper size, the template version of the
-	// document's first print on that paper size), add the copy mark of a
+	// Export*Pdf RPC (the request's paper_size, the page size of the client's
+	// printer, else the garage's print setting; the template version of
+	// the document's first print on that paper size, the newest version for a
+	// size it was never printed on), add the copy mark of a
 	// reprint (after a print on any paper) when the garage turned it on, and
 	// write the print log. Each needs the permission of the
 	// data it renders.
@@ -152,7 +154,8 @@ type DocumentServiceClient interface {
 	// FR-DOC-07: removes a printer.
 	DeletePrinter(ctx context.Context, in *DeletePrinterRequest, opts ...grpc.CallOption) (*DeletePrinterResponse, error)
 	// FR-DOC-07: a test page for the printer, in its language: ESC/POS on its
-	// roll or label for a raw printer, an A4 PDF for an IPP printer. The client
+	// roll or label for a raw printer, a PDF on its page size (A4 when it has
+	// none) for an IPP printer. The client
 	// sends it to the printer from the device it tests. Needs membership of
 	// the garage; nothing is logged.
 	PrintPrinterTestPage(ctx context.Context, in *PrintPrinterTestPageRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
@@ -587,8 +590,10 @@ type DocumentServiceServer interface {
 	// template for are refused (INVALID_ARGUMENT).
 	UpdatePrintSetting(context.Context, *UpdatePrintSettingRequest) (*PrintSetting, error)
 	// FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
-	// Export*Pdf RPC (the garage's paper size, the template version of the
-	// document's first print on that paper size), add the copy mark of a
+	// Export*Pdf RPC (the request's paper_size, the page size of the client's
+	// printer, else the garage's print setting; the template version of
+	// the document's first print on that paper size, the newest version for a
+	// size it was never printed on), add the copy mark of a
 	// reprint (after a print on any paper) when the garage turned it on, and
 	// write the print log. Each needs the permission of the
 	// data it renders.
@@ -624,7 +629,8 @@ type DocumentServiceServer interface {
 	// FR-DOC-07: removes a printer.
 	DeletePrinter(context.Context, *DeletePrinterRequest) (*DeletePrinterResponse, error)
 	// FR-DOC-07: a test page for the printer, in its language: ESC/POS on its
-	// roll or label for a raw printer, an A4 PDF for an IPP printer. The client
+	// roll or label for a raw printer, a PDF on its page size (A4 when it has
+	// none) for an IPP printer. The client
 	// sends it to the printer from the device it tests. Needs membership of
 	// the garage; nothing is logged.
 	PrintPrinterTestPage(context.Context, *PrintPrinterTestPageRequest) (*httpbody.HttpBody, error)
