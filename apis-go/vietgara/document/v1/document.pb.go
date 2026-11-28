@@ -175,6 +175,13 @@ const (
 	PrinterProtocol_PRINTER_PROTOCOL_RAW PrinterProtocol = 1
 	// A PDF over IPP (HTTP), port 631 by default: A4 and A5 printers.
 	PrinterProtocol_PRINTER_PROTOCOL_IPP PrinterProtocol = 2
+	// Release 13.1 (FR-DOC-08): a printer of a garage PC, printed through the
+	// print agent installed there (CreatePrintJob). The server sends the job
+	// to the agent over the agent's own connection; host, port and path are
+	// empty. A client must leave out a printer whose protocol it does not
+	// know (an older build meeting this value, or a newer value), never send
+	// to it.
+	PrinterProtocol_PRINTER_PROTOCOL_AGENT PrinterProtocol = 3
 )
 
 // Enum value maps for PrinterProtocol.
@@ -183,11 +190,13 @@ var (
 		0: "PRINTER_PROTOCOL_UNSPECIFIED",
 		1: "PRINTER_PROTOCOL_RAW",
 		2: "PRINTER_PROTOCOL_IPP",
+		3: "PRINTER_PROTOCOL_AGENT",
 	}
 	PrinterProtocol_value = map[string]int32{
 		"PRINTER_PROTOCOL_UNSPECIFIED": 0,
 		"PRINTER_PROTOCOL_RAW":         1,
 		"PRINTER_PROTOCOL_IPP":         2,
+		"PRINTER_PROTOCOL_AGENT":       3,
 	}
 )
 
@@ -216,6 +225,77 @@ func (x PrinterProtocol) Number() protoreflect.EnumNumber {
 // Deprecated: Use PrinterProtocol.Descriptor instead.
 func (PrinterProtocol) EnumDescriptor() ([]byte, []int) {
 	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{2}
+}
+
+// PrintJobStatus is where a print job is.
+type PrintJobStatus int32
+
+const (
+	PrintJobStatus_PRINT_JOB_STATUS_UNSPECIFIED PrintJobStatus = 0
+	// Waiting for the agent: it is not connected, or has not been sent the job
+	// yet.
+	PrintJobStatus_PRINT_JOB_STATUS_QUEUED PrintJobStatus = 1
+	// Sent to the agent, which has not answered yet. A job sent on a
+	// connection that drops before the agent answers is sent again when the
+	// agent connects next; the agent prints a job id once and answers
+	// "printed" for one it printed already.
+	PrintJobStatus_PRINT_JOB_STATUS_SENT PrintJobStatus = 2
+	// The PC's printer took the job.
+	PrintJobStatus_PRINT_JOB_STATUS_PRINTED PrintJobStatus = 3
+	// The agent could not print it; PrintJob.error says why.
+	PrintJobStatus_PRINT_JOB_STATUS_FAILED PrintJobStatus = 4
+	// Not confirmed within an hour, and never sent again: a voucher should not
+	// come out of the printer long after it was asked for. A job never sent
+	// was not printed; one sent and not answered may have been, so a client
+	// tells the person to check the printer before printing it again.
+	PrintJobStatus_PRINT_JOB_STATUS_EXPIRED PrintJobStatus = 5
+)
+
+// Enum value maps for PrintJobStatus.
+var (
+	PrintJobStatus_name = map[int32]string{
+		0: "PRINT_JOB_STATUS_UNSPECIFIED",
+		1: "PRINT_JOB_STATUS_QUEUED",
+		2: "PRINT_JOB_STATUS_SENT",
+		3: "PRINT_JOB_STATUS_PRINTED",
+		4: "PRINT_JOB_STATUS_FAILED",
+		5: "PRINT_JOB_STATUS_EXPIRED",
+	}
+	PrintJobStatus_value = map[string]int32{
+		"PRINT_JOB_STATUS_UNSPECIFIED": 0,
+		"PRINT_JOB_STATUS_QUEUED":      1,
+		"PRINT_JOB_STATUS_SENT":        2,
+		"PRINT_JOB_STATUS_PRINTED":     3,
+		"PRINT_JOB_STATUS_FAILED":      4,
+		"PRINT_JOB_STATUS_EXPIRED":     5,
+	}
+)
+
+func (x PrintJobStatus) Enum() *PrintJobStatus {
+	p := new(PrintJobStatus)
+	*p = x
+	return p
+}
+
+func (x PrintJobStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PrintJobStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_vietgara_document_v1_document_proto_enumTypes[3].Descriptor()
+}
+
+func (PrintJobStatus) Type() protoreflect.EnumType {
+	return &file_vietgara_document_v1_document_proto_enumTypes[3]
+}
+
+func (x PrintJobStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PrintJobStatus.Descriptor instead.
+func (PrintJobStatus) EnumDescriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{3}
 }
 
 type ExportQuotePdfRequest struct {
@@ -1902,7 +1982,9 @@ func (x *PrintStockIssuePdfRequest) GetPaperSize() PaperSize {
 }
 
 // Printer is a network printer a garage saved (FR-DOC-07, Release 13.0). The
-// server never connects to it: the apps on the garage's network do.
+// server never connects to it: the apps on the garage's network do. Since
+// Release 13.1 it may also be a printer of a print agent (protocol AGENT),
+// which the server prints to through the agent's connection.
 type Printer struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -1910,9 +1992,11 @@ type Printer struct {
 	Name     string          `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Protocol PrinterProtocol `protobuf:"varint,3,opt,name=protocol,proto3,enum=vietgara.document.v1.PrinterProtocol" json:"protocol,omitempty"`
 	// An IPv4 address, an IPv6 address without brackets (clients add them
-	// when building a URL), or a host name; no scheme or port.
+	// when building a URL), or a host name; no scheme or port. Required for
+	// RAW and IPP; an AGENT printer has none (a host is refused).
 	Host string `protobuf:"bytes,4,opt,name=host,proto3" json:"host,omitempty"`
-	// 1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP).
+	// 1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP). An
+	// AGENT printer has none: a port or a path is refused (INVALID_ARGUMENT).
 	Port int32 `protobuf:"varint,5,opt,name=port,proto3" json:"port,omitempty"`
 	// IPP only: the printer's resource path, "ipp/print" when empty; a
 	// leading "/" is removed. Letters, digits and - . _ ~ /, at most 200
@@ -1921,14 +2005,16 @@ type Printer struct {
 	Path string `protobuf:"bytes,6,opt,name=path,proto3" json:"path,omitempty"`
 	// The paper loaded in the printer. Raw, and required there: K80, K57 or
 	// LABEL_50X30. IPP: A4 or A5, and the PDF prints with that size's
-	// template; unspecified prints on the garage's paper setting. Another
-	// size is refused (INVALID_ARGUMENT).
+	// template; unspecified prints on the garage's paper setting. AGENT: any
+	// of these, ESC/POS on a roll or label, a PDF otherwise. Another size is
+	// refused (INVALID_ARGUMENT).
 	PaperSize PaperSize `protobuf:"varint,7,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
 	// The documents the apps send to this printer first. A K80 or K57 printer
 	// takes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP
 	// printer any document but PART_LABEL that has a template for its page
 	// size (an A5 printer: those with an A5 template; one without a size: any,
-	// printed on the garage's setting). The types are checked again when the
+	// printed on the garage's setting); an AGENT printer as RAW for a roll or
+	// label, as IPP for a page size. The types are checked again when the
 	// printer is updated: changing its size to one a listed type has no
 	// template for is refused (INVALID_ARGUMENT). UNSPECIFIED is refused
 	// (INVALID_ARGUMENT) and a repeated type is kept once, in the order of the
@@ -1938,6 +2024,17 @@ type Printer struct {
 	DocumentTypes []DocumentType         `protobuf:"varint,8,rep,packed,name=document_types,json=documentTypes,proto3,enum=vietgara.document.v1.DocumentType" json:"document_types,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	// AGENT only, and required there: the print agent (PrintAgent.id) of the
+	// garage whose PC has the printer. Removing the agent removes its
+	// printers. UpdatePrinter replaces it like every other field, so a client
+	// editing an AGENT printer sends it back (an AGENT printer without it is
+	// refused, INVALID_ARGUMENT); a printer may change protocol, and the
+	// fields of the other protocols are then cleared.
+	AgentId string `protobuf:"bytes,11,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	// AGENT only, and required there: the printer's name in the PC's
+	// operating system, as the agent reports it (PrintAgentPrinter.name), 1 to
+	// 200 characters; each printer of an agent is saved once.
+	Queue         string `protobuf:"bytes,12,opt,name=queue,proto3" json:"queue,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2040,6 +2137,20 @@ func (x *Printer) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *Printer) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+func (x *Printer) GetQueue() string {
+	if x != nil {
+		return x.Queue
+	}
+	return ""
 }
 
 type ListPrintersRequest struct {
@@ -2647,6 +2758,1209 @@ func (x *PrintPartLabelsRequest) GetParts() []*PartLabelCopies {
 	return nil
 }
 
+// PrintAgent is a print agent (FR-DOC-08, Release 13.1): a small program on
+// a garage PC that prints the jobs of the web console and the apps on the
+// PC's printers without a dialog. It is paired once with a pairing code
+// (CreatePrintAgent) and then keeps an outbound WebSocket to VietGara,
+// authenticated by its own key; it never opens a port.
+type PrintAgent struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 1 to 60 characters, unique in the garage without regard to case.
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Whether the agent was paired: PairPrintAgent gave it its key (the
+	// pairing code is used up).
+	Paired bool `protobuf:"varint,3,opt,name=paired,proto3" json:"paired,omitempty"`
+	// While not paired: when the pairing code stops working.
+	PairingExpiresAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=pairing_expires_at,json=pairingExpiresAt,proto3" json:"pairing_expires_at,omitempty"`
+	// Whether the agent is connected now.
+	Connected bool `protobuf:"varint,5,opt,name=connected,proto3" json:"connected,omitempty"`
+	// When the agent was last connected.
+	LastSeenAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=last_seen_at,json=lastSeenAt,proto3" json:"last_seen_at,omitempty"`
+	// The PC, as the agent reports it: its name, its operating system
+	// ("windows/amd64") and the agent's version.
+	Hostname string `protobuf:"bytes,7,opt,name=hostname,proto3" json:"hostname,omitempty"`
+	Os       string `protobuf:"bytes,8,opt,name=os,proto3" json:"os,omitempty"`
+	Version  string `protobuf:"bytes,9,opt,name=version,proto3" json:"version,omitempty"`
+	// The printers of the PC, as the agent last reported them, by name.
+	Printers      []*PrintAgentPrinter   `protobuf:"bytes,10,rep,name=printers,proto3" json:"printers,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrintAgent) Reset() {
+	*x = PrintAgent{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrintAgent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrintAgent) ProtoMessage() {}
+
+func (x *PrintAgent) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrintAgent.ProtoReflect.Descriptor instead.
+func (*PrintAgent) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *PrintAgent) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *PrintAgent) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *PrintAgent) GetPaired() bool {
+	if x != nil {
+		return x.Paired
+	}
+	return false
+}
+
+func (x *PrintAgent) GetPairingExpiresAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.PairingExpiresAt
+	}
+	return nil
+}
+
+func (x *PrintAgent) GetConnected() bool {
+	if x != nil {
+		return x.Connected
+	}
+	return false
+}
+
+func (x *PrintAgent) GetLastSeenAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastSeenAt
+	}
+	return nil
+}
+
+func (x *PrintAgent) GetHostname() string {
+	if x != nil {
+		return x.Hostname
+	}
+	return ""
+}
+
+func (x *PrintAgent) GetOs() string {
+	if x != nil {
+		return x.Os
+	}
+	return ""
+}
+
+func (x *PrintAgent) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *PrintAgent) GetPrinters() []*PrintAgentPrinter {
+	if x != nil {
+		return x.Printers
+	}
+	return nil
+}
+
+func (x *PrintAgent) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *PrintAgent) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
+// PrintAgentPrinter is a printer of the agent's PC.
+type PrintAgentPrinter struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The printer's name in the operating system (Printer.queue).
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// Whether it is the PC's default printer.
+	IsDefault     bool `protobuf:"varint,2,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrintAgentPrinter) Reset() {
+	*x = PrintAgentPrinter{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrintAgentPrinter) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrintAgentPrinter) ProtoMessage() {}
+
+func (x *PrintAgentPrinter) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrintAgentPrinter.ProtoReflect.Descriptor instead.
+func (*PrintAgentPrinter) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *PrintAgentPrinter) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *PrintAgentPrinter) GetIsDefault() bool {
+	if x != nil {
+		return x.IsDefault
+	}
+	return false
+}
+
+type ListPrintAgentsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPrintAgentsRequest) Reset() {
+	*x = ListPrintAgentsRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPrintAgentsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPrintAgentsRequest) ProtoMessage() {}
+
+func (x *ListPrintAgentsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPrintAgentsRequest.ProtoReflect.Descriptor instead.
+func (*ListPrintAgentsRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *ListPrintAgentsRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+type ListPrintAgentsResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Every agent of the garage, by name; at most 10.
+	Agents        []*PrintAgent `protobuf:"bytes,1,rep,name=agents,proto3" json:"agents,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPrintAgentsResponse) Reset() {
+	*x = ListPrintAgentsResponse{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPrintAgentsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPrintAgentsResponse) ProtoMessage() {}
+
+func (x *ListPrintAgentsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPrintAgentsResponse.ProtoReflect.Descriptor instead.
+func (*ListPrintAgentsResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *ListPrintAgentsResponse) GetAgents() []*PrintAgent {
+	if x != nil {
+		return x.Agents
+	}
+	return nil
+}
+
+type CreatePrintAgentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	Agent         *PrintAgent            `protobuf:"bytes,2,opt,name=agent,proto3" json:"agent,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreatePrintAgentRequest) Reset() {
+	*x = CreatePrintAgentRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreatePrintAgentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreatePrintAgentRequest) ProtoMessage() {}
+
+func (x *CreatePrintAgentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreatePrintAgentRequest.ProtoReflect.Descriptor instead.
+func (*CreatePrintAgentRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *CreatePrintAgentRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *CreatePrintAgentRequest) GetAgent() *PrintAgent {
+	if x != nil {
+		return x.Agent
+	}
+	return nil
+}
+
+// CreatePrintAgentResponse is an agent with a new pairing code.
+type CreatePrintAgentResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Agent *PrintAgent            `protobuf:"bytes,1,opt,name=agent,proto3" json:"agent,omitempty"`
+	// Shown once: 8 letters and digits as XXXX-XXXX, for the agent's setup
+	// on the PC (PairPrintAgent); single use, valid for 15 minutes.
+	PairingCode   string `protobuf:"bytes,2,opt,name=pairing_code,json=pairingCode,proto3" json:"pairing_code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreatePrintAgentResponse) Reset() {
+	*x = CreatePrintAgentResponse{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[45]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreatePrintAgentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreatePrintAgentResponse) ProtoMessage() {}
+
+func (x *CreatePrintAgentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[45]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreatePrintAgentResponse.ProtoReflect.Descriptor instead.
+func (*CreatePrintAgentResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *CreatePrintAgentResponse) GetAgent() *PrintAgent {
+	if x != nil {
+		return x.Agent
+	}
+	return nil
+}
+
+func (x *CreatePrintAgentResponse) GetPairingCode() string {
+	if x != nil {
+		return x.PairingCode
+	}
+	return ""
+}
+
+type IssuePrintAgentPairingCodeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	AgentId       string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IssuePrintAgentPairingCodeRequest) Reset() {
+	*x = IssuePrintAgentPairingCodeRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IssuePrintAgentPairingCodeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IssuePrintAgentPairingCodeRequest) ProtoMessage() {}
+
+func (x *IssuePrintAgentPairingCodeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IssuePrintAgentPairingCodeRequest.ProtoReflect.Descriptor instead.
+func (*IssuePrintAgentPairingCodeRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{46}
+}
+
+func (x *IssuePrintAgentPairingCodeRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *IssuePrintAgentPairingCodeRequest) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+type DeletePrintAgentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	AgentId       string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeletePrintAgentRequest) Reset() {
+	*x = DeletePrintAgentRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[47]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeletePrintAgentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeletePrintAgentRequest) ProtoMessage() {}
+
+func (x *DeletePrintAgentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[47]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeletePrintAgentRequest.ProtoReflect.Descriptor instead.
+func (*DeletePrintAgentRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{47}
+}
+
+func (x *DeletePrintAgentRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *DeletePrintAgentRequest) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+type DeletePrintAgentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeletePrintAgentResponse) Reset() {
+	*x = DeletePrintAgentResponse{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[48]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeletePrintAgentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeletePrintAgentResponse) ProtoMessage() {}
+
+func (x *DeletePrintAgentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[48]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeletePrintAgentResponse.ProtoReflect.Descriptor instead.
+func (*DeletePrintAgentResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{48}
+}
+
+// PrintJob is a print sent to a print agent's printer.
+type PrintJob struct {
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	Id        string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	PrinterId string                 `protobuf:"bytes,2,opt,name=printer_id,json=printerId,proto3" json:"printer_id,omitempty"`
+	// The printer's name when the job was created.
+	PrinterName string `protobuf:"bytes,3,opt,name=printer_name,json=printerName,proto3" json:"printer_name,omitempty"`
+	// The document printed; UNSPECIFIED for a test page.
+	DocumentType DocumentType   `protobuf:"varint,4,opt,name=document_type,json=documentType,proto3,enum=vietgara.document.v1.DocumentType" json:"document_type,omitempty"`
+	Status       PrintJobStatus `protobuf:"varint,5,opt,name=status,proto3,enum=vietgara.document.v1.PrintJobStatus" json:"status,omitempty"`
+	// FAILED: the agent's message (from the PC's spooler or PDF printer).
+	Error         string                 `protobuf:"bytes,6,opt,name=error,proto3" json:"error,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrintJob) Reset() {
+	*x = PrintJob{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[49]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrintJob) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrintJob) ProtoMessage() {}
+
+func (x *PrintJob) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[49]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrintJob.ProtoReflect.Descriptor instead.
+func (*PrintJob) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{49}
+}
+
+func (x *PrintJob) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *PrintJob) GetPrinterId() string {
+	if x != nil {
+		return x.PrinterId
+	}
+	return ""
+}
+
+func (x *PrintJob) GetPrinterName() string {
+	if x != nil {
+		return x.PrinterName
+	}
+	return ""
+}
+
+func (x *PrintJob) GetDocumentType() DocumentType {
+	if x != nil {
+		return x.DocumentType
+	}
+	return DocumentType_DOCUMENT_TYPE_UNSPECIFIED
+}
+
+func (x *PrintJob) GetStatus() PrintJobStatus {
+	if x != nil {
+		return x.Status
+	}
+	return PrintJobStatus_PRINT_JOB_STATUS_UNSPECIFIED
+}
+
+func (x *PrintJob) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+func (x *PrintJob) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *PrintJob) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
+// PrintJobPaymentVoucher names one payment voucher of a settlement.
+type PrintJobPaymentVoucher struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SettlementId  string                 `protobuf:"bytes,1,opt,name=settlement_id,json=settlementId,proto3" json:"settlement_id,omitempty"`
+	PaymentId     string                 `protobuf:"bytes,2,opt,name=payment_id,json=paymentId,proto3" json:"payment_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrintJobPaymentVoucher) Reset() {
+	*x = PrintJobPaymentVoucher{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[50]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrintJobPaymentVoucher) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrintJobPaymentVoucher) ProtoMessage() {}
+
+func (x *PrintJobPaymentVoucher) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[50]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrintJobPaymentVoucher.ProtoReflect.Descriptor instead.
+func (*PrintJobPaymentVoucher) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{50}
+}
+
+func (x *PrintJobPaymentVoucher) GetSettlementId() string {
+	if x != nil {
+		return x.SettlementId
+	}
+	return ""
+}
+
+func (x *PrintJobPaymentVoucher) GetPaymentId() string {
+	if x != nil {
+		return x.PaymentId
+	}
+	return ""
+}
+
+// PrintJobPartLabels are the labels of a label print (PrintPartLabels).
+type PrintJobPartLabels struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Parts         []*PartLabelCopies     `protobuf:"bytes,1,rep,name=parts,proto3" json:"parts,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrintJobPartLabels) Reset() {
+	*x = PrintJobPartLabels{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[51]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrintJobPartLabels) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrintJobPartLabels) ProtoMessage() {}
+
+func (x *PrintJobPartLabels) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[51]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrintJobPartLabels.ProtoReflect.Descriptor instead.
+func (*PrintJobPartLabels) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{51}
+}
+
+func (x *PrintJobPartLabels) GetParts() []*PartLabelCopies {
+	if x != nil {
+		return x.Parts
+	}
+	return nil
+}
+
+// PrintJobTestPage is the printer's test page.
+type PrintJobTestPage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrintJobTestPage) Reset() {
+	*x = PrintJobTestPage{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrintJobTestPage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrintJobTestPage) ProtoMessage() {}
+
+func (x *PrintJobTestPage) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrintJobTestPage.ProtoReflect.Descriptor instead.
+func (*PrintJobTestPage) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{52}
+}
+
+type CreatePrintJobRequest struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	// An AGENT printer of the garage, in the JSON body.
+	PrinterId string `protobuf:"bytes,2,opt,name=printer_id,json=printerId,proto3" json:"printer_id,omitempty"`
+	// What to print, in the JSON body ({"printerId": "…", "quoteId": "…"}).
+	// Exactly one is required.
+	//
+	// Types that are valid to be assigned to Document:
+	//
+	//	*CreatePrintJobRequest_QuoteId
+	//	*CreatePrintJobRequest_RepairOrderId
+	//	*CreatePrintJobRequest_SettlementId
+	//	*CreatePrintJobRequest_PaymentVoucher
+	//	*CreatePrintJobRequest_GoodsReceiptId
+	//	*CreatePrintJobRequest_StockIssueRepairOrderId
+	//	*CreatePrintJobRequest_PaymentOutVoucherId
+	//	*CreatePrintJobRequest_PurchaseOrderId
+	//	*CreatePrintJobRequest_PartLabels
+	//	*CreatePrintJobRequest_TestPage
+	Document      isCreatePrintJobRequest_Document `protobuf_oneof:"document"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreatePrintJobRequest) Reset() {
+	*x = CreatePrintJobRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[53]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreatePrintJobRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreatePrintJobRequest) ProtoMessage() {}
+
+func (x *CreatePrintJobRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[53]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreatePrintJobRequest.ProtoReflect.Descriptor instead.
+func (*CreatePrintJobRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{53}
+}
+
+func (x *CreatePrintJobRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *CreatePrintJobRequest) GetPrinterId() string {
+	if x != nil {
+		return x.PrinterId
+	}
+	return ""
+}
+
+func (x *CreatePrintJobRequest) GetDocument() isCreatePrintJobRequest_Document {
+	if x != nil {
+		return x.Document
+	}
+	return nil
+}
+
+func (x *CreatePrintJobRequest) GetQuoteId() string {
+	if x != nil {
+		if x, ok := x.Document.(*CreatePrintJobRequest_QuoteId); ok {
+			return x.QuoteId
+		}
+	}
+	return ""
+}
+
+func (x *CreatePrintJobRequest) GetRepairOrderId() string {
+	if x != nil {
+		if x, ok := x.Document.(*CreatePrintJobRequest_RepairOrderId); ok {
+			return x.RepairOrderId
+		}
+	}
+	return ""
+}
+
+func (x *CreatePrintJobRequest) GetSettlementId() string {
+	if x != nil {
+		if x, ok := x.Document.(*CreatePrintJobRequest_SettlementId); ok {
+			return x.SettlementId
+		}
+	}
+	return ""
+}
+
+func (x *CreatePrintJobRequest) GetPaymentVoucher() *PrintJobPaymentVoucher {
+	if x != nil {
+		if x, ok := x.Document.(*CreatePrintJobRequest_PaymentVoucher); ok {
+			return x.PaymentVoucher
+		}
+	}
+	return nil
+}
+
+func (x *CreatePrintJobRequest) GetGoodsReceiptId() string {
+	if x != nil {
+		if x, ok := x.Document.(*CreatePrintJobRequest_GoodsReceiptId); ok {
+			return x.GoodsReceiptId
+		}
+	}
+	return ""
+}
+
+func (x *CreatePrintJobRequest) GetStockIssueRepairOrderId() string {
+	if x != nil {
+		if x, ok := x.Document.(*CreatePrintJobRequest_StockIssueRepairOrderId); ok {
+			return x.StockIssueRepairOrderId
+		}
+	}
+	return ""
+}
+
+func (x *CreatePrintJobRequest) GetPaymentOutVoucherId() string {
+	if x != nil {
+		if x, ok := x.Document.(*CreatePrintJobRequest_PaymentOutVoucherId); ok {
+			return x.PaymentOutVoucherId
+		}
+	}
+	return ""
+}
+
+func (x *CreatePrintJobRequest) GetPurchaseOrderId() string {
+	if x != nil {
+		if x, ok := x.Document.(*CreatePrintJobRequest_PurchaseOrderId); ok {
+			return x.PurchaseOrderId
+		}
+	}
+	return ""
+}
+
+func (x *CreatePrintJobRequest) GetPartLabels() *PrintJobPartLabels {
+	if x != nil {
+		if x, ok := x.Document.(*CreatePrintJobRequest_PartLabels); ok {
+			return x.PartLabels
+		}
+	}
+	return nil
+}
+
+func (x *CreatePrintJobRequest) GetTestPage() *PrintJobTestPage {
+	if x != nil {
+		if x, ok := x.Document.(*CreatePrintJobRequest_TestPage); ok {
+			return x.TestPage
+		}
+	}
+	return nil
+}
+
+type isCreatePrintJobRequest_Document interface {
+	isCreatePrintJobRequest_Document()
+}
+
+type CreatePrintJobRequest_QuoteId struct {
+	QuoteId string `protobuf:"bytes,3,opt,name=quote_id,json=quoteId,proto3,oneof"`
+}
+
+type CreatePrintJobRequest_RepairOrderId struct {
+	RepairOrderId string `protobuf:"bytes,4,opt,name=repair_order_id,json=repairOrderId,proto3,oneof"`
+}
+
+type CreatePrintJobRequest_SettlementId struct {
+	// The settlement receipt of this settlement.
+	SettlementId string `protobuf:"bytes,5,opt,name=settlement_id,json=settlementId,proto3,oneof"`
+}
+
+type CreatePrintJobRequest_PaymentVoucher struct {
+	PaymentVoucher *PrintJobPaymentVoucher `protobuf:"bytes,6,opt,name=payment_voucher,json=paymentVoucher,proto3,oneof"`
+}
+
+type CreatePrintJobRequest_GoodsReceiptId struct {
+	GoodsReceiptId string `protobuf:"bytes,7,opt,name=goods_receipt_id,json=goodsReceiptId,proto3,oneof"`
+}
+
+type CreatePrintJobRequest_StockIssueRepairOrderId struct {
+	// The stock issue of this repair order.
+	StockIssueRepairOrderId string `protobuf:"bytes,8,opt,name=stock_issue_repair_order_id,json=stockIssueRepairOrderId,proto3,oneof"`
+}
+
+type CreatePrintJobRequest_PaymentOutVoucherId struct {
+	PaymentOutVoucherId string `protobuf:"bytes,9,opt,name=payment_out_voucher_id,json=paymentOutVoucherId,proto3,oneof"`
+}
+
+type CreatePrintJobRequest_PurchaseOrderId struct {
+	PurchaseOrderId string `protobuf:"bytes,10,opt,name=purchase_order_id,json=purchaseOrderId,proto3,oneof"`
+}
+
+type CreatePrintJobRequest_PartLabels struct {
+	PartLabels *PrintJobPartLabels `protobuf:"bytes,11,opt,name=part_labels,json=partLabels,proto3,oneof"`
+}
+
+type CreatePrintJobRequest_TestPage struct {
+	TestPage *PrintJobTestPage `protobuf:"bytes,12,opt,name=test_page,json=testPage,proto3,oneof"`
+}
+
+func (*CreatePrintJobRequest_QuoteId) isCreatePrintJobRequest_Document() {}
+
+func (*CreatePrintJobRequest_RepairOrderId) isCreatePrintJobRequest_Document() {}
+
+func (*CreatePrintJobRequest_SettlementId) isCreatePrintJobRequest_Document() {}
+
+func (*CreatePrintJobRequest_PaymentVoucher) isCreatePrintJobRequest_Document() {}
+
+func (*CreatePrintJobRequest_GoodsReceiptId) isCreatePrintJobRequest_Document() {}
+
+func (*CreatePrintJobRequest_StockIssueRepairOrderId) isCreatePrintJobRequest_Document() {}
+
+func (*CreatePrintJobRequest_PaymentOutVoucherId) isCreatePrintJobRequest_Document() {}
+
+func (*CreatePrintJobRequest_PurchaseOrderId) isCreatePrintJobRequest_Document() {}
+
+func (*CreatePrintJobRequest_PartLabels) isCreatePrintJobRequest_Document() {}
+
+func (*CreatePrintJobRequest_TestPage) isCreatePrintJobRequest_Document() {}
+
+type GetPrintJobRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	JobId         string                 `protobuf:"bytes,2,opt,name=job_id,json=jobId,proto3" json:"job_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPrintJobRequest) Reset() {
+	*x = GetPrintJobRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[54]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPrintJobRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPrintJobRequest) ProtoMessage() {}
+
+func (x *GetPrintJobRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[54]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPrintJobRequest.ProtoReflect.Descriptor instead.
+func (*GetPrintJobRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{54}
+}
+
+func (x *GetPrintJobRequest) GetGarageId() string {
+	if x != nil {
+		return x.GarageId
+	}
+	return ""
+}
+
+func (x *GetPrintJobRequest) GetJobId() string {
+	if x != nil {
+		return x.JobId
+	}
+	return ""
+}
+
+type PairPrintAgentRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The code shown when the agent was created, with or without the dash and
+	// in any case.
+	PairingCode string `protobuf:"bytes,1,opt,name=pairing_code,json=pairingCode,proto3" json:"pairing_code,omitempty"`
+	// The PC: its name, its operating system ("windows/amd64") and the
+	// agent's version, at most 253, 40 and 40 characters.
+	Hostname      string `protobuf:"bytes,2,opt,name=hostname,proto3" json:"hostname,omitempty"`
+	Os            string `protobuf:"bytes,3,opt,name=os,proto3" json:"os,omitempty"`
+	Version       string `protobuf:"bytes,4,opt,name=version,proto3" json:"version,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PairPrintAgentRequest) Reset() {
+	*x = PairPrintAgentRequest{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[55]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PairPrintAgentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PairPrintAgentRequest) ProtoMessage() {}
+
+func (x *PairPrintAgentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[55]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PairPrintAgentRequest.ProtoReflect.Descriptor instead.
+func (*PairPrintAgentRequest) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{55}
+}
+
+func (x *PairPrintAgentRequest) GetPairingCode() string {
+	if x != nil {
+		return x.PairingCode
+	}
+	return ""
+}
+
+func (x *PairPrintAgentRequest) GetHostname() string {
+	if x != nil {
+		return x.Hostname
+	}
+	return ""
+}
+
+func (x *PairPrintAgentRequest) GetOs() string {
+	if x != nil {
+		return x.Os
+	}
+	return ""
+}
+
+func (x *PairPrintAgentRequest) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+type PairPrintAgentResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The agent's secret key, returned once: the agent keeps it and sends it
+	// as "Authorization: Bearer <key>" when it connects. VietGara stores only
+	// its hash.
+	AgentKey      string `protobuf:"bytes,1,opt,name=agent_key,json=agentKey,proto3" json:"agent_key,omitempty"`
+	AgentId       string `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	AgentName     string `protobuf:"bytes,3,opt,name=agent_name,json=agentName,proto3" json:"agent_name,omitempty"`
+	GarageName    string `protobuf:"bytes,4,opt,name=garage_name,json=garageName,proto3" json:"garage_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PairPrintAgentResponse) Reset() {
+	*x = PairPrintAgentResponse{}
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[56]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PairPrintAgentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PairPrintAgentResponse) ProtoMessage() {}
+
+func (x *PairPrintAgentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_vietgara_document_v1_document_proto_msgTypes[56]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PairPrintAgentResponse.ProtoReflect.Descriptor instead.
+func (*PairPrintAgentResponse) Descriptor() ([]byte, []int) {
+	return file_vietgara_document_v1_document_proto_rawDescGZIP(), []int{56}
+}
+
+func (x *PairPrintAgentResponse) GetAgentKey() string {
+	if x != nil {
+		return x.AgentKey
+	}
+	return ""
+}
+
+func (x *PairPrintAgentResponse) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+func (x *PairPrintAgentResponse) GetAgentName() string {
+	if x != nil {
+		return x.AgentName
+	}
+	return ""
+}
+
+func (x *PairPrintAgentResponse) GetGarageName() string {
+	if x != nil {
+		return x.GarageName
+	}
+	return ""
+}
+
 var File_vietgara_document_v1_document_proto protoreflect.FileDescriptor
 
 const file_vietgara_document_v1_document_proto_rawDesc = "" +
@@ -2773,12 +4087,12 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12+\n" +
 	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\x12>\n" +
 	"\n" +
-	"paper_size\x18\x03 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeR\tpaperSize\"\xcb\x03\n" +
+	"paper_size\x18\x03 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeR\tpaperSize\"\xf7\x03\n" +
 	"\aPrinter\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x17\n" +
 	"\x04name\x18\x02 \x01(\tB\x03\xe0A\x02R\x04name\x12F\n" +
-	"\bprotocol\x18\x03 \x01(\x0e2%.vietgara.document.v1.PrinterProtocolB\x03\xe0A\x02R\bprotocol\x12\x17\n" +
-	"\x04host\x18\x04 \x01(\tB\x03\xe0A\x02R\x04host\x12\x12\n" +
+	"\bprotocol\x18\x03 \x01(\x0e2%.vietgara.document.v1.PrinterProtocolB\x03\xe0A\x02R\bprotocol\x12\x12\n" +
+	"\x04host\x18\x04 \x01(\tR\x04host\x12\x12\n" +
 	"\x04port\x18\x05 \x01(\x05R\x04port\x12\x12\n" +
 	"\x04path\x18\x06 \x01(\tR\x04path\x12>\n" +
 	"\n" +
@@ -2788,7 +4102,9 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
 	"updated_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\"7\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\x12\x19\n" +
+	"\bagent_id\x18\v \x01(\tR\aagentId\x12\x14\n" +
+	"\x05queue\x18\f \x01(\tR\x05queue\"7\n" +
 	"\x13ListPrintersRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\"Q\n" +
 	"\x14ListPrintersResponse\x129\n" +
@@ -2832,7 +4148,98 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12C\n" +
 	"\n" +
 	"paper_size\x18\x02 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeB\x03\xe0A\x02R\tpaperSize\x12@\n" +
-	"\x05parts\x18\x03 \x03(\v2%.vietgara.document.v1.PartLabelCopiesB\x03\xe0A\x02R\x05parts*\xce\x02\n" +
+	"\x05parts\x18\x03 \x03(\v2%.vietgara.document.v1.PartLabelCopiesB\x03\xe0A\x02R\x05parts\"\xab\x04\n" +
+	"\n" +
+	"PrintAgent\x12\x13\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x17\n" +
+	"\x04name\x18\x02 \x01(\tB\x03\xe0A\x02R\x04name\x12\x1b\n" +
+	"\x06paired\x18\x03 \x01(\bB\x03\xe0A\x03R\x06paired\x12M\n" +
+	"\x12pairing_expires_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\x10pairingExpiresAt\x12!\n" +
+	"\tconnected\x18\x05 \x01(\bB\x03\xe0A\x03R\tconnected\x12A\n" +
+	"\flast_seen_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\n" +
+	"lastSeenAt\x12\x1f\n" +
+	"\bhostname\x18\a \x01(\tB\x03\xe0A\x03R\bhostname\x12\x13\n" +
+	"\x02os\x18\b \x01(\tB\x03\xe0A\x03R\x02os\x12\x1d\n" +
+	"\aversion\x18\t \x01(\tB\x03\xe0A\x03R\aversion\x12H\n" +
+	"\bprinters\x18\n" +
+	" \x03(\v2'.vietgara.document.v1.PrintAgentPrinterB\x03\xe0A\x03R\bprinters\x12>\n" +
+	"\n" +
+	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
+	"\n" +
+	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\"F\n" +
+	"\x11PrintAgentPrinter\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1d\n" +
+	"\n" +
+	"is_default\x18\x02 \x01(\bR\tisDefault\":\n" +
+	"\x16ListPrintAgentsRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\"S\n" +
+	"\x17ListPrintAgentsResponse\x128\n" +
+	"\x06agents\x18\x01 \x03(\v2 .vietgara.document.v1.PrintAgentR\x06agents\"x\n" +
+	"\x17CreatePrintAgentRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12;\n" +
+	"\x05agent\x18\x02 \x01(\v2 .vietgara.document.v1.PrintAgentB\x03\xe0A\x02R\x05agent\"u\n" +
+	"\x18CreatePrintAgentResponse\x126\n" +
+	"\x05agent\x18\x01 \x01(\v2 .vietgara.document.v1.PrintAgentR\x05agent\x12!\n" +
+	"\fpairing_code\x18\x02 \x01(\tR\vpairingCode\"e\n" +
+	"!IssuePrintAgentPairingCodeRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1e\n" +
+	"\bagent_id\x18\x02 \x01(\tB\x03\xe0A\x02R\aagentId\"[\n" +
+	"\x17DeletePrintAgentRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1e\n" +
+	"\bagent_id\x18\x02 \x01(\tB\x03\xe0A\x02R\aagentId\"\x1a\n" +
+	"\x18DeletePrintAgentResponse\"\x97\x03\n" +
+	"\bPrintJob\x12\x13\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\"\n" +
+	"\n" +
+	"printer_id\x18\x02 \x01(\tB\x03\xe0A\x03R\tprinterId\x12&\n" +
+	"\fprinter_name\x18\x03 \x01(\tB\x03\xe0A\x03R\vprinterName\x12L\n" +
+	"\rdocument_type\x18\x04 \x01(\x0e2\".vietgara.document.v1.DocumentTypeB\x03\xe0A\x03R\fdocumentType\x12A\n" +
+	"\x06status\x18\x05 \x01(\x0e2$.vietgara.document.v1.PrintJobStatusB\x03\xe0A\x03R\x06status\x12\x19\n" +
+	"\x05error\x18\x06 \x01(\tB\x03\xe0A\x03R\x05error\x12>\n" +
+	"\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
+	"\n" +
+	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\"f\n" +
+	"\x16PrintJobPaymentVoucher\x12(\n" +
+	"\rsettlement_id\x18\x01 \x01(\tB\x03\xe0A\x02R\fsettlementId\x12\"\n" +
+	"\n" +
+	"payment_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tpaymentId\"V\n" +
+	"\x12PrintJobPartLabels\x12@\n" +
+	"\x05parts\x18\x01 \x03(\v2%.vietgara.document.v1.PartLabelCopiesB\x03\xe0A\x02R\x05parts\"\x12\n" +
+	"\x10PrintJobTestPage\"\x95\x05\n" +
+	"\x15CreatePrintJobRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\"\n" +
+	"\n" +
+	"printer_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tprinterId\x12\x1b\n" +
+	"\bquote_id\x18\x03 \x01(\tH\x00R\aquoteId\x12(\n" +
+	"\x0frepair_order_id\x18\x04 \x01(\tH\x00R\rrepairOrderId\x12%\n" +
+	"\rsettlement_id\x18\x05 \x01(\tH\x00R\fsettlementId\x12W\n" +
+	"\x0fpayment_voucher\x18\x06 \x01(\v2,.vietgara.document.v1.PrintJobPaymentVoucherH\x00R\x0epaymentVoucher\x12*\n" +
+	"\x10goods_receipt_id\x18\a \x01(\tH\x00R\x0egoodsReceiptId\x12>\n" +
+	"\x1bstock_issue_repair_order_id\x18\b \x01(\tH\x00R\x17stockIssueRepairOrderId\x125\n" +
+	"\x16payment_out_voucher_id\x18\t \x01(\tH\x00R\x13paymentOutVoucherId\x12,\n" +
+	"\x11purchase_order_id\x18\n" +
+	" \x01(\tH\x00R\x0fpurchaseOrderId\x12K\n" +
+	"\vpart_labels\x18\v \x01(\v2(.vietgara.document.v1.PrintJobPartLabelsH\x00R\n" +
+	"partLabels\x12E\n" +
+	"\ttest_page\x18\f \x01(\v2&.vietgara.document.v1.PrintJobTestPageH\x00R\btestPageB\n" +
+	"\n" +
+	"\bdocument\"R\n" +
+	"\x12GetPrintJobRequest\x12 \n" +
+	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1a\n" +
+	"\x06job_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x05jobId\"\x85\x01\n" +
+	"\x15PairPrintAgentRequest\x12&\n" +
+	"\fpairing_code\x18\x01 \x01(\tB\x03\xe0A\x02R\vpairingCode\x12\x1a\n" +
+	"\bhostname\x18\x02 \x01(\tR\bhostname\x12\x0e\n" +
+	"\x02os\x18\x03 \x01(\tR\x02os\x12\x18\n" +
+	"\aversion\x18\x04 \x01(\tR\aversion\"\x90\x01\n" +
+	"\x16PairPrintAgentResponse\x12\x1b\n" +
+	"\tagent_key\x18\x01 \x01(\tR\bagentKey\x12\x19\n" +
+	"\bagent_id\x18\x02 \x01(\tR\aagentId\x12\x1d\n" +
+	"\n" +
+	"agent_name\x18\x03 \x01(\tR\tagentName\x12\x1f\n" +
+	"\vgarage_name\x18\x04 \x01(\tR\n" +
+	"garageName*\xce\x02\n" +
 	"\fDocumentType\x12\x1d\n" +
 	"\x19DOCUMENT_TYPE_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13DOCUMENT_TYPE_QUOTE\x10\x01\x12\x1e\n" +
@@ -2850,11 +4257,19 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\rPAPER_SIZE_A5\x10\x02\x12\x12\n" +
 	"\x0ePAPER_SIZE_K80\x10\x03\x12\x12\n" +
 	"\x0ePAPER_SIZE_K57\x10\x04\x12\x1a\n" +
-	"\x16PAPER_SIZE_LABEL_50X30\x10\x05*g\n" +
+	"\x16PAPER_SIZE_LABEL_50X30\x10\x05*\x83\x01\n" +
 	"\x0fPrinterProtocol\x12 \n" +
 	"\x1cPRINTER_PROTOCOL_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14PRINTER_PROTOCOL_RAW\x10\x01\x12\x18\n" +
-	"\x14PRINTER_PROTOCOL_IPP\x10\x022\xde.\n" +
+	"\x14PRINTER_PROTOCOL_IPP\x10\x02\x12\x1a\n" +
+	"\x16PRINTER_PROTOCOL_AGENT\x10\x03*\xc3\x01\n" +
+	"\x0ePrintJobStatus\x12 \n" +
+	"\x1cPRINT_JOB_STATUS_UNSPECIFIED\x10\x00\x12\x1b\n" +
+	"\x17PRINT_JOB_STATUS_QUEUED\x10\x01\x12\x19\n" +
+	"\x15PRINT_JOB_STATUS_SENT\x10\x02\x12\x1c\n" +
+	"\x18PRINT_JOB_STATUS_PRINTED\x10\x03\x12\x1b\n" +
+	"\x17PRINT_JOB_STATUS_FAILED\x10\x04\x12\x1c\n" +
+	"\x18PRINT_JOB_STATUS_EXPIRED\x10\x052\xd76\n" +
 	"\x0fDocumentService\x12\x8e\x01\n" +
 	"\x0eExportQuotePdf\x12+.vietgara.document.v1.ExportQuotePdfRequest\x1a\x14.google.api.HttpBody\"9\x82\xd3\xe4\x93\x023\x121/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf\x12\xa8\x01\n" +
 	"\x14ExportRepairOrderPdf\x121.vietgara.document.v1.ExportRepairOrderPdfRequest\x1a\x14.google.api.HttpBody\"G\x82\xd3\xe4\x93\x02A\x12?/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/pdf\x12\xb8\x01\n" +
@@ -2889,7 +4304,15 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\x14PrintPrinterTestPage\x121.vietgara.document.v1.PrintPrinterTestPageRequest\x1a\x14.google.api.HttpBody\"I\x82\xd3\xe4\x93\x02C\"A/api/v1/garages/{garage_id}/printers/{printer_id}/test-page:print\x12\x9e\x01\n" +
 	"\x10PrintQuoteEscPos\x12-.vietgara.document.v1.PrintQuoteEscPosRequest\x1a\x14.google.api.HttpBody\"E\x82\xd3\xe4\x93\x02?:\x01*\":/api/v1/garages/{garage_id}/quotes/{quote_id}/escpos:print\x12\xd8\x01\n" +
 	"\x19PrintPaymentVoucherEscPos\x126.vietgara.document.v1.PrintPaymentVoucherEscPosRequest\x1a\x14.google.api.HttpBody\"m\x82\xd3\xe4\x93\x02g:\x01*\"b/api/v1/garages/{garage_id}/settlements/{settlement_id}/payments/{payment_id}/voucher-escpos:print\x12\x8f\x01\n" +
-	"\x0fPrintPartLabels\x12,.vietgara.document.v1.PrintPartLabelsRequest\x1a\x14.google.api.HttpBody\"8\x82\xd3\xe4\x93\x022:\x01*\"-/api/v1/garages/{garage_id}/part-labels:printBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/document/v1;documentv1b\x06proto3"
+	"\x0fPrintPartLabels\x12,.vietgara.document.v1.PrintPartLabelsRequest\x1a\x14.google.api.HttpBody\"8\x82\xd3\xe4\x93\x022:\x01*\"-/api/v1/garages/{garage_id}/part-labels:print\x12\xa0\x01\n" +
+	"\x0fListPrintAgents\x12,.vietgara.document.v1.ListPrintAgentsRequest\x1a-.vietgara.document.v1.ListPrintAgentsResponse\"0\x82\xd3\xe4\x93\x02*\x12(/api/v1/garages/{garage_id}/print-agents\x12\xaa\x01\n" +
+	"\x10CreatePrintAgent\x12-.vietgara.document.v1.CreatePrintAgentRequest\x1a..vietgara.document.v1.CreatePrintAgentResponse\"7\x82\xd3\xe4\x93\x021:\x05agent\"(/api/v1/garages/{garage_id}/print-agents\x12\xcf\x01\n" +
+	"\x1aIssuePrintAgentPairingCode\x127.vietgara.document.v1.IssuePrintAgentPairingCodeRequest\x1a..vietgara.document.v1.CreatePrintAgentResponse\"H\x82\xd3\xe4\x93\x02B\"@/api/v1/garages/{garage_id}/print-agents/{agent_id}/pairing-code\x12\xae\x01\n" +
+	"\x10DeletePrintAgent\x12-.vietgara.document.v1.DeletePrintAgentRequest\x1a..vietgara.document.v1.DeletePrintAgentResponse\";\x82\xd3\xe4\x93\x025*3/api/v1/garages/{garage_id}/print-agents/{agent_id}\x12\x90\x01\n" +
+	"\x0eCreatePrintJob\x12+.vietgara.document.v1.CreatePrintJobRequest\x1a\x1e.vietgara.document.v1.PrintJob\"1\x82\xd3\xe4\x93\x02+:\x01*\"&/api/v1/garages/{garage_id}/print-jobs\x12\x90\x01\n" +
+	"\vGetPrintJob\x12(.vietgara.document.v1.GetPrintJobRequest\x1a\x1e.vietgara.document.v1.PrintJob\"7\x82\xd3\xe4\x93\x021\x12//api/v1/garages/{garage_id}/print-jobs/{job_id}2\xae\x01\n" +
+	"\x11PrintAgentService\x12\x98\x01\n" +
+	"\x0ePairPrintAgent\x12+.vietgara.document.v1.PairPrintAgentRequest\x1a,.vietgara.document.v1.PairPrintAgentResponse\"+\x82\xd3\xe4\x93\x02%:\x01*\" /api/v1/public/print-agents:pairBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/document/v1;documentv1b\x06proto3"
 
 var (
 	file_vietgara_document_v1_document_proto_rawDescOnce sync.Once
@@ -2903,64 +4326,82 @@ func file_vietgara_document_v1_document_proto_rawDescGZIP() []byte {
 	return file_vietgara_document_v1_document_proto_rawDescData
 }
 
-var file_vietgara_document_v1_document_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_vietgara_document_v1_document_proto_msgTypes = make([]protoimpl.MessageInfo, 40)
+var file_vietgara_document_v1_document_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_vietgara_document_v1_document_proto_msgTypes = make([]protoimpl.MessageInfo, 57)
 var file_vietgara_document_v1_document_proto_goTypes = []any{
 	(DocumentType)(0),                                  // 0: vietgara.document.v1.DocumentType
 	(PaperSize)(0),                                     // 1: vietgara.document.v1.PaperSize
 	(PrinterProtocol)(0),                               // 2: vietgara.document.v1.PrinterProtocol
-	(*ExportQuotePdfRequest)(nil),                      // 3: vietgara.document.v1.ExportQuotePdfRequest
-	(*ExportRepairOrderPdfRequest)(nil),                // 4: vietgara.document.v1.ExportRepairOrderPdfRequest
-	(*ExportSettlementReceiptPdfRequest)(nil),          // 5: vietgara.document.v1.ExportSettlementReceiptPdfRequest
-	(*ExportPaymentVoucherPdfRequest)(nil),             // 6: vietgara.document.v1.ExportPaymentVoucherPdfRequest
-	(*ExportStockMovementsExcelRequest)(nil),           // 7: vietgara.document.v1.ExportStockMovementsExcelRequest
-	(*ExportRevenueExcelRequest)(nil),                  // 8: vietgara.document.v1.ExportRevenueExcelRequest
-	(*ExportGoodsReceiptPdfRequest)(nil),               // 9: vietgara.document.v1.ExportGoodsReceiptPdfRequest
-	(*ExportStockIssuePdfRequest)(nil),                 // 10: vietgara.document.v1.ExportStockIssuePdfRequest
-	(*ExportStockCountExcelRequest)(nil),               // 11: vietgara.document.v1.ExportStockCountExcelRequest
-	(*ExportPurchasesExcelRequest)(nil),                // 12: vietgara.document.v1.ExportPurchasesExcelRequest
-	(*ExportStockValuationExcelRequest)(nil),           // 13: vietgara.document.v1.ExportStockValuationExcelRequest
-	(*ExportPaymentOutVoucherPdfRequest)(nil),          // 14: vietgara.document.v1.ExportPaymentOutVoucherPdfRequest
-	(*ExportPurchaseOrderPdfRequest)(nil),              // 15: vietgara.document.v1.ExportPurchaseOrderPdfRequest
-	(*PrintPaymentOutVoucherPdfRequest)(nil),           // 16: vietgara.document.v1.PrintPaymentOutVoucherPdfRequest
-	(*PrintPurchaseOrderPdfRequest)(nil),               // 17: vietgara.document.v1.PrintPurchaseOrderPdfRequest
-	(*ExportReceivablesExcelRequest)(nil),              // 18: vietgara.document.v1.ExportReceivablesExcelRequest
-	(*ExportReceivableReconciliationExcelRequest)(nil), // 19: vietgara.document.v1.ExportReceivableReconciliationExcelRequest
-	(*ExportSupplierPayablesExcelRequest)(nil),         // 20: vietgara.document.v1.ExportSupplierPayablesExcelRequest
-	(*PrintSetting)(nil),                               // 21: vietgara.document.v1.PrintSetting
-	(*GetPrintSettingsRequest)(nil),                    // 22: vietgara.document.v1.GetPrintSettingsRequest
-	(*GetPrintSettingsResponse)(nil),                   // 23: vietgara.document.v1.GetPrintSettingsResponse
-	(*UpdatePrintSettingRequest)(nil),                  // 24: vietgara.document.v1.UpdatePrintSettingRequest
-	(*PrintQuotePdfRequest)(nil),                       // 25: vietgara.document.v1.PrintQuotePdfRequest
-	(*PrintRepairOrderPdfRequest)(nil),                 // 26: vietgara.document.v1.PrintRepairOrderPdfRequest
-	(*PrintSettlementReceiptPdfRequest)(nil),           // 27: vietgara.document.v1.PrintSettlementReceiptPdfRequest
-	(*PrintPaymentVoucherPdfRequest)(nil),              // 28: vietgara.document.v1.PrintPaymentVoucherPdfRequest
-	(*PrintGoodsReceiptPdfRequest)(nil),                // 29: vietgara.document.v1.PrintGoodsReceiptPdfRequest
-	(*PrintStockIssuePdfRequest)(nil),                  // 30: vietgara.document.v1.PrintStockIssuePdfRequest
-	(*Printer)(nil),                                    // 31: vietgara.document.v1.Printer
-	(*ListPrintersRequest)(nil),                        // 32: vietgara.document.v1.ListPrintersRequest
-	(*ListPrintersResponse)(nil),                       // 33: vietgara.document.v1.ListPrintersResponse
-	(*CreatePrinterRequest)(nil),                       // 34: vietgara.document.v1.CreatePrinterRequest
-	(*UpdatePrinterRequest)(nil),                       // 35: vietgara.document.v1.UpdatePrinterRequest
-	(*DeletePrinterRequest)(nil),                       // 36: vietgara.document.v1.DeletePrinterRequest
-	(*DeletePrinterResponse)(nil),                      // 37: vietgara.document.v1.DeletePrinterResponse
-	(*PrintPrinterTestPageRequest)(nil),                // 38: vietgara.document.v1.PrintPrinterTestPageRequest
-	(*PrintQuoteEscPosRequest)(nil),                    // 39: vietgara.document.v1.PrintQuoteEscPosRequest
-	(*PrintPaymentVoucherEscPosRequest)(nil),           // 40: vietgara.document.v1.PrintPaymentVoucherEscPosRequest
-	(*PartLabelCopies)(nil),                            // 41: vietgara.document.v1.PartLabelCopies
-	(*PrintPartLabelsRequest)(nil),                     // 42: vietgara.document.v1.PrintPartLabelsRequest
-	(v1.RevenuePeriod)(0),                              // 43: vietgara.reporting.v1.RevenuePeriod
-	(*timestamppb.Timestamp)(nil),                      // 44: google.protobuf.Timestamp
-	(*httpbody.HttpBody)(nil),                          // 45: google.api.HttpBody
+	(PrintJobStatus)(0),                                // 3: vietgara.document.v1.PrintJobStatus
+	(*ExportQuotePdfRequest)(nil),                      // 4: vietgara.document.v1.ExportQuotePdfRequest
+	(*ExportRepairOrderPdfRequest)(nil),                // 5: vietgara.document.v1.ExportRepairOrderPdfRequest
+	(*ExportSettlementReceiptPdfRequest)(nil),          // 6: vietgara.document.v1.ExportSettlementReceiptPdfRequest
+	(*ExportPaymentVoucherPdfRequest)(nil),             // 7: vietgara.document.v1.ExportPaymentVoucherPdfRequest
+	(*ExportStockMovementsExcelRequest)(nil),           // 8: vietgara.document.v1.ExportStockMovementsExcelRequest
+	(*ExportRevenueExcelRequest)(nil),                  // 9: vietgara.document.v1.ExportRevenueExcelRequest
+	(*ExportGoodsReceiptPdfRequest)(nil),               // 10: vietgara.document.v1.ExportGoodsReceiptPdfRequest
+	(*ExportStockIssuePdfRequest)(nil),                 // 11: vietgara.document.v1.ExportStockIssuePdfRequest
+	(*ExportStockCountExcelRequest)(nil),               // 12: vietgara.document.v1.ExportStockCountExcelRequest
+	(*ExportPurchasesExcelRequest)(nil),                // 13: vietgara.document.v1.ExportPurchasesExcelRequest
+	(*ExportStockValuationExcelRequest)(nil),           // 14: vietgara.document.v1.ExportStockValuationExcelRequest
+	(*ExportPaymentOutVoucherPdfRequest)(nil),          // 15: vietgara.document.v1.ExportPaymentOutVoucherPdfRequest
+	(*ExportPurchaseOrderPdfRequest)(nil),              // 16: vietgara.document.v1.ExportPurchaseOrderPdfRequest
+	(*PrintPaymentOutVoucherPdfRequest)(nil),           // 17: vietgara.document.v1.PrintPaymentOutVoucherPdfRequest
+	(*PrintPurchaseOrderPdfRequest)(nil),               // 18: vietgara.document.v1.PrintPurchaseOrderPdfRequest
+	(*ExportReceivablesExcelRequest)(nil),              // 19: vietgara.document.v1.ExportReceivablesExcelRequest
+	(*ExportReceivableReconciliationExcelRequest)(nil), // 20: vietgara.document.v1.ExportReceivableReconciliationExcelRequest
+	(*ExportSupplierPayablesExcelRequest)(nil),         // 21: vietgara.document.v1.ExportSupplierPayablesExcelRequest
+	(*PrintSetting)(nil),                               // 22: vietgara.document.v1.PrintSetting
+	(*GetPrintSettingsRequest)(nil),                    // 23: vietgara.document.v1.GetPrintSettingsRequest
+	(*GetPrintSettingsResponse)(nil),                   // 24: vietgara.document.v1.GetPrintSettingsResponse
+	(*UpdatePrintSettingRequest)(nil),                  // 25: vietgara.document.v1.UpdatePrintSettingRequest
+	(*PrintQuotePdfRequest)(nil),                       // 26: vietgara.document.v1.PrintQuotePdfRequest
+	(*PrintRepairOrderPdfRequest)(nil),                 // 27: vietgara.document.v1.PrintRepairOrderPdfRequest
+	(*PrintSettlementReceiptPdfRequest)(nil),           // 28: vietgara.document.v1.PrintSettlementReceiptPdfRequest
+	(*PrintPaymentVoucherPdfRequest)(nil),              // 29: vietgara.document.v1.PrintPaymentVoucherPdfRequest
+	(*PrintGoodsReceiptPdfRequest)(nil),                // 30: vietgara.document.v1.PrintGoodsReceiptPdfRequest
+	(*PrintStockIssuePdfRequest)(nil),                  // 31: vietgara.document.v1.PrintStockIssuePdfRequest
+	(*Printer)(nil),                                    // 32: vietgara.document.v1.Printer
+	(*ListPrintersRequest)(nil),                        // 33: vietgara.document.v1.ListPrintersRequest
+	(*ListPrintersResponse)(nil),                       // 34: vietgara.document.v1.ListPrintersResponse
+	(*CreatePrinterRequest)(nil),                       // 35: vietgara.document.v1.CreatePrinterRequest
+	(*UpdatePrinterRequest)(nil),                       // 36: vietgara.document.v1.UpdatePrinterRequest
+	(*DeletePrinterRequest)(nil),                       // 37: vietgara.document.v1.DeletePrinterRequest
+	(*DeletePrinterResponse)(nil),                      // 38: vietgara.document.v1.DeletePrinterResponse
+	(*PrintPrinterTestPageRequest)(nil),                // 39: vietgara.document.v1.PrintPrinterTestPageRequest
+	(*PrintQuoteEscPosRequest)(nil),                    // 40: vietgara.document.v1.PrintQuoteEscPosRequest
+	(*PrintPaymentVoucherEscPosRequest)(nil),           // 41: vietgara.document.v1.PrintPaymentVoucherEscPosRequest
+	(*PartLabelCopies)(nil),                            // 42: vietgara.document.v1.PartLabelCopies
+	(*PrintPartLabelsRequest)(nil),                     // 43: vietgara.document.v1.PrintPartLabelsRequest
+	(*PrintAgent)(nil),                                 // 44: vietgara.document.v1.PrintAgent
+	(*PrintAgentPrinter)(nil),                          // 45: vietgara.document.v1.PrintAgentPrinter
+	(*ListPrintAgentsRequest)(nil),                     // 46: vietgara.document.v1.ListPrintAgentsRequest
+	(*ListPrintAgentsResponse)(nil),                    // 47: vietgara.document.v1.ListPrintAgentsResponse
+	(*CreatePrintAgentRequest)(nil),                    // 48: vietgara.document.v1.CreatePrintAgentRequest
+	(*CreatePrintAgentResponse)(nil),                   // 49: vietgara.document.v1.CreatePrintAgentResponse
+	(*IssuePrintAgentPairingCodeRequest)(nil),          // 50: vietgara.document.v1.IssuePrintAgentPairingCodeRequest
+	(*DeletePrintAgentRequest)(nil),                    // 51: vietgara.document.v1.DeletePrintAgentRequest
+	(*DeletePrintAgentResponse)(nil),                   // 52: vietgara.document.v1.DeletePrintAgentResponse
+	(*PrintJob)(nil),                                   // 53: vietgara.document.v1.PrintJob
+	(*PrintJobPaymentVoucher)(nil),                     // 54: vietgara.document.v1.PrintJobPaymentVoucher
+	(*PrintJobPartLabels)(nil),                         // 55: vietgara.document.v1.PrintJobPartLabels
+	(*PrintJobTestPage)(nil),                           // 56: vietgara.document.v1.PrintJobTestPage
+	(*CreatePrintJobRequest)(nil),                      // 57: vietgara.document.v1.CreatePrintJobRequest
+	(*GetPrintJobRequest)(nil),                         // 58: vietgara.document.v1.GetPrintJobRequest
+	(*PairPrintAgentRequest)(nil),                      // 59: vietgara.document.v1.PairPrintAgentRequest
+	(*PairPrintAgentResponse)(nil),                     // 60: vietgara.document.v1.PairPrintAgentResponse
+	(v1.RevenuePeriod)(0),                              // 61: vietgara.reporting.v1.RevenuePeriod
+	(*timestamppb.Timestamp)(nil),                      // 62: google.protobuf.Timestamp
+	(*httpbody.HttpBody)(nil),                          // 63: google.api.HttpBody
 }
 var file_vietgara_document_v1_document_proto_depIdxs = []int32{
-	43, // 0: vietgara.document.v1.ExportRevenueExcelRequest.period:type_name -> vietgara.reporting.v1.RevenuePeriod
+	61, // 0: vietgara.document.v1.ExportRevenueExcelRequest.period:type_name -> vietgara.reporting.v1.RevenuePeriod
 	1,  // 1: vietgara.document.v1.PrintPaymentOutVoucherPdfRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
 	1,  // 2: vietgara.document.v1.PrintPurchaseOrderPdfRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
 	0,  // 3: vietgara.document.v1.PrintSetting.document_type:type_name -> vietgara.document.v1.DocumentType
 	1,  // 4: vietgara.document.v1.PrintSetting.paper_size:type_name -> vietgara.document.v1.PaperSize
 	1,  // 5: vietgara.document.v1.PrintSetting.available_paper_sizes:type_name -> vietgara.document.v1.PaperSize
-	21, // 6: vietgara.document.v1.GetPrintSettingsResponse.settings:type_name -> vietgara.document.v1.PrintSetting
+	22, // 6: vietgara.document.v1.GetPrintSettingsResponse.settings:type_name -> vietgara.document.v1.PrintSetting
 	0,  // 7: vietgara.document.v1.UpdatePrintSettingRequest.document_type:type_name -> vietgara.document.v1.DocumentType
 	1,  // 8: vietgara.document.v1.UpdatePrintSettingRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
 	1,  // 9: vietgara.document.v1.PrintQuotePdfRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
@@ -2972,88 +4413,118 @@ var file_vietgara_document_v1_document_proto_depIdxs = []int32{
 	2,  // 15: vietgara.document.v1.Printer.protocol:type_name -> vietgara.document.v1.PrinterProtocol
 	1,  // 16: vietgara.document.v1.Printer.paper_size:type_name -> vietgara.document.v1.PaperSize
 	0,  // 17: vietgara.document.v1.Printer.document_types:type_name -> vietgara.document.v1.DocumentType
-	44, // 18: vietgara.document.v1.Printer.created_at:type_name -> google.protobuf.Timestamp
-	44, // 19: vietgara.document.v1.Printer.updated_at:type_name -> google.protobuf.Timestamp
-	31, // 20: vietgara.document.v1.ListPrintersResponse.printers:type_name -> vietgara.document.v1.Printer
-	31, // 21: vietgara.document.v1.CreatePrinterRequest.printer:type_name -> vietgara.document.v1.Printer
-	31, // 22: vietgara.document.v1.UpdatePrinterRequest.printer:type_name -> vietgara.document.v1.Printer
+	62, // 18: vietgara.document.v1.Printer.created_at:type_name -> google.protobuf.Timestamp
+	62, // 19: vietgara.document.v1.Printer.updated_at:type_name -> google.protobuf.Timestamp
+	32, // 20: vietgara.document.v1.ListPrintersResponse.printers:type_name -> vietgara.document.v1.Printer
+	32, // 21: vietgara.document.v1.CreatePrinterRequest.printer:type_name -> vietgara.document.v1.Printer
+	32, // 22: vietgara.document.v1.UpdatePrinterRequest.printer:type_name -> vietgara.document.v1.Printer
 	1,  // 23: vietgara.document.v1.PrintQuoteEscPosRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
 	1,  // 24: vietgara.document.v1.PrintPaymentVoucherEscPosRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
 	1,  // 25: vietgara.document.v1.PrintPartLabelsRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
-	41, // 26: vietgara.document.v1.PrintPartLabelsRequest.parts:type_name -> vietgara.document.v1.PartLabelCopies
-	3,  // 27: vietgara.document.v1.DocumentService.ExportQuotePdf:input_type -> vietgara.document.v1.ExportQuotePdfRequest
-	4,  // 28: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:input_type -> vietgara.document.v1.ExportRepairOrderPdfRequest
-	5,  // 29: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:input_type -> vietgara.document.v1.ExportSettlementReceiptPdfRequest
-	6,  // 30: vietgara.document.v1.DocumentService.ExportPaymentVoucherPdf:input_type -> vietgara.document.v1.ExportPaymentVoucherPdfRequest
-	7,  // 31: vietgara.document.v1.DocumentService.ExportStockMovementsExcel:input_type -> vietgara.document.v1.ExportStockMovementsExcelRequest
-	8,  // 32: vietgara.document.v1.DocumentService.ExportRevenueExcel:input_type -> vietgara.document.v1.ExportRevenueExcelRequest
-	9,  // 33: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:input_type -> vietgara.document.v1.ExportGoodsReceiptPdfRequest
-	10, // 34: vietgara.document.v1.DocumentService.ExportStockIssuePdf:input_type -> vietgara.document.v1.ExportStockIssuePdfRequest
-	11, // 35: vietgara.document.v1.DocumentService.ExportStockCountExcel:input_type -> vietgara.document.v1.ExportStockCountExcelRequest
-	12, // 36: vietgara.document.v1.DocumentService.ExportPurchasesExcel:input_type -> vietgara.document.v1.ExportPurchasesExcelRequest
-	13, // 37: vietgara.document.v1.DocumentService.ExportStockValuationExcel:input_type -> vietgara.document.v1.ExportStockValuationExcelRequest
-	22, // 38: vietgara.document.v1.DocumentService.GetPrintSettings:input_type -> vietgara.document.v1.GetPrintSettingsRequest
-	24, // 39: vietgara.document.v1.DocumentService.UpdatePrintSetting:input_type -> vietgara.document.v1.UpdatePrintSettingRequest
-	25, // 40: vietgara.document.v1.DocumentService.PrintQuotePdf:input_type -> vietgara.document.v1.PrintQuotePdfRequest
-	26, // 41: vietgara.document.v1.DocumentService.PrintRepairOrderPdf:input_type -> vietgara.document.v1.PrintRepairOrderPdfRequest
-	27, // 42: vietgara.document.v1.DocumentService.PrintSettlementReceiptPdf:input_type -> vietgara.document.v1.PrintSettlementReceiptPdfRequest
-	28, // 43: vietgara.document.v1.DocumentService.PrintPaymentVoucherPdf:input_type -> vietgara.document.v1.PrintPaymentVoucherPdfRequest
-	29, // 44: vietgara.document.v1.DocumentService.PrintGoodsReceiptPdf:input_type -> vietgara.document.v1.PrintGoodsReceiptPdfRequest
-	30, // 45: vietgara.document.v1.DocumentService.PrintStockIssuePdf:input_type -> vietgara.document.v1.PrintStockIssuePdfRequest
-	14, // 46: vietgara.document.v1.DocumentService.ExportPaymentOutVoucherPdf:input_type -> vietgara.document.v1.ExportPaymentOutVoucherPdfRequest
-	16, // 47: vietgara.document.v1.DocumentService.PrintPaymentOutVoucherPdf:input_type -> vietgara.document.v1.PrintPaymentOutVoucherPdfRequest
-	15, // 48: vietgara.document.v1.DocumentService.ExportPurchaseOrderPdf:input_type -> vietgara.document.v1.ExportPurchaseOrderPdfRequest
-	17, // 49: vietgara.document.v1.DocumentService.PrintPurchaseOrderPdf:input_type -> vietgara.document.v1.PrintPurchaseOrderPdfRequest
-	18, // 50: vietgara.document.v1.DocumentService.ExportReceivablesExcel:input_type -> vietgara.document.v1.ExportReceivablesExcelRequest
-	19, // 51: vietgara.document.v1.DocumentService.ExportReceivableReconciliationExcel:input_type -> vietgara.document.v1.ExportReceivableReconciliationExcelRequest
-	20, // 52: vietgara.document.v1.DocumentService.ExportSupplierPayablesExcel:input_type -> vietgara.document.v1.ExportSupplierPayablesExcelRequest
-	32, // 53: vietgara.document.v1.DocumentService.ListPrinters:input_type -> vietgara.document.v1.ListPrintersRequest
-	34, // 54: vietgara.document.v1.DocumentService.CreatePrinter:input_type -> vietgara.document.v1.CreatePrinterRequest
-	35, // 55: vietgara.document.v1.DocumentService.UpdatePrinter:input_type -> vietgara.document.v1.UpdatePrinterRequest
-	36, // 56: vietgara.document.v1.DocumentService.DeletePrinter:input_type -> vietgara.document.v1.DeletePrinterRequest
-	38, // 57: vietgara.document.v1.DocumentService.PrintPrinterTestPage:input_type -> vietgara.document.v1.PrintPrinterTestPageRequest
-	39, // 58: vietgara.document.v1.DocumentService.PrintQuoteEscPos:input_type -> vietgara.document.v1.PrintQuoteEscPosRequest
-	40, // 59: vietgara.document.v1.DocumentService.PrintPaymentVoucherEscPos:input_type -> vietgara.document.v1.PrintPaymentVoucherEscPosRequest
-	42, // 60: vietgara.document.v1.DocumentService.PrintPartLabels:input_type -> vietgara.document.v1.PrintPartLabelsRequest
-	45, // 61: vietgara.document.v1.DocumentService.ExportQuotePdf:output_type -> google.api.HttpBody
-	45, // 62: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:output_type -> google.api.HttpBody
-	45, // 63: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:output_type -> google.api.HttpBody
-	45, // 64: vietgara.document.v1.DocumentService.ExportPaymentVoucherPdf:output_type -> google.api.HttpBody
-	45, // 65: vietgara.document.v1.DocumentService.ExportStockMovementsExcel:output_type -> google.api.HttpBody
-	45, // 66: vietgara.document.v1.DocumentService.ExportRevenueExcel:output_type -> google.api.HttpBody
-	45, // 67: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:output_type -> google.api.HttpBody
-	45, // 68: vietgara.document.v1.DocumentService.ExportStockIssuePdf:output_type -> google.api.HttpBody
-	45, // 69: vietgara.document.v1.DocumentService.ExportStockCountExcel:output_type -> google.api.HttpBody
-	45, // 70: vietgara.document.v1.DocumentService.ExportPurchasesExcel:output_type -> google.api.HttpBody
-	45, // 71: vietgara.document.v1.DocumentService.ExportStockValuationExcel:output_type -> google.api.HttpBody
-	23, // 72: vietgara.document.v1.DocumentService.GetPrintSettings:output_type -> vietgara.document.v1.GetPrintSettingsResponse
-	21, // 73: vietgara.document.v1.DocumentService.UpdatePrintSetting:output_type -> vietgara.document.v1.PrintSetting
-	45, // 74: vietgara.document.v1.DocumentService.PrintQuotePdf:output_type -> google.api.HttpBody
-	45, // 75: vietgara.document.v1.DocumentService.PrintRepairOrderPdf:output_type -> google.api.HttpBody
-	45, // 76: vietgara.document.v1.DocumentService.PrintSettlementReceiptPdf:output_type -> google.api.HttpBody
-	45, // 77: vietgara.document.v1.DocumentService.PrintPaymentVoucherPdf:output_type -> google.api.HttpBody
-	45, // 78: vietgara.document.v1.DocumentService.PrintGoodsReceiptPdf:output_type -> google.api.HttpBody
-	45, // 79: vietgara.document.v1.DocumentService.PrintStockIssuePdf:output_type -> google.api.HttpBody
-	45, // 80: vietgara.document.v1.DocumentService.ExportPaymentOutVoucherPdf:output_type -> google.api.HttpBody
-	45, // 81: vietgara.document.v1.DocumentService.PrintPaymentOutVoucherPdf:output_type -> google.api.HttpBody
-	45, // 82: vietgara.document.v1.DocumentService.ExportPurchaseOrderPdf:output_type -> google.api.HttpBody
-	45, // 83: vietgara.document.v1.DocumentService.PrintPurchaseOrderPdf:output_type -> google.api.HttpBody
-	45, // 84: vietgara.document.v1.DocumentService.ExportReceivablesExcel:output_type -> google.api.HttpBody
-	45, // 85: vietgara.document.v1.DocumentService.ExportReceivableReconciliationExcel:output_type -> google.api.HttpBody
-	45, // 86: vietgara.document.v1.DocumentService.ExportSupplierPayablesExcel:output_type -> google.api.HttpBody
-	33, // 87: vietgara.document.v1.DocumentService.ListPrinters:output_type -> vietgara.document.v1.ListPrintersResponse
-	31, // 88: vietgara.document.v1.DocumentService.CreatePrinter:output_type -> vietgara.document.v1.Printer
-	31, // 89: vietgara.document.v1.DocumentService.UpdatePrinter:output_type -> vietgara.document.v1.Printer
-	37, // 90: vietgara.document.v1.DocumentService.DeletePrinter:output_type -> vietgara.document.v1.DeletePrinterResponse
-	45, // 91: vietgara.document.v1.DocumentService.PrintPrinterTestPage:output_type -> google.api.HttpBody
-	45, // 92: vietgara.document.v1.DocumentService.PrintQuoteEscPos:output_type -> google.api.HttpBody
-	45, // 93: vietgara.document.v1.DocumentService.PrintPaymentVoucherEscPos:output_type -> google.api.HttpBody
-	45, // 94: vietgara.document.v1.DocumentService.PrintPartLabels:output_type -> google.api.HttpBody
-	61, // [61:95] is the sub-list for method output_type
-	27, // [27:61] is the sub-list for method input_type
-	27, // [27:27] is the sub-list for extension type_name
-	27, // [27:27] is the sub-list for extension extendee
-	0,  // [0:27] is the sub-list for field type_name
+	42, // 26: vietgara.document.v1.PrintPartLabelsRequest.parts:type_name -> vietgara.document.v1.PartLabelCopies
+	62, // 27: vietgara.document.v1.PrintAgent.pairing_expires_at:type_name -> google.protobuf.Timestamp
+	62, // 28: vietgara.document.v1.PrintAgent.last_seen_at:type_name -> google.protobuf.Timestamp
+	45, // 29: vietgara.document.v1.PrintAgent.printers:type_name -> vietgara.document.v1.PrintAgentPrinter
+	62, // 30: vietgara.document.v1.PrintAgent.created_at:type_name -> google.protobuf.Timestamp
+	62, // 31: vietgara.document.v1.PrintAgent.updated_at:type_name -> google.protobuf.Timestamp
+	44, // 32: vietgara.document.v1.ListPrintAgentsResponse.agents:type_name -> vietgara.document.v1.PrintAgent
+	44, // 33: vietgara.document.v1.CreatePrintAgentRequest.agent:type_name -> vietgara.document.v1.PrintAgent
+	44, // 34: vietgara.document.v1.CreatePrintAgentResponse.agent:type_name -> vietgara.document.v1.PrintAgent
+	0,  // 35: vietgara.document.v1.PrintJob.document_type:type_name -> vietgara.document.v1.DocumentType
+	3,  // 36: vietgara.document.v1.PrintJob.status:type_name -> vietgara.document.v1.PrintJobStatus
+	62, // 37: vietgara.document.v1.PrintJob.created_at:type_name -> google.protobuf.Timestamp
+	62, // 38: vietgara.document.v1.PrintJob.updated_at:type_name -> google.protobuf.Timestamp
+	42, // 39: vietgara.document.v1.PrintJobPartLabels.parts:type_name -> vietgara.document.v1.PartLabelCopies
+	54, // 40: vietgara.document.v1.CreatePrintJobRequest.payment_voucher:type_name -> vietgara.document.v1.PrintJobPaymentVoucher
+	55, // 41: vietgara.document.v1.CreatePrintJobRequest.part_labels:type_name -> vietgara.document.v1.PrintJobPartLabels
+	56, // 42: vietgara.document.v1.CreatePrintJobRequest.test_page:type_name -> vietgara.document.v1.PrintJobTestPage
+	4,  // 43: vietgara.document.v1.DocumentService.ExportQuotePdf:input_type -> vietgara.document.v1.ExportQuotePdfRequest
+	5,  // 44: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:input_type -> vietgara.document.v1.ExportRepairOrderPdfRequest
+	6,  // 45: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:input_type -> vietgara.document.v1.ExportSettlementReceiptPdfRequest
+	7,  // 46: vietgara.document.v1.DocumentService.ExportPaymentVoucherPdf:input_type -> vietgara.document.v1.ExportPaymentVoucherPdfRequest
+	8,  // 47: vietgara.document.v1.DocumentService.ExportStockMovementsExcel:input_type -> vietgara.document.v1.ExportStockMovementsExcelRequest
+	9,  // 48: vietgara.document.v1.DocumentService.ExportRevenueExcel:input_type -> vietgara.document.v1.ExportRevenueExcelRequest
+	10, // 49: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:input_type -> vietgara.document.v1.ExportGoodsReceiptPdfRequest
+	11, // 50: vietgara.document.v1.DocumentService.ExportStockIssuePdf:input_type -> vietgara.document.v1.ExportStockIssuePdfRequest
+	12, // 51: vietgara.document.v1.DocumentService.ExportStockCountExcel:input_type -> vietgara.document.v1.ExportStockCountExcelRequest
+	13, // 52: vietgara.document.v1.DocumentService.ExportPurchasesExcel:input_type -> vietgara.document.v1.ExportPurchasesExcelRequest
+	14, // 53: vietgara.document.v1.DocumentService.ExportStockValuationExcel:input_type -> vietgara.document.v1.ExportStockValuationExcelRequest
+	23, // 54: vietgara.document.v1.DocumentService.GetPrintSettings:input_type -> vietgara.document.v1.GetPrintSettingsRequest
+	25, // 55: vietgara.document.v1.DocumentService.UpdatePrintSetting:input_type -> vietgara.document.v1.UpdatePrintSettingRequest
+	26, // 56: vietgara.document.v1.DocumentService.PrintQuotePdf:input_type -> vietgara.document.v1.PrintQuotePdfRequest
+	27, // 57: vietgara.document.v1.DocumentService.PrintRepairOrderPdf:input_type -> vietgara.document.v1.PrintRepairOrderPdfRequest
+	28, // 58: vietgara.document.v1.DocumentService.PrintSettlementReceiptPdf:input_type -> vietgara.document.v1.PrintSettlementReceiptPdfRequest
+	29, // 59: vietgara.document.v1.DocumentService.PrintPaymentVoucherPdf:input_type -> vietgara.document.v1.PrintPaymentVoucherPdfRequest
+	30, // 60: vietgara.document.v1.DocumentService.PrintGoodsReceiptPdf:input_type -> vietgara.document.v1.PrintGoodsReceiptPdfRequest
+	31, // 61: vietgara.document.v1.DocumentService.PrintStockIssuePdf:input_type -> vietgara.document.v1.PrintStockIssuePdfRequest
+	15, // 62: vietgara.document.v1.DocumentService.ExportPaymentOutVoucherPdf:input_type -> vietgara.document.v1.ExportPaymentOutVoucherPdfRequest
+	17, // 63: vietgara.document.v1.DocumentService.PrintPaymentOutVoucherPdf:input_type -> vietgara.document.v1.PrintPaymentOutVoucherPdfRequest
+	16, // 64: vietgara.document.v1.DocumentService.ExportPurchaseOrderPdf:input_type -> vietgara.document.v1.ExportPurchaseOrderPdfRequest
+	18, // 65: vietgara.document.v1.DocumentService.PrintPurchaseOrderPdf:input_type -> vietgara.document.v1.PrintPurchaseOrderPdfRequest
+	19, // 66: vietgara.document.v1.DocumentService.ExportReceivablesExcel:input_type -> vietgara.document.v1.ExportReceivablesExcelRequest
+	20, // 67: vietgara.document.v1.DocumentService.ExportReceivableReconciliationExcel:input_type -> vietgara.document.v1.ExportReceivableReconciliationExcelRequest
+	21, // 68: vietgara.document.v1.DocumentService.ExportSupplierPayablesExcel:input_type -> vietgara.document.v1.ExportSupplierPayablesExcelRequest
+	33, // 69: vietgara.document.v1.DocumentService.ListPrinters:input_type -> vietgara.document.v1.ListPrintersRequest
+	35, // 70: vietgara.document.v1.DocumentService.CreatePrinter:input_type -> vietgara.document.v1.CreatePrinterRequest
+	36, // 71: vietgara.document.v1.DocumentService.UpdatePrinter:input_type -> vietgara.document.v1.UpdatePrinterRequest
+	37, // 72: vietgara.document.v1.DocumentService.DeletePrinter:input_type -> vietgara.document.v1.DeletePrinterRequest
+	39, // 73: vietgara.document.v1.DocumentService.PrintPrinterTestPage:input_type -> vietgara.document.v1.PrintPrinterTestPageRequest
+	40, // 74: vietgara.document.v1.DocumentService.PrintQuoteEscPos:input_type -> vietgara.document.v1.PrintQuoteEscPosRequest
+	41, // 75: vietgara.document.v1.DocumentService.PrintPaymentVoucherEscPos:input_type -> vietgara.document.v1.PrintPaymentVoucherEscPosRequest
+	43, // 76: vietgara.document.v1.DocumentService.PrintPartLabels:input_type -> vietgara.document.v1.PrintPartLabelsRequest
+	46, // 77: vietgara.document.v1.DocumentService.ListPrintAgents:input_type -> vietgara.document.v1.ListPrintAgentsRequest
+	48, // 78: vietgara.document.v1.DocumentService.CreatePrintAgent:input_type -> vietgara.document.v1.CreatePrintAgentRequest
+	50, // 79: vietgara.document.v1.DocumentService.IssuePrintAgentPairingCode:input_type -> vietgara.document.v1.IssuePrintAgentPairingCodeRequest
+	51, // 80: vietgara.document.v1.DocumentService.DeletePrintAgent:input_type -> vietgara.document.v1.DeletePrintAgentRequest
+	57, // 81: vietgara.document.v1.DocumentService.CreatePrintJob:input_type -> vietgara.document.v1.CreatePrintJobRequest
+	58, // 82: vietgara.document.v1.DocumentService.GetPrintJob:input_type -> vietgara.document.v1.GetPrintJobRequest
+	59, // 83: vietgara.document.v1.PrintAgentService.PairPrintAgent:input_type -> vietgara.document.v1.PairPrintAgentRequest
+	63, // 84: vietgara.document.v1.DocumentService.ExportQuotePdf:output_type -> google.api.HttpBody
+	63, // 85: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:output_type -> google.api.HttpBody
+	63, // 86: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:output_type -> google.api.HttpBody
+	63, // 87: vietgara.document.v1.DocumentService.ExportPaymentVoucherPdf:output_type -> google.api.HttpBody
+	63, // 88: vietgara.document.v1.DocumentService.ExportStockMovementsExcel:output_type -> google.api.HttpBody
+	63, // 89: vietgara.document.v1.DocumentService.ExportRevenueExcel:output_type -> google.api.HttpBody
+	63, // 90: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:output_type -> google.api.HttpBody
+	63, // 91: vietgara.document.v1.DocumentService.ExportStockIssuePdf:output_type -> google.api.HttpBody
+	63, // 92: vietgara.document.v1.DocumentService.ExportStockCountExcel:output_type -> google.api.HttpBody
+	63, // 93: vietgara.document.v1.DocumentService.ExportPurchasesExcel:output_type -> google.api.HttpBody
+	63, // 94: vietgara.document.v1.DocumentService.ExportStockValuationExcel:output_type -> google.api.HttpBody
+	24, // 95: vietgara.document.v1.DocumentService.GetPrintSettings:output_type -> vietgara.document.v1.GetPrintSettingsResponse
+	22, // 96: vietgara.document.v1.DocumentService.UpdatePrintSetting:output_type -> vietgara.document.v1.PrintSetting
+	63, // 97: vietgara.document.v1.DocumentService.PrintQuotePdf:output_type -> google.api.HttpBody
+	63, // 98: vietgara.document.v1.DocumentService.PrintRepairOrderPdf:output_type -> google.api.HttpBody
+	63, // 99: vietgara.document.v1.DocumentService.PrintSettlementReceiptPdf:output_type -> google.api.HttpBody
+	63, // 100: vietgara.document.v1.DocumentService.PrintPaymentVoucherPdf:output_type -> google.api.HttpBody
+	63, // 101: vietgara.document.v1.DocumentService.PrintGoodsReceiptPdf:output_type -> google.api.HttpBody
+	63, // 102: vietgara.document.v1.DocumentService.PrintStockIssuePdf:output_type -> google.api.HttpBody
+	63, // 103: vietgara.document.v1.DocumentService.ExportPaymentOutVoucherPdf:output_type -> google.api.HttpBody
+	63, // 104: vietgara.document.v1.DocumentService.PrintPaymentOutVoucherPdf:output_type -> google.api.HttpBody
+	63, // 105: vietgara.document.v1.DocumentService.ExportPurchaseOrderPdf:output_type -> google.api.HttpBody
+	63, // 106: vietgara.document.v1.DocumentService.PrintPurchaseOrderPdf:output_type -> google.api.HttpBody
+	63, // 107: vietgara.document.v1.DocumentService.ExportReceivablesExcel:output_type -> google.api.HttpBody
+	63, // 108: vietgara.document.v1.DocumentService.ExportReceivableReconciliationExcel:output_type -> google.api.HttpBody
+	63, // 109: vietgara.document.v1.DocumentService.ExportSupplierPayablesExcel:output_type -> google.api.HttpBody
+	34, // 110: vietgara.document.v1.DocumentService.ListPrinters:output_type -> vietgara.document.v1.ListPrintersResponse
+	32, // 111: vietgara.document.v1.DocumentService.CreatePrinter:output_type -> vietgara.document.v1.Printer
+	32, // 112: vietgara.document.v1.DocumentService.UpdatePrinter:output_type -> vietgara.document.v1.Printer
+	38, // 113: vietgara.document.v1.DocumentService.DeletePrinter:output_type -> vietgara.document.v1.DeletePrinterResponse
+	63, // 114: vietgara.document.v1.DocumentService.PrintPrinterTestPage:output_type -> google.api.HttpBody
+	63, // 115: vietgara.document.v1.DocumentService.PrintQuoteEscPos:output_type -> google.api.HttpBody
+	63, // 116: vietgara.document.v1.DocumentService.PrintPaymentVoucherEscPos:output_type -> google.api.HttpBody
+	63, // 117: vietgara.document.v1.DocumentService.PrintPartLabels:output_type -> google.api.HttpBody
+	47, // 118: vietgara.document.v1.DocumentService.ListPrintAgents:output_type -> vietgara.document.v1.ListPrintAgentsResponse
+	49, // 119: vietgara.document.v1.DocumentService.CreatePrintAgent:output_type -> vietgara.document.v1.CreatePrintAgentResponse
+	49, // 120: vietgara.document.v1.DocumentService.IssuePrintAgentPairingCode:output_type -> vietgara.document.v1.CreatePrintAgentResponse
+	52, // 121: vietgara.document.v1.DocumentService.DeletePrintAgent:output_type -> vietgara.document.v1.DeletePrintAgentResponse
+	53, // 122: vietgara.document.v1.DocumentService.CreatePrintJob:output_type -> vietgara.document.v1.PrintJob
+	53, // 123: vietgara.document.v1.DocumentService.GetPrintJob:output_type -> vietgara.document.v1.PrintJob
+	60, // 124: vietgara.document.v1.PrintAgentService.PairPrintAgent:output_type -> vietgara.document.v1.PairPrintAgentResponse
+	84, // [84:125] is the sub-list for method output_type
+	43, // [43:84] is the sub-list for method input_type
+	43, // [43:43] is the sub-list for extension type_name
+	43, // [43:43] is the sub-list for extension extendee
+	0,  // [0:43] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_document_v1_document_proto_init() }
@@ -3062,15 +4533,27 @@ func file_vietgara_document_v1_document_proto_init() {
 		return
 	}
 	file_vietgara_document_v1_document_proto_msgTypes[38].OneofWrappers = []any{}
+	file_vietgara_document_v1_document_proto_msgTypes[53].OneofWrappers = []any{
+		(*CreatePrintJobRequest_QuoteId)(nil),
+		(*CreatePrintJobRequest_RepairOrderId)(nil),
+		(*CreatePrintJobRequest_SettlementId)(nil),
+		(*CreatePrintJobRequest_PaymentVoucher)(nil),
+		(*CreatePrintJobRequest_GoodsReceiptId)(nil),
+		(*CreatePrintJobRequest_StockIssueRepairOrderId)(nil),
+		(*CreatePrintJobRequest_PaymentOutVoucherId)(nil),
+		(*CreatePrintJobRequest_PurchaseOrderId)(nil),
+		(*CreatePrintJobRequest_PartLabels)(nil),
+		(*CreatePrintJobRequest_TestPage)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vietgara_document_v1_document_proto_rawDesc), len(file_vietgara_document_v1_document_proto_rawDesc)),
-			NumEnums:      3,
-			NumMessages:   40,
+			NumEnums:      4,
+			NumMessages:   57,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   2,
 		},
 		GoTypes:           file_vietgara_document_v1_document_proto_goTypes,
 		DependencyIndexes: file_vietgara_document_v1_document_proto_depIdxs,

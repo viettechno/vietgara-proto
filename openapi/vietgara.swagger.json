@@ -55,6 +55,10 @@
       "description": "DocumentService renders PDFs and Excel reports on request (FRD 3.13).\nEvery document is generated fresh from the owning module's own data, read\nthrough a narrow interface the same way every other cross-module read\nworks (HLD Section 2: a module never queries another module's tables\ndirectly), with a built-in template per document type, paper size and\nversion (Release 10.0; a garage designing its own templates is FR-DOC-03,\nPhase 13). Each RPC needs the same\npermission as the data it renders (quote.read, billing.read,\ninventory.read), not a permission of its own."
     },
     {
+      "name": "PrintAgentService",
+      "description": "PrintAgentService is the print agent's own API (FR-DOC-08, Release 13.1).\nPairing is public: the pairing code is the credential.\n\nOnce paired, the agent connects with a WebSocket to\n/api/v1/print-agents/connect, sending \"Authorization: Bearer \u003cagent_key\u003e\",\nand exchanges JSON text messages (see the API Specification, Section\n10.4): the server sends \"hello\" and then each \"job\" of the agent's\nprinters; the agent sends its \"printers\" and the \"result\" of each job. A\nrevoked or unknown key is refused (HTTP 401) and an open connection is\nclosed (WebSocket close code 4001)."
+    },
+    {
       "name": "FileService",
       "description": "FileService is the garage's file registry. Uploading, reading and\ndeleting a file need the write or read permission of the module that owns\nthe entity the file belongs to (e.g. garage.write for a logo)."
     },
@@ -5188,6 +5192,224 @@
         ]
       }
     },
+    "/api/v1/garages/{garageId}/print-agents": {
+      "get": {
+        "summary": "FR-DOC-08 (Release 13.1): the garage's print agents, by name, with the\nprinters each last reported and whether it is connected. Needs\nmembership of the garage.",
+        "operationId": "DocumentService_ListPrintAgents",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPrintAgentsResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      },
+      "post": {
+        "summary": "FR-DOC-08: adds a print agent and returns its pairing code. Needs the\npermission that edits the garage profile. An invalid or duplicate name\nand an 11th agent are refused (INVALID_ARGUMENT).",
+        "operationId": "DocumentService_CreatePrintAgent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreatePrintAgentResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "agent",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PrintAgent"
+            }
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/print-agents/{agentId}": {
+      "delete": {
+        "summary": "FR-DOC-08: removes an agent: its key stops working at once, its\nconnection is closed, and its printers and print jobs are removed. Needs\nthe permission that edits the garage profile.",
+        "operationId": "DocumentService_DeletePrintAgent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeletePrintAgentResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/print-agents/{agentId}/pairing-code": {
+      "post": {
+        "summary": "FR-DOC-08: a new pairing code for an agent, to pair it again (a new PC,\na reinstall). Its key stops working at once and its connection is\nclosed; its printers are kept. The agent then reads paired false, with\nthe new code's pairing_expires_at. Needs the permission that edits the\ngarage profile.",
+        "operationId": "DocumentService_IssuePrintAgentPairingCode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreatePrintAgentResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/print-jobs": {
+      "post": {
+        "summary": "FR-DOC-08: prints a document on an AGENT printer without a dialog. The\nserver renders it for the printer's paper (ESC/POS on a roll or label, a\nPDF on its page size or the garage's setting) with the rules of the print\nendpoints (template version, copy mark, print log; labels are not\nlogged), and queues it for the agent, which prints it when it is\nconnected. Needs the permission of the document (that of its print\nendpoint; a test page: membership) and an Idempotency-Key header: a\nretry with the same key answers the same job instead of printing twice.\nThe job keeps the printer's PC printer and paper as they were: deleting\nor changing the printer later does not stop a queued job. A printer of\nanother protocol, a document the printer's paper has no template for,\nand a missing document field are refused (INVALID_ARGUMENT).",
+        "operationId": "DocumentService_CreatePrintJob",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PrintJob"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServiceCreatePrintJobBody"
+            }
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/garages/{garageId}/print-jobs/{jobId}": {
+      "get": {
+        "summary": "FR-DOC-08: a print job, to follow it until it is printed, failed or\nexpired. Needs membership of the garage. A job of a removed agent, or\nolder than a week, is NOT_FOUND.",
+        "operationId": "DocumentService_GetPrintJob",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PrintJob"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "garageId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
     "/api/v1/garages/{garageId}/print-settings": {
       "get": {
         "summary": "FR-DOC-04, FR-DOC-05 (Release 10.0): the garage's print choice for each\ndocument type, defaults filled in. Needs membership of the garage.",
@@ -5426,7 +5648,7 @@
     },
     "/api/v1/garages/{garageId}/printers/{printerId}/test-page:print": {
       "post": {
-        "summary": "FR-DOC-07: a test page for the printer, in its language: ESC/POS on its\nroll or label for a raw printer, a PDF on its page size (A4 when it has\nnone) for an IPP printer. The client\nsends it to the printer from the device it tests. Needs membership of\nthe garage; nothing is logged.",
+        "summary": "FR-DOC-07: a test page for the printer, in its language: ESC/POS on its\nroll or label for a raw printer, a PDF on its page size (A4 when it has\nnone) for an IPP printer. For an AGENT printer it answers the bytes for\nits paper the same way; the clients print one through CreatePrintJob\nwith test_page. The client\nsends it to the printer from the device it tests. Needs membership of\nthe garage; nothing is logged.",
         "operationId": "DocumentService_PrintPrinterTestPage",
         "responses": {
           "200": {
@@ -12022,6 +12244,39 @@
         ]
       }
     },
+    "/api/v1/public/print-agents:pair": {
+      "post": {
+        "summary": "Exchanges a pairing code for the agent's key. A wrong, used or expired\ncode is refused (NOT_FOUND).",
+        "operationId": "PrintAgentService_PairPrintAgent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PairPrintAgentResponse"
+            }
+          },
+          "default": {
+            "description": "Error (API Specification Section 1.1).",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PairPrintAgentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PrintAgentService"
+        ]
+      }
+    },
     "/api/v1/public/quotes/{token}": {
       "get": {
         "operationId": "PublicQuoteService_GetPublicQuote",
@@ -12361,6 +12616,50 @@
       },
       "required": [
         "type"
+      ]
+    },
+    "DocumentServiceCreatePrintJobBody": {
+      "type": "object",
+      "properties": {
+        "printerId": {
+          "type": "string",
+          "description": "An AGENT printer of the garage, in the JSON body."
+        },
+        "quoteId": {
+          "type": "string"
+        },
+        "repairOrderId": {
+          "type": "string"
+        },
+        "settlementId": {
+          "type": "string",
+          "description": "The settlement receipt of this settlement."
+        },
+        "paymentVoucher": {
+          "$ref": "#/definitions/v1PrintJobPaymentVoucher"
+        },
+        "goodsReceiptId": {
+          "type": "string"
+        },
+        "stockIssueRepairOrderId": {
+          "type": "string",
+          "description": "The stock issue of this repair order."
+        },
+        "paymentOutVoucherId": {
+          "type": "string"
+        },
+        "purchaseOrderId": {
+          "type": "string"
+        },
+        "partLabels": {
+          "$ref": "#/definitions/v1PrintJobPartLabels"
+        },
+        "testPage": {
+          "$ref": "#/definitions/v1PrintJobTestPage"
+        }
+      },
+      "required": [
+        "printerId"
       ]
     },
     "DocumentServicePrintGoodsReceiptPdfBody": {
@@ -13630,6 +13929,19 @@
         }
       }
     },
+    "v1CreatePrintAgentResponse": {
+      "type": "object",
+      "properties": {
+        "agent": {
+          "$ref": "#/definitions/v1PrintAgent"
+        },
+        "pairingCode": {
+          "type": "string",
+          "description": "Shown once: 8 letters and digits as XXXX-XXXX, for the agent's setup\non the PC (PairPrintAgent); single use, valid for 15 minutes."
+        }
+      },
+      "description": "CreatePrintAgentResponse is an agent with a new pairing code."
+    },
     "v1CreatePurchaseOrdersFromLowStockResponse": {
       "type": "object",
       "properties": {
@@ -14183,6 +14495,9 @@
       "type": "object"
     },
     "v1DeletePlatformRoleResponse": {
+      "type": "object"
+    },
+    "v1DeletePrintAgentResponse": {
       "type": "object"
     },
     "v1DeletePrinterResponse": {
@@ -15990,6 +16305,19 @@
         }
       }
     },
+    "v1ListPrintAgentsResponse": {
+      "type": "object",
+      "properties": {
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PrintAgent"
+          },
+          "description": "Every agent of the garage, by name; at most 10."
+        }
+      }
+    },
     "v1ListPrintersResponse": {
       "type": "object",
       "properties": {
@@ -16716,6 +17044,46 @@
         }
       },
       "description": "Pagination describes the page returned by every List call (API\nSpecification Section 1.1): lists are requested with `page` (1-based,\ndefault 1) and `page_size` (default 20, max 100)."
+    },
+    "v1PairPrintAgentRequest": {
+      "type": "object",
+      "properties": {
+        "pairingCode": {
+          "type": "string",
+          "description": "The code shown when the agent was created, with or without the dash and\nin any case."
+        },
+        "hostname": {
+          "type": "string",
+          "description": "The PC: its name, its operating system (\"windows/amd64\") and the\nagent's version, at most 253, 40 and 40 characters."
+        },
+        "os": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "pairingCode"
+      ]
+    },
+    "v1PairPrintAgentResponse": {
+      "type": "object",
+      "properties": {
+        "agentKey": {
+          "type": "string",
+          "description": "The agent's secret key, returned once: the agent keeps it and sends it\nas \"Authorization: Bearer \u003ckey\u003e\" when it connects. VietGara stores only\nits hash."
+        },
+        "agentId": {
+          "type": "string"
+        },
+        "agentName": {
+          "type": "string"
+        },
+        "garageName": {
+          "type": "string"
+        }
+      }
     },
     "v1PaperSize": {
       "type": "string",
@@ -17714,6 +18082,181 @@
         }
       }
     },
+    "v1PrintAgent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "description": "1 to 60 characters, unique in the garage without regard to case."
+        },
+        "paired": {
+          "type": "boolean",
+          "description": "Whether the agent was paired: PairPrintAgent gave it its key (the\npairing code is used up).",
+          "readOnly": true
+        },
+        "pairingExpiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "While not paired: when the pairing code stops working.",
+          "readOnly": true
+        },
+        "connected": {
+          "type": "boolean",
+          "description": "Whether the agent is connected now.",
+          "readOnly": true
+        },
+        "lastSeenAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the agent was last connected.",
+          "readOnly": true
+        },
+        "hostname": {
+          "type": "string",
+          "description": "The PC, as the agent reports it: its name, its operating system\n(\"windows/amd64\") and the agent's version.",
+          "readOnly": true
+        },
+        "os": {
+          "type": "string",
+          "readOnly": true
+        },
+        "version": {
+          "type": "string",
+          "readOnly": true
+        },
+        "printers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PrintAgentPrinter"
+          },
+          "description": "The printers of the PC, as the agent last reported them, by name.",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "PrintAgent is a print agent (FR-DOC-08, Release 13.1): a small program on\na garage PC that prints the jobs of the web console and the apps on the\nPC's printers without a dialog. It is paired once with a pairing code\n(CreatePrintAgent) and then keeps an outbound WebSocket to VietGara,\nauthenticated by its own key; it never opens a port.",
+      "required": [
+        "name"
+      ]
+    },
+    "v1PrintAgentPrinter": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The printer's name in the operating system (Printer.queue)."
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Whether it is the PC's default printer."
+        }
+      },
+      "description": "PrintAgentPrinter is a printer of the agent's PC."
+    },
+    "v1PrintJob": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true
+        },
+        "printerId": {
+          "type": "string",
+          "readOnly": true
+        },
+        "printerName": {
+          "type": "string",
+          "description": "The printer's name when the job was created.",
+          "readOnly": true
+        },
+        "documentType": {
+          "$ref": "#/definitions/v1DocumentType",
+          "description": "The document printed; UNSPECIFIED for a test page.",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/v1PrintJobStatus",
+          "readOnly": true
+        },
+        "error": {
+          "type": "string",
+          "description": "FAILED: the agent's message (from the PC's spooler or PDF printer).",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "description": "PrintJob is a print sent to a print agent's printer."
+    },
+    "v1PrintJobPartLabels": {
+      "type": "object",
+      "properties": {
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PartLabelCopies"
+          }
+        }
+      },
+      "description": "PrintJobPartLabels are the labels of a label print (PrintPartLabels).",
+      "required": [
+        "parts"
+      ]
+    },
+    "v1PrintJobPaymentVoucher": {
+      "type": "object",
+      "properties": {
+        "settlementId": {
+          "type": "string"
+        },
+        "paymentId": {
+          "type": "string"
+        }
+      },
+      "description": "PrintJobPaymentVoucher names one payment voucher of a settlement.",
+      "required": [
+        "settlementId",
+        "paymentId"
+      ]
+    },
+    "v1PrintJobStatus": {
+      "type": "string",
+      "enum": [
+        "PRINT_JOB_STATUS_QUEUED",
+        "PRINT_JOB_STATUS_SENT",
+        "PRINT_JOB_STATUS_PRINTED",
+        "PRINT_JOB_STATUS_FAILED",
+        "PRINT_JOB_STATUS_EXPIRED"
+      ],
+      "description": "PrintJobStatus is where a print job is.\n\n - PRINT_JOB_STATUS_QUEUED: Waiting for the agent: it is not connected, or has not been sent the job\nyet.\n - PRINT_JOB_STATUS_SENT: Sent to the agent, which has not answered yet. A job sent on a\nconnection that drops before the agent answers is sent again when the\nagent connects next; the agent prints a job id once and answers\n\"printed\" for one it printed already.\n - PRINT_JOB_STATUS_PRINTED: The PC's printer took the job.\n - PRINT_JOB_STATUS_FAILED: The agent could not print it; PrintJob.error says why.\n - PRINT_JOB_STATUS_EXPIRED: Not confirmed within an hour, and never sent again: a voucher should not\ncome out of the printer long after it was asked for. A job never sent\nwas not printed; one sent and not answered may have been, so a client\ntells the person to check the printer before printing it again."
+    },
+    "v1PrintJobTestPage": {
+      "type": "object",
+      "description": "PrintJobTestPage is the printer's test page."
+    },
     "v1PrintSetting": {
       "type": "object",
       "properties": {
@@ -17754,12 +18297,12 @@
         },
         "host": {
           "type": "string",
-          "description": "An IPv4 address, an IPv6 address without brackets (clients add them\nwhen building a URL), or a host name; no scheme or port."
+          "description": "An IPv4 address, an IPv6 address without brackets (clients add them\nwhen building a URL), or a host name; no scheme or port. Required for\nRAW and IPP; an AGENT printer has none (a host is refused)."
         },
         "port": {
           "type": "integer",
           "format": "int32",
-          "description": "1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP)."
+          "description": "1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP). An\nAGENT printer has none: a port or a path is refused (INVALID_ARGUMENT)."
         },
         "path": {
           "type": "string",
@@ -17767,14 +18310,14 @@
         },
         "paperSize": {
           "$ref": "#/definitions/v1PaperSize",
-          "description": "The paper loaded in the printer. Raw, and required there: K80, K57 or\nLABEL_50X30. IPP: A4 or A5, and the PDF prints with that size's\ntemplate; unspecified prints on the garage's paper setting. Another\nsize is refused (INVALID_ARGUMENT)."
+          "description": "The paper loaded in the printer. Raw, and required there: K80, K57 or\nLABEL_50X30. IPP: A4 or A5, and the PDF prints with that size's\ntemplate; unspecified prints on the garage's paper setting. AGENT: any\nof these, ESC/POS on a roll or label, a PDF otherwise. Another size is\nrefused (INVALID_ARGUMENT)."
         },
         "documentTypes": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1DocumentType"
           },
-          "description": "The documents the apps send to this printer first. A K80 or K57 printer\ntakes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP\nprinter any document but PART_LABEL that has a template for its page\nsize (an A5 printer: those with an A5 template; one without a size: any,\nprinted on the garage's setting). The types are checked again when the\nprinter is updated: changing its size to one a listed type has no\ntemplate for is refused (INVALID_ARGUMENT). UNSPECIFIED is refused\n(INVALID_ARGUMENT) and a repeated type is kept once, in the order of the\nenum. Several printers may take the same\ndocument: the apps offer them all, those that take it first on top, by\nname."
+          "description": "The documents the apps send to this printer first. A K80 or K57 printer\ntakes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP\nprinter any document but PART_LABEL that has a template for its page\nsize (an A5 printer: those with an A5 template; one without a size: any,\nprinted on the garage's setting); an AGENT printer as RAW for a roll or\nlabel, as IPP for a page size. The types are checked again when the\nprinter is updated: changing its size to one a listed type has no\ntemplate for is refused (INVALID_ARGUMENT). UNSPECIFIED is refused\n(INVALID_ARGUMENT) and a repeated type is kept once, in the order of the\nenum. Several printers may take the same\ndocument: the apps offer them all, those that take it first on top, by\nname."
         },
         "createdAt": {
           "type": "string",
@@ -17785,22 +18328,30 @@
           "type": "string",
           "format": "date-time",
           "readOnly": true
+        },
+        "agentId": {
+          "type": "string",
+          "description": "AGENT only, and required there: the print agent (PrintAgent.id) of the\ngarage whose PC has the printer. Removing the agent removes its\nprinters. UpdatePrinter replaces it like every other field, so a client\nediting an AGENT printer sends it back (an AGENT printer without it is\nrefused, INVALID_ARGUMENT); a printer may change protocol, and the\nfields of the other protocols are then cleared."
+        },
+        "queue": {
+          "type": "string",
+          "description": "AGENT only, and required there: the printer's name in the PC's\noperating system, as the agent reports it (PrintAgentPrinter.name), 1 to\n200 characters; each printer of an agent is saved once."
         }
       },
-      "description": "Printer is a network printer a garage saved (FR-DOC-07, Release 13.0). The\nserver never connects to it: the apps on the garage's network do.",
+      "description": "Printer is a network printer a garage saved (FR-DOC-07, Release 13.0). The\nserver never connects to it: the apps on the garage's network do. Since\nRelease 13.1 it may also be a printer of a print agent (protocol AGENT),\nwhich the server prints to through the agent's connection.",
       "required": [
         "name",
-        "protocol",
-        "host"
+        "protocol"
       ]
     },
     "v1PrinterProtocol": {
       "type": "string",
       "enum": [
         "PRINTER_PROTOCOL_RAW",
-        "PRINTER_PROTOCOL_IPP"
+        "PRINTER_PROTOCOL_IPP",
+        "PRINTER_PROTOCOL_AGENT"
       ],
-      "description": "PrinterProtocol is how a client sends a job to a network printer\n(FR-DOC-07).\n\n - PRINTER_PROTOCOL_RAW: ESC/POS bytes over a raw TCP connection, port 9100 by default: thermal\nreceipt and label printers.\n - PRINTER_PROTOCOL_IPP: A PDF over IPP (HTTP), port 631 by default: A4 and A5 printers."
+      "description": "PrinterProtocol is how a client sends a job to a network printer\n(FR-DOC-07).\n\n - PRINTER_PROTOCOL_RAW: ESC/POS bytes over a raw TCP connection, port 9100 by default: thermal\nreceipt and label printers.\n - PRINTER_PROTOCOL_IPP: A PDF over IPP (HTTP), port 631 by default: A4 and A5 printers.\n - PRINTER_PROTOCOL_AGENT: Release 13.1 (FR-DOC-08): a printer of a garage PC, printed through the\nprint agent installed there (CreatePrintJob). The server sends the job\nto the agent over the agent's own connection; host, port and path are\nempty. A client must leave out a printer whose protocol it does not\nknow (an older build meeting this value, or a newer value), never send\nto it."
     },
     "v1ProfitGroupBy": {
       "type": "string",

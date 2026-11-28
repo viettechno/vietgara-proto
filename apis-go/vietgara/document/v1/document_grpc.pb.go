@@ -54,6 +54,12 @@ const (
 	DocumentService_PrintQuoteEscPos_FullMethodName                    = "/vietgara.document.v1.DocumentService/PrintQuoteEscPos"
 	DocumentService_PrintPaymentVoucherEscPos_FullMethodName           = "/vietgara.document.v1.DocumentService/PrintPaymentVoucherEscPos"
 	DocumentService_PrintPartLabels_FullMethodName                     = "/vietgara.document.v1.DocumentService/PrintPartLabels"
+	DocumentService_ListPrintAgents_FullMethodName                     = "/vietgara.document.v1.DocumentService/ListPrintAgents"
+	DocumentService_CreatePrintAgent_FullMethodName                    = "/vietgara.document.v1.DocumentService/CreatePrintAgent"
+	DocumentService_IssuePrintAgentPairingCode_FullMethodName          = "/vietgara.document.v1.DocumentService/IssuePrintAgentPairingCode"
+	DocumentService_DeletePrintAgent_FullMethodName                    = "/vietgara.document.v1.DocumentService/DeletePrintAgent"
+	DocumentService_CreatePrintJob_FullMethodName                      = "/vietgara.document.v1.DocumentService/CreatePrintJob"
+	DocumentService_GetPrintJob_FullMethodName                         = "/vietgara.document.v1.DocumentService/GetPrintJob"
 )
 
 // DocumentServiceClient is the client API for DocumentService service.
@@ -155,7 +161,9 @@ type DocumentServiceClient interface {
 	DeletePrinter(ctx context.Context, in *DeletePrinterRequest, opts ...grpc.CallOption) (*DeletePrinterResponse, error)
 	// FR-DOC-07: a test page for the printer, in its language: ESC/POS on its
 	// roll or label for a raw printer, a PDF on its page size (A4 when it has
-	// none) for an IPP printer. The client
+	// none) for an IPP printer. For an AGENT printer it answers the bytes for
+	// its paper the same way; the clients print one through CreatePrintJob
+	// with test_page. The client
 	// sends it to the printer from the device it tests. Needs membership of
 	// the garage; nothing is logged.
 	PrintPrinterTestPage(ctx context.Context, in *PrintPrinterTestPageRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
@@ -182,6 +190,41 @@ type DocumentServiceClient interface {
 	// refused (INVALID_ARGUMENT); a part the garage does not have is
 	// NOT_FOUND.
 	PrintPartLabels(ctx context.Context, in *PrintPartLabelsRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	// FR-DOC-08 (Release 13.1): the garage's print agents, by name, with the
+	// printers each last reported and whether it is connected. Needs
+	// membership of the garage.
+	ListPrintAgents(ctx context.Context, in *ListPrintAgentsRequest, opts ...grpc.CallOption) (*ListPrintAgentsResponse, error)
+	// FR-DOC-08: adds a print agent and returns its pairing code. Needs the
+	// permission that edits the garage profile. An invalid or duplicate name
+	// and an 11th agent are refused (INVALID_ARGUMENT).
+	CreatePrintAgent(ctx context.Context, in *CreatePrintAgentRequest, opts ...grpc.CallOption) (*CreatePrintAgentResponse, error)
+	// FR-DOC-08: a new pairing code for an agent, to pair it again (a new PC,
+	// a reinstall). Its key stops working at once and its connection is
+	// closed; its printers are kept. The agent then reads paired false, with
+	// the new code's pairing_expires_at. Needs the permission that edits the
+	// garage profile.
+	IssuePrintAgentPairingCode(ctx context.Context, in *IssuePrintAgentPairingCodeRequest, opts ...grpc.CallOption) (*CreatePrintAgentResponse, error)
+	// FR-DOC-08: removes an agent: its key stops working at once, its
+	// connection is closed, and its printers and print jobs are removed. Needs
+	// the permission that edits the garage profile.
+	DeletePrintAgent(ctx context.Context, in *DeletePrintAgentRequest, opts ...grpc.CallOption) (*DeletePrintAgentResponse, error)
+	// FR-DOC-08: prints a document on an AGENT printer without a dialog. The
+	// server renders it for the printer's paper (ESC/POS on a roll or label, a
+	// PDF on its page size or the garage's setting) with the rules of the print
+	// endpoints (template version, copy mark, print log; labels are not
+	// logged), and queues it for the agent, which prints it when it is
+	// connected. Needs the permission of the document (that of its print
+	// endpoint; a test page: membership) and an Idempotency-Key header: a
+	// retry with the same key answers the same job instead of printing twice.
+	// The job keeps the printer's PC printer and paper as they were: deleting
+	// or changing the printer later does not stop a queued job. A printer of
+	// another protocol, a document the printer's paper has no template for,
+	// and a missing document field are refused (INVALID_ARGUMENT).
+	CreatePrintJob(ctx context.Context, in *CreatePrintJobRequest, opts ...grpc.CallOption) (*PrintJob, error)
+	// FR-DOC-08: a print job, to follow it until it is printed, failed or
+	// expired. Needs membership of the garage. A job of a removed agent, or
+	// older than a week, is NOT_FOUND.
+	GetPrintJob(ctx context.Context, in *GetPrintJobRequest, opts ...grpc.CallOption) (*PrintJob, error)
 }
 
 type documentServiceClient struct {
@@ -532,6 +575,66 @@ func (c *documentServiceClient) PrintPartLabels(ctx context.Context, in *PrintPa
 	return out, nil
 }
 
+func (c *documentServiceClient) ListPrintAgents(ctx context.Context, in *ListPrintAgentsRequest, opts ...grpc.CallOption) (*ListPrintAgentsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPrintAgentsResponse)
+	err := c.cc.Invoke(ctx, DocumentService_ListPrintAgents_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) CreatePrintAgent(ctx context.Context, in *CreatePrintAgentRequest, opts ...grpc.CallOption) (*CreatePrintAgentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreatePrintAgentResponse)
+	err := c.cc.Invoke(ctx, DocumentService_CreatePrintAgent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) IssuePrintAgentPairingCode(ctx context.Context, in *IssuePrintAgentPairingCodeRequest, opts ...grpc.CallOption) (*CreatePrintAgentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreatePrintAgentResponse)
+	err := c.cc.Invoke(ctx, DocumentService_IssuePrintAgentPairingCode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) DeletePrintAgent(ctx context.Context, in *DeletePrintAgentRequest, opts ...grpc.CallOption) (*DeletePrintAgentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeletePrintAgentResponse)
+	err := c.cc.Invoke(ctx, DocumentService_DeletePrintAgent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) CreatePrintJob(ctx context.Context, in *CreatePrintJobRequest, opts ...grpc.CallOption) (*PrintJob, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PrintJob)
+	err := c.cc.Invoke(ctx, DocumentService_CreatePrintJob_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentServiceClient) GetPrintJob(ctx context.Context, in *GetPrintJobRequest, opts ...grpc.CallOption) (*PrintJob, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PrintJob)
+	err := c.cc.Invoke(ctx, DocumentService_GetPrintJob_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DocumentServiceServer is the server API for DocumentService service.
 // All implementations must embed UnimplementedDocumentServiceServer
 // for forward compatibility.
@@ -631,7 +734,9 @@ type DocumentServiceServer interface {
 	DeletePrinter(context.Context, *DeletePrinterRequest) (*DeletePrinterResponse, error)
 	// FR-DOC-07: a test page for the printer, in its language: ESC/POS on its
 	// roll or label for a raw printer, a PDF on its page size (A4 when it has
-	// none) for an IPP printer. The client
+	// none) for an IPP printer. For an AGENT printer it answers the bytes for
+	// its paper the same way; the clients print one through CreatePrintJob
+	// with test_page. The client
 	// sends it to the printer from the device it tests. Needs membership of
 	// the garage; nothing is logged.
 	PrintPrinterTestPage(context.Context, *PrintPrinterTestPageRequest) (*httpbody.HttpBody, error)
@@ -658,6 +763,41 @@ type DocumentServiceServer interface {
 	// refused (INVALID_ARGUMENT); a part the garage does not have is
 	// NOT_FOUND.
 	PrintPartLabels(context.Context, *PrintPartLabelsRequest) (*httpbody.HttpBody, error)
+	// FR-DOC-08 (Release 13.1): the garage's print agents, by name, with the
+	// printers each last reported and whether it is connected. Needs
+	// membership of the garage.
+	ListPrintAgents(context.Context, *ListPrintAgentsRequest) (*ListPrintAgentsResponse, error)
+	// FR-DOC-08: adds a print agent and returns its pairing code. Needs the
+	// permission that edits the garage profile. An invalid or duplicate name
+	// and an 11th agent are refused (INVALID_ARGUMENT).
+	CreatePrintAgent(context.Context, *CreatePrintAgentRequest) (*CreatePrintAgentResponse, error)
+	// FR-DOC-08: a new pairing code for an agent, to pair it again (a new PC,
+	// a reinstall). Its key stops working at once and its connection is
+	// closed; its printers are kept. The agent then reads paired false, with
+	// the new code's pairing_expires_at. Needs the permission that edits the
+	// garage profile.
+	IssuePrintAgentPairingCode(context.Context, *IssuePrintAgentPairingCodeRequest) (*CreatePrintAgentResponse, error)
+	// FR-DOC-08: removes an agent: its key stops working at once, its
+	// connection is closed, and its printers and print jobs are removed. Needs
+	// the permission that edits the garage profile.
+	DeletePrintAgent(context.Context, *DeletePrintAgentRequest) (*DeletePrintAgentResponse, error)
+	// FR-DOC-08: prints a document on an AGENT printer without a dialog. The
+	// server renders it for the printer's paper (ESC/POS on a roll or label, a
+	// PDF on its page size or the garage's setting) with the rules of the print
+	// endpoints (template version, copy mark, print log; labels are not
+	// logged), and queues it for the agent, which prints it when it is
+	// connected. Needs the permission of the document (that of its print
+	// endpoint; a test page: membership) and an Idempotency-Key header: a
+	// retry with the same key answers the same job instead of printing twice.
+	// The job keeps the printer's PC printer and paper as they were: deleting
+	// or changing the printer later does not stop a queued job. A printer of
+	// another protocol, a document the printer's paper has no template for,
+	// and a missing document field are refused (INVALID_ARGUMENT).
+	CreatePrintJob(context.Context, *CreatePrintJobRequest) (*PrintJob, error)
+	// FR-DOC-08: a print job, to follow it until it is printed, failed or
+	// expired. Needs membership of the garage. A job of a removed agent, or
+	// older than a week, is NOT_FOUND.
+	GetPrintJob(context.Context, *GetPrintJobRequest) (*PrintJob, error)
 	mustEmbedUnimplementedDocumentServiceServer()
 }
 
@@ -769,6 +909,24 @@ func (UnimplementedDocumentServiceServer) PrintPaymentVoucherEscPos(context.Cont
 }
 func (UnimplementedDocumentServiceServer) PrintPartLabels(context.Context, *PrintPartLabelsRequest) (*httpbody.HttpBody, error) {
 	return nil, status.Error(codes.Unimplemented, "method PrintPartLabels not implemented")
+}
+func (UnimplementedDocumentServiceServer) ListPrintAgents(context.Context, *ListPrintAgentsRequest) (*ListPrintAgentsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListPrintAgents not implemented")
+}
+func (UnimplementedDocumentServiceServer) CreatePrintAgent(context.Context, *CreatePrintAgentRequest) (*CreatePrintAgentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreatePrintAgent not implemented")
+}
+func (UnimplementedDocumentServiceServer) IssuePrintAgentPairingCode(context.Context, *IssuePrintAgentPairingCodeRequest) (*CreatePrintAgentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method IssuePrintAgentPairingCode not implemented")
+}
+func (UnimplementedDocumentServiceServer) DeletePrintAgent(context.Context, *DeletePrintAgentRequest) (*DeletePrintAgentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeletePrintAgent not implemented")
+}
+func (UnimplementedDocumentServiceServer) CreatePrintJob(context.Context, *CreatePrintJobRequest) (*PrintJob, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreatePrintJob not implemented")
+}
+func (UnimplementedDocumentServiceServer) GetPrintJob(context.Context, *GetPrintJobRequest) (*PrintJob, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPrintJob not implemented")
 }
 func (UnimplementedDocumentServiceServer) mustEmbedUnimplementedDocumentServiceServer() {}
 func (UnimplementedDocumentServiceServer) testEmbeddedByValue()                         {}
@@ -1403,6 +1561,114 @@ func _DocumentService_PrintPartLabels_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DocumentService_ListPrintAgents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPrintAgentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).ListPrintAgents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_ListPrintAgents_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).ListPrintAgents(ctx, req.(*ListPrintAgentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_CreatePrintAgent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePrintAgentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).CreatePrintAgent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_CreatePrintAgent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).CreatePrintAgent(ctx, req.(*CreatePrintAgentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_IssuePrintAgentPairingCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IssuePrintAgentPairingCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).IssuePrintAgentPairingCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_IssuePrintAgentPairingCode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).IssuePrintAgentPairingCode(ctx, req.(*IssuePrintAgentPairingCodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_DeletePrintAgent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePrintAgentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).DeletePrintAgent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_DeletePrintAgent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).DeletePrintAgent(ctx, req.(*DeletePrintAgentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_CreatePrintJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePrintJobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).CreatePrintJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_CreatePrintJob_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).CreatePrintJob(ctx, req.(*CreatePrintJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DocumentService_GetPrintJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPrintJobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).GetPrintJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_GetPrintJob_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).GetPrintJob(ctx, req.(*GetPrintJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DocumentService_ServiceDesc is the grpc.ServiceDesc for DocumentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1545,6 +1811,158 @@ var DocumentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PrintPartLabels",
 			Handler:    _DocumentService_PrintPartLabels_Handler,
+		},
+		{
+			MethodName: "ListPrintAgents",
+			Handler:    _DocumentService_ListPrintAgents_Handler,
+		},
+		{
+			MethodName: "CreatePrintAgent",
+			Handler:    _DocumentService_CreatePrintAgent_Handler,
+		},
+		{
+			MethodName: "IssuePrintAgentPairingCode",
+			Handler:    _DocumentService_IssuePrintAgentPairingCode_Handler,
+		},
+		{
+			MethodName: "DeletePrintAgent",
+			Handler:    _DocumentService_DeletePrintAgent_Handler,
+		},
+		{
+			MethodName: "CreatePrintJob",
+			Handler:    _DocumentService_CreatePrintJob_Handler,
+		},
+		{
+			MethodName: "GetPrintJob",
+			Handler:    _DocumentService_GetPrintJob_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "vietgara/document/v1/document.proto",
+}
+
+const (
+	PrintAgentService_PairPrintAgent_FullMethodName = "/vietgara.document.v1.PrintAgentService/PairPrintAgent"
+)
+
+// PrintAgentServiceClient is the client API for PrintAgentService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// PrintAgentService is the print agent's own API (FR-DOC-08, Release 13.1).
+// Pairing is public: the pairing code is the credential.
+//
+// Once paired, the agent connects with a WebSocket to
+// /api/v1/print-agents/connect, sending "Authorization: Bearer <agent_key>",
+// and exchanges JSON text messages (see the API Specification, Section
+// 10.4): the server sends "hello" and then each "job" of the agent's
+// printers; the agent sends its "printers" and the "result" of each job. A
+// revoked or unknown key is refused (HTTP 401) and an open connection is
+// closed (WebSocket close code 4001).
+type PrintAgentServiceClient interface {
+	// Exchanges a pairing code for the agent's key. A wrong, used or expired
+	// code is refused (NOT_FOUND).
+	PairPrintAgent(ctx context.Context, in *PairPrintAgentRequest, opts ...grpc.CallOption) (*PairPrintAgentResponse, error)
+}
+
+type printAgentServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewPrintAgentServiceClient(cc grpc.ClientConnInterface) PrintAgentServiceClient {
+	return &printAgentServiceClient{cc}
+}
+
+func (c *printAgentServiceClient) PairPrintAgent(ctx context.Context, in *PairPrintAgentRequest, opts ...grpc.CallOption) (*PairPrintAgentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PairPrintAgentResponse)
+	err := c.cc.Invoke(ctx, PrintAgentService_PairPrintAgent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// PrintAgentServiceServer is the server API for PrintAgentService service.
+// All implementations must embed UnimplementedPrintAgentServiceServer
+// for forward compatibility.
+//
+// PrintAgentService is the print agent's own API (FR-DOC-08, Release 13.1).
+// Pairing is public: the pairing code is the credential.
+//
+// Once paired, the agent connects with a WebSocket to
+// /api/v1/print-agents/connect, sending "Authorization: Bearer <agent_key>",
+// and exchanges JSON text messages (see the API Specification, Section
+// 10.4): the server sends "hello" and then each "job" of the agent's
+// printers; the agent sends its "printers" and the "result" of each job. A
+// revoked or unknown key is refused (HTTP 401) and an open connection is
+// closed (WebSocket close code 4001).
+type PrintAgentServiceServer interface {
+	// Exchanges a pairing code for the agent's key. A wrong, used or expired
+	// code is refused (NOT_FOUND).
+	PairPrintAgent(context.Context, *PairPrintAgentRequest) (*PairPrintAgentResponse, error)
+	mustEmbedUnimplementedPrintAgentServiceServer()
+}
+
+// UnimplementedPrintAgentServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedPrintAgentServiceServer struct{}
+
+func (UnimplementedPrintAgentServiceServer) PairPrintAgent(context.Context, *PairPrintAgentRequest) (*PairPrintAgentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method PairPrintAgent not implemented")
+}
+func (UnimplementedPrintAgentServiceServer) mustEmbedUnimplementedPrintAgentServiceServer() {}
+func (UnimplementedPrintAgentServiceServer) testEmbeddedByValue()                           {}
+
+// UnsafePrintAgentServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to PrintAgentServiceServer will
+// result in compilation errors.
+type UnsafePrintAgentServiceServer interface {
+	mustEmbedUnimplementedPrintAgentServiceServer()
+}
+
+func RegisterPrintAgentServiceServer(s grpc.ServiceRegistrar, srv PrintAgentServiceServer) {
+	// If the following call panics, it indicates UnimplementedPrintAgentServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&PrintAgentService_ServiceDesc, srv)
+}
+
+func _PrintAgentService_PairPrintAgent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PairPrintAgentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PrintAgentServiceServer).PairPrintAgent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PrintAgentService_PairPrintAgent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PrintAgentServiceServer).PairPrintAgent(ctx, req.(*PairPrintAgentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// PrintAgentService_ServiceDesc is the grpc.ServiceDesc for PrintAgentService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var PrintAgentService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "vietgara.document.v1.PrintAgentService",
+	HandlerType: (*PrintAgentServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "PairPrintAgent",
+			Handler:    _PrintAgentService_PairPrintAgent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
