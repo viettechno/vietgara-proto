@@ -866,7 +866,8 @@ service DocumentService {
 
   // FR-DOC-08: a new pairing code for an agent, to pair it again (a new PC,
   // a reinstall). Its key stops working at once and its connection is
-  // closed; its printers are kept. Needs the permission that edits the
+  // closed; its printers are kept. The agent then reads paired false, with
+  // the new code's pairing_expires_at. Needs the permission that edits the
   // garage profile.
   rpc IssuePrintAgentPairingCode(IssuePrintAgentPairingCodeRequest) returns (CreatePrintAgentResponse) {
     option (google.api.http) = {post: "/api/v1/garages/{garage_id}/print-agents/{agent_id}/pairing-code"};
@@ -899,7 +900,8 @@ service DocumentService {
   }
 
   // FR-DOC-08: a print job, to follow it until it is printed, failed or
-  // expired. Needs membership of the garage.
+  // expired. Needs membership of the garage. A job of a removed agent, or
+  // older than a week, is NOT_FOUND.
   rpc GetPrintJob(GetPrintJobRequest) returns (PrintJob) {
     option (google.api.http) = {get: "/api/v1/garages/{garage_id}/print-jobs/{job_id}"};
   }

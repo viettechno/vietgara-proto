@@ -5299,7 +5299,7 @@
     },
     "/api/v1/garages/{garageId}/print-agents/{agentId}/pairing-code": {
       "post": {
-        "summary": "FR-DOC-08: a new pairing code for an agent, to pair it again (a new PC,\na reinstall). Its key stops working at once and its connection is\nclosed; its printers are kept. Needs the permission that edits the\ngarage profile.",
+        "summary": "FR-DOC-08: a new pairing code for an agent, to pair it again (a new PC,\na reinstall). Its key stops working at once and its connection is\nclosed; its printers are kept. The agent then reads paired false, with\nthe new code's pairing_expires_at. Needs the permission that edits the\ngarage profile.",
         "operationId": "DocumentService_IssuePrintAgentPairingCode",
         "responses": {
           "200": {
@@ -5375,7 +5375,7 @@
     },
     "/api/v1/garages/{garageId}/print-jobs/{jobId}": {
       "get": {
-        "summary": "FR-DOC-08: a print job, to follow it until it is printed, failed or\nexpired. Needs membership of the garage.",
+        "summary": "FR-DOC-08: a print job, to follow it until it is printed, failed or\nexpired. Needs membership of the garage. A job of a removed agent, or\nolder than a week, is NOT_FOUND.",
         "operationId": "DocumentService_GetPrintJob",
         "responses": {
           "200": {

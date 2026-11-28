@@ -200,7 +200,8 @@ type DocumentServiceClient interface {
 	CreatePrintAgent(ctx context.Context, in *CreatePrintAgentRequest, opts ...grpc.CallOption) (*CreatePrintAgentResponse, error)
 	// FR-DOC-08: a new pairing code for an agent, to pair it again (a new PC,
 	// a reinstall). Its key stops working at once and its connection is
-	// closed; its printers are kept. Needs the permission that edits the
+	// closed; its printers are kept. The agent then reads paired false, with
+	// the new code's pairing_expires_at. Needs the permission that edits the
 	// garage profile.
 	IssuePrintAgentPairingCode(ctx context.Context, in *IssuePrintAgentPairingCodeRequest, opts ...grpc.CallOption) (*CreatePrintAgentResponse, error)
 	// FR-DOC-08: removes an agent: its key stops working at once, its
@@ -221,7 +222,8 @@ type DocumentServiceClient interface {
 	// and a missing document field are refused (INVALID_ARGUMENT).
 	CreatePrintJob(ctx context.Context, in *CreatePrintJobRequest, opts ...grpc.CallOption) (*PrintJob, error)
 	// FR-DOC-08: a print job, to follow it until it is printed, failed or
-	// expired. Needs membership of the garage.
+	// expired. Needs membership of the garage. A job of a removed agent, or
+	// older than a week, is NOT_FOUND.
 	GetPrintJob(ctx context.Context, in *GetPrintJobRequest, opts ...grpc.CallOption) (*PrintJob, error)
 }
 
@@ -771,7 +773,8 @@ type DocumentServiceServer interface {
 	CreatePrintAgent(context.Context, *CreatePrintAgentRequest) (*CreatePrintAgentResponse, error)
 	// FR-DOC-08: a new pairing code for an agent, to pair it again (a new PC,
 	// a reinstall). Its key stops working at once and its connection is
-	// closed; its printers are kept. Needs the permission that edits the
+	// closed; its printers are kept. The agent then reads paired false, with
+	// the new code's pairing_expires_at. Needs the permission that edits the
 	// garage profile.
 	IssuePrintAgentPairingCode(context.Context, *IssuePrintAgentPairingCodeRequest) (*CreatePrintAgentResponse, error)
 	// FR-DOC-08: removes an agent: its key stops working at once, its
@@ -792,7 +795,8 @@ type DocumentServiceServer interface {
 	// and a missing document field are refused (INVALID_ARGUMENT).
 	CreatePrintJob(context.Context, *CreatePrintJobRequest) (*PrintJob, error)
 	// FR-DOC-08: a print job, to follow it until it is printed, failed or
-	// expired. Needs membership of the garage.
+	// expired. Needs membership of the garage. A job of a removed agent, or
+	// older than a week, is NOT_FOUND.
 	GetPrintJob(context.Context, *GetPrintJobRequest) (*PrintJob, error)
 	mustEmbedUnimplementedDocumentServiceServer()
 }
