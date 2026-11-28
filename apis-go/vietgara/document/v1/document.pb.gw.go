@@ -2174,14 +2174,6 @@ func request_DocumentService_CreatePrintJob_0(ctx context.Context, marshaler run
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
 	}
-	val, ok = pathParams["printer_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "printer_id")
-	}
-	protoReq.PrinterId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "printer_id", err)
-	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
 	}
@@ -2205,14 +2197,6 @@ func local_request_DocumentService_CreatePrintJob_0(ctx context.Context, marshal
 	protoReq.GarageId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "garage_id", err)
-	}
-	val, ok = pathParams["printer_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "printer_id")
-	}
-	protoReq.PrinterId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "printer_id", err)
 	}
 	msg, err := server.CreatePrintJob(ctx, &protoReq)
 	return msg, metadata, err
@@ -3072,7 +3056,7 @@ func RegisterDocumentServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/CreatePrintJob", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/printers/{printer_id}/jobs"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/CreatePrintJob", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/print-jobs"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3826,7 +3810,7 @@ func RegisterDocumentServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/CreatePrintJob", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/printers/{printer_id}/jobs"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/vietgara.document.v1.DocumentService/CreatePrintJob", runtime.WithHTTPPathPattern("/api/v1/garages/{garage_id}/print-jobs"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3898,7 +3882,7 @@ var (
 	pattern_DocumentService_CreatePrintAgent_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "print-agents"}, ""))
 	pattern_DocumentService_IssuePrintAgentPairingCode_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "print-agents", "agent_id", "pairing-code"}, ""))
 	pattern_DocumentService_DeletePrintAgent_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "print-agents", "agent_id"}, ""))
-	pattern_DocumentService_CreatePrintJob_0                      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"api", "v1", "garages", "garage_id", "printers", "printer_id", "jobs"}, ""))
+	pattern_DocumentService_CreatePrintJob_0                      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "garages", "garage_id", "print-jobs"}, ""))
 	pattern_DocumentService_GetPrintJob_0                         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "garages", "garage_id", "print-jobs", "job_id"}, ""))
 )
 

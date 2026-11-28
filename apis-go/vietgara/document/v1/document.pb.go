@@ -178,7 +178,9 @@ const (
 	// Release 13.1 (FR-DOC-08): a printer of a garage PC, printed through the
 	// print agent installed there (CreatePrintJob). The server sends the job
 	// to the agent over the agent's own connection; host, port and path are
-	// empty.
+	// empty. A client must leave out a printer whose protocol it does not
+	// know (an older build meeting this value, or a newer value), never send
+	// to it.
 	PrinterProtocol_PRINTER_PROTOCOL_AGENT PrinterProtocol = 3
 )
 
@@ -233,7 +235,10 @@ const (
 	// Waiting for the agent: it is not connected, or has not been sent the job
 	// yet.
 	PrintJobStatus_PRINT_JOB_STATUS_QUEUED PrintJobStatus = 1
-	// Sent to the agent, which has not answered yet.
+	// Sent to the agent, which has not answered yet. A job sent on a
+	// connection that drops before the agent answers is sent again when the
+	// agent connects next; the agent prints a job id once and answers
+	// "printed" for one it printed already.
 	PrintJobStatus_PRINT_JOB_STATUS_SENT PrintJobStatus = 2
 	// The PC's printer took the job.
 	PrintJobStatus_PRINT_JOB_STATUS_PRINTED PrintJobStatus = 3
@@ -2019,7 +2024,10 @@ type Printer struct {
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	// AGENT only, and required there: the print agent (PrintAgent.id) of the
 	// garage whose PC has the printer. Removing the agent removes its
-	// printers.
+	// printers. UpdatePrinter replaces it like every other field, so a client
+	// editing an AGENT printer sends it back (an AGENT printer without it is
+	// refused, INVALID_ARGUMENT); a printer may change protocol, and the
+	// fields of the other protocols are then cleared.
 	AgentId string `protobuf:"bytes,11,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
 	// AGENT only, and required there: the printer's name in the PC's
 	// operating system, as the agent reports it (PrintAgentPrinter.name), 1 to
@@ -3527,10 +3535,10 @@ func (*PrintJobTestPage) Descriptor() ([]byte, []int) {
 type CreatePrintJobRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	// An AGENT printer of the garage.
+	// An AGENT printer of the garage, in the JSON body.
 	PrinterId string `protobuf:"bytes,2,opt,name=printer_id,json=printerId,proto3" json:"printer_id,omitempty"`
-	// What to print, in the JSON body ({"quoteId": "…"}). Exactly one is
-	// required.
+	// What to print, in the JSON body ({"printerId": "…", "quoteId": "…"}).
+	// Exactly one is required.
 	//
 	// Types that are valid to be assigned to Document:
 	//
@@ -4177,19 +4185,19 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\x17DeletePrintAgentRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1e\n" +
 	"\bagent_id\x18\x02 \x01(\tB\x03\xe0A\x02R\aagentId\"\x1a\n" +
-	"\x18DeletePrintAgentResponse\"\xef\x02\n" +
-	"\bPrintJob\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
+	"\x18DeletePrintAgentResponse\"\x97\x03\n" +
+	"\bPrintJob\x12\x13\n" +
+	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\"\n" +
 	"\n" +
-	"printer_id\x18\x02 \x01(\tR\tprinterId\x12!\n" +
-	"\fprinter_name\x18\x03 \x01(\tR\vprinterName\x12G\n" +
-	"\rdocument_type\x18\x04 \x01(\x0e2\".vietgara.document.v1.DocumentTypeR\fdocumentType\x12<\n" +
-	"\x06status\x18\x05 \x01(\x0e2$.vietgara.document.v1.PrintJobStatusR\x06status\x12\x14\n" +
-	"\x05error\x18\x06 \x01(\tR\x05error\x129\n" +
+	"printer_id\x18\x02 \x01(\tB\x03\xe0A\x03R\tprinterId\x12&\n" +
+	"\fprinter_name\x18\x03 \x01(\tB\x03\xe0A\x03R\vprinterName\x12L\n" +
+	"\rdocument_type\x18\x04 \x01(\x0e2\".vietgara.document.v1.DocumentTypeB\x03\xe0A\x03R\fdocumentType\x12A\n" +
+	"\x06status\x18\x05 \x01(\x0e2$.vietgara.document.v1.PrintJobStatusB\x03\xe0A\x03R\x06status\x12\x19\n" +
+	"\x05error\x18\x06 \x01(\tB\x03\xe0A\x03R\x05error\x12>\n" +
 	"\n" +
-	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12>\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"f\n" +
+	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tupdatedAt\"f\n" +
 	"\x16PrintJobPaymentVoucher\x12(\n" +
 	"\rsettlement_id\x18\x01 \x01(\tB\x03\xe0A\x02R\fsettlementId\x12\"\n" +
 	"\n" +
@@ -4259,7 +4267,7 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\x15PRINT_JOB_STATUS_SENT\x10\x02\x12\x1c\n" +
 	"\x18PRINT_JOB_STATUS_PRINTED\x10\x03\x12\x1b\n" +
 	"\x17PRINT_JOB_STATUS_FAILED\x10\x04\x12\x1c\n" +
-	"\x18PRINT_JOB_STATUS_EXPIRED\x10\x052\xe76\n" +
+	"\x18PRINT_JOB_STATUS_EXPIRED\x10\x052\xd76\n" +
 	"\x0fDocumentService\x12\x8e\x01\n" +
 	"\x0eExportQuotePdf\x12+.vietgara.document.v1.ExportQuotePdfRequest\x1a\x14.google.api.HttpBody\"9\x82\xd3\xe4\x93\x023\x121/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf\x12\xa8\x01\n" +
 	"\x14ExportRepairOrderPdf\x121.vietgara.document.v1.ExportRepairOrderPdfRequest\x1a\x14.google.api.HttpBody\"G\x82\xd3\xe4\x93\x02A\x12?/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/pdf\x12\xb8\x01\n" +
@@ -4298,8 +4306,8 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\x0fListPrintAgents\x12,.vietgara.document.v1.ListPrintAgentsRequest\x1a-.vietgara.document.v1.ListPrintAgentsResponse\"0\x82\xd3\xe4\x93\x02*\x12(/api/v1/garages/{garage_id}/print-agents\x12\xaa\x01\n" +
 	"\x10CreatePrintAgent\x12-.vietgara.document.v1.CreatePrintAgentRequest\x1a..vietgara.document.v1.CreatePrintAgentResponse\"7\x82\xd3\xe4\x93\x021:\x05agent\"(/api/v1/garages/{garage_id}/print-agents\x12\xcf\x01\n" +
 	"\x1aIssuePrintAgentPairingCode\x127.vietgara.document.v1.IssuePrintAgentPairingCodeRequest\x1a..vietgara.document.v1.CreatePrintAgentResponse\"H\x82\xd3\xe4\x93\x02B\"@/api/v1/garages/{garage_id}/print-agents/{agent_id}/pairing-code\x12\xae\x01\n" +
-	"\x10DeletePrintAgent\x12-.vietgara.document.v1.DeletePrintAgentRequest\x1a..vietgara.document.v1.DeletePrintAgentResponse\";\x82\xd3\xe4\x93\x025*3/api/v1/garages/{garage_id}/print-agents/{agent_id}\x12\xa0\x01\n" +
-	"\x0eCreatePrintJob\x12+.vietgara.document.v1.CreatePrintJobRequest\x1a\x1e.vietgara.document.v1.PrintJob\"A\x82\xd3\xe4\x93\x02;:\x01*\"6/api/v1/garages/{garage_id}/printers/{printer_id}/jobs\x12\x90\x01\n" +
+	"\x10DeletePrintAgent\x12-.vietgara.document.v1.DeletePrintAgentRequest\x1a..vietgara.document.v1.DeletePrintAgentResponse\";\x82\xd3\xe4\x93\x025*3/api/v1/garages/{garage_id}/print-agents/{agent_id}\x12\x90\x01\n" +
+	"\x0eCreatePrintJob\x12+.vietgara.document.v1.CreatePrintJobRequest\x1a\x1e.vietgara.document.v1.PrintJob\"1\x82\xd3\xe4\x93\x02+:\x01*\"&/api/v1/garages/{garage_id}/print-jobs\x12\x90\x01\n" +
 	"\vGetPrintJob\x12(.vietgara.document.v1.GetPrintJobRequest\x1a\x1e.vietgara.document.v1.PrintJob\"7\x82\xd3\xe4\x93\x021\x12//api/v1/garages/{garage_id}/print-jobs/{job_id}2\xae\x01\n" +
 	"\x11PrintAgentService\x12\x98\x01\n" +
 	"\x0ePairPrintAgent\x12+.vietgara.document.v1.PairPrintAgentRequest\x1a,.vietgara.document.v1.PairPrintAgentResponse\"+\x82\xd3\xe4\x93\x02%:\x01*\" /api/v1/public/print-agents:pairBNZLgithub.com/viettechno/vietgara-proto/apis-go/vietgara/document/v1;documentv1b\x06proto3"

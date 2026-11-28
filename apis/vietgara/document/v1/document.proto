@@ -275,7 +275,9 @@ enum PrinterProtocol {
   // Release 13.1 (FR-DOC-08): a printer of a garage PC, printed through the
   // print agent installed there (CreatePrintJob). The server sends the job
   // to the agent over the agent's own connection; host, port and path are
-  // empty.
+  // empty. A client must leave out a printer whose protocol it does not
+  // know (an older build meeting this value, or a newer value), never send
+  // to it.
   PRINTER_PROTOCOL_AGENT = 3;
 }
 
@@ -323,7 +325,10 @@ message Printer {
   google.protobuf.Timestamp updated_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   // AGENT only, and required there: the print agent (PrintAgent.id) of the
   // garage whose PC has the printer. Removing the agent removes its
-  // printers.
+  // printers. UpdatePrinter replaces it like every other field, so a client
+  // editing an AGENT printer sends it back (an AGENT printer without it is
+  // refused, INVALID_ARGUMENT); a printer may change protocol, and the
+  // fields of the other protocols are then cleared.
   string agent_id = 11;
   // AGENT only, and required there: the printer's name in the PC's
   // operating system, as the agent reports it (PrintAgentPrinter.name), 1 to
@@ -481,7 +486,10 @@ enum PrintJobStatus {
   // Waiting for the agent: it is not connected, or has not been sent the job
   // yet.
   PRINT_JOB_STATUS_QUEUED = 1;
-  // Sent to the agent, which has not answered yet.
+  // Sent to the agent, which has not answered yet. A job sent on a
+  // connection that drops before the agent answers is sent again when the
+  // agent connects next; the agent prints a job id once and answers
+  // "printed" for one it printed already.
   PRINT_JOB_STATUS_SENT = 2;
   // The PC's printer took the job.
   PRINT_JOB_STATUS_PRINTED = 3;
@@ -494,17 +502,17 @@ enum PrintJobStatus {
 
 // PrintJob is a print sent to a print agent's printer.
 message PrintJob {
-  string id = 1;
-  string printer_id = 2;
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string printer_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The printer's name when the job was created.
-  string printer_name = 3;
+  string printer_name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The document printed; UNSPECIFIED for a test page.
-  DocumentType document_type = 4;
-  PrintJobStatus status = 5;
+  DocumentType document_type = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  PrintJobStatus status = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
   // FAILED: the agent's message (from the PC's spooler or PDF printer).
-  string error = 6;
-  google.protobuf.Timestamp created_at = 7;
-  google.protobuf.Timestamp updated_at = 8;
+  string error = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // PrintJobPaymentVoucher names one payment voucher of a settlement.
@@ -523,10 +531,10 @@ message PrintJobTestPage {}
 
 message CreatePrintJobRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
-  // An AGENT printer of the garage.
+  // An AGENT printer of the garage, in the JSON body.
   string printer_id = 2 [(google.api.field_behavior) = REQUIRED];
-  // What to print, in the JSON body ({"quoteId": "…"}). Exactly one is
-  // required.
+  // What to print, in the JSON body ({"printerId": "…", "quoteId": "…"}).
+  // Exactly one is required.
   oneof document {
     string quote_id = 3;
     string repair_order_id = 4;
@@ -878,7 +886,7 @@ service DocumentService {
   // document field are refused (INVALID_ARGUMENT).
   rpc CreatePrintJob(CreatePrintJobRequest) returns (PrintJob) {
     option (google.api.http) = {
-      post: "/api/v1/garages/{garage_id}/printers/{printer_id}/jobs"
+      post: "/api/v1/garages/{garage_id}/print-jobs"
       body: "*"
     };
   }
