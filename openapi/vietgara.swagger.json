@@ -16910,7 +16910,7 @@
         },
         "unitId": {
           "type": "string",
-          "description": "A packaging unit of the part (a case): the label carries that unit's\nfirst barcode (in the order of Part.barcodes) and its name, so a scan\ncounts a case. Unset, empty or the part's base unit is the base unit. A\nunit that is not the part's, or that has no barcode, is refused\n(INVALID_ARGUMENT): the base unit's code on a case would count one."
+          "description": "A packaging unit of the part (a case): the label carries that unit's\nfirst barcode (in the order of Part.barcodes) and its name, so a scan\ncounts a case. Unset, empty or the part's base unit is the base unit,\nwhose label carries its first barcode, or the SKU when it has none. A\nunit that is not the part's, or that has no barcode, is refused\n(INVALID_ARGUMENT): the base unit's code on a case would count one."
         }
       },
       "description": "PartLabelCopies is how many labels of one part, in one unit, to print.",

@@ -2522,7 +2522,8 @@ type PartLabelCopies struct {
 	Copies int32 `protobuf:"varint,2,opt,name=copies,proto3" json:"copies,omitempty"`
 	// A packaging unit of the part (a case): the label carries that unit's
 	// first barcode (in the order of Part.barcodes) and its name, so a scan
-	// counts a case. Unset, empty or the part's base unit is the base unit. A
+	// counts a case. Unset, empty or the part's base unit is the base unit,
+	// whose label carries its first barcode, or the SKU when it has none. A
 	// unit that is not the part's, or that has no barcode, is refused
 	// (INVALID_ARGUMENT): the base unit's code on a case would count one.
 	UnitId        *string `protobuf:"bytes,3,opt,name=unit_id,json=unitId,proto3,oneof" json:"unit_id,omitempty"`
