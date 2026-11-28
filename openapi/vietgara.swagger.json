@@ -3365,6 +3365,20 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "paperSize",
+            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PAPER_SIZE_A4",
+              "PAPER_SIZE_A5",
+              "PAPER_SIZE_K80",
+              "PAPER_SIZE_K57",
+              "PAPER_SIZE_LABEL_50X30"
+            ]
           }
         ],
         "tags": [
@@ -5120,6 +5134,20 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "paperSize",
+            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PAPER_SIZE_A4",
+              "PAPER_SIZE_A5",
+              "PAPER_SIZE_K80",
+              "PAPER_SIZE_K57",
+              "PAPER_SIZE_LABEL_50X30"
+            ]
           }
         ],
         "tags": [
@@ -5696,6 +5724,20 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "paperSize",
+            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PAPER_SIZE_A4",
+              "PAPER_SIZE_A5",
+              "PAPER_SIZE_K80",
+              "PAPER_SIZE_K57",
+              "PAPER_SIZE_LABEL_50X30"
+            ]
           }
         ],
         "tags": [
@@ -6345,6 +6387,20 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "paperSize",
+            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PAPER_SIZE_A4",
+              "PAPER_SIZE_A5",
+              "PAPER_SIZE_K80",
+              "PAPER_SIZE_K57",
+              "PAPER_SIZE_LABEL_50X30"
+            ]
           }
         ],
         "tags": [
@@ -7095,6 +7151,20 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "paperSize",
+            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PAPER_SIZE_A4",
+              "PAPER_SIZE_A5",
+              "PAPER_SIZE_K80",
+              "PAPER_SIZE_K57",
+              "PAPER_SIZE_LABEL_50X30"
+            ]
           }
         ],
         "tags": [
@@ -7242,6 +7312,20 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "paperSize",
+            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PAPER_SIZE_A4",
+              "PAPER_SIZE_A5",
+              "PAPER_SIZE_K80",
+              "PAPER_SIZE_K57",
+              "PAPER_SIZE_LABEL_50X30"
+            ]
           }
         ],
         "tags": [
@@ -8304,6 +8388,20 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "paperSize",
+            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PAPER_SIZE_A4",
+              "PAPER_SIZE_A5",
+              "PAPER_SIZE_K80",
+              "PAPER_SIZE_K57",
+              "PAPER_SIZE_LABEL_50X30"
+            ]
           }
         ],
         "tags": [
@@ -8428,6 +8526,20 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "paperSize",
+            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PAPER_SIZE_A4",
+              "PAPER_SIZE_A5",
+              "PAPER_SIZE_K80",
+              "PAPER_SIZE_K57",
+              "PAPER_SIZE_LABEL_50X30"
+            ]
           }
         ],
         "tags": [
@@ -16590,7 +16702,7 @@
         "PAPER_SIZE_K57",
         "PAPER_SIZE_LABEL_50X30"
       ],
-      "description": "PaperSize is the paper a document prints on: A4 (210 x 297 mm) or A5\n(148 x 210 mm) for a PDF; since Release 13.0 also the thermal rolls K80\n(80 mm, 72 mm printed) and K57 (57 mm, 48 mm printed) and the 50 x 30 mm\nlabel. A print setting takes A4 or A5 only."
+      "description": "PaperSize is the paper a document prints on: A4 (210 x 297 mm) or A5\n(148 x 210 mm) for a PDF; since Release 13.0 also the thermal rolls K80\n(80 mm, 72 mm printed) and K57 (57 mm, 48 mm printed) and the 50 x 30 mm\nlabel. A print setting takes A4 or A5 only.\nEvery size has its own templates: a document is never scaled from one\nsize to another."
     },
     "v1Part": {
       "type": "object",
@@ -17627,14 +17739,14 @@
         },
         "paperSize": {
           "$ref": "#/definitions/v1PaperSize",
-          "description": "Raw only, and required there: K80, K57 or LABEL_50X30. Must be\nunspecified for IPP (INVALID_ARGUMENT otherwise): an IPP printer prints\nthe PDF on the garage's paper setting."
+          "description": "The paper loaded in the printer. Raw, and required there: K80, K57 or\nLABEL_50X30. IPP: A4 or A5, and the PDF prints with that size's\ntemplate; unspecified prints on the garage's paper setting. Another\nsize is refused (INVALID_ARGUMENT)."
         },
         "documentTypes": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1DocumentType"
           },
-          "description": "The documents the apps send to this printer first. A K80 or K57 printer\ntakes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP\nprinter any document but PART_LABEL. UNSPECIFIED is refused\n(INVALID_ARGUMENT) and a repeated type is kept once, in the order of the\nenum. Several printers may take the same\ndocument: the apps offer them all, those that take it first on top, by\nname."
+          "description": "The documents the apps send to this printer first. A K80 or K57 printer\ntakes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP\nprinter any document but PART_LABEL that has a template for its page\nsize (an A5 printer: those with an A5 template). UNSPECIFIED is refused\n(INVALID_ARGUMENT) and a repeated type is kept once, in the order of the\nenum. Several printers may take the same\ndocument: the apps offer them all, those that take it first on top, by\nname."
         },
         "createdAt": {
           "type": "string",

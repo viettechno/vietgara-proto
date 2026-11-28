@@ -752,6 +752,8 @@ func local_request_DocumentService_UpdatePrintSetting_0(ctx context.Context, mar
 	return msg, metadata, err
 }
 
+var filter_DocumentService_PrintQuotePdf_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0, "quote_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+
 func request_DocumentService_PrintQuotePdf_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq PrintQuotePdfRequest
@@ -773,6 +775,12 @@ func request_DocumentService_PrintQuotePdf_0(ctx context.Context, marshaler runt
 	protoReq.QuoteId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "quote_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintQuotePdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
@@ -803,9 +811,17 @@ func local_request_DocumentService_PrintQuotePdf_0(ctx context.Context, marshale
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "quote_id", err)
 	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintQuotePdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 	msg, err := server.PrintQuotePdf(ctx, &protoReq)
 	return msg, metadata, err
 }
+
+var filter_DocumentService_PrintRepairOrderPdf_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0, "repair_order_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 
 func request_DocumentService_PrintRepairOrderPdf_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
@@ -828,6 +844,12 @@ func request_DocumentService_PrintRepairOrderPdf_0(ctx context.Context, marshale
 	protoReq.RepairOrderId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "repair_order_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintRepairOrderPdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
@@ -858,9 +880,17 @@ func local_request_DocumentService_PrintRepairOrderPdf_0(ctx context.Context, ma
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "repair_order_id", err)
 	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintRepairOrderPdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 	msg, err := server.PrintRepairOrderPdf(ctx, &protoReq)
 	return msg, metadata, err
 }
+
+var filter_DocumentService_PrintSettlementReceiptPdf_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0, "settlement_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 
 func request_DocumentService_PrintSettlementReceiptPdf_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
@@ -883,6 +913,12 @@ func request_DocumentService_PrintSettlementReceiptPdf_0(ctx context.Context, ma
 	protoReq.SettlementId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "settlement_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintSettlementReceiptPdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
@@ -913,9 +949,17 @@ func local_request_DocumentService_PrintSettlementReceiptPdf_0(ctx context.Conte
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "settlement_id", err)
 	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintSettlementReceiptPdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 	msg, err := server.PrintSettlementReceiptPdf(ctx, &protoReq)
 	return msg, metadata, err
 }
+
+var filter_DocumentService_PrintPaymentVoucherPdf_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0, "settlement_id": 1, "payment_id": 2}, Base: []int{1, 1, 2, 3, 0, 0, 0}, Check: []int{0, 1, 1, 1, 2, 3, 4}}
 
 func request_DocumentService_PrintPaymentVoucherPdf_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
@@ -946,6 +990,12 @@ func request_DocumentService_PrintPaymentVoucherPdf_0(ctx context.Context, marsh
 	protoReq.PaymentId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "payment_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintPaymentVoucherPdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
@@ -984,9 +1034,17 @@ func local_request_DocumentService_PrintPaymentVoucherPdf_0(ctx context.Context,
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "payment_id", err)
 	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintPaymentVoucherPdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 	msg, err := server.PrintPaymentVoucherPdf(ctx, &protoReq)
 	return msg, metadata, err
 }
+
+var filter_DocumentService_PrintGoodsReceiptPdf_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0, "goods_receipt_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 
 func request_DocumentService_PrintGoodsReceiptPdf_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
@@ -1009,6 +1067,12 @@ func request_DocumentService_PrintGoodsReceiptPdf_0(ctx context.Context, marshal
 	protoReq.GoodsReceiptId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "goods_receipt_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintGoodsReceiptPdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
@@ -1039,9 +1103,17 @@ func local_request_DocumentService_PrintGoodsReceiptPdf_0(ctx context.Context, m
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "goods_receipt_id", err)
 	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintGoodsReceiptPdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 	msg, err := server.PrintGoodsReceiptPdf(ctx, &protoReq)
 	return msg, metadata, err
 }
+
+var filter_DocumentService_PrintStockIssuePdf_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0, "repair_order_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 
 func request_DocumentService_PrintStockIssuePdf_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
@@ -1064,6 +1136,12 @@ func request_DocumentService_PrintStockIssuePdf_0(ctx context.Context, marshaler
 	protoReq.RepairOrderId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "repair_order_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintStockIssuePdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
@@ -1093,6 +1171,12 @@ func local_request_DocumentService_PrintStockIssuePdf_0(ctx context.Context, mar
 	protoReq.RepairOrderId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "repair_order_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintStockIssuePdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	msg, err := server.PrintStockIssuePdf(ctx, &protoReq)
 	return msg, metadata, err
@@ -1153,6 +1237,8 @@ func local_request_DocumentService_ExportPaymentOutVoucherPdf_0(ctx context.Cont
 	return msg, metadata, err
 }
 
+var filter_DocumentService_PrintPaymentOutVoucherPdf_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0, "voucher_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+
 func request_DocumentService_PrintPaymentOutVoucherPdf_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq PrintPaymentOutVoucherPdfRequest
@@ -1174,6 +1260,12 @@ func request_DocumentService_PrintPaymentOutVoucherPdf_0(ctx context.Context, ma
 	protoReq.VoucherId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "voucher_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintPaymentOutVoucherPdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
@@ -1203,6 +1295,12 @@ func local_request_DocumentService_PrintPaymentOutVoucherPdf_0(ctx context.Conte
 	protoReq.VoucherId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "voucher_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintPaymentOutVoucherPdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	msg, err := server.PrintPaymentOutVoucherPdf(ctx, &protoReq)
 	return msg, metadata, err
@@ -1263,6 +1361,8 @@ func local_request_DocumentService_ExportPurchaseOrderPdf_0(ctx context.Context,
 	return msg, metadata, err
 }
 
+var filter_DocumentService_PrintPurchaseOrderPdf_0 = &utilities.DoubleArray{Encoding: map[string]int{"garage_id": 0, "purchase_order_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+
 func request_DocumentService_PrintPurchaseOrderPdf_0(ctx context.Context, marshaler runtime.Marshaler, client DocumentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq PrintPurchaseOrderPdfRequest
@@ -1284,6 +1384,12 @@ func request_DocumentService_PrintPurchaseOrderPdf_0(ctx context.Context, marsha
 	protoReq.PurchaseOrderId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "purchase_order_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintPurchaseOrderPdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
@@ -1313,6 +1419,12 @@ func local_request_DocumentService_PrintPurchaseOrderPdf_0(ctx context.Context, 
 	protoReq.PurchaseOrderId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "purchase_order_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DocumentService_PrintPurchaseOrderPdf_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	msg, err := server.PrintPurchaseOrderPdf(ctx, &protoReq)
 	return msg, metadata, err

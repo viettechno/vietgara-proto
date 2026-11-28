@@ -104,6 +104,8 @@ func (DocumentType) EnumDescriptor() ([]byte, []int) {
 // (148 x 210 mm) for a PDF; since Release 13.0 also the thermal rolls K80
 // (80 mm, 72 mm printed) and K57 (57 mm, 48 mm printed) and the 50 x 30 mm
 // label. A print setting takes A4 or A5 only.
+// Every size has its own templates: a document is never scaled from one
+// size to another.
 type PaperSize int32
 
 const (
@@ -940,9 +942,14 @@ func (x *ExportPurchaseOrderPdfRequest) GetPurchaseOrderId() string {
 }
 
 type PrintPaymentOutVoucherPdfRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	VoucherId     string                 `protobuf:"bytes,2,opt,name=voucher_id,json=voucherId,proto3" json:"voucher_id,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	GarageId  string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	VoucherId string                 `protobuf:"bytes,2,opt,name=voucher_id,json=voucherId,proto3" json:"voucher_id,omitempty"`
+	// Release 13.0: the page size of the printer the client sends to, A4 or
+	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// garage's print setting. A size the document has no template for, a roll
+	// and a label are refused (INVALID_ARGUMENT).
+	PaperSize     PaperSize `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -991,12 +998,24 @@ func (x *PrintPaymentOutVoucherPdfRequest) GetVoucherId() string {
 	return ""
 }
 
+func (x *PrintPaymentOutVoucherPdfRequest) GetPaperSize() PaperSize {
+	if x != nil {
+		return x.PaperSize
+	}
+	return PaperSize_PAPER_SIZE_UNSPECIFIED
+}
+
 type PrintPurchaseOrderPdfRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	GarageId        string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	PurchaseOrderId string                 `protobuf:"bytes,2,opt,name=purchase_order_id,json=purchaseOrderId,proto3" json:"purchase_order_id,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// Release 13.0: the page size of the printer the client sends to, A4 or
+	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// garage's print setting. A size the document has no template for, a roll
+	// and a label are refused (INVALID_ARGUMENT).
+	PaperSize     PaperSize `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *PrintPurchaseOrderPdfRequest) Reset() {
@@ -1041,6 +1060,13 @@ func (x *PrintPurchaseOrderPdfRequest) GetPurchaseOrderId() string {
 		return x.PurchaseOrderId
 	}
 	return ""
+}
+
+func (x *PrintPurchaseOrderPdfRequest) GetPaperSize() PaperSize {
+	if x != nil {
+		return x.PaperSize
+	}
+	return PaperSize_PAPER_SIZE_UNSPECIFIED
 }
 
 type ExportReceivablesExcelRequest struct {
@@ -1476,9 +1502,14 @@ func (x *UpdatePrintSettingRequest) GetCopyMark() bool {
 }
 
 type PrintQuotePdfRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	QuoteId       string                 `protobuf:"bytes,2,opt,name=quote_id,json=quoteId,proto3" json:"quote_id,omitempty"`
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	QuoteId  string                 `protobuf:"bytes,2,opt,name=quote_id,json=quoteId,proto3" json:"quote_id,omitempty"`
+	// Release 13.0: the page size of the printer the client sends to, A4 or
+	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// garage's print setting. A size the document has no template for, a roll
+	// and a label are refused (INVALID_ARGUMENT).
+	PaperSize     PaperSize `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1527,10 +1558,22 @@ func (x *PrintQuotePdfRequest) GetQuoteId() string {
 	return ""
 }
 
+func (x *PrintQuotePdfRequest) GetPaperSize() PaperSize {
+	if x != nil {
+		return x.PaperSize
+	}
+	return PaperSize_PAPER_SIZE_UNSPECIFIED
+}
+
 type PrintRepairOrderPdfRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	RepairOrderId string                 `protobuf:"bytes,2,opt,name=repair_order_id,json=repairOrderId,proto3" json:"repair_order_id,omitempty"`
+	// Release 13.0: the page size of the printer the client sends to, A4 or
+	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// garage's print setting. A size the document has no template for, a roll
+	// and a label are refused (INVALID_ARGUMENT).
+	PaperSize     PaperSize `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1579,10 +1622,22 @@ func (x *PrintRepairOrderPdfRequest) GetRepairOrderId() string {
 	return ""
 }
 
+func (x *PrintRepairOrderPdfRequest) GetPaperSize() PaperSize {
+	if x != nil {
+		return x.PaperSize
+	}
+	return PaperSize_PAPER_SIZE_UNSPECIFIED
+}
+
 type PrintSettlementReceiptPdfRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	SettlementId  string                 `protobuf:"bytes,2,opt,name=settlement_id,json=settlementId,proto3" json:"settlement_id,omitempty"`
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	GarageId     string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	SettlementId string                 `protobuf:"bytes,2,opt,name=settlement_id,json=settlementId,proto3" json:"settlement_id,omitempty"`
+	// Release 13.0: the page size of the printer the client sends to, A4 or
+	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// garage's print setting. A size the document has no template for, a roll
+	// and a label are refused (INVALID_ARGUMENT).
+	PaperSize     PaperSize `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1631,11 +1686,23 @@ func (x *PrintSettlementReceiptPdfRequest) GetSettlementId() string {
 	return ""
 }
 
+func (x *PrintSettlementReceiptPdfRequest) GetPaperSize() PaperSize {
+	if x != nil {
+		return x.PaperSize
+	}
+	return PaperSize_PAPER_SIZE_UNSPECIFIED
+}
+
 type PrintPaymentVoucherPdfRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
-	SettlementId  string                 `protobuf:"bytes,2,opt,name=settlement_id,json=settlementId,proto3" json:"settlement_id,omitempty"`
-	PaymentId     string                 `protobuf:"bytes,3,opt,name=payment_id,json=paymentId,proto3" json:"payment_id,omitempty"`
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	GarageId     string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
+	SettlementId string                 `protobuf:"bytes,2,opt,name=settlement_id,json=settlementId,proto3" json:"settlement_id,omitempty"`
+	PaymentId    string                 `protobuf:"bytes,3,opt,name=payment_id,json=paymentId,proto3" json:"payment_id,omitempty"`
+	// Release 13.0: the page size of the printer the client sends to, A4 or
+	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// garage's print setting. A size the document has no template for, a roll
+	// and a label are refused (INVALID_ARGUMENT).
+	PaperSize     PaperSize `protobuf:"varint,4,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1691,12 +1758,24 @@ func (x *PrintPaymentVoucherPdfRequest) GetPaymentId() string {
 	return ""
 }
 
+func (x *PrintPaymentVoucherPdfRequest) GetPaperSize() PaperSize {
+	if x != nil {
+		return x.PaperSize
+	}
+	return PaperSize_PAPER_SIZE_UNSPECIFIED
+}
+
 type PrintGoodsReceiptPdfRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	GarageId       string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	GoodsReceiptId string                 `protobuf:"bytes,2,opt,name=goods_receipt_id,json=goodsReceiptId,proto3" json:"goods_receipt_id,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// Release 13.0: the page size of the printer the client sends to, A4 or
+	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// garage's print setting. A size the document has no template for, a roll
+	// and a label are refused (INVALID_ARGUMENT).
+	PaperSize     PaperSize `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *PrintGoodsReceiptPdfRequest) Reset() {
@@ -1743,10 +1822,22 @@ func (x *PrintGoodsReceiptPdfRequest) GetGoodsReceiptId() string {
 	return ""
 }
 
+func (x *PrintGoodsReceiptPdfRequest) GetPaperSize() PaperSize {
+	if x != nil {
+		return x.PaperSize
+	}
+	return PaperSize_PAPER_SIZE_UNSPECIFIED
+}
+
 type PrintStockIssuePdfRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	RepairOrderId string                 `protobuf:"bytes,2,opt,name=repair_order_id,json=repairOrderId,proto3" json:"repair_order_id,omitempty"`
+	// Release 13.0: the page size of the printer the client sends to, A4 or
+	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// garage's print setting. A size the document has no template for, a roll
+	// and a label are refused (INVALID_ARGUMENT).
+	PaperSize     PaperSize `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1795,6 +1886,13 @@ func (x *PrintStockIssuePdfRequest) GetRepairOrderId() string {
 	return ""
 }
 
+func (x *PrintStockIssuePdfRequest) GetPaperSize() PaperSize {
+	if x != nil {
+		return x.PaperSize
+	}
+	return PaperSize_PAPER_SIZE_UNSPECIFIED
+}
+
 // Printer is a network printer a garage saved (FR-DOC-07, Release 13.0). The
 // server never connects to it: the apps on the garage's network do.
 type Printer struct {
@@ -1813,13 +1911,15 @@ type Printer struct {
 	// characters. A raw printer with a path
 	// is refused (INVALID_ARGUMENT).
 	Path string `protobuf:"bytes,6,opt,name=path,proto3" json:"path,omitempty"`
-	// Raw only, and required there: K80, K57 or LABEL_50X30. Must be
-	// unspecified for IPP (INVALID_ARGUMENT otherwise): an IPP printer prints
-	// the PDF on the garage's paper setting.
+	// The paper loaded in the printer. Raw, and required there: K80, K57 or
+	// LABEL_50X30. IPP: A4 or A5, and the PDF prints with that size's
+	// template; unspecified prints on the garage's paper setting. Another
+	// size is refused (INVALID_ARGUMENT).
 	PaperSize PaperSize `protobuf:"varint,7,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
 	// The documents the apps send to this printer first. A K80 or K57 printer
 	// takes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP
-	// printer any document but PART_LABEL. UNSPECIFIED is refused
+	// printer any document but PART_LABEL that has a template for its page
+	// size (an A5 printer: those with an A5 template). UNSPECIFIED is refused
 	// (INVALID_ARGUMENT) and a repeated type is kept once, in the order of the
 	// enum. Several printers may take the same
 	// document: the apps offer them all, those that take it first on top, by
@@ -2571,14 +2671,18 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"voucher_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tvoucherId\"r\n" +
 	"\x1dExportPurchaseOrderPdfRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12/\n" +
-	"\x11purchase_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0fpurchaseOrderId\"h\n" +
+	"\x11purchase_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0fpurchaseOrderId\"\xa8\x01\n" +
 	" PrintPaymentOutVoucherPdfRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\"\n" +
 	"\n" +
-	"voucher_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tvoucherId\"q\n" +
+	"voucher_id\x18\x02 \x01(\tB\x03\xe0A\x02R\tvoucherId\x12>\n" +
+	"\n" +
+	"paper_size\x18\x03 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeR\tpaperSize\"\xb1\x01\n" +
 	"\x1cPrintPurchaseOrderPdfRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12/\n" +
-	"\x11purchase_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0fpurchaseOrderId\"\xbe\x01\n" +
+	"\x11purchase_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0fpurchaseOrderId\x12>\n" +
+	"\n" +
+	"paper_size\x18\x03 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeR\tpaperSize\"\xbe\x01\n" +
 	"\x1dExportReceivablesExcelRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1f\n" +
 	"\vcustomer_id\x18\x02 \x01(\tR\n" +
@@ -2610,27 +2714,39 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\rdocument_type\x18\x02 \x01(\x0e2\".vietgara.document.v1.DocumentTypeB\x03\xe0A\x02R\fdocumentType\x12C\n" +
 	"\n" +
 	"paper_size\x18\x03 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeB\x03\xe0A\x02R\tpaperSize\x12\x1b\n" +
-	"\tcopy_mark\x18\x04 \x01(\bR\bcopyMark\"X\n" +
+	"\tcopy_mark\x18\x04 \x01(\bR\bcopyMark\"\x98\x01\n" +
 	"\x14PrintQuotePdfRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12\x1e\n" +
-	"\bquote_id\x18\x02 \x01(\tB\x03\xe0A\x02R\aquoteId\"k\n" +
+	"\bquote_id\x18\x02 \x01(\tB\x03\xe0A\x02R\aquoteId\x12>\n" +
+	"\n" +
+	"paper_size\x18\x03 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeR\tpaperSize\"\xab\x01\n" +
 	"\x1aPrintRepairOrderPdfRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12+\n" +
-	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\"n\n" +
+	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\x12>\n" +
+	"\n" +
+	"paper_size\x18\x03 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeR\tpaperSize\"\xae\x01\n" +
 	" PrintSettlementReceiptPdfRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12(\n" +
-	"\rsettlement_id\x18\x02 \x01(\tB\x03\xe0A\x02R\fsettlementId\"\x8f\x01\n" +
+	"\rsettlement_id\x18\x02 \x01(\tB\x03\xe0A\x02R\fsettlementId\x12>\n" +
+	"\n" +
+	"paper_size\x18\x03 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeR\tpaperSize\"\xcf\x01\n" +
 	"\x1dPrintPaymentVoucherPdfRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12(\n" +
 	"\rsettlement_id\x18\x02 \x01(\tB\x03\xe0A\x02R\fsettlementId\x12\"\n" +
 	"\n" +
-	"payment_id\x18\x03 \x01(\tB\x03\xe0A\x02R\tpaymentId\"n\n" +
+	"payment_id\x18\x03 \x01(\tB\x03\xe0A\x02R\tpaymentId\x12>\n" +
+	"\n" +
+	"paper_size\x18\x04 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeR\tpaperSize\"\xae\x01\n" +
 	"\x1bPrintGoodsReceiptPdfRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12-\n" +
-	"\x10goods_receipt_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0egoodsReceiptId\"j\n" +
+	"\x10goods_receipt_id\x18\x02 \x01(\tB\x03\xe0A\x02R\x0egoodsReceiptId\x12>\n" +
+	"\n" +
+	"paper_size\x18\x03 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeR\tpaperSize\"\xaa\x01\n" +
 	"\x19PrintStockIssuePdfRequest\x12 \n" +
 	"\tgarage_id\x18\x01 \x01(\tB\x03\xe0A\x02R\bgarageId\x12+\n" +
-	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\"\xcb\x03\n" +
+	"\x0frepair_order_id\x18\x02 \x01(\tB\x03\xe0A\x02R\rrepairOrderId\x12>\n" +
+	"\n" +
+	"paper_size\x18\x03 \x01(\x0e2\x1f.vietgara.document.v1.PaperSizeR\tpaperSize\"\xcb\x03\n" +
 	"\aPrinter\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x03R\x02id\x12\x17\n" +
 	"\x04name\x18\x02 \x01(\tB\x03\xe0A\x02R\x04name\x12F\n" +
@@ -2809,97 +2925,105 @@ var file_vietgara_document_v1_document_proto_goTypes = []any{
 }
 var file_vietgara_document_v1_document_proto_depIdxs = []int32{
 	43, // 0: vietgara.document.v1.ExportRevenueExcelRequest.period:type_name -> vietgara.reporting.v1.RevenuePeriod
-	0,  // 1: vietgara.document.v1.PrintSetting.document_type:type_name -> vietgara.document.v1.DocumentType
-	1,  // 2: vietgara.document.v1.PrintSetting.paper_size:type_name -> vietgara.document.v1.PaperSize
-	1,  // 3: vietgara.document.v1.PrintSetting.available_paper_sizes:type_name -> vietgara.document.v1.PaperSize
-	21, // 4: vietgara.document.v1.GetPrintSettingsResponse.settings:type_name -> vietgara.document.v1.PrintSetting
-	0,  // 5: vietgara.document.v1.UpdatePrintSettingRequest.document_type:type_name -> vietgara.document.v1.DocumentType
-	1,  // 6: vietgara.document.v1.UpdatePrintSettingRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
-	2,  // 7: vietgara.document.v1.Printer.protocol:type_name -> vietgara.document.v1.PrinterProtocol
-	1,  // 8: vietgara.document.v1.Printer.paper_size:type_name -> vietgara.document.v1.PaperSize
-	0,  // 9: vietgara.document.v1.Printer.document_types:type_name -> vietgara.document.v1.DocumentType
-	44, // 10: vietgara.document.v1.Printer.created_at:type_name -> google.protobuf.Timestamp
-	44, // 11: vietgara.document.v1.Printer.updated_at:type_name -> google.protobuf.Timestamp
-	31, // 12: vietgara.document.v1.ListPrintersResponse.printers:type_name -> vietgara.document.v1.Printer
-	31, // 13: vietgara.document.v1.CreatePrinterRequest.printer:type_name -> vietgara.document.v1.Printer
-	31, // 14: vietgara.document.v1.UpdatePrinterRequest.printer:type_name -> vietgara.document.v1.Printer
-	1,  // 15: vietgara.document.v1.PrintQuoteEscPosRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
-	1,  // 16: vietgara.document.v1.PrintPaymentVoucherEscPosRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
-	1,  // 17: vietgara.document.v1.PrintPartLabelsRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
-	41, // 18: vietgara.document.v1.PrintPartLabelsRequest.parts:type_name -> vietgara.document.v1.PartLabelCopies
-	3,  // 19: vietgara.document.v1.DocumentService.ExportQuotePdf:input_type -> vietgara.document.v1.ExportQuotePdfRequest
-	4,  // 20: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:input_type -> vietgara.document.v1.ExportRepairOrderPdfRequest
-	5,  // 21: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:input_type -> vietgara.document.v1.ExportSettlementReceiptPdfRequest
-	6,  // 22: vietgara.document.v1.DocumentService.ExportPaymentVoucherPdf:input_type -> vietgara.document.v1.ExportPaymentVoucherPdfRequest
-	7,  // 23: vietgara.document.v1.DocumentService.ExportStockMovementsExcel:input_type -> vietgara.document.v1.ExportStockMovementsExcelRequest
-	8,  // 24: vietgara.document.v1.DocumentService.ExportRevenueExcel:input_type -> vietgara.document.v1.ExportRevenueExcelRequest
-	9,  // 25: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:input_type -> vietgara.document.v1.ExportGoodsReceiptPdfRequest
-	10, // 26: vietgara.document.v1.DocumentService.ExportStockIssuePdf:input_type -> vietgara.document.v1.ExportStockIssuePdfRequest
-	11, // 27: vietgara.document.v1.DocumentService.ExportStockCountExcel:input_type -> vietgara.document.v1.ExportStockCountExcelRequest
-	12, // 28: vietgara.document.v1.DocumentService.ExportPurchasesExcel:input_type -> vietgara.document.v1.ExportPurchasesExcelRequest
-	13, // 29: vietgara.document.v1.DocumentService.ExportStockValuationExcel:input_type -> vietgara.document.v1.ExportStockValuationExcelRequest
-	22, // 30: vietgara.document.v1.DocumentService.GetPrintSettings:input_type -> vietgara.document.v1.GetPrintSettingsRequest
-	24, // 31: vietgara.document.v1.DocumentService.UpdatePrintSetting:input_type -> vietgara.document.v1.UpdatePrintSettingRequest
-	25, // 32: vietgara.document.v1.DocumentService.PrintQuotePdf:input_type -> vietgara.document.v1.PrintQuotePdfRequest
-	26, // 33: vietgara.document.v1.DocumentService.PrintRepairOrderPdf:input_type -> vietgara.document.v1.PrintRepairOrderPdfRequest
-	27, // 34: vietgara.document.v1.DocumentService.PrintSettlementReceiptPdf:input_type -> vietgara.document.v1.PrintSettlementReceiptPdfRequest
-	28, // 35: vietgara.document.v1.DocumentService.PrintPaymentVoucherPdf:input_type -> vietgara.document.v1.PrintPaymentVoucherPdfRequest
-	29, // 36: vietgara.document.v1.DocumentService.PrintGoodsReceiptPdf:input_type -> vietgara.document.v1.PrintGoodsReceiptPdfRequest
-	30, // 37: vietgara.document.v1.DocumentService.PrintStockIssuePdf:input_type -> vietgara.document.v1.PrintStockIssuePdfRequest
-	14, // 38: vietgara.document.v1.DocumentService.ExportPaymentOutVoucherPdf:input_type -> vietgara.document.v1.ExportPaymentOutVoucherPdfRequest
-	16, // 39: vietgara.document.v1.DocumentService.PrintPaymentOutVoucherPdf:input_type -> vietgara.document.v1.PrintPaymentOutVoucherPdfRequest
-	15, // 40: vietgara.document.v1.DocumentService.ExportPurchaseOrderPdf:input_type -> vietgara.document.v1.ExportPurchaseOrderPdfRequest
-	17, // 41: vietgara.document.v1.DocumentService.PrintPurchaseOrderPdf:input_type -> vietgara.document.v1.PrintPurchaseOrderPdfRequest
-	18, // 42: vietgara.document.v1.DocumentService.ExportReceivablesExcel:input_type -> vietgara.document.v1.ExportReceivablesExcelRequest
-	19, // 43: vietgara.document.v1.DocumentService.ExportReceivableReconciliationExcel:input_type -> vietgara.document.v1.ExportReceivableReconciliationExcelRequest
-	20, // 44: vietgara.document.v1.DocumentService.ExportSupplierPayablesExcel:input_type -> vietgara.document.v1.ExportSupplierPayablesExcelRequest
-	32, // 45: vietgara.document.v1.DocumentService.ListPrinters:input_type -> vietgara.document.v1.ListPrintersRequest
-	34, // 46: vietgara.document.v1.DocumentService.CreatePrinter:input_type -> vietgara.document.v1.CreatePrinterRequest
-	35, // 47: vietgara.document.v1.DocumentService.UpdatePrinter:input_type -> vietgara.document.v1.UpdatePrinterRequest
-	36, // 48: vietgara.document.v1.DocumentService.DeletePrinter:input_type -> vietgara.document.v1.DeletePrinterRequest
-	38, // 49: vietgara.document.v1.DocumentService.PrintPrinterTestPage:input_type -> vietgara.document.v1.PrintPrinterTestPageRequest
-	39, // 50: vietgara.document.v1.DocumentService.PrintQuoteEscPos:input_type -> vietgara.document.v1.PrintQuoteEscPosRequest
-	40, // 51: vietgara.document.v1.DocumentService.PrintPaymentVoucherEscPos:input_type -> vietgara.document.v1.PrintPaymentVoucherEscPosRequest
-	42, // 52: vietgara.document.v1.DocumentService.PrintPartLabels:input_type -> vietgara.document.v1.PrintPartLabelsRequest
-	45, // 53: vietgara.document.v1.DocumentService.ExportQuotePdf:output_type -> google.api.HttpBody
-	45, // 54: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:output_type -> google.api.HttpBody
-	45, // 55: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:output_type -> google.api.HttpBody
-	45, // 56: vietgara.document.v1.DocumentService.ExportPaymentVoucherPdf:output_type -> google.api.HttpBody
-	45, // 57: vietgara.document.v1.DocumentService.ExportStockMovementsExcel:output_type -> google.api.HttpBody
-	45, // 58: vietgara.document.v1.DocumentService.ExportRevenueExcel:output_type -> google.api.HttpBody
-	45, // 59: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:output_type -> google.api.HttpBody
-	45, // 60: vietgara.document.v1.DocumentService.ExportStockIssuePdf:output_type -> google.api.HttpBody
-	45, // 61: vietgara.document.v1.DocumentService.ExportStockCountExcel:output_type -> google.api.HttpBody
-	45, // 62: vietgara.document.v1.DocumentService.ExportPurchasesExcel:output_type -> google.api.HttpBody
-	45, // 63: vietgara.document.v1.DocumentService.ExportStockValuationExcel:output_type -> google.api.HttpBody
-	23, // 64: vietgara.document.v1.DocumentService.GetPrintSettings:output_type -> vietgara.document.v1.GetPrintSettingsResponse
-	21, // 65: vietgara.document.v1.DocumentService.UpdatePrintSetting:output_type -> vietgara.document.v1.PrintSetting
-	45, // 66: vietgara.document.v1.DocumentService.PrintQuotePdf:output_type -> google.api.HttpBody
-	45, // 67: vietgara.document.v1.DocumentService.PrintRepairOrderPdf:output_type -> google.api.HttpBody
-	45, // 68: vietgara.document.v1.DocumentService.PrintSettlementReceiptPdf:output_type -> google.api.HttpBody
-	45, // 69: vietgara.document.v1.DocumentService.PrintPaymentVoucherPdf:output_type -> google.api.HttpBody
-	45, // 70: vietgara.document.v1.DocumentService.PrintGoodsReceiptPdf:output_type -> google.api.HttpBody
-	45, // 71: vietgara.document.v1.DocumentService.PrintStockIssuePdf:output_type -> google.api.HttpBody
-	45, // 72: vietgara.document.v1.DocumentService.ExportPaymentOutVoucherPdf:output_type -> google.api.HttpBody
-	45, // 73: vietgara.document.v1.DocumentService.PrintPaymentOutVoucherPdf:output_type -> google.api.HttpBody
-	45, // 74: vietgara.document.v1.DocumentService.ExportPurchaseOrderPdf:output_type -> google.api.HttpBody
-	45, // 75: vietgara.document.v1.DocumentService.PrintPurchaseOrderPdf:output_type -> google.api.HttpBody
-	45, // 76: vietgara.document.v1.DocumentService.ExportReceivablesExcel:output_type -> google.api.HttpBody
-	45, // 77: vietgara.document.v1.DocumentService.ExportReceivableReconciliationExcel:output_type -> google.api.HttpBody
-	45, // 78: vietgara.document.v1.DocumentService.ExportSupplierPayablesExcel:output_type -> google.api.HttpBody
-	33, // 79: vietgara.document.v1.DocumentService.ListPrinters:output_type -> vietgara.document.v1.ListPrintersResponse
-	31, // 80: vietgara.document.v1.DocumentService.CreatePrinter:output_type -> vietgara.document.v1.Printer
-	31, // 81: vietgara.document.v1.DocumentService.UpdatePrinter:output_type -> vietgara.document.v1.Printer
-	37, // 82: vietgara.document.v1.DocumentService.DeletePrinter:output_type -> vietgara.document.v1.DeletePrinterResponse
-	45, // 83: vietgara.document.v1.DocumentService.PrintPrinterTestPage:output_type -> google.api.HttpBody
-	45, // 84: vietgara.document.v1.DocumentService.PrintQuoteEscPos:output_type -> google.api.HttpBody
-	45, // 85: vietgara.document.v1.DocumentService.PrintPaymentVoucherEscPos:output_type -> google.api.HttpBody
-	45, // 86: vietgara.document.v1.DocumentService.PrintPartLabels:output_type -> google.api.HttpBody
-	53, // [53:87] is the sub-list for method output_type
-	19, // [19:53] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	1,  // 1: vietgara.document.v1.PrintPaymentOutVoucherPdfRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
+	1,  // 2: vietgara.document.v1.PrintPurchaseOrderPdfRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
+	0,  // 3: vietgara.document.v1.PrintSetting.document_type:type_name -> vietgara.document.v1.DocumentType
+	1,  // 4: vietgara.document.v1.PrintSetting.paper_size:type_name -> vietgara.document.v1.PaperSize
+	1,  // 5: vietgara.document.v1.PrintSetting.available_paper_sizes:type_name -> vietgara.document.v1.PaperSize
+	21, // 6: vietgara.document.v1.GetPrintSettingsResponse.settings:type_name -> vietgara.document.v1.PrintSetting
+	0,  // 7: vietgara.document.v1.UpdatePrintSettingRequest.document_type:type_name -> vietgara.document.v1.DocumentType
+	1,  // 8: vietgara.document.v1.UpdatePrintSettingRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
+	1,  // 9: vietgara.document.v1.PrintQuotePdfRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
+	1,  // 10: vietgara.document.v1.PrintRepairOrderPdfRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
+	1,  // 11: vietgara.document.v1.PrintSettlementReceiptPdfRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
+	1,  // 12: vietgara.document.v1.PrintPaymentVoucherPdfRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
+	1,  // 13: vietgara.document.v1.PrintGoodsReceiptPdfRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
+	1,  // 14: vietgara.document.v1.PrintStockIssuePdfRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
+	2,  // 15: vietgara.document.v1.Printer.protocol:type_name -> vietgara.document.v1.PrinterProtocol
+	1,  // 16: vietgara.document.v1.Printer.paper_size:type_name -> vietgara.document.v1.PaperSize
+	0,  // 17: vietgara.document.v1.Printer.document_types:type_name -> vietgara.document.v1.DocumentType
+	44, // 18: vietgara.document.v1.Printer.created_at:type_name -> google.protobuf.Timestamp
+	44, // 19: vietgara.document.v1.Printer.updated_at:type_name -> google.protobuf.Timestamp
+	31, // 20: vietgara.document.v1.ListPrintersResponse.printers:type_name -> vietgara.document.v1.Printer
+	31, // 21: vietgara.document.v1.CreatePrinterRequest.printer:type_name -> vietgara.document.v1.Printer
+	31, // 22: vietgara.document.v1.UpdatePrinterRequest.printer:type_name -> vietgara.document.v1.Printer
+	1,  // 23: vietgara.document.v1.PrintQuoteEscPosRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
+	1,  // 24: vietgara.document.v1.PrintPaymentVoucherEscPosRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
+	1,  // 25: vietgara.document.v1.PrintPartLabelsRequest.paper_size:type_name -> vietgara.document.v1.PaperSize
+	41, // 26: vietgara.document.v1.PrintPartLabelsRequest.parts:type_name -> vietgara.document.v1.PartLabelCopies
+	3,  // 27: vietgara.document.v1.DocumentService.ExportQuotePdf:input_type -> vietgara.document.v1.ExportQuotePdfRequest
+	4,  // 28: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:input_type -> vietgara.document.v1.ExportRepairOrderPdfRequest
+	5,  // 29: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:input_type -> vietgara.document.v1.ExportSettlementReceiptPdfRequest
+	6,  // 30: vietgara.document.v1.DocumentService.ExportPaymentVoucherPdf:input_type -> vietgara.document.v1.ExportPaymentVoucherPdfRequest
+	7,  // 31: vietgara.document.v1.DocumentService.ExportStockMovementsExcel:input_type -> vietgara.document.v1.ExportStockMovementsExcelRequest
+	8,  // 32: vietgara.document.v1.DocumentService.ExportRevenueExcel:input_type -> vietgara.document.v1.ExportRevenueExcelRequest
+	9,  // 33: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:input_type -> vietgara.document.v1.ExportGoodsReceiptPdfRequest
+	10, // 34: vietgara.document.v1.DocumentService.ExportStockIssuePdf:input_type -> vietgara.document.v1.ExportStockIssuePdfRequest
+	11, // 35: vietgara.document.v1.DocumentService.ExportStockCountExcel:input_type -> vietgara.document.v1.ExportStockCountExcelRequest
+	12, // 36: vietgara.document.v1.DocumentService.ExportPurchasesExcel:input_type -> vietgara.document.v1.ExportPurchasesExcelRequest
+	13, // 37: vietgara.document.v1.DocumentService.ExportStockValuationExcel:input_type -> vietgara.document.v1.ExportStockValuationExcelRequest
+	22, // 38: vietgara.document.v1.DocumentService.GetPrintSettings:input_type -> vietgara.document.v1.GetPrintSettingsRequest
+	24, // 39: vietgara.document.v1.DocumentService.UpdatePrintSetting:input_type -> vietgara.document.v1.UpdatePrintSettingRequest
+	25, // 40: vietgara.document.v1.DocumentService.PrintQuotePdf:input_type -> vietgara.document.v1.PrintQuotePdfRequest
+	26, // 41: vietgara.document.v1.DocumentService.PrintRepairOrderPdf:input_type -> vietgara.document.v1.PrintRepairOrderPdfRequest
+	27, // 42: vietgara.document.v1.DocumentService.PrintSettlementReceiptPdf:input_type -> vietgara.document.v1.PrintSettlementReceiptPdfRequest
+	28, // 43: vietgara.document.v1.DocumentService.PrintPaymentVoucherPdf:input_type -> vietgara.document.v1.PrintPaymentVoucherPdfRequest
+	29, // 44: vietgara.document.v1.DocumentService.PrintGoodsReceiptPdf:input_type -> vietgara.document.v1.PrintGoodsReceiptPdfRequest
+	30, // 45: vietgara.document.v1.DocumentService.PrintStockIssuePdf:input_type -> vietgara.document.v1.PrintStockIssuePdfRequest
+	14, // 46: vietgara.document.v1.DocumentService.ExportPaymentOutVoucherPdf:input_type -> vietgara.document.v1.ExportPaymentOutVoucherPdfRequest
+	16, // 47: vietgara.document.v1.DocumentService.PrintPaymentOutVoucherPdf:input_type -> vietgara.document.v1.PrintPaymentOutVoucherPdfRequest
+	15, // 48: vietgara.document.v1.DocumentService.ExportPurchaseOrderPdf:input_type -> vietgara.document.v1.ExportPurchaseOrderPdfRequest
+	17, // 49: vietgara.document.v1.DocumentService.PrintPurchaseOrderPdf:input_type -> vietgara.document.v1.PrintPurchaseOrderPdfRequest
+	18, // 50: vietgara.document.v1.DocumentService.ExportReceivablesExcel:input_type -> vietgara.document.v1.ExportReceivablesExcelRequest
+	19, // 51: vietgara.document.v1.DocumentService.ExportReceivableReconciliationExcel:input_type -> vietgara.document.v1.ExportReceivableReconciliationExcelRequest
+	20, // 52: vietgara.document.v1.DocumentService.ExportSupplierPayablesExcel:input_type -> vietgara.document.v1.ExportSupplierPayablesExcelRequest
+	32, // 53: vietgara.document.v1.DocumentService.ListPrinters:input_type -> vietgara.document.v1.ListPrintersRequest
+	34, // 54: vietgara.document.v1.DocumentService.CreatePrinter:input_type -> vietgara.document.v1.CreatePrinterRequest
+	35, // 55: vietgara.document.v1.DocumentService.UpdatePrinter:input_type -> vietgara.document.v1.UpdatePrinterRequest
+	36, // 56: vietgara.document.v1.DocumentService.DeletePrinter:input_type -> vietgara.document.v1.DeletePrinterRequest
+	38, // 57: vietgara.document.v1.DocumentService.PrintPrinterTestPage:input_type -> vietgara.document.v1.PrintPrinterTestPageRequest
+	39, // 58: vietgara.document.v1.DocumentService.PrintQuoteEscPos:input_type -> vietgara.document.v1.PrintQuoteEscPosRequest
+	40, // 59: vietgara.document.v1.DocumentService.PrintPaymentVoucherEscPos:input_type -> vietgara.document.v1.PrintPaymentVoucherEscPosRequest
+	42, // 60: vietgara.document.v1.DocumentService.PrintPartLabels:input_type -> vietgara.document.v1.PrintPartLabelsRequest
+	45, // 61: vietgara.document.v1.DocumentService.ExportQuotePdf:output_type -> google.api.HttpBody
+	45, // 62: vietgara.document.v1.DocumentService.ExportRepairOrderPdf:output_type -> google.api.HttpBody
+	45, // 63: vietgara.document.v1.DocumentService.ExportSettlementReceiptPdf:output_type -> google.api.HttpBody
+	45, // 64: vietgara.document.v1.DocumentService.ExportPaymentVoucherPdf:output_type -> google.api.HttpBody
+	45, // 65: vietgara.document.v1.DocumentService.ExportStockMovementsExcel:output_type -> google.api.HttpBody
+	45, // 66: vietgara.document.v1.DocumentService.ExportRevenueExcel:output_type -> google.api.HttpBody
+	45, // 67: vietgara.document.v1.DocumentService.ExportGoodsReceiptPdf:output_type -> google.api.HttpBody
+	45, // 68: vietgara.document.v1.DocumentService.ExportStockIssuePdf:output_type -> google.api.HttpBody
+	45, // 69: vietgara.document.v1.DocumentService.ExportStockCountExcel:output_type -> google.api.HttpBody
+	45, // 70: vietgara.document.v1.DocumentService.ExportPurchasesExcel:output_type -> google.api.HttpBody
+	45, // 71: vietgara.document.v1.DocumentService.ExportStockValuationExcel:output_type -> google.api.HttpBody
+	23, // 72: vietgara.document.v1.DocumentService.GetPrintSettings:output_type -> vietgara.document.v1.GetPrintSettingsResponse
+	21, // 73: vietgara.document.v1.DocumentService.UpdatePrintSetting:output_type -> vietgara.document.v1.PrintSetting
+	45, // 74: vietgara.document.v1.DocumentService.PrintQuotePdf:output_type -> google.api.HttpBody
+	45, // 75: vietgara.document.v1.DocumentService.PrintRepairOrderPdf:output_type -> google.api.HttpBody
+	45, // 76: vietgara.document.v1.DocumentService.PrintSettlementReceiptPdf:output_type -> google.api.HttpBody
+	45, // 77: vietgara.document.v1.DocumentService.PrintPaymentVoucherPdf:output_type -> google.api.HttpBody
+	45, // 78: vietgara.document.v1.DocumentService.PrintGoodsReceiptPdf:output_type -> google.api.HttpBody
+	45, // 79: vietgara.document.v1.DocumentService.PrintStockIssuePdf:output_type -> google.api.HttpBody
+	45, // 80: vietgara.document.v1.DocumentService.ExportPaymentOutVoucherPdf:output_type -> google.api.HttpBody
+	45, // 81: vietgara.document.v1.DocumentService.PrintPaymentOutVoucherPdf:output_type -> google.api.HttpBody
+	45, // 82: vietgara.document.v1.DocumentService.ExportPurchaseOrderPdf:output_type -> google.api.HttpBody
+	45, // 83: vietgara.document.v1.DocumentService.PrintPurchaseOrderPdf:output_type -> google.api.HttpBody
+	45, // 84: vietgara.document.v1.DocumentService.ExportReceivablesExcel:output_type -> google.api.HttpBody
+	45, // 85: vietgara.document.v1.DocumentService.ExportReceivableReconciliationExcel:output_type -> google.api.HttpBody
+	45, // 86: vietgara.document.v1.DocumentService.ExportSupplierPayablesExcel:output_type -> google.api.HttpBody
+	33, // 87: vietgara.document.v1.DocumentService.ListPrinters:output_type -> vietgara.document.v1.ListPrintersResponse
+	31, // 88: vietgara.document.v1.DocumentService.CreatePrinter:output_type -> vietgara.document.v1.Printer
+	31, // 89: vietgara.document.v1.DocumentService.UpdatePrinter:output_type -> vietgara.document.v1.Printer
+	37, // 90: vietgara.document.v1.DocumentService.DeletePrinter:output_type -> vietgara.document.v1.DeletePrinterResponse
+	45, // 91: vietgara.document.v1.DocumentService.PrintPrinterTestPage:output_type -> google.api.HttpBody
+	45, // 92: vietgara.document.v1.DocumentService.PrintQuoteEscPos:output_type -> google.api.HttpBody
+	45, // 93: vietgara.document.v1.DocumentService.PrintPaymentVoucherEscPos:output_type -> google.api.HttpBody
+	45, // 94: vietgara.document.v1.DocumentService.PrintPartLabels:output_type -> google.api.HttpBody
+	61, // [61:95] is the sub-list for method output_type
+	27, // [27:61] is the sub-list for method input_type
+	27, // [27:27] is the sub-list for extension type_name
+	27, // [27:27] is the sub-list for extension extendee
+	0,  // [0:27] is the sub-list for field type_name
 }
 
 func init() { file_vietgara_document_v1_document_proto_init() }
