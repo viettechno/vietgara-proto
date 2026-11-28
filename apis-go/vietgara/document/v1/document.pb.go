@@ -946,7 +946,8 @@ type PrintPaymentOutVoucherPdfRequest struct {
 	GarageId  string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	VoucherId string                 `protobuf:"bytes,2,opt,name=voucher_id,json=voucherId,proto3" json:"voucher_id,omitempty"`
 	// Release 13.0: the page size of the printer the client sends to, A4 or
-	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+	// empty); unspecified prints on the
 	// garage's print setting. A size the document has no template for, a roll
 	// and a label are refused (INVALID_ARGUMENT).
 	PaperSize     PaperSize `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
@@ -1010,7 +1011,8 @@ type PrintPurchaseOrderPdfRequest struct {
 	GarageId        string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	PurchaseOrderId string                 `protobuf:"bytes,2,opt,name=purchase_order_id,json=purchaseOrderId,proto3" json:"purchase_order_id,omitempty"`
 	// Release 13.0: the page size of the printer the client sends to, A4 or
-	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+	// empty); unspecified prints on the
 	// garage's print setting. A size the document has no template for, a roll
 	// and a label are refused (INVALID_ARGUMENT).
 	PaperSize     PaperSize `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
@@ -1506,7 +1508,8 @@ type PrintQuotePdfRequest struct {
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	QuoteId  string                 `protobuf:"bytes,2,opt,name=quote_id,json=quoteId,proto3" json:"quote_id,omitempty"`
 	// Release 13.0: the page size of the printer the client sends to, A4 or
-	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+	// empty); unspecified prints on the
 	// garage's print setting. A size the document has no template for, a roll
 	// and a label are refused (INVALID_ARGUMENT).
 	PaperSize     PaperSize `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
@@ -1570,7 +1573,8 @@ type PrintRepairOrderPdfRequest struct {
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	RepairOrderId string                 `protobuf:"bytes,2,opt,name=repair_order_id,json=repairOrderId,proto3" json:"repair_order_id,omitempty"`
 	// Release 13.0: the page size of the printer the client sends to, A4 or
-	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+	// empty); unspecified prints on the
 	// garage's print setting. A size the document has no template for, a roll
 	// and a label are refused (INVALID_ARGUMENT).
 	PaperSize     PaperSize `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
@@ -1634,7 +1638,8 @@ type PrintSettlementReceiptPdfRequest struct {
 	GarageId     string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	SettlementId string                 `protobuf:"bytes,2,opt,name=settlement_id,json=settlementId,proto3" json:"settlement_id,omitempty"`
 	// Release 13.0: the page size of the printer the client sends to, A4 or
-	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+	// empty); unspecified prints on the
 	// garage's print setting. A size the document has no template for, a roll
 	// and a label are refused (INVALID_ARGUMENT).
 	PaperSize     PaperSize `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
@@ -1699,7 +1704,8 @@ type PrintPaymentVoucherPdfRequest struct {
 	SettlementId string                 `protobuf:"bytes,2,opt,name=settlement_id,json=settlementId,proto3" json:"settlement_id,omitempty"`
 	PaymentId    string                 `protobuf:"bytes,3,opt,name=payment_id,json=paymentId,proto3" json:"payment_id,omitempty"`
 	// Release 13.0: the page size of the printer the client sends to, A4 or
-	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+	// empty); unspecified prints on the
 	// garage's print setting. A size the document has no template for, a roll
 	// and a label are refused (INVALID_ARGUMENT).
 	PaperSize     PaperSize `protobuf:"varint,4,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
@@ -1770,7 +1776,8 @@ type PrintGoodsReceiptPdfRequest struct {
 	GarageId       string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	GoodsReceiptId string                 `protobuf:"bytes,2,opt,name=goods_receipt_id,json=goodsReceiptId,proto3" json:"goods_receipt_id,omitempty"`
 	// Release 13.0: the page size of the printer the client sends to, A4 or
-	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+	// empty); unspecified prints on the
 	// garage's print setting. A size the document has no template for, a roll
 	// and a label are refused (INVALID_ARGUMENT).
 	PaperSize     PaperSize `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
@@ -1834,7 +1841,8 @@ type PrintStockIssuePdfRequest struct {
 	GarageId      string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	RepairOrderId string                 `protobuf:"bytes,2,opt,name=repair_order_id,json=repairOrderId,proto3" json:"repair_order_id,omitempty"`
 	// Release 13.0: the page size of the printer the client sends to, A4 or
-	// A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+	// A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+	// empty); unspecified prints on the
 	// garage's print setting. A size the document has no template for, a roll
 	// and a label are refused (INVALID_ARGUMENT).
 	PaperSize     PaperSize `protobuf:"varint,3,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
@@ -2827,7 +2835,7 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\x0fPrinterProtocol\x12 \n" +
 	"\x1cPRINTER_PROTOCOL_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14PRINTER_PROTOCOL_RAW\x10\x01\x12\x18\n" +
-	"\x14PRINTER_PROTOCOL_IPP\x10\x022\xc6.\n" +
+	"\x14PRINTER_PROTOCOL_IPP\x10\x022\xde.\n" +
 	"\x0fDocumentService\x12\x8e\x01\n" +
 	"\x0eExportQuotePdf\x12+.vietgara.document.v1.ExportQuotePdfRequest\x1a\x14.google.api.HttpBody\"9\x82\xd3\xe4\x93\x023\x121/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf\x12\xa8\x01\n" +
 	"\x14ExportRepairOrderPdf\x121.vietgara.document.v1.ExportRepairOrderPdfRequest\x1a\x14.google.api.HttpBody\"G\x82\xd3\xe4\x93\x02A\x12?/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/pdf\x12\xb8\x01\n" +
@@ -2841,17 +2849,17 @@ const file_vietgara_document_v1_document_proto_rawDesc = "" +
 	"\x14ExportPurchasesExcel\x121.vietgara.document.v1.ExportPurchasesExcelRequest\x1a\x14.google.api.HttpBody\";\x82\xd3\xe4\x93\x025\x123/api/v1/garages/{garage_id}/reports/purchases/excel\x12\xac\x01\n" +
 	"\x19ExportStockValuationExcel\x126.vietgara.document.v1.ExportStockValuationExcelRequest\x1a\x14.google.api.HttpBody\"A\x82\xd3\xe4\x93\x02;\x129/api/v1/garages/{garage_id}/reports/stock-valuation/excel\x12\xa5\x01\n" +
 	"\x10GetPrintSettings\x12-.vietgara.document.v1.GetPrintSettingsRequest\x1a..vietgara.document.v1.GetPrintSettingsResponse\"2\x82\xd3\xe4\x93\x02,\x12*/api/v1/garages/{garage_id}/print-settings\x12\xb0\x01\n" +
-	"\x12UpdatePrintSetting\x12/.vietgara.document.v1.UpdatePrintSettingRequest\x1a\".vietgara.document.v1.PrintSetting\"E\x82\xd3\xe4\x93\x02?:\x01*\x1a:/api/v1/garages/{garage_id}/print-settings/{document_type}\x12\x92\x01\n" +
-	"\rPrintQuotePdf\x12*.vietgara.document.v1.PrintQuotePdfRequest\x1a\x14.google.api.HttpBody\"?\x82\xd3\xe4\x93\x029\"7/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf:print\x12\xac\x01\n" +
-	"\x13PrintRepairOrderPdf\x120.vietgara.document.v1.PrintRepairOrderPdfRequest\x1a\x14.google.api.HttpBody\"M\x82\xd3\xe4\x93\x02G\"E/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/pdf:print\x12\xbc\x01\n" +
-	"\x19PrintSettlementReceiptPdf\x126.vietgara.document.v1.PrintSettlementReceiptPdfRequest\x1a\x14.google.api.HttpBody\"Q\x82\xd3\xe4\x93\x02K\"I/api/v1/garages/{garage_id}/settlements/{settlement_id}/receipt-pdf:print\x12\xcc\x01\n" +
-	"\x16PrintPaymentVoucherPdf\x123.vietgara.document.v1.PrintPaymentVoucherPdfRequest\x1a\x14.google.api.HttpBody\"g\x82\xd3\xe4\x93\x02a\"_/api/v1/garages/{garage_id}/settlements/{settlement_id}/payments/{payment_id}/voucher-pdf:print\x12\xb0\x01\n" +
-	"\x14PrintGoodsReceiptPdf\x121.vietgara.document.v1.PrintGoodsReceiptPdfRequest\x1a\x14.google.api.HttpBody\"O\x82\xd3\xe4\x93\x02I\"G/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}/pdf:print\x12\xb6\x01\n" +
-	"\x12PrintStockIssuePdf\x12/.vietgara.document.v1.PrintStockIssuePdfRequest\x1a\x14.google.api.HttpBody\"Y\x82\xd3\xe4\x93\x02S\"Q/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue/pdf:print\x12\xb6\x01\n" +
-	"\x1aExportPaymentOutVoucherPdf\x127.vietgara.document.v1.ExportPaymentOutVoucherPdfRequest\x1a\x14.google.api.HttpBody\"I\x82\xd3\xe4\x93\x02C\x12A/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}/pdf\x12\xba\x01\n" +
-	"\x19PrintPaymentOutVoucherPdf\x126.vietgara.document.v1.PrintPaymentOutVoucherPdfRequest\x1a\x14.google.api.HttpBody\"O\x82\xd3\xe4\x93\x02I\"G/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}/pdf:print\x12\xb0\x01\n" +
-	"\x16ExportPurchaseOrderPdf\x123.vietgara.document.v1.ExportPurchaseOrderPdfRequest\x1a\x14.google.api.HttpBody\"K\x82\xd3\xe4\x93\x02E\x12C/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}/pdf\x12\xb4\x01\n" +
-	"\x15PrintPurchaseOrderPdf\x122.vietgara.document.v1.PrintPurchaseOrderPdfRequest\x1a\x14.google.api.HttpBody\"Q\x82\xd3\xe4\x93\x02K\"I/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}/pdf:print\x12\xa2\x01\n" +
+	"\x12UpdatePrintSetting\x12/.vietgara.document.v1.UpdatePrintSettingRequest\x1a\".vietgara.document.v1.PrintSetting\"E\x82\xd3\xe4\x93\x02?:\x01*\x1a:/api/v1/garages/{garage_id}/print-settings/{document_type}\x12\x95\x01\n" +
+	"\rPrintQuotePdf\x12*.vietgara.document.v1.PrintQuotePdfRequest\x1a\x14.google.api.HttpBody\"B\x82\xd3\xe4\x93\x02<:\x01*\"7/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf:print\x12\xaf\x01\n" +
+	"\x13PrintRepairOrderPdf\x120.vietgara.document.v1.PrintRepairOrderPdfRequest\x1a\x14.google.api.HttpBody\"P\x82\xd3\xe4\x93\x02J:\x01*\"E/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/pdf:print\x12\xbf\x01\n" +
+	"\x19PrintSettlementReceiptPdf\x126.vietgara.document.v1.PrintSettlementReceiptPdfRequest\x1a\x14.google.api.HttpBody\"T\x82\xd3\xe4\x93\x02N:\x01*\"I/api/v1/garages/{garage_id}/settlements/{settlement_id}/receipt-pdf:print\x12\xcf\x01\n" +
+	"\x16PrintPaymentVoucherPdf\x123.vietgara.document.v1.PrintPaymentVoucherPdfRequest\x1a\x14.google.api.HttpBody\"j\x82\xd3\xe4\x93\x02d:\x01*\"_/api/v1/garages/{garage_id}/settlements/{settlement_id}/payments/{payment_id}/voucher-pdf:print\x12\xb3\x01\n" +
+	"\x14PrintGoodsReceiptPdf\x121.vietgara.document.v1.PrintGoodsReceiptPdfRequest\x1a\x14.google.api.HttpBody\"R\x82\xd3\xe4\x93\x02L:\x01*\"G/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}/pdf:print\x12\xb9\x01\n" +
+	"\x12PrintStockIssuePdf\x12/.vietgara.document.v1.PrintStockIssuePdfRequest\x1a\x14.google.api.HttpBody\"\\\x82\xd3\xe4\x93\x02V:\x01*\"Q/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue/pdf:print\x12\xb6\x01\n" +
+	"\x1aExportPaymentOutVoucherPdf\x127.vietgara.document.v1.ExportPaymentOutVoucherPdfRequest\x1a\x14.google.api.HttpBody\"I\x82\xd3\xe4\x93\x02C\x12A/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}/pdf\x12\xbd\x01\n" +
+	"\x19PrintPaymentOutVoucherPdf\x126.vietgara.document.v1.PrintPaymentOutVoucherPdfRequest\x1a\x14.google.api.HttpBody\"R\x82\xd3\xe4\x93\x02L:\x01*\"G/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}/pdf:print\x12\xb0\x01\n" +
+	"\x16ExportPurchaseOrderPdf\x123.vietgara.document.v1.ExportPurchaseOrderPdfRequest\x1a\x14.google.api.HttpBody\"K\x82\xd3\xe4\x93\x02E\x12C/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}/pdf\x12\xb7\x01\n" +
+	"\x15PrintPurchaseOrderPdf\x122.vietgara.document.v1.PrintPurchaseOrderPdfRequest\x1a\x14.google.api.HttpBody\"T\x82\xd3\xe4\x93\x02N:\x01*\"I/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}/pdf:print\x12\xa2\x01\n" +
 	"\x16ExportReceivablesExcel\x123.vietgara.document.v1.ExportReceivablesExcelRequest\x1a\x14.google.api.HttpBody\"=\x82\xd3\xe4\x93\x027\x125/api/v1/garages/{garage_id}/reports/receivables/excel\x12\xca\x01\n" +
 	"#ExportReceivableReconciliationExcel\x12@.vietgara.document.v1.ExportReceivableReconciliationExcelRequest\x1a\x14.google.api.HttpBody\"K\x82\xd3\xe4\x93\x02E\x12C/api/v1/garages/{garage_id}/reports/receivable-reconciliation/excel\x12\xb2\x01\n" +
 	"\x1bExportSupplierPayablesExcel\x128.vietgara.document.v1.ExportSupplierPayablesExcelRequest\x1a\x14.google.api.HttpBody\"C\x82\xd3\xe4\x93\x02=\x12;/api/v1/garages/{garage_id}/reports/supplier-payables/excel\x12\x93\x01\n" +

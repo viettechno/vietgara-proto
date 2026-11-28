@@ -91,7 +91,8 @@ message PrintPaymentOutVoucherPdfRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string voucher_id = 2 [(google.api.field_behavior) = REQUIRED];
   // Release 13.0: the page size of the printer the client sends to, A4 or
-  // A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+  // A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+  // empty); unspecified prints on the
   // garage's print setting. A size the document has no template for, a roll
   // and a label are refused (INVALID_ARGUMENT).
   PaperSize paper_size = 3;
@@ -101,7 +102,8 @@ message PrintPurchaseOrderPdfRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string purchase_order_id = 2 [(google.api.field_behavior) = REQUIRED];
   // Release 13.0: the page size of the printer the client sends to, A4 or
-  // A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+  // A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+  // empty); unspecified prints on the
   // garage's print setting. A size the document has no template for, a roll
   // and a label are refused (INVALID_ARGUMENT).
   PaperSize paper_size = 3;
@@ -198,7 +200,8 @@ message PrintQuotePdfRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string quote_id = 2 [(google.api.field_behavior) = REQUIRED];
   // Release 13.0: the page size of the printer the client sends to, A4 or
-  // A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+  // A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+  // empty); unspecified prints on the
   // garage's print setting. A size the document has no template for, a roll
   // and a label are refused (INVALID_ARGUMENT).
   PaperSize paper_size = 3;
@@ -208,7 +211,8 @@ message PrintRepairOrderPdfRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
   // Release 13.0: the page size of the printer the client sends to, A4 or
-  // A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+  // A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+  // empty); unspecified prints on the
   // garage's print setting. A size the document has no template for, a roll
   // and a label are refused (INVALID_ARGUMENT).
   PaperSize paper_size = 3;
@@ -218,7 +222,8 @@ message PrintSettlementReceiptPdfRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
   // Release 13.0: the page size of the printer the client sends to, A4 or
-  // A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+  // A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+  // empty); unspecified prints on the
   // garage's print setting. A size the document has no template for, a roll
   // and a label are refused (INVALID_ARGUMENT).
   PaperSize paper_size = 3;
@@ -229,7 +234,8 @@ message PrintPaymentVoucherPdfRequest {
   string settlement_id = 2 [(google.api.field_behavior) = REQUIRED];
   string payment_id = 3 [(google.api.field_behavior) = REQUIRED];
   // Release 13.0: the page size of the printer the client sends to, A4 or
-  // A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+  // A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+  // empty); unspecified prints on the
   // garage's print setting. A size the document has no template for, a roll
   // and a label are refused (INVALID_ARGUMENT).
   PaperSize paper_size = 4;
@@ -239,7 +245,8 @@ message PrintGoodsReceiptPdfRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string goods_receipt_id = 2 [(google.api.field_behavior) = REQUIRED];
   // Release 13.0: the page size of the printer the client sends to, A4 or
-  // A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+  // A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+  // empty); unspecified prints on the
   // garage's print setting. A size the document has no template for, a roll
   // and a label are refused (INVALID_ARGUMENT).
   PaperSize paper_size = 3;
@@ -249,7 +256,8 @@ message PrintStockIssuePdfRequest {
   string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
   string repair_order_id = 2 [(google.api.field_behavior) = REQUIRED];
   // Release 13.0: the page size of the printer the client sends to, A4 or
-  // A5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the
+  // A5, in the JSON body ({"paperSize": "PAPER_SIZE_A5"}; the body may be
+  // empty); unspecified prints on the
   // garage's print setting. A size the document has no template for, a roll
   // and a label are refused (INVALID_ARGUMENT).
   PaperSize paper_size = 3;
@@ -465,35 +473,53 @@ service DocumentService {
   }
 
   // FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching
-  // Export*Pdf RPC (the paper size of the request's paper_size, the page
-  // size of the printer, else the garage's setting; the template version of
+  // Export*Pdf RPC (the request's paper_size, the page size of the client's
+  // printer, else the garage's print setting; the template version of
   // the document's first print on that paper size, the newest version for a
   // size it was never printed on), add the copy mark of a
   // reprint (after a print on any paper) when the garage turned it on, and
   // write the print log. Each needs the permission of the
   // data it renders.
   rpc PrintQuotePdf(PrintQuotePdfRequest) returns (google.api.HttpBody) {
-    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf:print"};
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/quotes/{quote_id}/pdf:print"
+      body: "*"
+    };
   }
 
   rpc PrintRepairOrderPdf(PrintRepairOrderPdfRequest) returns (google.api.HttpBody) {
-    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/pdf:print"};
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/pdf:print"
+      body: "*"
+    };
   }
 
   rpc PrintSettlementReceiptPdf(PrintSettlementReceiptPdfRequest) returns (google.api.HttpBody) {
-    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/settlements/{settlement_id}/receipt-pdf:print"};
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/settlements/{settlement_id}/receipt-pdf:print"
+      body: "*"
+    };
   }
 
   rpc PrintPaymentVoucherPdf(PrintPaymentVoucherPdfRequest) returns (google.api.HttpBody) {
-    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/settlements/{settlement_id}/payments/{payment_id}/voucher-pdf:print"};
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/settlements/{settlement_id}/payments/{payment_id}/voucher-pdf:print"
+      body: "*"
+    };
   }
 
   rpc PrintGoodsReceiptPdf(PrintGoodsReceiptPdfRequest) returns (google.api.HttpBody) {
-    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}/pdf:print"};
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/goods-receipts/{goods_receipt_id}/pdf:print"
+      body: "*"
+    };
   }
 
   rpc PrintStockIssuePdf(PrintStockIssuePdfRequest) returns (google.api.HttpBody) {
-    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue/pdf:print"};
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/repair-orders/{repair_order_id}/stock-issue/pdf:print"
+      body: "*"
+    };
   }
 
   // FR-BIL-07 (Release 11.0): a payment-out voucher (phiếu chi) as a PDF.
@@ -502,7 +528,10 @@ service DocumentService {
   }
 
   rpc PrintPaymentOutVoucherPdf(PrintPaymentOutVoucherPdfRequest) returns (google.api.HttpBody) {
-    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}/pdf:print"};
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/payment-out-vouchers/{voucher_id}/pdf:print"
+      body: "*"
+    };
   }
 
   // FR-INV-16 (Release 11.0): a purchase order as a PDF.
@@ -511,7 +540,10 @@ service DocumentService {
   }
 
   rpc PrintPurchaseOrderPdf(PrintPurchaseOrderPdfRequest) returns (google.api.HttpBody) {
-    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}/pdf:print"};
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/purchase-orders/{purchase_order_id}/pdf:print"
+      body: "*"
+    };
   }
 
   // FR-DOC-02 (Release 11.0): the receivables list

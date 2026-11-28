@@ -3367,18 +3367,12 @@
             "type": "string"
           },
           {
-            "name": "paperSize",
-            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "PAPER_SIZE_A4",
-              "PAPER_SIZE_A5",
-              "PAPER_SIZE_K80",
-              "PAPER_SIZE_K57",
-              "PAPER_SIZE_LABEL_50X30"
-            ]
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintGoodsReceiptPdfBody"
+            }
           }
         ],
         "tags": [
@@ -5136,18 +5130,12 @@
             "type": "string"
           },
           {
-            "name": "paperSize",
-            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "PAPER_SIZE_A4",
-              "PAPER_SIZE_A5",
-              "PAPER_SIZE_K80",
-              "PAPER_SIZE_K57",
-              "PAPER_SIZE_LABEL_50X30"
-            ]
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintPaymentOutVoucherPdfBody"
+            }
           }
         ],
         "tags": [
@@ -5726,18 +5714,12 @@
             "type": "string"
           },
           {
-            "name": "paperSize",
-            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "PAPER_SIZE_A4",
-              "PAPER_SIZE_A5",
-              "PAPER_SIZE_K80",
-              "PAPER_SIZE_K57",
-              "PAPER_SIZE_LABEL_50X30"
-            ]
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintPurchaseOrderPdfBody"
+            }
           }
         ],
         "tags": [
@@ -6359,7 +6341,7 @@
     },
     "/api/v1/garages/{garageId}/quotes/{quoteId}/pdf:print": {
       "post": {
-        "summary": "FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching\nExport*Pdf RPC (the paper size of the request's paper_size, the page\nsize of the printer, else the garage's setting; the template version of\nthe document's first print on that paper size, the newest version for a\nsize it was never printed on), add the copy mark of a\nreprint (after a print on any paper) when the garage turned it on, and\nwrite the print log. Each needs the permission of the\ndata it renders.",
+        "summary": "FR-DOC-05 (Release 10.0): the Print* RPCs render like the matching\nExport*Pdf RPC (the request's paper_size, the page size of the client's\nprinter, else the garage's print setting; the template version of\nthe document's first print on that paper size, the newest version for a\nsize it was never printed on), add the copy mark of a\nreprint (after a print on any paper) when the garage turned it on, and\nwrite the print log. Each needs the permission of the\ndata it renders.",
         "operationId": "DocumentService_PrintQuotePdf",
         "responses": {
           "200": {
@@ -6389,18 +6371,12 @@
             "type": "string"
           },
           {
-            "name": "paperSize",
-            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "PAPER_SIZE_A4",
-              "PAPER_SIZE_A5",
-              "PAPER_SIZE_K80",
-              "PAPER_SIZE_K57",
-              "PAPER_SIZE_LABEL_50X30"
-            ]
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintQuotePdfBody"
+            }
           }
         ],
         "tags": [
@@ -7153,18 +7129,12 @@
             "type": "string"
           },
           {
-            "name": "paperSize",
-            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "PAPER_SIZE_A4",
-              "PAPER_SIZE_A5",
-              "PAPER_SIZE_K80",
-              "PAPER_SIZE_K57",
-              "PAPER_SIZE_LABEL_50X30"
-            ]
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintRepairOrderPdfBody"
+            }
           }
         ],
         "tags": [
@@ -7314,18 +7284,12 @@
             "type": "string"
           },
           {
-            "name": "paperSize",
-            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "PAPER_SIZE_A4",
-              "PAPER_SIZE_A5",
-              "PAPER_SIZE_K80",
-              "PAPER_SIZE_K57",
-              "PAPER_SIZE_LABEL_50X30"
-            ]
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintStockIssuePdfBody"
+            }
           }
         ],
         "tags": [
@@ -8390,18 +8354,12 @@
             "type": "string"
           },
           {
-            "name": "paperSize",
-            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "PAPER_SIZE_A4",
-              "PAPER_SIZE_A5",
-              "PAPER_SIZE_K80",
-              "PAPER_SIZE_K57",
-              "PAPER_SIZE_LABEL_50X30"
-            ]
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintPaymentVoucherPdfBody"
+            }
           }
         ],
         "tags": [
@@ -8528,18 +8486,12 @@
             "type": "string"
           },
           {
-            "name": "paperSize",
-            "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the query (?paperSize=PAPER_SIZE_A5); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT).",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "PAPER_SIZE_A4",
-              "PAPER_SIZE_A5",
-              "PAPER_SIZE_K80",
-              "PAPER_SIZE_K57",
-              "PAPER_SIZE_LABEL_50X30"
-            ]
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DocumentServicePrintSettlementReceiptPdfBody"
+            }
           }
         ],
         "tags": [
@@ -12411,6 +12363,15 @@
         "type"
       ]
     },
+    "DocumentServicePrintGoodsReceiptPdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
     "DocumentServicePrintPartLabelsBody": {
       "type": "object",
       "properties": {
@@ -12432,6 +12393,15 @@
         "parts"
       ]
     },
+    "DocumentServicePrintPaymentOutVoucherPdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
     "DocumentServicePrintPaymentVoucherEscPosBody": {
       "type": "object",
       "properties": {
@@ -12444,6 +12414,24 @@
         "paperSize"
       ]
     },
+    "DocumentServicePrintPaymentVoucherPdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
+    "DocumentServicePrintPurchaseOrderPdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
     "DocumentServicePrintQuoteEscPosBody": {
       "type": "object",
       "properties": {
@@ -12455,6 +12443,42 @@
       "required": [
         "paperSize"
       ]
+    },
+    "DocumentServicePrintQuotePdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
+    "DocumentServicePrintRepairOrderPdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
+    "DocumentServicePrintSettlementReceiptPdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
+    },
+    "DocumentServicePrintStockIssuePdfBody": {
+      "type": "object",
+      "properties": {
+        "paperSize": {
+          "$ref": "#/definitions/v1PaperSize",
+          "description": "Release 13.0: the page size of the printer the client sends to, A4 or\nA5, in the JSON body ({\"paperSize\": \"PAPER_SIZE_A5\"}; the body may be\nempty); unspecified prints on the\ngarage's print setting. A size the document has no template for, a roll\nand a label are refused (INVALID_ARGUMENT)."
+        }
+      }
     },
     "DocumentServiceUpdatePrintSettingBody": {
       "type": "object",
