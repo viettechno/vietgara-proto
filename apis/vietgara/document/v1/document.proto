@@ -272,19 +272,28 @@ enum PrinterProtocol {
   PRINTER_PROTOCOL_RAW = 1;
   // A PDF over IPP (HTTP), port 631 by default: A4 and A5 printers.
   PRINTER_PROTOCOL_IPP = 2;
+  // Release 13.1 (FR-DOC-08): a printer of a garage PC, printed through the
+  // print agent installed there (CreatePrintJob). The server sends the job
+  // to the agent over the agent's own connection; host, port and path are
+  // empty.
+  PRINTER_PROTOCOL_AGENT = 3;
 }
 
 // Printer is a network printer a garage saved (FR-DOC-07, Release 13.0). The
-// server never connects to it: the apps on the garage's network do.
+// server never connects to it: the apps on the garage's network do. Since
+// Release 13.1 it may also be a printer of a print agent (protocol AGENT),
+// which the server prints to through the agent's connection.
 message Printer {
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // 1 to 60 characters, unique in the garage without regard to case.
   string name = 2 [(google.api.field_behavior) = REQUIRED];
   PrinterProtocol protocol = 3 [(google.api.field_behavior) = REQUIRED];
   // An IPv4 address, an IPv6 address without brackets (clients add them
-  // when building a URL), or a host name; no scheme or port.
-  string host = 4 [(google.api.field_behavior) = REQUIRED];
-  // 1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP).
+  // when building a URL), or a host name; no scheme or port. Required for
+  // RAW and IPP; an AGENT printer has none (a host is refused).
+  string host = 4;
+  // 1 to 65535; 0 means the protocol's default (9100 raw, 631 IPP). An
+  // AGENT printer has none (0).
   int32 port = 5;
   // IPP only: the printer's resource path, "ipp/print" when empty; a
   // leading "/" is removed. Letters, digits and - . _ ~ /, at most 200
@@ -293,14 +302,16 @@ message Printer {
   string path = 6;
   // The paper loaded in the printer. Raw, and required there: K80, K57 or
   // LABEL_50X30. IPP: A4 or A5, and the PDF prints with that size's
-  // template; unspecified prints on the garage's paper setting. Another
-  // size is refused (INVALID_ARGUMENT).
+  // template; unspecified prints on the garage's paper setting. AGENT: any
+  // of these, ESC/POS on a roll or label, a PDF otherwise. Another size is
+  // refused (INVALID_ARGUMENT).
   PaperSize paper_size = 7;
   // The documents the apps send to this printer first. A K80 or K57 printer
   // takes QUOTE and PAYMENT_VOUCHER, a label printer PART_LABEL, an IPP
   // printer any document but PART_LABEL that has a template for its page
   // size (an A5 printer: those with an A5 template; one without a size: any,
-  // printed on the garage's setting). The types are checked again when the
+  // printed on the garage's setting); an AGENT printer as RAW for a roll or
+  // label, as IPP for a page size. The types are checked again when the
   // printer is updated: changing its size to one a listed type has no
   // template for is refused (INVALID_ARGUMENT). UNSPECIFIED is refused
   // (INVALID_ARGUMENT) and a repeated type is kept once, in the order of the
@@ -310,6 +321,14 @@ message Printer {
   repeated DocumentType document_types = 8;
   google.protobuf.Timestamp created_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp updated_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // AGENT only, and required there: the print agent (PrintAgent.id) of the
+  // garage whose PC has the printer. Removing the agent removes its
+  // printers.
+  string agent_id = 11;
+  // AGENT only, and required there: the printer's name in the PC's
+  // operating system, as the agent reports it (PrintAgentPrinter.name), 1 to
+  // 200 characters; each printer of an agent is saved once.
+  string queue = 12;
 }
 
 message ListPrintersRequest {
@@ -383,6 +402,171 @@ message PrintPartLabelsRequest {
   // the base unit's id are one unit), at most 300 labels in all. A client printing the labels of a
   // goods receipt fills them from its lines.
   repeated PartLabelCopies parts = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+// PrintAgent is a print agent (FR-DOC-08, Release 13.1): a small program on
+// a garage PC that prints the jobs of the web console and the apps on the
+// PC's printers without a dialog. It is paired once with a pairing code
+// (CreatePrintAgent) and then keeps an outbound WebSocket to VietGara,
+// authenticated by its own key; it never opens a port.
+message PrintAgent {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // 1 to 60 characters, unique in the garage without regard to case.
+  string name = 2 [(google.api.field_behavior) = REQUIRED];
+  // Whether the agent was paired: it has a key and has connected at least
+  // once.
+  bool paired = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // While not paired: when the pairing code stops working.
+  google.protobuf.Timestamp pairing_expires_at = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Whether the agent is connected now.
+  bool connected = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // When the agent was last connected.
+  google.protobuf.Timestamp last_seen_at = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The PC, as the agent reports it: its name, its operating system
+  // ("windows/amd64") and the agent's version.
+  string hostname = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string os = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string version = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The printers of the PC, as the agent last reported them, by name.
+  repeated PrintAgentPrinter printers = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp updated_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// PrintAgentPrinter is a printer of the agent's PC.
+message PrintAgentPrinter {
+  // The printer's name in the operating system (Printer.queue).
+  string name = 1;
+  // Whether it is the PC's default printer.
+  bool is_default = 2;
+}
+
+message ListPrintAgentsRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ListPrintAgentsResponse {
+  // Every agent of the garage, by name; at most 10.
+  repeated PrintAgent agents = 1;
+}
+
+message CreatePrintAgentRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  PrintAgent agent = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// CreatePrintAgentResponse is an agent with a new pairing code.
+message CreatePrintAgentResponse {
+  PrintAgent agent = 1;
+  // Shown once: 8 letters and digits as XXXX-XXXX, for the agent's setup
+  // on the PC (PairPrintAgent); single use, valid for 15 minutes.
+  string pairing_code = 2;
+}
+
+message IssuePrintAgentPairingCodeRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string agent_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeletePrintAgentRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string agent_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeletePrintAgentResponse {}
+
+// PrintJobStatus is where a print job is.
+enum PrintJobStatus {
+  PRINT_JOB_STATUS_UNSPECIFIED = 0;
+  // Waiting for the agent: it is not connected, or has not been sent the job
+  // yet.
+  PRINT_JOB_STATUS_QUEUED = 1;
+  // Sent to the agent, which has not answered yet.
+  PRINT_JOB_STATUS_SENT = 2;
+  // The PC's printer took the job.
+  PRINT_JOB_STATUS_PRINTED = 3;
+  // The agent could not print it; PrintJob.error says why.
+  PRINT_JOB_STATUS_FAILED = 4;
+  // Not printed within an hour, so never printed: a voucher should not come
+  // out of the printer long after it was asked for.
+  PRINT_JOB_STATUS_EXPIRED = 5;
+}
+
+// PrintJob is a print sent to a print agent's printer.
+message PrintJob {
+  string id = 1;
+  string printer_id = 2;
+  // The printer's name when the job was created.
+  string printer_name = 3;
+  // The document printed; UNSPECIFIED for a test page.
+  DocumentType document_type = 4;
+  PrintJobStatus status = 5;
+  // FAILED: the agent's message (from the PC's spooler or PDF printer).
+  string error = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+// PrintJobPaymentVoucher names one payment voucher of a settlement.
+message PrintJobPaymentVoucher {
+  string settlement_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string payment_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// PrintJobPartLabels are the labels of a label print (PrintPartLabels).
+message PrintJobPartLabels {
+  repeated PartLabelCopies parts = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// PrintJobTestPage is the printer's test page.
+message PrintJobTestPage {}
+
+message CreatePrintJobRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // An AGENT printer of the garage.
+  string printer_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // What to print, in the JSON body ({"quoteId": "…"}). Exactly one is
+  // required.
+  oneof document {
+    string quote_id = 3;
+    string repair_order_id = 4;
+    // The settlement receipt of this settlement.
+    string settlement_id = 5;
+    PrintJobPaymentVoucher payment_voucher = 6;
+    string goods_receipt_id = 7;
+    // The stock issue of this repair order.
+    string stock_issue_repair_order_id = 8;
+    string payment_out_voucher_id = 9;
+    string purchase_order_id = 10;
+    PrintJobPartLabels part_labels = 11;
+    PrintJobTestPage test_page = 12;
+  }
+}
+
+message GetPrintJobRequest {
+  string garage_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string job_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PairPrintAgentRequest {
+  // The code shown when the agent was created, with or without the dash and
+  // in any case.
+  string pairing_code = 1 [(google.api.field_behavior) = REQUIRED];
+  // The PC: its name, its operating system ("windows/amd64") and the
+  // agent's version, at most 253, 40 and 40 characters.
+  string hostname = 2;
+  string os = 3;
+  string version = 4;
+}
+
+message PairPrintAgentResponse {
+  // The agent's secret key, returned once: the agent keeps it and sends it
+  // as "Authorization: Bearer <key>" when it connects. VietGara stores only
+  // its hash.
+  string agent_key = 1;
+  string agent_id = 2;
+  string agent_name = 3;
+  string garage_name = 4;
 }
 
 // DocumentService renders PDFs and Excel reports on request (FRD 3.13).
@@ -647,6 +831,81 @@ service DocumentService {
   rpc PrintPartLabels(PrintPartLabelsRequest) returns (google.api.HttpBody) {
     option (google.api.http) = {
       post: "/api/v1/garages/{garage_id}/part-labels:print"
+      body: "*"
+    };
+  }
+
+  // FR-DOC-08 (Release 13.1): the garage's print agents, by name, with the
+  // printers each last reported and whether it is connected. Needs
+  // membership of the garage.
+  rpc ListPrintAgents(ListPrintAgentsRequest) returns (ListPrintAgentsResponse) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/print-agents"};
+  }
+
+  // FR-DOC-08: adds a print agent and returns its pairing code. Needs the
+  // permission that edits the garage profile. An invalid or duplicate name
+  // and an 11th agent are refused (INVALID_ARGUMENT).
+  rpc CreatePrintAgent(CreatePrintAgentRequest) returns (CreatePrintAgentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/print-agents"
+      body: "agent"
+    };
+  }
+
+  // FR-DOC-08: a new pairing code for an agent, to pair it again (a new PC,
+  // a reinstall). Its key stops working at once and its connection is
+  // closed; its printers are kept. Needs the permission that edits the
+  // garage profile.
+  rpc IssuePrintAgentPairingCode(IssuePrintAgentPairingCodeRequest) returns (CreatePrintAgentResponse) {
+    option (google.api.http) = {post: "/api/v1/garages/{garage_id}/print-agents/{agent_id}/pairing-code"};
+  }
+
+  // FR-DOC-08: removes an agent: its key stops working at once, its
+  // connection is closed, and its printers and print jobs are removed. Needs
+  // the permission that edits the garage profile.
+  rpc DeletePrintAgent(DeletePrintAgentRequest) returns (DeletePrintAgentResponse) {
+    option (google.api.http) = {delete: "/api/v1/garages/{garage_id}/print-agents/{agent_id}"};
+  }
+
+  // FR-DOC-08: prints a document on an AGENT printer without a dialog. The
+  // server renders it for the printer's paper (ESC/POS on a roll or label, a
+  // PDF on its page size or the garage's setting) with the rules of the print
+  // endpoints (template version, copy mark, print log; labels are not
+  // logged), and queues it for the agent, which prints it when it is
+  // connected. Needs the permission of the document (that of its print
+  // endpoint; a test page: membership). A printer of another protocol, a
+  // document the printer's paper has no template for, and a missing
+  // document field are refused (INVALID_ARGUMENT).
+  rpc CreatePrintJob(CreatePrintJobRequest) returns (PrintJob) {
+    option (google.api.http) = {
+      post: "/api/v1/garages/{garage_id}/printers/{printer_id}/jobs"
+      body: "*"
+    };
+  }
+
+  // FR-DOC-08: a print job, to follow it until it is printed, failed or
+  // expired. Needs membership of the garage.
+  rpc GetPrintJob(GetPrintJobRequest) returns (PrintJob) {
+    option (google.api.http) = {get: "/api/v1/garages/{garage_id}/print-jobs/{job_id}"};
+  }
+}
+
+// PrintAgentService is the print agent's own API (FR-DOC-08, Release 13.1).
+// Pairing is public: the pairing code is the credential.
+//
+// Once paired, the agent connects with a WebSocket to
+// /api/v1/print-agent/connect, sending "Authorization: Bearer <agent_key>",
+// and exchanges JSON text messages (see the API Specification, Section
+// 10.4): the server sends "hello" and then each "job" of the agent's
+// printers; the agent sends its "printers" and the "result" of each job. A
+// revoked or unknown key is refused (HTTP 401) and an open connection is
+// closed (WebSocket close code 4001).
+service PrintAgentService {
+  // Exchanges a pairing code for the agent's key. A wrong, used or expired
+  // code is refused (NOT_FOUND).
+  rpc PairPrintAgent(PairPrintAgentRequest) returns (PairPrintAgentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/public/print-agents:pair"
       body: "*"
     };
   }
