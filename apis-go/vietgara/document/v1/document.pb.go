@@ -2521,8 +2521,9 @@ type PartLabelCopies struct {
 	// 1 to 100.
 	Copies int32 `protobuf:"varint,2,opt,name=copies,proto3" json:"copies,omitempty"`
 	// A packaging unit of the part (a case): the label carries that unit's
-	// first barcode and its name, so a scan counts a case. Unset is the base
-	// unit. A unit that is not the part's, or that has no barcode, is refused
+	// first barcode (in the order of Part.barcodes) and its name, so a scan
+	// counts a case. Unset, empty or the part's base unit is the base unit. A
+	// unit that is not the part's, or that has no barcode, is refused
 	// (INVALID_ARGUMENT): the base unit's code on a case would count one.
 	UnitId        *string `protobuf:"bytes,3,opt,name=unit_id,json=unitId,proto3,oneof" json:"unit_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -2585,9 +2586,9 @@ type PrintPartLabelsRequest struct {
 	GarageId string                 `protobuf:"bytes,1,opt,name=garage_id,json=garageId,proto3" json:"garage_id,omitempty"`
 	// LABEL_50X30, the only label size of Release 13.0.
 	PaperSize PaperSize `protobuf:"varint,2,opt,name=paper_size,json=paperSize,proto3,enum=vietgara.document.v1.PaperSize" json:"paper_size,omitempty"`
-	// 1 to 50 entries, each part and unit at most once, at most 300 labels in
-	// all. A client
-	// printing the labels of a goods receipt fills them from its lines.
+	// 1 to 50 entries, each part and unit at most once (the base unit named
+	// or not), at most 300 labels in all. A client printing the labels of a
+	// goods receipt fills them from its lines.
 	Parts         []*PartLabelCopies `protobuf:"bytes,3,rep,name=parts,proto3" json:"parts,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
